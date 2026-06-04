@@ -11,20 +11,20 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/MinMax.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/MinMax.hpp"
 
 namespace
 {
 struct GameLoopFrameState
 {
     bool             shouldDrawUI{false};
-    sf::base::U8     shouldDrawUIAlpha{0u};
+    zb::U8     shouldDrawUIAlpha{0u};
     FrameInput       input;
     FrameUpdateState update;
-    sf::Time         deltaTime;
+    za::Time         deltaTime;
     float            deltaTimeMs{0.f};
 };
 
@@ -45,8 +45,8 @@ struct GameLoopFrameState
     GameLoopFrameState frame;
     frame.shouldDrawUI = !inPrestigeTransition && splashCountdown.time <= 0.f;
     frame.shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.asProgress().getElapsed() < 0.75f
-                                  ? static_cast<sf::base::U8>(0u)
-                                  : static_cast<sf::base::U8>(
+                                  ? static_cast<zb::U8>(0u)
+                                  : static_cast<zb::U8>(
                                         remap(easeInOutSine(splashCountdown.asProgress().getElapsed()), 0.75f, 1.f, 0.f, 255.f));
 
     fps = 1.f / fpsClock.getElapsedTime().asSeconds();
@@ -57,7 +57,7 @@ struct GameLoopFrameState
         return false;
 
     frame.deltaTime   = deltaClock.restart();
-    frame.deltaTimeMs = sf::base::min(24.f, static_cast<float>(frame.deltaTime.asMicroseconds()) / 1000.f);
+    frame.deltaTimeMs = zb::min(24.f, static_cast<float>(frame.deltaTime.asMicroseconds()) / 1000.f);
     shaderTime += frame.deltaTimeMs * 0.001f;
 
     gameLoopPrepareInput(frame.input, frame.deltaTimeMs);
@@ -76,7 +76,7 @@ struct GameLoopFrameState
 ////////////////////////////////////////////////////////////
 void Main::loadPlaythroughFromFileAndReseed()
 {
-    const sf::base::StringView loadMessage = loadPlaythroughFromFile(ptMain, "userdata/playthrough.json");
+    const zb::StringView loadMessage = loadPlaythroughFromFile(ptMain, "userdata/playthrough.json");
 
     if (!loadMessage.empty())
         pushNotification("Playthrough loading info", "%s", loadMessage.data());

@@ -9,20 +9,20 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/examples/src/ExampleUtils)
 
 file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl" "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
-if(NOT SFML_BUILD_AUDIO)
+if(NOT ZA_BUILD_AUDIO)
     list(REMOVE_ITEM SRC "${SRCROOT}/LoadedSound.cpp")
 endif()
 
 add_library(ExampleUtils STATIC ${SRC})
-target_link_libraries(ExampleUtils PUBLIC SFML::System SFML::Window SFML::Graphics)
+target_link_libraries(ExampleUtils PUBLIC Zancle::System Zancle::Window Zancle::Graphics)
 target_include_directories(ExampleUtils PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
 
-if(SFML_BUILD_AUDIO)
-    target_link_libraries(ExampleUtils PRIVATE SFML::Audio)
+if(ZA_BUILD_AUDIO)
+    target_link_libraries(ExampleUtils PRIVATE Zancle::Audio)
 endif()
 
 # add flags required for emscripten support (e.g. pthread)
-sfml_apply_emscripten_options(ExampleUtils)
+zancle_apply_emscripten_options(ExampleUtils)
 
 
 # ===========================================================================
@@ -42,7 +42,7 @@ sfml_apply_emscripten_options(ExampleUtils)
 # library variant it linked against -- mismatches surface as
 # `undefined reference to sfex::priv::sfexProfilerLinkCheck*()`.
 # ===========================================================================
-if(SFML_BUILD_IMGUI)
+if(ZA_BUILD_IMGUI)
     set(PROFILER_INCROOT ${PROJECT_SOURCE_DIR}/examples/include/ExampleProfiler)
     set(PROFILER_SRCROOT ${PROJECT_SOURCE_DIR}/examples/src/ExampleProfiler)
 
@@ -53,11 +53,11 @@ if(SFML_BUILD_IMGUI)
         "${PROFILER_SRCROOT}/*.inl"
         "${PROFILER_SRCROOT}/*.cpp")
 
-    function(sfml_add_example_profiler target_name enable_macro)
+    function(zancle_add_example_profiler target_name enable_macro)
         add_library(${target_name} STATIC ${PROFILER_SRC})
 
-        target_link_libraries(${target_name} PUBLIC SFML::System SFML::Window SFML::Graphics)
-        target_link_libraries(${target_name} PRIVATE SFML::ImGui ImGui::ImGui)
+        target_link_libraries(${target_name} PUBLIC Zancle::System Zancle::Window Zancle::Graphics)
+        target_link_libraries(${target_name} PRIVATE Zancle::ImGui ImGui::ImGui)
         target_link_libraries(${target_name} PUBLIC ExampleUtils) # for `ExampleUtils/Sampler.hpp`
 
         target_include_directories(${target_name} PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
@@ -68,24 +68,24 @@ if(SFML_BUILD_IMGUI)
         endif()
 
         # add flags required for emscripten support (e.g. pthread)
-        sfml_apply_emscripten_options(${target_name})
+        zancle_apply_emscripten_options(${target_name})
     endfunction()
 
-    sfml_add_example_profiler(ExampleProfilerEnabled  TRUE)
-    sfml_add_example_profiler(ExampleProfilerDisabled FALSE)
+    zancle_add_example_profiler(ExampleProfilerEnabled  TRUE)
+    zancle_add_example_profiler(ExampleProfilerDisabled FALSE)
 endif()
 
 # CLI based examples
-if(NOT SFML_OS_IOS AND NOT SFML_OS_EMSCRIPTEN)
-    if(SFML_BUILD_NETWORK)
+if(NOT ZA_OS_IOS AND NOT ZA_OS_EMSCRIPTEN)
+    if(ZA_BUILD_NETWORK)
         add_subdirectory(ftp)
         add_subdirectory(http)
         add_subdirectory(sockets)
     endif()
-    if(SFML_BUILD_NETWORK AND SFML_BUILD_AUDIO)
+    if(ZA_BUILD_NETWORK AND ZA_BUILD_AUDIO)
         add_subdirectory(voip)
     endif()
-    if(SFML_BUILD_AUDIO)
+    if(ZA_BUILD_AUDIO)
         add_subdirectory(sound)
         add_subdirectory(sound_capture)
         add_subdirectory(sound_multi_device)
@@ -93,11 +93,11 @@ if(NOT SFML_OS_IOS AND NOT SFML_OS_EMSCRIPTEN)
 endif()
 
 # GUI based examples
-if(SFML_BUILD_GRAPHICS)
+if(ZA_BUILD_GRAPHICS)
     add_subdirectory(event_handling)
     add_subdirectory(stencil)
 
-    if(NOT SFML_OS_IOS)
+    if(NOT ZA_OS_IOS)
         add_subdirectory(arkanoid)
         add_subdirectory(batching_benchmark)
         add_subdirectory(batching)
@@ -117,23 +117,23 @@ if(SFML_BUILD_GRAPHICS)
         add_subdirectory(showcase)
         add_subdirectory(tetris_survivors)
 
-        if (NOT SFML_OS_EMSCRIPTEN)
+        if (NOT ZA_OS_EMSCRIPTEN)
             add_subdirectory(imgui_multiple_windows)
             add_subdirectory(vulkan)
         endif()
     endif()
 
-    if(SFML_OS_WINDOWS)
+    if(ZA_OS_WINDOWS)
         add_subdirectory(win32)
         add_subdirectory(raw_input)
-    elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD)
-        if(NOT SFML_USE_DRM)
+    elseif(ZA_OS_LINUX OR ZA_OS_FREEBSD OR ZA_OS_OPENBSD)
+        if(NOT ZA_USE_DRM)
             add_subdirectory(raw_input)
         endif()
     endif()
 endif()
 
-if(SFML_BUILD_GRAPHICS AND SFML_BUILD_AUDIO)
+if(ZA_BUILD_GRAPHICS AND ZA_BUILD_AUDIO)
     add_subdirectory(tennis)
     add_subdirectory(sound_effects)
     add_subdirectory(keyboard)

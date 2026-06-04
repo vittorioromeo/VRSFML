@@ -4,25 +4,25 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 #if defined(_WIN32)
-    #define SFML_TEST_GL_API_PTR __stdcall
+    #define ZA_TEST_GL_API_PTR __stdcall
 #else
-    #define SFML_TEST_GL_API_PTR
+    #define ZA_TEST_GL_API_PTR
 #endif
 
 using GLenum    = unsigned int;
@@ -30,9 +30,9 @@ using GLuint    = unsigned int;
 using GLsizei   = int;
 using GLboolean = unsigned char;
 
-using PFNGLCHECKFRAMEBUFFERSTATUSPROC = GLenum(SFML_TEST_GL_API_PTR*)(GLenum target);
-using PFNGLGENFRAMEBUFFERSPROC        = void(SFML_TEST_GL_API_PTR*)(GLsizei n, GLuint* framebuffers);
-using PFNGLISFRAMEBUFFERPROC          = GLboolean(SFML_TEST_GL_API_PTR*)(GLuint framebuffer);
+using PFNGLCHECKFRAMEBUFFERSTATUSPROC = GLenum(ZA_TEST_GL_API_PTR*)(GLenum target);
+using PFNGLGENFRAMEBUFFERSPROC        = void(ZA_TEST_GL_API_PTR*)(GLsizei n, GLuint* framebuffers);
+using PFNGLISFRAMEBUFFERPROC          = GLboolean(ZA_TEST_GL_API_PTR*)(GLuint framebuffer);
 
 extern "C"
 {
@@ -51,14 +51,14 @@ struct ScopedFramebufferHooks
 {
     static inline PFNGLCHECKFRAMEBUFFERSTATUSPROC originalCheckFramebufferStatus{};
     static inline PFNGLGENFRAMEBUFFERSPROC        originalGenFramebuffers{};
-    static inline sf::base::Vector<unsigned int>* generatedFramebuffers{};
+    static inline zb::Vector<unsigned int>* generatedFramebuffers{};
     static inline unsigned int                    checkFramebufferStatusCallCount{};
     static inline bool                            failOnSecondFramebufferStatusCheck{};
 
-    sf::base::Vector<unsigned int> ids;
+    zb::Vector<unsigned int> ids;
 
     ////////////////////////////////////////////////////////////
-    static GLenum SFML_TEST_GL_API_PTR checkFramebufferStatusHook(const GLenum target)
+    static GLenum ZA_TEST_GL_API_PTR checkFramebufferStatusHook(const GLenum target)
     {
         ++checkFramebufferStatusCallCount;
 
@@ -69,7 +69,7 @@ struct ScopedFramebufferHooks
     }
 
     ////////////////////////////////////////////////////////////
-    static void SFML_TEST_GL_API_PTR genFramebuffersHook(const GLsizei n, GLuint* const framebuffers)
+    static void ZA_TEST_GL_API_PTR genFramebuffersHook(const GLsizei n, GLuint* const framebuffers)
     {
         originalGenFramebuffers(n, framebuffers);
 
@@ -109,36 +109,36 @@ struct ScopedFramebufferHooks
     }
 };
 
-#undef SFML_TEST_GL_API_PTR
+#undef ZA_TEST_GL_API_PTR
 } // namespace
 
 
 // Emscripten/WebGL does not support multiple GL contexts, which this entire
 // test case exercises.
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+#ifndef ZA_SYSTEM_EMSCRIPTEN
 TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
 {
-    sf::Vertex   vertices[]{{.position = {0.f, 0.f}}};
+    za::Vertex   vertices[]{{.position = {0.f, 0.f}}};
     unsigned int indices[] = {0};
 
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Test")
     {
-        auto wnd = sf::RenderWindow::create({.size = {1024u, 1024u}, .title = "Window A"}).value();
-        wnd.drawIndexedVertices(sf::DrawIndexedVerticesSettings{
+        auto wnd = za::RenderWindow::create({.size = {1024u, 1024u}, .title = "Window A"}).value();
+        wnd.drawIndexedVertices(za::DrawIndexedVerticesSettings{
             .vertexSpan    = vertices,
             .indexSpan     = indices,
-            .primitiveType = sf::PrimitiveType::Points,
+            .primitiveType = za::PrimitiveType::Points,
         });
 
         wnd.display();
 
-        auto rt1 = sf::RenderTexture::create({1024u, 1024u}).value();
-        wnd.drawIndexedVertices(sf::DrawIndexedVerticesSettings{
+        auto rt1 = za::RenderTexture::create({1024u, 1024u}).value();
+        wnd.drawIndexedVertices(za::DrawIndexedVerticesSettings{
             .vertexSpan    = vertices,
             .indexSpan     = indices,
-            .primitiveType = sf::PrimitiveType::Points,
+            .primitiveType = za::PrimitiveType::Points,
         });
 
         rt1.display();
@@ -146,23 +146,23 @@ TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
 
     SECTION("Test2")
     {
-        sf::base::Optional<sf::RenderWindow>  optWnd;
-        sf::base::Optional<sf::RenderTexture> optRT0;
+        zb::Optional<za::RenderWindow>  optWnd;
+        zb::Optional<za::RenderTexture> optRT0;
 
         for (int i = 0; i < 2; ++i)
         {
-            optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
-            optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+            optRT0.emplace(za::RenderTexture::create({1024u, 1024u}).value());
+            optWnd = za::RenderWindow::create(za::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
             optRT0.reset();
-            optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
-            optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+            optRT0.emplace(za::RenderTexture::create({1024u, 1024u}).value());
+            optWnd = za::RenderWindow::create(za::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
             optRT0->drawIndexedVertices(
-                sf::DrawIndexedVerticesSettings{
+                za::DrawIndexedVerticesSettings{
                     .vertexSpan    = vertices,
                     .indexSpan     = indices,
-                    .primitiveType = sf::PrimitiveType::Points,
+                    .primitiveType = za::PrimitiveType::Points,
                 },
                 {.view = optWnd->computeView()});
 
@@ -172,37 +172,37 @@ TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
 
     SECTION("Test3")
     {
-        sf::base::Optional<sf::RenderWindow> optWnd;
+        zb::Optional<za::RenderWindow> optWnd;
 
-        auto rt = sf::RenderTexture::create({1024u, 1024u});
+        auto rt = za::RenderTexture::create({1024u, 1024u});
 
-        optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+        optWnd = za::RenderWindow::create(za::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
         rt->drawIndexedVertices(
-            sf::DrawIndexedVerticesSettings{
+            za::DrawIndexedVerticesSettings{
                 .vertexSpan    = vertices,
                 .indexSpan     = indices,
-                .primitiveType = sf::PrimitiveType::Points,
+                .primitiveType = za::PrimitiveType::Points,
             },
             {.view = rt->computeView()});
 
         rt->display();
 
         optWnd->drawIndexedVertices(
-            sf::DrawIndexedVerticesSettings{
+            za::DrawIndexedVerticesSettings{
                 .vertexSpan    = vertices,
                 .indexSpan     = indices,
-                .primitiveType = sf::PrimitiveType::Points,
+                .primitiveType = za::PrimitiveType::Points,
             },
             {.view = optWnd->computeView()});
 
-        optWnd = sf::RenderWindow::create(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+        optWnd = za::RenderWindow::create(za::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
         rt->drawIndexedVertices(
-            sf::DrawIndexedVerticesSettings{
+            za::DrawIndexedVerticesSettings{
                 .vertexSpan    = vertices,
                 .indexSpan     = indices,
-                .primitiveType = sf::PrimitiveType::Points,
+                .primitiveType = za::PrimitiveType::Points,
             },
             {.view = rt->computeView()});
 
@@ -211,21 +211,21 @@ TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
 
     SECTION("Test4")
     {
-        auto window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "Window C"}).value();
+        auto window = za::RenderWindow::create({.size{1024u, 768u}, .title = "Window C"}).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create({100u, 100u});
-        auto leftInnerRT       = sf::RenderTexture::create({100u, 100u});
+        auto baseRenderTexture = za::RenderTexture::create({100u, 100u});
+        auto leftInnerRT       = za::RenderTexture::create({100u, 100u});
 
-        leftInnerRT->draw(sf::RectangleShapeData{}, {.view = leftInnerRT->computeView()});
+        leftInnerRT->draw(za::RectangleShapeData{}, {.view = leftInnerRT->computeView()});
         leftInnerRT->display();
     }
 
     SECTION("RenderTexture retries replace leaked same-context framebuffer")
     {
-        auto renderTexture = sf::RenderTexture::create({64u, 64u});
+        auto renderTexture = za::RenderTexture::create({64u, 64u});
         REQUIRE(renderTexture.hasValue());
 
-        auto window = sf::RenderWindow::create({.size{64u, 64u}, .title = "Window D"}).value();
+        auto window = za::RenderWindow::create({.size{64u, 64u}, .title = "Window D"}).value();
         REQUIRE(window.setActive(true));
 
         ScopedFramebufferHooks framebufferHooks(/* failSecondFramebufferStatusCheck */ true);

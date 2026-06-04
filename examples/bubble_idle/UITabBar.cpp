@@ -5,13 +5,13 @@
 #include "Profile.hpp"
 #include "UIState.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::uiTabBar()
@@ -19,18 +19,18 @@ void Main::uiTabBar()
     constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
 
     constexpr TabButtonPalette defaultPalette{
-        .idle    = sf::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
-        .hovered = sf::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
-        .active  = sf::Color::fromFloats(0.35f, 0.55f, 0.95f, 1.0f),
+        .idle    = za::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = za::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = za::Color::fromFloats(0.35f, 0.55f, 0.95f, 1.0f),
     };
 
     constexpr TabButtonPalette prestigePalette{
-        .idle    = sf::Color::fromFloats(0.53f, 0.20f, 0.33f, 1.0f),
-        .hovered = sf::Color::fromFloats(0.53f, 0.25f, 0.41f, 1.0f),
-        .active  = sf::Color::fromFloats(0.62f, 0.29f, 0.48f, 1.0f),
+        .idle    = za::Color::fromFloats(0.53f, 0.20f, 0.33f, 1.0f),
+        .hovered = za::Color::fromFloats(0.53f, 0.25f, 0.41f, 1.0f),
+        .active  = za::Color::fromFloats(0.62f, 0.29f, 0.48f, 1.0f),
     };
 
-    const auto keyboardSelectedTab = [&](const sf::Keyboard::Key key) -> bool
+    const auto keyboardSelectedTab = [&](const za::Keyboard::Key key) -> bool
     { return !ImGui::GetIO().WantCaptureKeyboard && inputHelper.wasKeyJustPressed(key); };
 
     const auto selectTab = [&](const int idx)
@@ -53,19 +53,19 @@ void Main::uiTabBar()
     if (uiState.lastUiSelectedTabIdx == 3 && !pt->isBubbleValueUnlocked())
         uiState.lastUiSelectedTabIdx = 1;
 
-    if (keyboardSelectedTab(sf::Keyboard::Key::Slash) || keyboardSelectedTab(sf::Keyboard::Key::Grave) ||
-        keyboardSelectedTab(sf::Keyboard::Key::Apostrophe) || keyboardSelectedTab(sf::Keyboard::Key::Backslash))
+    if (keyboardSelectedTab(za::Keyboard::Key::Slash) || keyboardSelectedTab(za::Keyboard::Key::Grave) ||
+        keyboardSelectedTab(za::Keyboard::Key::Apostrophe) || keyboardSelectedTab(za::Keyboard::Key::Backslash))
         selectTab(0);
 
-    sf::base::SizeT nextTabKeyIndex = 0u;
+    zb::SizeT nextTabKeyIndex = 0u;
 
-    constexpr sf::Keyboard::Key tabKeys[] = {
-        sf::Keyboard::Key::Num1,
-        sf::Keyboard::Key::Num2,
-        sf::Keyboard::Key::Num3,
-        sf::Keyboard::Key::Num4,
-        sf::Keyboard::Key::Num5,
-        sf::Keyboard::Key::Num6,
+    constexpr za::Keyboard::Key tabKeys[] = {
+        za::Keyboard::Key::Num1,
+        za::Keyboard::Key::Num2,
+        za::Keyboard::Key::Num3,
+        za::Keyboard::Key::Num4,
+        za::Keyboard::Key::Num5,
+        za::Keyboard::Key::Num6,
     };
 
     if (keyboardSelectedTab(tabKeys[nextTabKeyIndex++]))

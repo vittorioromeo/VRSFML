@@ -1,7 +1,7 @@
 
 
 ////////////////////////////////////////////////////////////
-struct SFML_BASE_TRIVIAL_ABI UniquePtrSDLGamepadClose
+struct ZB_TRIVIAL_ABI UniquePtrSDLGamepadClose
 {
     [[gnu::always_inline]] void operator()(SDL_Gamepad* const ptr) const noexcept
     {

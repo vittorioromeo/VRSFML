@@ -1,8 +1,8 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/FixedFunction.hpp"
+#include "ZancleBase/FixedFunction.hpp"
 
-#include "SFML/Base/Macros.hpp"
+#include "ZancleBase/Macros.hpp"
 
 
 namespace
@@ -77,8 +77,8 @@ struct LifecycleTracker
 
 
 ////////////////////////////////////////////////////////////
-using FF  = sf::base::FixedFunction<int(), 64>;
-using FFv = sf::base::FixedFunction<void(), 64>;
+using FF  = zb::FixedFunction<int(), 64>;
+using FFv = zb::FixedFunction<void(), 64>;
 
 
 ////////////////////////////////////////////////////////////
@@ -118,7 +118,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
     SECTION("Function pointer with argument")
     {
-        sf::base::FixedFunction<int(int), 64> ff(freeFunctionWithArg);
+        zb::FixedFunction<int(int), 64> ff(freeFunctionWithArg);
         CHECK(!!ff);
         CHECK(ff(5) == 10);
     }
@@ -148,7 +148,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             CHECK(c.alive() == 1);
 
             {
-                FF ff(SFML_BASE_MOVE(tracker));
+                FF ff(ZB_MOVE(tracker));
                 // 1 construction + 1 move into FixedFunction storage
                 CHECK(c.constructions == 1);
                 CHECK(c.moves == 1);
@@ -171,7 +171,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
         {
             LifecycleTracker tracker(c, 20);
 
-            FF ff1(SFML_BASE_MOVE(tracker));
+            FF ff1(ZB_MOVE(tracker));
             CHECK(ff1() == 20);
 
             {
@@ -196,8 +196,8 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             LifecycleTracker tracker1(c, 30);
             LifecycleTracker tracker2(c, 40);
 
-            FF ff1(SFML_BASE_MOVE(tracker1));
-            FF ff2(SFML_BASE_MOVE(tracker2));
+            FF ff1(ZB_MOVE(tracker1));
+            FF ff2(ZB_MOVE(tracker2));
 
             CHECK(ff1() == 30);
             CHECK(ff2() == 40);
@@ -275,11 +275,11 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
         {
             LifecycleTracker tracker(c, 80);
 
-            FF ff1(SFML_BASE_MOVE(tracker));
+            FF ff1(ZB_MOVE(tracker));
             CHECK(ff1() == 80);
 
             const int prevMoves = c.moves;
-            FF        ff2(SFML_BASE_MOVE(ff1));
+            FF        ff2(ZB_MOVE(ff1));
             CHECK(c.moves == prevMoves + 1);
 
             CHECK(ff2() == 80);
@@ -298,13 +298,13 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             LifecycleTracker tracker1(c, 90);
             LifecycleTracker tracker2(c, 100);
 
-            FF ff1(SFML_BASE_MOVE(tracker1));
-            FF ff2(SFML_BASE_MOVE(tracker2));
+            FF ff1(ZB_MOVE(tracker1));
+            FF ff2(ZB_MOVE(tracker2));
 
             CHECK(ff1() == 90);
             CHECK(ff2() == 100);
 
-            ff2 = SFML_BASE_MOVE(ff1);
+            ff2 = ZB_MOVE(ff1);
             CHECK(ff2() == 90);
             CHECK(!ff1);
         }
@@ -324,7 +324,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             CHECK(!ff1);
             CHECK(ff2() == 110);
 
-            ff2 = SFML_BASE_MOVE(ff1);
+            ff2 = ZB_MOVE(ff1);
             CHECK(!ff2);
         }
 
@@ -343,7 +343,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             CHECK(ff1() == 120);
             CHECK(!ff2);
 
-            ff2 = SFML_BASE_MOVE(ff1);
+            ff2 = ZB_MOVE(ff1);
             CHECK(ff2() == 120);
             CHECK(!ff1);
         }
@@ -362,7 +362,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-move"
-            ff = SFML_BASE_MOVE(ff);
+            ff = ZB_MOVE(ff);
 #pragma GCC diagnostic pop
 
             CHECK(ff() == 130);
@@ -420,7 +420,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
     SECTION("Multiple arguments")
     {
-        sf::base::FixedFunction<int(int, int, int), 64> ff([](int a, int b, int c) { return a + b + c; });
+        zb::FixedFunction<int(int, int, int), 64> ff([](int a, int b, int c) { return a + b + c; });
         CHECK(ff(1, 2, 3) == 6);
     }
 
@@ -475,7 +475,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
             const int prevMoves = c.moves;
 
-            FF ff2(SFML_BASE_MOVE(ff1));
+            FF ff2(ZB_MOVE(ff1));
             CHECK(c.moves == prevMoves + 1);
 
             CHECK(ff2() == 220);
@@ -493,7 +493,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
         FF ff2(ff1); // NOLINT(performance-unnecessary-copy-initialization)
         CHECK(ff2() == 42);
 
-        FF ff3(SFML_BASE_MOVE(ff1));
+        FF ff3(ZB_MOVE(ff1));
         CHECK(ff3() == 42);
     }
 
@@ -503,9 +503,9 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
         {
             FF ff1(LifecycleTracker(c, 230));
-            FF ff2(SFML_BASE_MOVE(ff1));
-            FF ff3(SFML_BASE_MOVE(ff2));
-            FF ff4(SFML_BASE_MOVE(ff3));
+            FF ff2(ZB_MOVE(ff1));
+            FF ff3(ZB_MOVE(ff2));
+            FF ff4(ZB_MOVE(ff3));
 
             CHECK(!ff1);
             CHECK(!ff2);
@@ -527,9 +527,9 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             FF ff3;
             FF ff4;
 
-            ff2 = SFML_BASE_MOVE(ff1);
-            ff3 = SFML_BASE_MOVE(ff2);
-            ff4 = SFML_BASE_MOVE(ff3);
+            ff2 = ZB_MOVE(ff1);
+            ff3 = ZB_MOVE(ff2);
+            ff4 = ZB_MOVE(ff3);
 
             CHECK(!ff1);
             CHECK(!ff2);
@@ -553,7 +553,7 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
             CHECK(ff1() == 250);
             CHECK(ff2() == 260);
 
-            ff2 = SFML_BASE_MOVE(ff1);
+            ff2 = ZB_MOVE(ff1);
             CHECK(ff2() == 250);
             CHECK(!ff1);
         }
@@ -601,9 +601,9 @@ TEST_CASE("[Base] Base/FixedFunction.hpp")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] sf::base::FixedFunction - const call operator")
+TEST_CASE("[Base] zb::FixedFunction - const call operator")
 {
-    using FFi = sf::base::FixedFunction<int(int), 64>;
+    using FFi = zb::FixedFunction<int(int), 64>;
 
     SECTION("Const call dispatches to free function pointer")
     {
@@ -666,12 +666,12 @@ TEST_CASE("[Base] sf::base::FixedFunction - const call operator")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] sf::base::FixedFunction - moved-from is empty regardless of payload kind")
+TEST_CASE("[Base] zb::FixedFunction - moved-from is empty regardless of payload kind")
 {
     // Ensures the move ops uniformly null `m_methodPtr` -- previously
     // a moved-from free-function FixedFunction was still callable,
     // inconsistent with the stored-callable case.
-    using FFi = sf::base::FixedFunction<int(int), 64>;
+    using FFi = zb::FixedFunction<int(int), 64>;
 
     SECTION("Move-construct from free-function FixedFunction")
     {

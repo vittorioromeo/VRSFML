@@ -1,5 +1,5 @@
 # all source files
-if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
+if (NOT ZA_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
             TextShakeEffect.cpp
@@ -45,7 +45,7 @@ if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
             UiStats.cpp)
 
     # set the correct steam library
-    if (SFML_OS_WINDOWS)
+    if (ZA_OS_WINDOWS)
         set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/steam_api64.lib")
     else()
         set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
@@ -97,9 +97,9 @@ else()
 endif()
 
 # define the bubble_idle target
-sfml_add_example(bubble_idle GUI_APP
+zancle_add_example(bubble_idle GUI_APP
                  SOURCES ${SRC}
-                 DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui ${STEAM_LIB})
+                 DEPENDS Zancle::Audio Zancle::Graphics Zancle::ImGui ImGui::ImGui ${STEAM_LIB})
 
 if (WIN32 AND NOT ARCH_ARM64)
     target_link_libraries(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
@@ -121,9 +121,9 @@ endif()
 # do not produce demo target by default
 if (FALSE)
     # define the bubble_idle_demo target
-    sfml_add_example(bubble_idle_demo GUI_APP
+    zancle_add_example(bubble_idle_demo GUI_APP
                     SOURCES ${SRC}
-                    DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui ${STEAM_LIB})
+                    DEPENDS Zancle::Audio Zancle::Graphics Zancle::ImGui ImGui::ImGui ${STEAM_LIB})
 
     target_compile_definitions(bubble_idle_demo PRIVATE BUBBLEBYTE_DEMO)
 

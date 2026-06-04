@@ -8,14 +8,14 @@
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Builtin/Strcmp.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
-#include "SFML/Base/Builtin/Strstr.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Builtin/Strcmp.hpp"
+#include "ZancleBase/Builtin/Strlen.hpp"
+#include "ZancleBase/Builtin/Strstr.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <csignal>
 #include <cstdio>
@@ -64,15 +64,15 @@ bool startsWith(const char* s, const char* prefix) noexcept
 
 
 ////////////////////////////////////////////////////////////
-bool nameMatchesAny(const char* name, const sf::base::Vector<sf::base::String>& patterns) noexcept
+bool nameMatchesAny(const char* name, const zb::Vector<zb::String>& patterns) noexcept
 {
-    for (sf::base::SizeT i = 0u; i < patterns.size(); ++i)
+    for (zb::SizeT i = 0u; i < patterns.size(); ++i)
     {
         const auto& p = patterns.data()[i];
         if (p.empty())
             continue;
 
-        if (SFML_BASE_STRSTR(name, p.cStr()) != nullptr)
+        if (ZB_STRSTR(name, p.cStr()) != nullptr)
             return true;
     }
     return false;
@@ -106,7 +106,7 @@ const char* signalName(const int sig) noexcept
 
 
 ////////////////////////////////////////////////////////////
-void writeStderr(const char* data, sf::base::SizeT size) noexcept
+void writeStderr(const char* data, zb::SizeT size) noexcept
 {
     // `stderr` is unbuffered by default, so this reaches the terminal
     // immediately -- important on the fatal-signal path below.
@@ -117,7 +117,7 @@ void writeStderr(const char* data, sf::base::SizeT size) noexcept
 ////////////////////////////////////////////////////////////
 void writeStderr(const char* s) noexcept
 {
-    writeStderr(s, SFML_BASE_STRLEN(s));
+    writeStderr(s, ZB_STRLEN(s));
 }
 
 
@@ -140,14 +140,14 @@ void writeStderrInt(const int value) noexcept
     if (negative)
         *--out = '-';
 
-    writeStderr(out, static_cast<sf::base::SizeT>((buf + sizeof(buf)) - out));
+    writeStderr(out, static_cast<zb::SizeT>((buf + sizeof(buf)) - out));
 }
 
 
 ////////////////////////////////////////////////////////////
 void writeActiveSubcases(const ContextState& ctx) noexcept
 {
-    for (sf::base::SizeT i = 0u; i < ctx.traversal.activeSubcases.size(); ++i)
+    for (zb::SizeT i = 0u; i < ctx.traversal.activeSubcases.size(); ++i)
     {
         const auto& subcase = ctx.traversal.activeSubcases.data()[i];
 
@@ -198,13 +198,13 @@ void installFatalSignalHandlers() noexcept
 ////////////////////////////////////////////////////////////
 void printHelp()
 {
-    sf::base::printErrLn("Test runner options:");
-    sf::base::printErrLn("  --test-case=<substring>     Run only tests whose name contains <substring>");
-    sf::base::printErrLn("  --test-case-exclude=<substr> Skip tests matching <substr>");
-    sf::base::printErrLn("  --list-test-cases           List registered test cases and exit");
-    sf::base::printErrLn("  --verbose                   Report each test case before it runs");
-    sf::base::printErrLn("  --reporters=<name>          Accepted for source compatibility (ignored)");
-    sf::base::printErrLn("  --help, -h                  Print this help");
+    zb::printErrLn("Test runner options:");
+    zb::printErrLn("  --test-case=<substring>     Run only tests whose name contains <substring>");
+    zb::printErrLn("  --test-case-exclude=<substr> Skip tests matching <substr>");
+    zb::printErrLn("  --list-test-cases           List registered test cases and exit");
+    zb::printErrLn("  --verbose                   Report each test case before it runs");
+    zb::printErrLn("  --reporters=<name>          Accepted for source compatibility (ignored)");
+    zb::printErrLn("  --help, -h                  Print this help");
 }
 
 
@@ -217,20 +217,20 @@ void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit)
     {
         const char* a = argv[i];
 
-        if (SFML_BASE_STRCMP(a, "--help") == 0 || SFML_BASE_STRCMP(a, "-h") == 0)
+        if (ZB_STRCMP(a, "--help") == 0 || ZB_STRCMP(a, "-h") == 0)
         {
             printHelp();
             outShouldExit = true;
             return;
         }
 
-        if (SFML_BASE_STRCMP(a, "--verbose") == 0)
+        if (ZB_STRCMP(a, "--verbose") == 0)
         {
             ctx.verbose = true;
             continue;
         }
 
-        if (SFML_BASE_STRCMP(a, "--list-test-cases") == 0)
+        if (ZB_STRCMP(a, "--list-test-cases") == 0)
         {
             ctx.listOnly = true;
             continue;
@@ -238,19 +238,19 @@ void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit)
 
         if (startsWith(a, "--test-case="))
         {
-            ctx.filterInclude.pushBack(sf::base::String{a + sizeof("--test-case=") - 1u});
+            ctx.filterInclude.pushBack(zb::String{a + sizeof("--test-case=") - 1u});
             continue;
         }
 
         if (startsWith(a, "--tc="))
         {
-            ctx.filterInclude.pushBack(sf::base::String{a + sizeof("--tc=") - 1u});
+            ctx.filterInclude.pushBack(zb::String{a + sizeof("--tc=") - 1u});
             continue;
         }
 
         if (startsWith(a, "--test-case-exclude="))
         {
-            ctx.filterExclude.pushBack(sf::base::String{a + sizeof("--test-case-exclude=") - 1u});
+            ctx.filterExclude.pushBack(zb::String{a + sizeof("--test-case-exclude=") - 1u});
             continue;
         }
 
@@ -285,13 +285,13 @@ void listTestCases(const ContextState& ctx)
 {
     auto& list = registeredTestCases();
 
-    for (sf::base::SizeT i = 0u; i < list.size(); ++i)
+    for (zb::SizeT i = 0u; i < list.size(); ++i)
     {
         const auto& tc = list.data()[i];
         if (!shouldRun(tc, ctx))
             continue;
 
-        (void)sf::base::printLn("{}", runnerNonNull(tc.name));
+        (void)zb::printLn("{}", runnerNonNull(tc.name));
     }
 }
 
@@ -321,7 +321,7 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
         {
             ctx.currentTestFailed = true;
             ++ctx.failedAssertions;
-            (void)sf::base::printErrLn("{}:{}: FAILED: uncaught exception in {}", tc.file, tc.line, runnerNonNull(tc.name));
+            (void)zb::printErrLn("{}:{}: FAILED: uncaught exception in {}", tc.file, tc.line, runnerNonNull(tc.name));
         }
     } while (ctx.traversal.advance());
 
@@ -333,13 +333,13 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
 ////////////////////////////////////////////////////////////
 void printSummary(const ContextState& ctx)
 {
-    (void)sf::base::printLn("");
-    (void)sf::base::printLn("[tst] test cases:  {} | passed: {} | failed: {} | skipped: {}",
+    (void)zb::printLn("");
+    (void)zb::printLn("[tst] test cases:  {} | passed: {} | failed: {} | skipped: {}",
                             ctx.totalTestCases,
                             ctx.totalTestCases - ctx.failedTestCases - ctx.skippedTestCases,
                             ctx.failedTestCases,
                             ctx.skippedTestCases);
-    (void)sf::base::printLn("[tst] assertions:  {} | passed: {} | failed: {}",
+    (void)zb::printLn("[tst] assertions:  {} | passed: {} | failed: {}",
                             ctx.totalAssertions,
                             ctx.totalAssertions - ctx.failedAssertions,
                             ctx.failedAssertions);
@@ -371,7 +371,7 @@ int run(int argc, char** argv)
 
     auto& list = detail::registeredTestCases();
 
-    for (sf::base::SizeT i = 0u; i < list.size(); ++i)
+    for (zb::SizeT i = 0u; i < list.size(); ++i)
     {
         const auto& tc = list.data()[i];
 
@@ -388,7 +388,7 @@ int run(int argc, char** argv)
         ++ctx.totalTestCases;
 
         if (ctx.verbose)
-            (void)sf::base::printErrLn("[tst] running: {} ({}:{})", detail::runnerNonNull(tc.name), tc.file, tc.line);
+            (void)zb::printErrLn("[tst] running: {} ({}:{})", detail::runnerNonNull(tc.name), tc.file, tc.line);
 
         detail::runSingleTestCase(tc, ctx);
     }

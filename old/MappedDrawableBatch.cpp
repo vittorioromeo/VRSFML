@@ -19,7 +19,7 @@ void* MappedDrawableBatch::mapBuffer(unsigned int type, base::SizeT allocatedByt
 void MappedDrawableBatch::unmapBuffer(unsigned int type) const
 {
     [[maybe_unused]] const bool rc = glCheck(glUnmapBuffer(type));
-    SFML_BASE_ASSERT(rc);
+    ZB_ASSERT(rc);
 }
 
 
@@ -131,8 +131,8 @@ void MappedDrawableBatch::clear()
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::draw(const RenderStates& renderStates)
 {
-    SFML_BASE_ASSERT(m_mappedVertices != nullptr);
-    SFML_BASE_ASSERT(m_mappedIndices != nullptr);
+    ZB_ASSERT(m_mappedVertices != nullptr);
+    ZB_ASSERT(m_mappedIndices != nullptr);
 
     unmapBuffer(GL_ARRAY_BUFFER);
     m_mappedVertices = nullptr;

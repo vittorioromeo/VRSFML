@@ -13,9 +13,9 @@
 
 #pragma GCC system_header
 
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 #include <cstdarg>
 
@@ -51,7 +51,7 @@ typedef int ImGuiWindowFlags;
 extern const ImGuiWindowFlags NOTIFY_DEFAULT_TOAST_FLAGS;
 
 
-enum class ImGuiToastType : sf::base::U8
+enum class ImGuiToastType : zb::U8
 {
     None,
     Success,
@@ -61,7 +61,7 @@ enum class ImGuiToastType : sf::base::U8
     COUNT
 };
 
-enum class ImGuiToastPhase : sf::base::U8
+enum class ImGuiToastPhase : zb::U8
 {
     FadeIn,
     Wait,
@@ -70,7 +70,7 @@ enum class ImGuiToastPhase : sf::base::U8
     COUNT
 };
 
-enum class ImGuiToastPos : sf::base::U8
+enum class ImGuiToastPos : zb::U8
 {
     TopLeft,
     TopCenter,
@@ -96,7 +96,7 @@ private:
     char           content[NOTIFY_MAX_MSG_LENGTH];
 
     int      dismissTime  = NOTIFY_DEFAULT_DISMISS;
-    sf::Time creationTime = {};
+    za::Time creationTime = {};
 
     char buttonLabel[NOTIFY_MAX_MSG_LENGTH];
 
@@ -118,7 +118,7 @@ public:
     [[nodiscard]] ImVec4           getColor();
     [[nodiscard]] const char*      getIcon();
     [[nodiscard]] char*            getContent();
-    [[nodiscard]] sf::Time         getElapsedTime();
+    [[nodiscard]] za::Time         getElapsedTime();
     [[nodiscard]] ImGuiToastPhase  getPhase();
     [[nodiscard]] float            getFadePercent();
     [[nodiscard]] ImGuiWindowFlags getWindowFlags();

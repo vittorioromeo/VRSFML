@@ -1,7 +1,7 @@
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 2) uniform sampler2D za_u_texture;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 layout(location = 4) uniform sampler2D u_backgroundTexture; // Background texture for bubble distortion
 layout(location = 5) uniform float u_time;                  // Time for animations
 layout(location = 6) uniform bool u_bubbleEffect;
@@ -25,11 +25,11 @@ layout(location = 20) uniform float u_rimShineTimeRate; // radians per second of
 layout(location = 21) uniform float u_rimShineArc;      // arc narrowness (0..1, higher = tighter)
 
 ////////////////////////////////////////////////////////////
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 in vec2 v_worldPos;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 ////////////////////////////////////////////////////////////
 vec3 rgb2hsv(vec3 c)
@@ -82,18 +82,18 @@ vec3 rotateHueRGB(vec3 color, float angle_degrees)
 ////////////////////////////////////////////////////////////
 void main()
 {
-    vec4 texColor = texture(sf_u_texture, sf_v_texCoord);
+    vec4 texColor = texture(za_u_texture, za_v_texCoord);
 
     if (texColor.a < 0.01)
         discard;
 
     const vec2 flagTarget = vec2(1.0 / 255.0);
     const vec2 epsilon    = vec2(0.001);
-    bool       hueDriven  = all(lessThanEqual(abs(sf_v_color.rg - flagTarget), epsilon));
+    bool       hueDriven  = all(lessThanEqual(abs(za_v_color.rg - flagTarget), epsilon));
 
     if (!hueDriven)
     {
-        sf_fragColor = sf_v_color * texColor;
+        za_fragColor = za_v_color * texColor;
         return;
     }
 
@@ -102,7 +102,7 @@ void main()
     if (u_bubbleEffect)
     {
         // Convert atlas UVs to local UVs within the sub-texture
-        vec2 localUV = (sf_v_texCoord * vec2(textureSize(sf_u_texture, 0)) - u_subTexOrigin) / u_subTexSize;
+        vec2 localUV = (za_v_texCoord * vec2(textureSize(za_u_texture, 0)) - u_subTexOrigin) / u_subTexSize;
 
         // Center the UV coordinates
         vec2 centeredUV = localUV - vec2(0.5);
@@ -117,7 +117,7 @@ void main()
         vec2 bgUV = (v_worldPos - u_backgroundOrigin) / vec2(textureSize(u_backgroundTexture, 0));
 
         // Create a dynamic distortion pattern using time and color
-        float distortionTime   = u_time * 0.2 + float(sf_v_color.b) * 10.0;
+        float distortionTime   = u_time * 0.2 + float(za_v_color.b) * 10.0;
         vec2  angle            = distortionTime * 0.5 + vec2(bgUV.y * 3.5, bgUV.x * 5.5);
         vec2  sinCosDistortion = vec2(sin(angle.x), cos(angle.y)) * u_distorsionStrength;
 
@@ -147,7 +147,7 @@ void main()
         // whole sphere rather than only at the rim; edgeFactor still boosts
         // the rim so the silhouette stays defined.
         vec2  patternCoord = centeredUV * 10.0;
-        float hueSeed      = float(sf_v_color.b) * 100.0;
+        float hueSeed      = float(za_v_color.b) * 100.0;
         float angleRad     = atan(centeredUV.y, centeredUV.x);
 
         vec3 iridRadial = 0.25 +
@@ -194,15 +194,15 @@ void main()
     }
 
     // Apply hue shift
-    finalColor = rotateHueRGB(finalColor, float(sf_v_color.b) * 360.0);
+    finalColor = rotateHueRGB(finalColor, float(za_v_color.b) * 360.0);
 
     // Proper alpha premultiplication
     if (u_bubbleEffect)
     {
-        sf_fragColor = vec4(finalColor * texColor.a, texColor.a);
+        za_fragColor = vec4(finalColor * texColor.a, texColor.a);
     }
     else
     {
-        sf_fragColor = vec4(finalColor, sf_v_color.a * texColor.a);
+        za_fragColor = vec4(finalColor, za_v_color.a * texColor.a);
     }
 }

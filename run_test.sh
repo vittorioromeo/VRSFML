@@ -26,7 +26,7 @@ fi
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 basepwd=$(basename "$PWD")
 lowercase_arg=$(echo "$suite" | tr '[:upper:]' '[:lower:]')
-target="test-sfml-$lowercase_arg"
+target="test-zancle-$lowercase_arg"
 
 export LSAN_OPTIONS="${LSAN_OPTIONS:+$LSAN_OPTIONS:}suppressions=$script_dir/lsan_suppressions.txt"
 export ASAN_SYMBOLIZER_PATH="/opt/emscripten-llvm/bin/llvm-symbolizer"

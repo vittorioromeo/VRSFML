@@ -1,77 +1,77 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextBase.inl" // IWYU pragma: keep, required: `ShinyText` below derives from `sf::Text`
-#include "SFML/Graphics/Transformable.hpp"
-#include "SFML/Graphics/Vertex.hpp"
-#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextBase.inl" // IWYU pragma: keep, required: `ShinyText` below derives from `za::Text`
+#include "Zancle/Graphics/Transformable.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp" // IWYU pragma: keep
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp" // IWYU pragma: keep
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Round.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Abort.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Round.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
-#ifdef SFML_SYSTEM_IOS
-    #include <SFML/Main.hpp>
+#ifdef ZA_SYSTEM_IOS
+    #include <Zancle/Main.hpp>
 #endif
 
 
 namespace
 {
-sf::Path resourcesDir()
+za::Path resourcesDir()
 {
-#ifdef SFML_SYSTEM_IOS
+#ifdef ZA_SYSTEM_IOS
     return "";
 #else
     return "resources";
 #endif
 }
 
-// Get the C++ enumerator name of the given `sf::Keyboard::Key` value including `Key::` prefix
-constexpr const char* keyIdentifier(sf::Keyboard::Key code)
+// Get the C++ enumerator name of the given `za::Keyboard::Key` value including `Key::` prefix
+constexpr const char* keyIdentifier(za::Keyboard::Key code)
 {
     switch (code)
     {
 #define CASE(code)                \
-    case sf::Keyboard::Key::code: \
+    case za::Keyboard::Key::code: \
         return "Key::" #code
         CASE(Unknown);
         CASE(A);
@@ -332,17 +332,17 @@ constexpr const char* keyIdentifier(sf::Keyboard::Key code)
 #undef CASE
     }
 
-    sf::base::printErr("invalid keyboard code");
-    sf::base::abort();
+    zb::printErr("invalid keyboard code");
+    zb::abort();
 }
 
-// Get the C++ enumerator name of the given `sf::Keyboard::Scancode` value including `Scan::` prefix
-constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
+// Get the C++ enumerator name of the given `za::Keyboard::Scancode` value including `Scan::` prefix
+constexpr const char* scancodeIdentifier(za::Keyboard::Scancode scancode)
 {
     switch (scancode)
     {
 #define CASE(scancode)                 \
-    case sf::Keyboard::Scan::scancode: \
+    case za::Keyboard::Scan::scancode: \
         return "Scan::" #scancode
         CASE(Unknown);
         CASE(A);
@@ -594,98 +594,98 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
 #undef CASE
     }
 
-    sf::base::printErr("invalid keyboard scancode");
-    sf::base::abort();
+    zb::printErr("invalid keyboard scancode");
+    zb::abort();
 }
 
 
 ////////////////////////////////////////////////////////////
 // Entity showing keyboard events and real-time state on a keyboard
 ////////////////////////////////////////////////////////////
-class KeyboardView : public sf::Transformable
+class KeyboardView : public za::Transformable
 {
 public:
-    explicit KeyboardView(const sf::Font& font) :
-        m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.string = "", .characterSize = 14u}))
+    explicit KeyboardView(const za::Font& font) :
+        m_labels(za::Keyboard::ScancodeCount, za::Text(font, {.string = "", .characterSize = 14u}))
     {
         // Check all the scancodes are in the matrix exactly once
         {
-            [[maybe_unused]] bool scancodesInMatrix[sf::Keyboard::ScancodeCount]{};
+            [[maybe_unused]] bool scancodesInMatrix[za::Keyboard::ScancodeCount]{};
 
             for (const auto& [cells, marginBottom] : m_matrix)
             {
                 for (const auto& [scancode, size, marginRight] : cells)
                 {
-                    SFML_BASE_ASSERT(!scancodesInMatrix[static_cast<sf::base::SizeT>(scancode)]);
-                    scancodesInMatrix[static_cast<sf::base::SizeT>(scancode)] = true;
+                    ZB_ASSERT(!scancodesInMatrix[static_cast<zb::SizeT>(scancode)]);
+                    scancodesInMatrix[static_cast<zb::SizeT>(scancode)] = true;
                 }
             }
 
             // TODO P1: restore?
-            // SFML_BASE_ASSERT(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
+            // ZB_ASSERT(scancodesInMatrix.size() == za::Keyboard::ScancodeCount);
         }
 
         // Initialize keys color and label
-        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::Rect2f& rect)
+        forEachKey([this](za::Keyboard::Scancode scancode, const za::Rect2f& rect)
         {
-            const auto scancodeIndex = static_cast<sf::base::SizeT>(scancode);
+            const auto scancodeIndex = static_cast<zb::SizeT>(scancode);
 
-            for (sf::base::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+            for (zb::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
                 m_triangles[6u * scancodeIndex + vertexIndex]
-                    .color = sf::Keyboard::delocalize(sf::Keyboard::localize(scancode)) != scancode
-                                 ? sf::Color::Red
-                                 : sf::Color::White;
+                    .color = za::Keyboard::delocalize(za::Keyboard::localize(scancode)) != scancode
+                                 ? za::Color::Red
+                                 : za::Color::White;
 
-            sf::Text& label = m_labels[scancodeIndex];
-            label.setString(sf::Keyboard::getDescription(scancode));
+            za::Text& label = m_labels[scancodeIndex];
+            label.setString(za::Keyboard::getDescription(scancode));
             label.position = {rect.position + rect.size / 2.f};
 
             if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
             {
-                sf::Utf8String string = label.getString();
+                za::Utf8String string = label.getString();
                 string.replaceAllOccurrences(" ", "\n");
                 label.setString(string);
             }
             while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
                 label.setCharacterSize(label.getCharacterSize() - 2);
 
-            const sf::Rect2f bounds = label.getLocalBounds();
-            label.origin            = {sf::base::round(bounds.position.x + bounds.size.x / 2.f),
-                                       sf::base::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
+            const za::Rect2f bounds = label.getLocalBounds();
+            label.origin            = {zb::round(bounds.position.x + bounds.size.x / 2.f),
+                                       zb::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
         });
     }
 
-    void handle(const sf::Event& event)
+    void handle(const za::Event& event)
     {
         // React to keyboard events by starting an animation
-        if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+        if (const auto* keyPressed = event.getIf<za::Event::KeyPressed>())
         {
-            if (keyPressed->scancode != sf::Keyboard::Scan::Unknown)
-                m_moveFactors[static_cast<sf::base::SizeT>(keyPressed->scancode)] = 1.f;
+            if (keyPressed->scancode != za::Keyboard::Scan::Unknown)
+                m_moveFactors[static_cast<zb::SizeT>(keyPressed->scancode)] = 1.f;
         }
-        else if (const auto* keyReleased = event.getIf<sf::Event::KeyReleased>())
+        else if (const auto* keyReleased = event.getIf<za::Event::KeyReleased>())
         {
-            if (keyReleased->scancode != sf::Keyboard::Scan::Unknown)
-                m_moveFactors[static_cast<sf::base::SizeT>(keyReleased->scancode)] = -1.f;
+            if (keyReleased->scancode != za::Keyboard::Scan::Unknown)
+                m_moveFactors[static_cast<zb::SizeT>(keyReleased->scancode)] = -1.f;
         }
     }
 
-    void update(sf::Time frameTime)
+    void update(za::Time frameTime)
     {
         // Animate m_moveFactors values linearly towards zero
-        static constexpr sf::Time transitionDuration = sf::milliseconds(200);
+        static constexpr za::Time transitionDuration = za::milliseconds(200);
         for (float& factor : m_moveFactors)
         {
-            const float absoluteChange = sf::base::min(sf::base::fabs(factor), frameTime / transitionDuration);
+            const float absoluteChange = zb::min(zb::fabs(factor), frameTime / transitionDuration);
             factor += factor > 0.f ? -absoluteChange : absoluteChange;
         }
 
         // Update vertices positions from m_moveFactors and opacity from real-time keyboard state
-        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::Rect2f& rect)
+        forEachKey([this](za::Keyboard::Scancode scancode, const za::Rect2f& rect)
         {
-            const auto scancodeIndex = static_cast<sf::base::SizeT>(scancode);
+            const auto scancodeIndex = static_cast<zb::SizeT>(scancode);
 
-            static constexpr sf::Vec2f square[]{
+            static constexpr za::Vec2f square[]{
                 {0.f, 0.f},
                 {1.f, 0.f},
                 {1.f, 1.f},
@@ -695,15 +695,15 @@ public:
             static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
 
             const float     moveFactor = m_moveFactors[scancodeIndex];
-            const sf::Vec2f move(0.f, 2.f * moveFactor * (1.f - sf::base::fabs(moveFactor)) * padding);
+            const za::Vec2f move(0.f, 2.f * moveFactor * (1.f - zb::fabs(moveFactor)) * padding);
 
-            const bool pressed = sf::Keyboard::isKeyPressed(scancode);
+            const bool pressed = za::Keyboard::isKeyPressed(scancode);
 
-            for (sf::base::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+            for (zb::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
-                sf::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
-                const sf::Vec2f            corner = square[cornerIndexes[vertexIndex]];
-                static constexpr sf::Vec2f pad(padding, padding);
+                za::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
+                const za::Vec2f            corner = square[cornerIndexes[vertexIndex]];
+                static constexpr za::Vec2f pad(padding, padding);
                 vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
                 vertex.color.a  = pressed ? 96 : 48;
             }
@@ -712,13 +712,13 @@ public:
         });
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const
+    void draw(za::RenderTarget& target, za::RenderStates states) const
     {
         states.transform *= getTransform();
 
-        target.draw(m_triangles, sf::PrimitiveType::Triangles, states);
+        target.draw(m_triangles, za::PrimitiveType::Triangles, states);
 
-        for (const sf::Text& label : m_labels)
+        for (const za::Text& label : m_labels)
             target.draw(label, states);
     }
 
@@ -727,12 +727,12 @@ private:
     template <typename F>
     void forEachKey(F&& function) const
     {
-        sf::Vec2f pos;
+        za::Vec2f pos;
         for (const auto& [cells, marginBottom] : m_matrix)
         {
             for (const auto& [scancode, size, marginRight] : cells)
             {
-                function(scancode, sf::Rect2f(pos, size));
+                function(scancode, za::Rect2f(pos, size));
                 pos.x += size.x + marginRight;
             }
             pos.x = 0.f;
@@ -745,221 +745,221 @@ private:
 
     struct Cell
     {
-        Cell(sf::Keyboard::Scancode theScancode, sf::Vec2f sizeRatio = {1.f, 1.f}, float marginRightRatio = 0.f) :
+        Cell(za::Keyboard::Scancode theScancode, za::Vec2f sizeRatio = {1.f, 1.f}, float marginRightRatio = 0.f) :
             scancode(theScancode),
             size(sizeRatio * keySize),
             marginRight(marginRightRatio * keySize)
         {
         }
 
-        Cell(sf::Keyboard::Scancode theScancode, float marginRightRatio) :
+        Cell(za::Keyboard::Scancode theScancode, float marginRightRatio) :
             Cell(theScancode, {1.f, 1.f}, marginRightRatio)
         {
         }
 
-        sf::Keyboard::Scancode scancode;
-        sf::Vec2f              size;
+        za::Keyboard::Scancode scancode;
+        za::Vec2f              size;
         float                  marginRight;
     };
 
     struct Row
     {
-        Row(sf::base::Vector<Cell> theCells, float marginBottomRatio = 0.f) :
-            cells(SFML_BASE_MOVE(theCells)),
+        Row(zb::Vector<Cell> theCells, float marginBottomRatio = 0.f) :
+            cells(ZB_MOVE(theCells)),
             marginBottom(marginBottomRatio * keySize)
         {
         }
 
-        sf::base::Vector<Cell> cells;
+        zb::Vector<Cell> cells;
         float                  marginBottom;
     };
 
-    const sf::base::Array<Row, 9> m_matrix{{
-        {{{sf::Keyboard::Scan::Escape, 1},
-          {sf::Keyboard::Scan::F1},
-          {sf::Keyboard::Scan::F2},
-          {sf::Keyboard::Scan::F3},
-          {sf::Keyboard::Scan::F4, 0.5},
-          {sf::Keyboard::Scan::F5},
-          {sf::Keyboard::Scan::F6},
-          {sf::Keyboard::Scan::F7},
-          {sf::Keyboard::Scan::F8, 0.5},
-          {sf::Keyboard::Scan::F9},
-          {sf::Keyboard::Scan::F10},
-          {sf::Keyboard::Scan::F11},
-          {sf::Keyboard::Scan::F12, 0.5},
-          {sf::Keyboard::Scan::PrintScreen},
-          {sf::Keyboard::Scan::ScrollLock},
-          {sf::Keyboard::Scan::Pause}},
+    const zb::Array<Row, 9> m_matrix{{
+        {{{za::Keyboard::Scan::Escape, 1},
+          {za::Keyboard::Scan::F1},
+          {za::Keyboard::Scan::F2},
+          {za::Keyboard::Scan::F3},
+          {za::Keyboard::Scan::F4, 0.5},
+          {za::Keyboard::Scan::F5},
+          {za::Keyboard::Scan::F6},
+          {za::Keyboard::Scan::F7},
+          {za::Keyboard::Scan::F8, 0.5},
+          {za::Keyboard::Scan::F9},
+          {za::Keyboard::Scan::F10},
+          {za::Keyboard::Scan::F11},
+          {za::Keyboard::Scan::F12, 0.5},
+          {za::Keyboard::Scan::PrintScreen},
+          {za::Keyboard::Scan::ScrollLock},
+          {za::Keyboard::Scan::Pause}},
          0.5},
-        {{{sf::Keyboard::Scan::Grave}, //
-          {sf::Keyboard::Scan::Num1},
-          {sf::Keyboard::Scan::Num2},
-          {sf::Keyboard::Scan::Num3},
-          {sf::Keyboard::Scan::Num4},
-          {sf::Keyboard::Scan::Num5},
-          {sf::Keyboard::Scan::Num6},
-          {sf::Keyboard::Scan::Num7},
-          {sf::Keyboard::Scan::Num8},
-          {sf::Keyboard::Scan::Num9},
-          {sf::Keyboard::Scan::Num0},
-          {sf::Keyboard::Scan::Hyphen},
-          {sf::Keyboard::Scan::Equal},
-          {sf::Keyboard::Scan::Backspace, {2, 1}, 0.5},
-          {sf::Keyboard::Scan::Insert},
-          {sf::Keyboard::Scan::Home},
-          {sf::Keyboard::Scan::PageUp, 0.5},
-          {sf::Keyboard::Scan::NumLock},
-          {sf::Keyboard::Scan::NumpadDivide},
-          {sf::Keyboard::Scan::NumpadMultiply},
-          {sf::Keyboard::Scan::NumpadMinus}}},
-        {{{sf::Keyboard::Scan::Tab, {1.5, 1}},
-          {sf::Keyboard::Scan::Q},
-          {sf::Keyboard::Scan::W},
-          {sf::Keyboard::Scan::E},
-          {sf::Keyboard::Scan::R},
-          {sf::Keyboard::Scan::T},
-          {sf::Keyboard::Scan::Y},
-          {sf::Keyboard::Scan::U},
-          {sf::Keyboard::Scan::I},
-          {sf::Keyboard::Scan::O},
-          {sf::Keyboard::Scan::P},
-          {sf::Keyboard::Scan::LBracket},
-          {sf::Keyboard::Scan::RBracket},
-          {sf::Keyboard::Scan::Backslash, {1.5, 1}, 0.5},
-          {sf::Keyboard::Scan::Delete},
-          {sf::Keyboard::Scan::End},
-          {sf::Keyboard::Scan::PageDown, 0.5},
-          {sf::Keyboard::Scan::Numpad7},
-          {sf::Keyboard::Scan::Numpad8},
-          {sf::Keyboard::Scan::Numpad9},
-          {sf::Keyboard::Scan::NumpadPlus}}},
-        {{{sf::Keyboard::Scan::CapsLock, {1.75, 1}},
-          {sf::Keyboard::Scan::A},
-          {sf::Keyboard::Scan::S},
-          {sf::Keyboard::Scan::D},
-          {sf::Keyboard::Scan::F},
-          {sf::Keyboard::Scan::G},
-          {sf::Keyboard::Scan::H},
-          {sf::Keyboard::Scan::J},
-          {sf::Keyboard::Scan::K},
-          {sf::Keyboard::Scan::L},
-          {sf::Keyboard::Scan::Semicolon},
-          {sf::Keyboard::Scan::Apostrophe},
-          {sf::Keyboard::Scan::Enter, {2.25, 1}, 4},
-          {sf::Keyboard::Scan::Numpad4},
-          {sf::Keyboard::Scan::Numpad5},
-          {sf::Keyboard::Scan::Numpad6},
-          {sf::Keyboard::Scan::NumpadEqual}}},
-        {{{sf::Keyboard::Scan::LShift, {1.25, 1}},
-          {sf::Keyboard::Scan::NonUsBackslash},
-          {sf::Keyboard::Scan::Z},
-          {sf::Keyboard::Scan::X},
-          {sf::Keyboard::Scan::C},
-          {sf::Keyboard::Scan::V},
-          {sf::Keyboard::Scan::B},
-          {sf::Keyboard::Scan::N},
-          {sf::Keyboard::Scan::M},
-          {sf::Keyboard::Scan::Comma},
-          {sf::Keyboard::Scan::Period},
-          {sf::Keyboard::Scan::Slash},
-          {sf::Keyboard::Scan::RShift, {2.75, 1}, 1.5},
-          {sf::Keyboard::Scan::Up, 1.5},
-          {sf::Keyboard::Scan::Numpad1},
-          {sf::Keyboard::Scan::Numpad2},
-          {sf::Keyboard::Scan::Numpad3},
-          {sf::Keyboard::Scan::NumpadEnter, {1, 2}}}},
-        {{{sf::Keyboard::Scan::LControl, {1.5, 1}},
-          {sf::Keyboard::Scan::LSystem, {1.25, 1}},
-          {sf::Keyboard::Scan::LAlt, {1.5, 1}},
-          {sf::Keyboard::Scan::Space, {5.75, 1}},
-          {sf::Keyboard::Scan::RAlt, {1.25, 1}},
-          {sf::Keyboard::Scan::RSystem, {1.25, 1}},
-          {sf::Keyboard::Scan::Menu, {1.25, 1}},
-          {sf::Keyboard::Scan::RControl, {1.25, 1}, 0.5},
-          {sf::Keyboard::Scan::Left},
-          {sf::Keyboard::Scan::Down},
-          {sf::Keyboard::Scan::Right, 0.5},
-          {sf::Keyboard::Scan::Numpad0, {2, 1}},
-          {sf::Keyboard::Scan::NumpadDecimal}},
+        {{{za::Keyboard::Scan::Grave}, //
+          {za::Keyboard::Scan::Num1},
+          {za::Keyboard::Scan::Num2},
+          {za::Keyboard::Scan::Num3},
+          {za::Keyboard::Scan::Num4},
+          {za::Keyboard::Scan::Num5},
+          {za::Keyboard::Scan::Num6},
+          {za::Keyboard::Scan::Num7},
+          {za::Keyboard::Scan::Num8},
+          {za::Keyboard::Scan::Num9},
+          {za::Keyboard::Scan::Num0},
+          {za::Keyboard::Scan::Hyphen},
+          {za::Keyboard::Scan::Equal},
+          {za::Keyboard::Scan::Backspace, {2, 1}, 0.5},
+          {za::Keyboard::Scan::Insert},
+          {za::Keyboard::Scan::Home},
+          {za::Keyboard::Scan::PageUp, 0.5},
+          {za::Keyboard::Scan::NumLock},
+          {za::Keyboard::Scan::NumpadDivide},
+          {za::Keyboard::Scan::NumpadMultiply},
+          {za::Keyboard::Scan::NumpadMinus}}},
+        {{{za::Keyboard::Scan::Tab, {1.5, 1}},
+          {za::Keyboard::Scan::Q},
+          {za::Keyboard::Scan::W},
+          {za::Keyboard::Scan::E},
+          {za::Keyboard::Scan::R},
+          {za::Keyboard::Scan::T},
+          {za::Keyboard::Scan::Y},
+          {za::Keyboard::Scan::U},
+          {za::Keyboard::Scan::I},
+          {za::Keyboard::Scan::O},
+          {za::Keyboard::Scan::P},
+          {za::Keyboard::Scan::LBracket},
+          {za::Keyboard::Scan::RBracket},
+          {za::Keyboard::Scan::Backslash, {1.5, 1}, 0.5},
+          {za::Keyboard::Scan::Delete},
+          {za::Keyboard::Scan::End},
+          {za::Keyboard::Scan::PageDown, 0.5},
+          {za::Keyboard::Scan::Numpad7},
+          {za::Keyboard::Scan::Numpad8},
+          {za::Keyboard::Scan::Numpad9},
+          {za::Keyboard::Scan::NumpadPlus}}},
+        {{{za::Keyboard::Scan::CapsLock, {1.75, 1}},
+          {za::Keyboard::Scan::A},
+          {za::Keyboard::Scan::S},
+          {za::Keyboard::Scan::D},
+          {za::Keyboard::Scan::F},
+          {za::Keyboard::Scan::G},
+          {za::Keyboard::Scan::H},
+          {za::Keyboard::Scan::J},
+          {za::Keyboard::Scan::K},
+          {za::Keyboard::Scan::L},
+          {za::Keyboard::Scan::Semicolon},
+          {za::Keyboard::Scan::Apostrophe},
+          {za::Keyboard::Scan::Enter, {2.25, 1}, 4},
+          {za::Keyboard::Scan::Numpad4},
+          {za::Keyboard::Scan::Numpad5},
+          {za::Keyboard::Scan::Numpad6},
+          {za::Keyboard::Scan::NumpadEqual}}},
+        {{{za::Keyboard::Scan::LShift, {1.25, 1}},
+          {za::Keyboard::Scan::NonUsBackslash},
+          {za::Keyboard::Scan::Z},
+          {za::Keyboard::Scan::X},
+          {za::Keyboard::Scan::C},
+          {za::Keyboard::Scan::V},
+          {za::Keyboard::Scan::B},
+          {za::Keyboard::Scan::N},
+          {za::Keyboard::Scan::M},
+          {za::Keyboard::Scan::Comma},
+          {za::Keyboard::Scan::Period},
+          {za::Keyboard::Scan::Slash},
+          {za::Keyboard::Scan::RShift, {2.75, 1}, 1.5},
+          {za::Keyboard::Scan::Up, 1.5},
+          {za::Keyboard::Scan::Numpad1},
+          {za::Keyboard::Scan::Numpad2},
+          {za::Keyboard::Scan::Numpad3},
+          {za::Keyboard::Scan::NumpadEnter, {1, 2}}}},
+        {{{za::Keyboard::Scan::LControl, {1.5, 1}},
+          {za::Keyboard::Scan::LSystem, {1.25, 1}},
+          {za::Keyboard::Scan::LAlt, {1.5, 1}},
+          {za::Keyboard::Scan::Space, {5.75, 1}},
+          {za::Keyboard::Scan::RAlt, {1.25, 1}},
+          {za::Keyboard::Scan::RSystem, {1.25, 1}},
+          {za::Keyboard::Scan::Menu, {1.25, 1}},
+          {za::Keyboard::Scan::RControl, {1.25, 1}, 0.5},
+          {za::Keyboard::Scan::Left},
+          {za::Keyboard::Scan::Down},
+          {za::Keyboard::Scan::Right, 0.5},
+          {za::Keyboard::Scan::Numpad0, {2, 1}},
+          {za::Keyboard::Scan::NumpadDecimal}},
          0.5},
-        {{{sf::Keyboard::Scan::F13},
-          {sf::Keyboard::Scan::F14},
-          {sf::Keyboard::Scan::F15},
-          {sf::Keyboard::Scan::F16},
-          {sf::Keyboard::Scan::F17},
-          {sf::Keyboard::Scan::F18},
-          {sf::Keyboard::Scan::F19},
-          {sf::Keyboard::Scan::F20},
-          {sf::Keyboard::Scan::F21},
-          {sf::Keyboard::Scan::F22},
-          {sf::Keyboard::Scan::F23},
-          {sf::Keyboard::Scan::F24}}},
-        {{{sf::Keyboard::Scan::Application},
-          {sf::Keyboard::Scan::Execute},
-          {sf::Keyboard::Scan::ModeChange},
-          {sf::Keyboard::Scan::Help},
-          {sf::Keyboard::Scan::Select},
-          {sf::Keyboard::Scan::Redo},
-          {sf::Keyboard::Scan::Undo},
-          {sf::Keyboard::Scan::Cut},
-          {sf::Keyboard::Scan::Copy},
-          {sf::Keyboard::Scan::Paste},
-          {sf::Keyboard::Scan::VolumeMute},
-          {sf::Keyboard::Scan::VolumeUp},
-          {sf::Keyboard::Scan::VolumeDown},
-          {sf::Keyboard::Scan::MediaPlayPause},
-          {sf::Keyboard::Scan::MediaStop},
-          {sf::Keyboard::Scan::MediaNextTrack},
-          {sf::Keyboard::Scan::MediaPreviousTrack}}},
-        {{{sf::Keyboard::Scan::Back},
-          {sf::Keyboard::Scan::Forward},
-          {sf::Keyboard::Scan::Refresh},
-          {sf::Keyboard::Scan::Stop},
-          {sf::Keyboard::Scan::Search},
-          {sf::Keyboard::Scan::Favorites},
-          {sf::Keyboard::Scan::HomePage},
-          {sf::Keyboard::Scan::LaunchMediaSelect}}},
+        {{{za::Keyboard::Scan::F13},
+          {za::Keyboard::Scan::F14},
+          {za::Keyboard::Scan::F15},
+          {za::Keyboard::Scan::F16},
+          {za::Keyboard::Scan::F17},
+          {za::Keyboard::Scan::F18},
+          {za::Keyboard::Scan::F19},
+          {za::Keyboard::Scan::F20},
+          {za::Keyboard::Scan::F21},
+          {za::Keyboard::Scan::F22},
+          {za::Keyboard::Scan::F23},
+          {za::Keyboard::Scan::F24}}},
+        {{{za::Keyboard::Scan::Application},
+          {za::Keyboard::Scan::Execute},
+          {za::Keyboard::Scan::ModeChange},
+          {za::Keyboard::Scan::Help},
+          {za::Keyboard::Scan::Select},
+          {za::Keyboard::Scan::Redo},
+          {za::Keyboard::Scan::Undo},
+          {za::Keyboard::Scan::Cut},
+          {za::Keyboard::Scan::Copy},
+          {za::Keyboard::Scan::Paste},
+          {za::Keyboard::Scan::VolumeMute},
+          {za::Keyboard::Scan::VolumeUp},
+          {za::Keyboard::Scan::VolumeDown},
+          {za::Keyboard::Scan::MediaPlayPause},
+          {za::Keyboard::Scan::MediaStop},
+          {za::Keyboard::Scan::MediaNextTrack},
+          {za::Keyboard::Scan::MediaPreviousTrack}}},
+        {{{za::Keyboard::Scan::Back},
+          {za::Keyboard::Scan::Forward},
+          {za::Keyboard::Scan::Refresh},
+          {za::Keyboard::Scan::Stop},
+          {za::Keyboard::Scan::Search},
+          {za::Keyboard::Scan::Favorites},
+          {za::Keyboard::Scan::HomePage},
+          {za::Keyboard::Scan::LaunchMediaSelect}}},
     }};
 
-    sf::base::Vector<sf::Vertex>                        m_triangles{sf::Keyboard::ScancodeCount * 6};
-    sf::base::Vector<sf::Text>                          m_labels;
-    sf::base::Array<float, sf::Keyboard::ScancodeCount> m_moveFactors{};
+    zb::Vector<za::Vertex>                        m_triangles{za::Keyboard::ScancodeCount * 6};
+    zb::Vector<za::Text>                          m_labels;
+    zb::Array<float, za::Keyboard::ScancodeCount> m_moveFactors{};
 };
 
 
 ////////////////////////////////////////////////////////////
 // Text with fading opacity outline
 ////////////////////////////////////////////////////////////
-class ShinyText : public sf::Text
+class ShinyText : public za::Text
 {
 public:
-    using sf::Text::Text;
+    using za::Text::Text;
 
     // Start the outline animation
-    void shine(sf::Color color = sf::Color::Yellow)
+    void shine(za::Color color = za::Color::Yellow)
     {
         setOutlineColor(color);
         m_remaining = duration;
     }
 
     // Fade out ouline
-    void update(sf::Time frameTime)
+    void update(za::Time frameTime)
     {
         const float ratio = m_remaining / duration;
-        const float alpha = sf::base::max(0.f, ratio * (2.f - ratio)) * 0.5f;
+        const float alpha = zb::max(0.f, ratio * (2.f - ratio)) * 0.5f;
 
-        sf::Color color = getOutlineColor();
-        color.a         = static_cast<sf::base::U8>(255 * alpha);
+        za::Color color = getOutlineColor();
+        color.a         = static_cast<zb::U8>(255 * alpha);
         setOutlineColor(color);
 
-        if (m_remaining > sf::Time{})
+        if (m_remaining > za::Time{})
             m_remaining -= frameTime;
     }
 
 private:
-    static constexpr sf::Time duration = sf::milliseconds(150);
-    sf::Time                  m_remaining;
+    static constexpr za::Time duration = za::milliseconds(150);
+    za::Time                  m_remaining;
 };
 
 
@@ -971,12 +971,12 @@ constexpr unsigned int textSize = 18u;
 constexpr unsigned int space    = 2u;
 constexpr unsigned int lineSize = textSize + space;
 
-float getSpacingFactor(const sf::Font& font)
+float getSpacingFactor(const za::Font& font)
 {
     return static_cast<float>(lineSize) / font.getLineSpacing(textSize);
 }
 
-ShinyText makeShinyText(const sf::Font& font, const sf::Utf8String& string, sf::Vec2f position)
+ShinyText makeShinyText(const za::Font& font, const za::Utf8String& string, za::Vec2f position)
 {
     ShinyText text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
@@ -986,9 +986,9 @@ ShinyText makeShinyText(const sf::Font& font, const sf::Utf8String& string, sf::
     return text;
 }
 
-sf::Text makeText(const sf::Font& font, const sf::Utf8String& string, sf::Vec2f position)
+za::Text makeText(const za::Font& font, const za::Utf8String& string, za::Vec2f position)
 {
-    sf::Text text(font, {.string = string, .characterSize = textSize});
+    za::Text text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
     text.position = position;
 
@@ -1003,15 +1003,15 @@ sf::Text makeText(const sf::Font& font, const sf::Utf8String& string, sf::Vec2f 
 template <typename KeyEventType>
 bool somethingIsOdd(const KeyEventType& keyEvent)
 {
-    return keyEvent.code == sf::Keyboard::Key::Unknown || keyEvent.scancode == sf::Keyboard::Scan::Unknown ||
-           sf::Keyboard::getDescription(keyEvent.scancode) == "" ||
-           sf::Keyboard::localize(keyEvent.scancode) != keyEvent.code ||
-           sf::Keyboard::delocalize(keyEvent.code) != keyEvent.scancode;
+    return keyEvent.code == za::Keyboard::Key::Unknown || keyEvent.scancode == za::Keyboard::Scan::Unknown ||
+           za::Keyboard::getDescription(keyEvent.scancode) == "" ||
+           za::Keyboard::localize(keyEvent.scancode) != keyEvent.code ||
+           za::Keyboard::delocalize(keyEvent.code) != keyEvent.scancode;
 }
 
 // Append information to string about a keyboard event
 template <typename KeyEventType>
-sf::Utf8String keyEventDescription(sf::Utf8String text, const KeyEventType& keyEvent)
+za::Utf8String keyEventDescription(za::Utf8String text, const KeyEventType& keyEvent)
 {
     text += "\n\n";
     text += keyIdentifier(keyEvent.code);
@@ -1020,22 +1020,22 @@ sf::Utf8String keyEventDescription(sf::Utf8String text, const KeyEventType& keyE
     if (somethingIsOdd(keyEvent))
     {
         text += "\nLocalized:\t";
-        text += keyIdentifier(sf::Keyboard::localize(keyEvent.scancode));
+        text += keyIdentifier(za::Keyboard::localize(keyEvent.scancode));
         text += "\nDelocalized:\t";
-        text += scancodeIdentifier(sf::Keyboard::delocalize(keyEvent.code));
+        text += scancodeIdentifier(za::Keyboard::delocalize(keyEvent.code));
     }
 
     return text;
 }
 
 // Make a string describing a text event
-sf::Utf8String textEventDescription(const sf::Event::TextEntered& textEntered)
+za::Utf8String textEventDescription(const za::Event::TextEntered& textEntered)
 {
-    sf::Utf8String text = "Text Entered\n\n";
+    za::Utf8String text = "Text Entered\n\n";
     text += textEntered.unicode;
     text += "\nU+";
 
-    (void)sf::base::fmtTo(text, "{:0>4x}", static_cast<sf::base::U32>(textEntered.unicode));
+    (void)zb::fmtTo(text, "{:0>4x}", static_cast<zb::U32>(textEntered.unicode));
 
     return text;
 }
@@ -1050,14 +1050,14 @@ sf::Utf8String textEventDescription(const sf::Event::TextEntered& textEntered)
 int main()
 {
     // Create an audio context and get the default playback device
-    auto               audioContext = sf::AudioContext::create().value();
-    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    auto               audioContext = za::AudioContext::create().value();
+    za::PlaybackDevice playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Create the main window
-    constexpr sf::Vec2f windowSize{1280.f, 720.f};
+    constexpr za::Vec2f windowSize{1280.f, 720.f};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -1072,17 +1072,17 @@ int main()
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     // Load sound buffers
-    const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
-    const auto pressedSoundBuffer  = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouseclick1.ogg").value();
-    const auto releasedSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouserelease1.ogg").value();
+    const auto errorSoundBuffer    = za::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
+    const auto pressedSoundBuffer  = za::SoundBuffer::loadFromFile(resourcesDir() / "mouseclick1.ogg").value();
+    const auto releasedSoundBuffer = za::SoundBuffer::loadFromFile(resourcesDir() / "mouserelease1.ogg").value();
 
     // Create sound objects to play them upon keyboard events
-    sf::Sound errorSound(playbackDevice, errorSoundBuffer);
-    sf::Sound pressedSound(playbackDevice, pressedSoundBuffer);
-    sf::Sound releasedSound(playbackDevice, releasedSoundBuffer);
+    za::Sound errorSound(playbackDevice, errorSoundBuffer);
+    za::Sound pressedSound(playbackDevice, pressedSoundBuffer);
+    za::Sound releasedSound(playbackDevice, releasedSoundBuffer);
 
     // Open the font used for all texts
-    const auto font = sf::Font::openFromFile(resourcesDir() / "Tuffy.ttf").value();
+    const auto font = za::Font::openFromFile(resourcesDir() / "Tuffy.ttf").value();
 
     // Create object to display all scancodes descriptions, related events and real-time state
     KeyboardView keyboardView(font);
@@ -1092,51 +1092,51 @@ int main()
     ShinyText keyPressedText(makeShinyText(font, "Key Pressed", {16, 575}));
     ShinyText keyReleasedText(makeShinyText(font, "Key Released", {300, 575}));
     ShinyText textEnteredText(makeShinyText(font, "Text Entered", {600, 575}));
-    sf::Text  keyPressedCheckText(makeText(font, "", {900, 575}));
+    za::Text  keyPressedCheckText(makeText(font, "", {900, 575}));
 
-    sf::Clock clock;
+    za::Clock clock;
     while (true)
     {
         // Handle events
-        while (sf::base::Optional event = window.pollEvent())
+        while (zb::Optional event = window.pollEvent())
         {
             // Window closed: exit
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
             // Key events: update text and play sound
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            if (const auto* keyPressed = event->getIf<za::Event::KeyPressed>())
             {
                 keyPressedText.setString(keyEventDescription("Key Pressed", *keyPressed));
                 if (somethingIsOdd(*keyPressed))
                 {
-                    keyPressedText.shine(sf::Color::Red);
+                    keyPressedText.shine(za::Color::Red);
                     errorSound.play();
                 }
                 else
                 {
-                    keyPressedText.shine(sf::Color::Green);
+                    keyPressedText.shine(za::Color::Green);
                     pressedSound.play();
                 }
             }
-            if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
+            if (const auto* keyReleased = event->getIf<za::Event::KeyReleased>())
             {
                 keyReleasedText.setString(keyEventDescription("Key Released", *keyReleased));
                 if (somethingIsOdd(*keyReleased))
                 {
-                    keyReleasedText.shine(sf::Color::Red);
+                    keyReleasedText.shine(za::Color::Red);
                     errorSound.play();
                 }
                 else
                 {
-                    keyReleasedText.shine(sf::Color::Green);
+                    keyReleasedText.shine(za::Color::Green);
                     releasedSound.play();
                 }
             }
-            if (const auto* textEntered = event->getIf<sf::Event::TextEntered>())
+            if (const auto* textEntered = event->getIf<za::Event::TextEntered>())
             {
                 textEnteredText.setString(textEventDescription(*textEntered));
                 textEnteredText.shine();
@@ -1147,17 +1147,17 @@ int main()
         }
 
         // Update animations and displayed keyboard real-time state
-        const sf::Time frameTime = clock.restart();
+        const za::Time frameTime = clock.restart();
         keyboardView.update(frameTime);
         keyPressedText.update(frameTime);
         keyReleasedText.update(frameTime);
         textEnteredText.update(frameTime);
         {
-            sf::Utf8String text = "isKeyPressed(sf::Keyboard::Key)\n\n";
-            for (sf::base::SizeT keyIndex = 0u; keyIndex < sf::Keyboard::KeyCount; ++keyIndex)
+            za::Utf8String text = "isKeyPressed(za::Keyboard::Key)\n\n";
+            for (zb::SizeT keyIndex = 0u; keyIndex < za::Keyboard::KeyCount; ++keyIndex)
             {
-                const auto key = static_cast<sf::Keyboard::Key>(keyIndex);
-                if (sf::Keyboard::isKeyPressed(key))
+                const auto key = static_cast<za::Keyboard::Key>(keyIndex);
+                if (za::Keyboard::isKeyPressed(key))
                 {
                     text += keyIdentifier(key);
                     text += "\n";

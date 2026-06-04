@@ -18,7 +18,7 @@ script_dir="$(cd "$(dirname "$0")" && pwd)"
 export LSAN_OPTIONS="${LSAN_OPTIONS:+$LSAN_OPTIONS:}suppressions=$script_dir/lsan_suppressions.txt"
 export ASAN_SYMBOLIZER_PATH="/opt/emscripten-llvm/bin/llvm-symbolizer"
 
-target="test-sfml-graphics"
+target="test-zancle-graphics"
 
 ninja "$target" || exit 1
 

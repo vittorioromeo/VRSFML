@@ -4,17 +4,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
 
 
 namespace tsurv
 {
 /////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::String wrapText(const sf::base::StringView text, const sf::base::SizeT maxLineLength)
+[[nodiscard]] inline zb::String wrapText(const zb::StringView text, const zb::SizeT maxLineLength)
 {
-    sf::base::String result; // Use a single local variable for NRVO
+    zb::String result; // Use a single local variable for NRVO
 
     // Handle trivial cases
     if (text.empty() || maxLineLength == 0)
@@ -22,31 +22,31 @@ namespace tsurv
 
     result.reserve(text.size());
 
-    sf::base::String currentLine;
-    sf::base::SizeT  currentPos = 0;
+    zb::String currentLine;
+    zb::SizeT  currentPos = 0;
 
     // Define our whitespace characters
-    constexpr sf::base::StringView whitespace = " \t\n\r";
+    constexpr zb::StringView whitespace = " \t\n\r";
 
     while (currentPos < text.size())
     {
         // 1. Find the start of the next word (skip leading whitespace)
-        const sf::base::SizeT wordStart = text.findFirstNotOf(whitespace, currentPos);
+        const zb::SizeT wordStart = text.findFirstNotOf(whitespace, currentPos);
 
         // If no more words are found, we're done
-        if (wordStart == sf::base::StringView::nPos)
+        if (wordStart == zb::StringView::nPos)
             break;
 
         // 2. Find the end of the word
-        sf::base::SizeT wordEnd = text.findFirstOf(whitespace, wordStart);
-        if (wordEnd == sf::base::StringView::nPos)
+        zb::SizeT wordEnd = text.findFirstOf(whitespace, wordStart);
+        if (wordEnd == zb::StringView::nPos)
         {
             // This is the last word, so it extends to the end of the text
             wordEnd = text.size();
         }
 
         // 3. Extract the word as a string_view (no copy made here)
-        const sf::base::StringView word = text.substrByPosLen(wordStart, wordEnd - wordStart);
+        const zb::StringView word = text.substrByPosLen(wordStart, wordEnd - wordStart);
 
         // 4. Decide where to place the word
         if (currentLine.empty())

@@ -1,18 +1,18 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/Window.hpp"
-#include "SFML/Window/iOS/SFAppDelegate.hpp"
+#include "Zancle/Window/InputImpl.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/Window.hpp"
+#include "Zancle/Window/iOS/SFAppDelegate.hpp"
 
-#include "SFML/System/Err.hpp"
+#include "Zancle/System/Err.hpp"
 
 
-namespace sf::priv::InputImpl
+namespace za::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
 bool isKeyPressed(Keyboard::Key /* key */)
@@ -117,4 +117,4 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& /* relativeTo *
     return getTouchPosition(finger);
 }
 
-} // namespace sf::priv::InputImpl
+} // namespace za::priv::InputImpl

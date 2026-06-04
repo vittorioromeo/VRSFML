@@ -8,7 +8,7 @@ if(ARCH_X64)
     set(MESA3D_ARCH "x64")
 elseif(ARCH_X86)
     set(MESA3D_ARCH "x86")
-elseif(SFML_USE_MESA3D)
+elseif(ZA_USE_MESA3D)
     message(FATAL_ERROR "Mesa 3D does currently not support the target architecture.")
 endif()
 
@@ -17,13 +17,13 @@ set(MESA3D_ARCH_PATH "${PROJECT_BINARY_DIR}/${MESA3D_ARCHIVE_DIRECTORY}/${MESA3D
 
 # we support automatically installing and uninstalling the necessary files
 
-# if SFML_USE_MESA3D is set and true during configuration, we add custom commands to
+# if ZA_USE_MESA3D is set and true during configuration, we add custom commands to
 # automatically copy over the necessary files whenever an executable/test target is built
 
-# if SFML_USE_MESA3D is not set or false but the Mesa 3D directory is present, use its file list to
+# if ZA_USE_MESA3D is not set or false but the Mesa 3D directory is present, use its file list to
 # remove any files that were previously copied into ${PROJECT_BINARY_DIR}/bin and subdirectories
 
-if(SFML_OS_WINDOWS AND SFML_USE_MESA3D)
+if(ZA_OS_WINDOWS AND ZA_USE_MESA3D)
     # we are installing the files
 
     # if the Mesa 3D directory is not yet present, download and extract the
@@ -61,7 +61,7 @@ if(SFML_OS_WINDOWS AND SFML_USE_MESA3D)
     add_custom_target(install-mesa3d DEPENDS ${MESA3D_INSTALLED_FILES})
 
     set_target_properties(install-mesa3d PROPERTIES EXCLUDE_FROM_ALL ON)
-elseif(SFML_OS_WINDOWS AND MESA3D_ARCH AND EXISTS "${MESA3D_ARCH_PATH}")
+elseif(ZA_OS_WINDOWS AND MESA3D_ARCH AND EXISTS "${MESA3D_ARCH_PATH}")
     # we are removing the files
 
     # compile a list of file names that we have to remove

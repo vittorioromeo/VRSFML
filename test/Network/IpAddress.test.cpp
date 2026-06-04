@@ -2,81 +2,81 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Network/IpAddress.hpp"
+#include "Zancle/Network/IpAddress.hpp"
 
-#include "SFML/Network/IpAddressUtils.hpp"
+#include "Zancle/Network/IpAddressUtils.hpp"
 
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-
-using namespace sf::base::literals;
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-TEST_CASE("[Network] sf::IpAddress")
+using namespace zb::literals;
+
+
+TEST_CASE("[Network] za::IpAddress")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::IpAddress));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::IpAddress));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::IpAddress));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::IpAddress));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::IpAddress));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::IpAddress));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::IpAddress));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::IpAddress));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::IpAddress));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::IpAddress));
     }
 
     SECTION("Construction")
     {
         SECTION("_static 'create' function")
         {
-            const auto ipAddress = sf::IpAddressUtils::resolve("203.0.113.2"_sv);
+            const auto ipAddress = za::IpAddressUtils::resolve("203.0.113.2"_sv);
             REQUIRE(ipAddress.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*ipAddress) == "203.0.113.2"_s);
+            CHECK(za::IpAddressUtils::toString(*ipAddress) == "203.0.113.2"_s);
             CHECK(ipAddress->toInteger() == 0xCB'00'71'02);
-            CHECK(*ipAddress != sf::IpAddress::Any);
-            CHECK(*ipAddress != sf::IpAddress::Broadcast);
-            CHECK(*ipAddress != sf::IpAddress::LocalHost);
+            CHECK(*ipAddress != za::IpAddress::Any);
+            CHECK(*ipAddress != za::IpAddress::Broadcast);
+            CHECK(*ipAddress != za::IpAddress::LocalHost);
 
-            const auto broadcast = sf::IpAddressUtils::resolve("255.255.255.255"_sv);
+            const auto broadcast = za::IpAddressUtils::resolve("255.255.255.255"_sv);
             REQUIRE(broadcast.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*broadcast) == "255.255.255.255"_s);
+            CHECK(za::IpAddressUtils::toString(*broadcast) == "255.255.255.255"_s);
             CHECK(broadcast->toInteger() == 0xFF'FF'FF'FF);
-            CHECK(*broadcast == sf::IpAddress::Broadcast);
+            CHECK(*broadcast == za::IpAddress::Broadcast);
 
-            const auto any = sf::IpAddressUtils::resolve("0.0.0.0"_sv);
+            const auto any = za::IpAddressUtils::resolve("0.0.0.0"_sv);
             REQUIRE(any.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*any) == "0.0.0.0"_s);
+            CHECK(za::IpAddressUtils::toString(*any) == "0.0.0.0"_s);
             CHECK(any->toInteger() == 0x00'00'00'00);
-            CHECK(*any == sf::IpAddress::Any);
+            CHECK(*any == za::IpAddress::Any);
 
-            const auto localHost = sf::IpAddressUtils::resolve("localhost"_s);
+            const auto localHost = za::IpAddressUtils::resolve("localhost"_s);
             REQUIRE(localHost.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*localHost) == "127.0.0.1"_s);
+            CHECK(za::IpAddressUtils::toString(*localHost) == "127.0.0.1"_s);
             CHECK(localHost->toInteger() == 0x7F'00'00'01);
-            CHECK(*localHost == sf::IpAddress::LocalHost);
+            CHECK(*localHost == za::IpAddress::LocalHost);
 
-            CHECK(!sf::IpAddressUtils::resolve("255.255.255.256"_s).hasValue());
-            CHECK(!sf::IpAddressUtils::resolve("").hasValue());
+            CHECK(!za::IpAddressUtils::resolve("255.255.255.256"_s).hasValue());
+            CHECK(!za::IpAddressUtils::resolve("").hasValue());
         }
 
         SECTION("Byte constructor")
         {
-            const sf::IpAddress ipAddress(198, 51, 100, 234);
-            CHECK(sf::IpAddressUtils::toString(ipAddress) == "198.51.100.234"_s);
+            const za::IpAddress ipAddress(198, 51, 100, 234);
+            CHECK(za::IpAddressUtils::toString(ipAddress) == "198.51.100.234"_s);
             CHECK(ipAddress.toInteger() == 0xC6'33'64'EA);
         }
 
         SECTION("_sf::base::U32 constructor")
         {
-            const sf::IpAddress ipAddress(0xCB'00'71'9A);
-            CHECK(sf::IpAddressUtils::toString(ipAddress) == "203.0.113.154"_s);
+            const za::IpAddress ipAddress(0xCB'00'71'9A);
+            CHECK(za::IpAddressUtils::toString(ipAddress) == "203.0.113.154"_s);
             CHECK(ipAddress.toInteger() == 0xCB'00'71'9A);
         }
     }
@@ -89,18 +89,18 @@ TEST_CASE("[Network] sf::IpAddress")
         // tests offline as well.
         (void)([]
         {
-            const sf::base::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getLocalAddress();
+            const zb::Optional<za::IpAddress> ipAddress = za::IpAddress::getLocalAddress();
             REQUIRE(ipAddress.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
+            CHECK(za::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
             CHECK(ipAddress->toInteger() != 0);
         });
 
         (void)([]
         {
-            const sf::base::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
+            const zb::Optional<za::IpAddress> ipAddress = za::IpAddress::getPublicAddress(za::milliseconds(250));
             if (ipAddress.hasValue())
             {
-                CHECK(sf::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
+                CHECK(za::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
                 CHECK(ipAddress->toInteger() != 0);
             }
         });
@@ -108,74 +108,74 @@ TEST_CASE("[Network] sf::IpAddress")
 
     SECTION("Static constants")
     {
-        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::Any) == "0.0.0.0"_s);
-        CHECK(sf::IpAddress::Any.toInteger() == 0);
+        CHECK(za::IpAddressUtils::toString(za::IpAddress::Any) == "0.0.0.0"_s);
+        CHECK(za::IpAddress::Any.toInteger() == 0);
 
-        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::LocalHost) == "127.0.0.1"_s);
-        CHECK(sf::IpAddress::LocalHost.toInteger() == 0x7F'00'00'01);
+        CHECK(za::IpAddressUtils::toString(za::IpAddress::LocalHost) == "127.0.0.1"_s);
+        CHECK(za::IpAddress::LocalHost.toInteger() == 0x7F'00'00'01);
 
-        CHECK(sf::IpAddressUtils::toString(sf::IpAddress::Broadcast) == "255.255.255.255"_s);
-        CHECK(sf::IpAddress::Broadcast.toInteger() == 0xFF'FF'FF'FF);
+        CHECK(za::IpAddressUtils::toString(za::IpAddress::Broadcast) == "255.255.255.255"_s);
+        CHECK(za::IpAddress::Broadcast.toInteger() == 0xFF'FF'FF'FF);
     }
 
     SECTION("Operators")
     {
         SECTION("operator==")
         {
-            CHECK(sf::IpAddress(0xC6, 0x33, 0x64, 0x7B) == sf::IpAddress(0xC6'33'64'7B));
-            CHECK(sf::IpAddress(0xCB'00'71'D2) == sf::IpAddress(203, 0, 113, 210));
+            CHECK(za::IpAddress(0xC6, 0x33, 0x64, 0x7B) == za::IpAddress(0xC6'33'64'7B));
+            CHECK(za::IpAddress(0xCB'00'71'D2) == za::IpAddress(203, 0, 113, 210));
         }
 
         SECTION("operator!=")
         {
-            CHECK(sf::IpAddress(0x12'34'43'21) != sf::IpAddress(1234));
-            CHECK(sf::IpAddress(198, 51, 100, 1) != sf::IpAddress(198, 51, 100, 11));
+            CHECK(za::IpAddress(0x12'34'43'21) != za::IpAddress(1234));
+            CHECK(za::IpAddress(198, 51, 100, 1) != za::IpAddress(198, 51, 100, 11));
         }
 
         SECTION("operator<")
         {
-            CHECK(sf::IpAddress(1) < sf::IpAddress(2));
-            CHECK(sf::IpAddress(0, 0, 0, 0) < sf::IpAddress(1, 0, 0, 0));
-            CHECK(sf::IpAddress(0, 1, 0, 0) < sf::IpAddress(1, 0, 0, 0));
-            CHECK(sf::IpAddress(0, 0, 1, 0) < sf::IpAddress(0, 1, 0, 0));
-            CHECK(sf::IpAddress(0, 0, 0, 1) < sf::IpAddress(0, 0, 1, 0));
-            CHECK(sf::IpAddress(0, 0, 0, 1) < sf::IpAddress(1, 0, 0, 1));
+            CHECK(za::IpAddress(1) < za::IpAddress(2));
+            CHECK(za::IpAddress(0, 0, 0, 0) < za::IpAddress(1, 0, 0, 0));
+            CHECK(za::IpAddress(0, 1, 0, 0) < za::IpAddress(1, 0, 0, 0));
+            CHECK(za::IpAddress(0, 0, 1, 0) < za::IpAddress(0, 1, 0, 0));
+            CHECK(za::IpAddress(0, 0, 0, 1) < za::IpAddress(0, 0, 1, 0));
+            CHECK(za::IpAddress(0, 0, 0, 1) < za::IpAddress(1, 0, 0, 1));
         }
 
         SECTION("operator>")
         {
-            CHECK(sf::IpAddress(2) > sf::IpAddress(1));
-            CHECK(sf::IpAddress(1, 0, 0, 0) > sf::IpAddress(0, 0, 0, 0));
-            CHECK(sf::IpAddress(1, 0, 0, 0) > sf::IpAddress(0, 1, 0, 0));
-            CHECK(sf::IpAddress(0, 1, 0, 0) > sf::IpAddress(0, 0, 1, 0));
-            CHECK(sf::IpAddress(0, 0, 1, 0) > sf::IpAddress(0, 0, 0, 1));
-            CHECK(sf::IpAddress(1, 0, 0, 1) > sf::IpAddress(0, 0, 0, 1));
+            CHECK(za::IpAddress(2) > za::IpAddress(1));
+            CHECK(za::IpAddress(1, 0, 0, 0) > za::IpAddress(0, 0, 0, 0));
+            CHECK(za::IpAddress(1, 0, 0, 0) > za::IpAddress(0, 1, 0, 0));
+            CHECK(za::IpAddress(0, 1, 0, 0) > za::IpAddress(0, 0, 1, 0));
+            CHECK(za::IpAddress(0, 0, 1, 0) > za::IpAddress(0, 0, 0, 1));
+            CHECK(za::IpAddress(1, 0, 0, 1) > za::IpAddress(0, 0, 0, 1));
         }
 
         SECTION("operator<=")
         {
-            CHECK(sf::IpAddress(1) <= sf::IpAddress(2));
-            CHECK(sf::IpAddress(0, 0, 0, 0) <= sf::IpAddress(1, 0, 0, 0));
-            CHECK(sf::IpAddress(0, 1, 0, 0) <= sf::IpAddress(1, 0, 0, 0));
-            CHECK(sf::IpAddress(0, 0, 1, 0) <= sf::IpAddress(0, 1, 0, 0));
-            CHECK(sf::IpAddress(0, 0, 0, 1) <= sf::IpAddress(0, 0, 1, 0));
-            CHECK(sf::IpAddress(0, 0, 0, 1) <= sf::IpAddress(1, 0, 0, 1));
+            CHECK(za::IpAddress(1) <= za::IpAddress(2));
+            CHECK(za::IpAddress(0, 0, 0, 0) <= za::IpAddress(1, 0, 0, 0));
+            CHECK(za::IpAddress(0, 1, 0, 0) <= za::IpAddress(1, 0, 0, 0));
+            CHECK(za::IpAddress(0, 0, 1, 0) <= za::IpAddress(0, 1, 0, 0));
+            CHECK(za::IpAddress(0, 0, 0, 1) <= za::IpAddress(0, 0, 1, 0));
+            CHECK(za::IpAddress(0, 0, 0, 1) <= za::IpAddress(1, 0, 0, 1));
 
-            CHECK(sf::IpAddress(0xC6, 0x33, 0x64, 0x7B) <= sf::IpAddress(0xC6'33'64'7B));
-            CHECK(sf::IpAddress(0xCB'00'71'D2) <= sf::IpAddress(203, 0, 113, 210));
+            CHECK(za::IpAddress(0xC6, 0x33, 0x64, 0x7B) <= za::IpAddress(0xC6'33'64'7B));
+            CHECK(za::IpAddress(0xCB'00'71'D2) <= za::IpAddress(203, 0, 113, 210));
         }
 
         SECTION("operator>=")
         {
-            CHECK(sf::IpAddress(2) >= sf::IpAddress(1));
-            CHECK(sf::IpAddress(1, 0, 0, 0) >= sf::IpAddress(0, 0, 0, 0));
-            CHECK(sf::IpAddress(1, 0, 0, 0) >= sf::IpAddress(0, 1, 0, 0));
-            CHECK(sf::IpAddress(0, 1, 0, 0) >= sf::IpAddress(0, 0, 1, 0));
-            CHECK(sf::IpAddress(0, 0, 1, 0) >= sf::IpAddress(0, 0, 0, 1));
-            CHECK(sf::IpAddress(1, 0, 0, 1) >= sf::IpAddress(0, 0, 0, 1));
+            CHECK(za::IpAddress(2) >= za::IpAddress(1));
+            CHECK(za::IpAddress(1, 0, 0, 0) >= za::IpAddress(0, 0, 0, 0));
+            CHECK(za::IpAddress(1, 0, 0, 0) >= za::IpAddress(0, 1, 0, 0));
+            CHECK(za::IpAddress(0, 1, 0, 0) >= za::IpAddress(0, 0, 1, 0));
+            CHECK(za::IpAddress(0, 0, 1, 0) >= za::IpAddress(0, 0, 0, 1));
+            CHECK(za::IpAddress(1, 0, 0, 1) >= za::IpAddress(0, 0, 0, 1));
 
-            CHECK(sf::IpAddress(0xC6, 0x33, 0x64, 0x7B) >= sf::IpAddress(0xC6'33'64'7B));
-            CHECK(sf::IpAddress(0xCB'00'71'D2) >= sf::IpAddress(203, 0, 113, 210));
+            CHECK(za::IpAddress(0xC6, 0x33, 0x64, 0x7B) >= za::IpAddress(0xC6'33'64'7B));
+            CHECK(za::IpAddress(0xCB'00'71'D2) >= za::IpAddress(203, 0, 113, 210));
         }
     }
 }

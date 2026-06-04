@@ -26,28 +26,28 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/FixedFunction.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/ThreadPool.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/FixedFunction.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/ThreadPool.hpp"
+#include "ZancleBase/UniquePtr.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))
@@ -65,7 +65,7 @@ struct SoundManager;
 struct Doll;
 struct Shrine;
 
-namespace sf
+namespace za
 {
 class AudioContext;
 class CPUDrawableBatch;
@@ -87,7 +87,7 @@ struct RenderStates;
 struct Sprite;
 struct TextData;
 struct View;
-} // namespace sf
+} // namespace za
 
 struct BubbleIgnoreFlags;
 struct CloudFrameDrawSettings;
@@ -107,7 +107,7 @@ struct Playthrough;
 struct Profile;
 struct UIState;
 
-using MainRenderTextureVector = sf::base::Vector<sf::RenderTexture>;
+using MainRenderTextureVector = zb::Vector<za::RenderTexture>;
 
 template <typename T>
 struct MainOwnedDeleter
@@ -116,7 +116,7 @@ struct MainOwnedDeleter
 };
 
 template <typename T>
-using MainOwnedPtr = sf::base::UniquePtr<T, MainOwnedDeleter<T>>;
+using MainOwnedPtr = zb::UniquePtr<T, MainOwnedDeleter<T>>;
 
 
 ////////////////////////////////////////////////////////////
@@ -157,16 +157,16 @@ struct Main
 ////////////////////////////////////////////////////////////
 // Audio context and playback device
 #ifndef BUBBLEBYTE_NO_AUDIO
-    MainOwnedPtr<sf::AudioContext>   audioContextStorage;
-    sf::AudioContext&                audioContext;
-    MainOwnedPtr<sf::PlaybackDevice> playbackDeviceStorage;
-    sf::PlaybackDevice&              playbackDevice;
+    MainOwnedPtr<za::AudioContext>   audioContextStorage;
+    za::AudioContext&                audioContext;
+    MainOwnedPtr<za::PlaybackDevice> playbackDeviceStorage;
+    za::PlaybackDevice&              playbackDevice;
 #endif
 
     ////////////////////////////////////////////////////////////
     // Graphics context
-    MainOwnedPtr<sf::GraphicsContext> graphicsContextStorage;
-    sf::GraphicsContext&              graphicsContext;
+    MainOwnedPtr<za::GraphicsContext> graphicsContextStorage;
+    za::GraphicsContext&              graphicsContext;
 
     ////////////////////////////////////////////////////////////
     // Shaders + their uniform locations -- live in `MainShaders`
@@ -193,14 +193,14 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    MainOwnedPtr<sf::Font> fontMouldyCheeseStorage;
-    sf::Font&              fontMouldyCheese;
+    MainOwnedPtr<za::Font> fontMouldyCheeseStorage;
+    za::Font&              fontMouldyCheese;
 
     ////////////////////////////////////////////////////////////
     // Render window
-    [[nodiscard]] sf::RenderWindow makeWindow();
-    MainOwnedPtr<sf::RenderWindow> windowStorage;
-    sf::RenderWindow&              window;
+    [[nodiscard]] za::RenderWindow makeWindow();
+    MainOwnedPtr<za::RenderWindow> windowStorage;
+    za::RenderWindow&              window;
     float                          dpiScalingFactor = 1.f;
 
     ////////////////////////////////////////////////////////////
@@ -219,8 +219,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // ImGui context
-    MainOwnedPtr<sf::ImGuiContext> imGuiContextStorage;
-    sf::ImGuiContext&              imGuiContext;
+    MainOwnedPtr<za::ImGuiContext> imGuiContextStorage;
+    za::ImGuiContext&              imGuiContext;
 
     ////////////////////////////////////////////////////////////
     // Exiting status
@@ -229,13 +229,13 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas
-    MainOwnedPtr<sf::TextureAtlas> textureAtlasStorage;
-    sf::TextureAtlas&              textureAtlas; // TODO P0: make smaller
+    MainOwnedPtr<za::TextureAtlas> textureAtlasStorage;
+    za::TextureAtlas&              textureAtlas; // TODO P0: make smaller
 
     ////////////////////////////////////////////////////////////
     // SFML fonts
-    MainOwnedPtr<sf::Font> fontSuperBakeryStorage;
-    sf::Font&              fontSuperBakery;
+    MainOwnedPtr<za::Font> fontSuperBakeryStorage;
+    za::Font&              fontSuperBakery;
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
@@ -253,7 +253,7 @@ struct Main
 
     const char* lastPlayedMusic = bgmPathNormal; // to avoid restarting the same song
 
-    sf::base::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
+    zb::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
     Countdown       bgmTransition;            // fade in/out timer
 
     MainOwnedPtr<MainBGMStorage> bgmStorage;
@@ -265,45 +265,45 @@ struct Main
 
     MainOwnedPtr<SoundManager> soundManagerStorage;
     SoundManager&              soundManager;
-    MainOwnedPtr<sf::Listener> listenerStorage;
-    sf::Listener&              listener;
+    MainOwnedPtr<za::Listener> listenerStorage;
+    za::Listener&              listener;
 
     ////////////////////////////////////////////////////////////
     // Delayed actions
     struct DelayedAction
     {
         Countdown                            delayCountdown;
-        sf::base::FixedFunction<void(), 128> action;
+        zb::FixedFunction<void(), 128> action;
     };
 
-    sf::base::Vector<DelayedAction> delayedActions;
+    zb::Vector<DelayedAction> delayedActions;
 
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
-    MainOwnedPtr<sf::RenderTexture> rtBackgroundStorage;
-    sf::RenderTexture&              rtBackground;
+    MainOwnedPtr<za::RenderTexture> rtBackgroundStorage;
+    za::RenderTexture&              rtBackground;
 
-    MainOwnedPtr<sf::RenderTexture> rtBackgroundProcessedStorage;
-    sf::RenderTexture&              rtBackgroundProcessed;
+    MainOwnedPtr<za::RenderTexture> rtBackgroundProcessedStorage;
+    za::RenderTexture&              rtBackgroundProcessed;
 
-    MainOwnedPtr<sf::RenderTexture> rtImGuiStorage;
-    sf::RenderTexture&              rtImGui;
+    MainOwnedPtr<za::RenderTexture> rtImGuiStorage;
+    za::RenderTexture&              rtImGui;
 
-    MainOwnedPtr<sf::RenderTexture> rtCloudMaskStorage;
-    sf::RenderTexture&              rtCloudMask;
+    MainOwnedPtr<za::RenderTexture> rtCloudMaskStorage;
+    za::RenderTexture&              rtCloudMask;
 
-    MainOwnedPtr<sf::RenderTexture> rtCloudProcessedStorage;
-    sf::RenderTexture&              rtCloudProcessed;
+    MainOwnedPtr<za::RenderTexture> rtCloudProcessedStorage;
+    za::RenderTexture&              rtCloudProcessed;
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    MainOwnedPtr<sf::RenderTexture> rtGameStorage;
-    sf::RenderTexture&              rtGame;
+    MainOwnedPtr<za::RenderTexture> rtGameStorage;
+    za::RenderTexture&              rtGame;
 
     ////////////////////////////////////////////////////////////
     // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
-    static inline constexpr sf::Vec2u       hexedCatRenderTextureSize{640u, 640u};
-    static inline constexpr sf::base::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
+    static inline constexpr za::Vec2u       hexedCatRenderTextureSize{640u, 640u};
+    static inline constexpr zb::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
     MainOwnedPtr<MainRenderTextureVector> hexedCatRenderTexturesStorage;
     MainRenderTextureVector&              hexedCatRenderTextures;
@@ -312,42 +312,42 @@ struct Main
     // Textures (not in atlas)
     MainOwnedPtr<MainTextureStorage> textureStorage;
 
-    sf::Texture& txLogo;
-    sf::Texture& txFixedBg;
-    sf::Texture& txBackgroundChunk;
-    sf::Texture& txBackgroundChunkDesaturated;
-    sf::Texture& txClouds;
-    sf::Texture& txTintedClouds;
-    sf::Texture& txBgSwamp;
-    sf::Texture& txBgObservatory;
-    sf::Texture& txBgAimTraining;
-    sf::Texture& txBgFactory;
-    sf::Texture& txBgWindTunnel;
-    sf::Texture& txBgMagnetosphere;
-    sf::Texture& txBgAuditorium;
-    sf::Texture& txDrawings;
-    sf::Texture& txTipBg;
-    sf::Texture& txTipByte;
-    sf::Texture& txCursor;
-    sf::Texture& txCursorMultipop;
-    sf::Texture& txCursorLaser;
-    sf::Texture& txCursorGrab;
-    sf::Texture& txArrow;
-    sf::Texture& txUnlock;
-    sf::Texture& txPurchasable;
-    sf::Texture& txLetter;
-    sf::Texture& txLetterText;
-    sf::Texture& txFrame;
-    sf::Texture& txFrameTiny;
-    sf::Texture& txCloudBtn;
-    sf::Texture& txCloudBtnSmall;
-    sf::Texture& txCloudBtnSquare;
-    sf::Texture& txCloudBtnSquare2;
+    za::Texture& txLogo;
+    za::Texture& txFixedBg;
+    za::Texture& txBackgroundChunk;
+    za::Texture& txBackgroundChunkDesaturated;
+    za::Texture& txClouds;
+    za::Texture& txTintedClouds;
+    za::Texture& txBgSwamp;
+    za::Texture& txBgObservatory;
+    za::Texture& txBgAimTraining;
+    za::Texture& txBgFactory;
+    za::Texture& txBgWindTunnel;
+    za::Texture& txBgMagnetosphere;
+    za::Texture& txBgAuditorium;
+    za::Texture& txDrawings;
+    za::Texture& txTipBg;
+    za::Texture& txTipByte;
+    za::Texture& txCursor;
+    za::Texture& txCursorMultipop;
+    za::Texture& txCursorLaser;
+    za::Texture& txCursorGrab;
+    za::Texture& txArrow;
+    za::Texture& txUnlock;
+    za::Texture& txPurchasable;
+    za::Texture& txLetter;
+    za::Texture& txLetterText;
+    za::Texture& txFrame;
+    za::Texture& txFrameTiny;
+    za::Texture& txCloudBtn;
+    za::Texture& txCloudBtnSmall;
+    za::Texture& txCloudBtnSquare;
+    za::Texture& txCloudBtnSquare2;
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
-    MainOwnedPtr<sf::TextureAtlas> uiTextureAtlasStorage;
-    sf::TextureAtlas&              uiTextureAtlas;
+    MainOwnedPtr<za::TextureAtlas> uiTextureAtlasStorage;
+    za::TextureAtlas&              uiTextureAtlas;
 
     ////////////////////////////////////////////////////////////
     // Atlas rects + cat animation rect arrays -- live in `MainAtlasRects`
@@ -416,38 +416,38 @@ struct Main
     ////////////////////////////////////////////////////////////
     // HUD money text
     MainOwnedPtr<MainTextStorage> textStorage;
-    sf::Text&                     moneyText;
+    za::Text&                     moneyText;
     TextShakeEffect               moneyTextShakeEffect;
 
     ////////////////////////////////////////////////////////////
     // Combo state
-    static inline constexpr sf::Vec2f moneyTextInitialPosition{10.f, 70.f};
+    static inline constexpr za::Vec2f moneyTextInitialPosition{10.f, 70.f};
     MainOwnedPtr<ComboState>          comboStateStorage;
     ComboState&                       comboState;
 
     ////////////////////////////////////////////////////////////
     // HUD demo text
-    sf::Text& demoText;
+    za::Text& demoText;
 
     ////////////////////////////////////////////////////////////
     // Spatial partitioning
-    sf::base::UniquePtr<SweepAndPrune> sweepAndPrune;
+    zb::UniquePtr<SweepAndPrune> sweepAndPrune;
 
     ////////////////////////////////////////////////////////////
     // Particles
-    sf::base::Vector<Particle>     particles;          // World space
-    sf::base::Vector<TextParticle> textParticles;      // World space
-    sf::base::Vector<Particle>     spentCoinParticles; // HUD space
-    sf::base::Vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
-    sf::base::Vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
+    zb::Vector<Particle>     particles;          // World space
+    zb::Vector<TextParticle> textParticles;      // World space
+    zb::Vector<Particle>     spentCoinParticles; // HUD space
+    zb::Vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
+    zb::Vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
 
     struct EarnedCoinParticle
     {
-        sf::Vec2f startPosition;
+        za::Vec2f startPosition;
         Progress  progress{};
     };
 
-    sf::base::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
+    zb::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
 
     ////////////////////////////////////////////////////////////
     // Combo-bubble payout queue. Each entry holds a swarm of coin particles
@@ -458,20 +458,20 @@ struct Main
     // is spawned at its position to fly to the money text on the HUD.
     struct [[nodiscard]] BurstingComboCoin
     {
-        sf::Vec2f position{};
-        sf::Vec2f velocity{};
+        za::Vec2f position{};
+        za::Vec2f velocity{};
         bool      collected{false};
     };
 
     struct [[nodiscard]] PendingComboBubblePayout
     {
-        sf::base::Vector<BurstingComboCoin> coins;
+        zb::Vector<BurstingComboCoin> coins;
         SizeT                               coinsCollected{0u}; // total collected so far (drives pitch)
         Countdown                           settleCountdown{};  // burst → collect transition
         Countdown                           collectDelay{};
     };
 
-    sf::base::Vector<PendingComboBubblePayout> pendingComboBubblePayouts;
+    zb::Vector<PendingComboBubblePayout> pendingComboBubblePayouts;
 
     ////////////////////////////////////////////////////////////
     // Random number generation
@@ -481,7 +481,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat names
-    sf::base::Vector<sf::base::Vector<sf::base::StringView>> shuffledCatNamesPerType;
+    zb::Vector<zb::Vector<zb::StringView>> shuffledCatNamesPerType;
 
     ////////////////////////////////////////////////////////////
     // Prestige transition
@@ -494,55 +494,55 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Clock and accumulator for played time
-    sf::Clock     playedClock;
-    sf::base::I64 playedUsAccumulator{0};
-    sf::base::I64 autosaveUsAccumulator{0};
-    sf::base::I64 fixedBgSlideAccumulator{0}; // for menu background slide
+    za::Clock     playedClock;
+    zb::I64 playedUsAccumulator{0};
+    zb::I64 autosaveUsAccumulator{0};
+    zb::I64 fixedBgSlideAccumulator{0}; // for menu background slide
     float         fixedBgSlideTarget = 0.f;
     float         fixedBgSlide       = 0.f;
 
     ////////////////////////////////////////////////////////////
     // FPS and delta time clocks
-    sf::Clock fpsClock;
-    sf::Clock deltaClock;
+    za::Clock fpsClock;
+    za::Clock deltaClock;
 
     ////////////////////////////////////////////////////////////
     // Batches for drawing
     MainOwnedPtr<MainDrawableBatches> drawableBatchesStorage;
 
-    sf::CPUDrawableBatch& bubbleDrawableBatch;
-    sf::CPUDrawableBatch& starBubbleDrawableBatch;
-    sf::CPUDrawableBatch& bombBubbleDrawableBatch;
-    sf::CPUDrawableBatch& cpuCloudDrawableBatch;
-    sf::CPUDrawableBatch& cpuTopCloudDrawableBatch;
-    sf::CPUDrawableBatch& cpuCloudHudDrawableBatch;
-    sf::CPUDrawableBatch& cpuCloudUiDrawableBatch;
-    sf::CPUDrawableBatch& cpuDrawableBatchBeforeCats;
-    sf::CPUDrawableBatch& cpuDrawableBatch;
-    sf::CPUDrawableBatch& cpuDrawableBatchAfterCats;
-    sf::CPUDrawableBatch& cpuDrawableBatchAdditive;
-    sf::CPUDrawableBatch& minimapDrawableBatch;
-    sf::CPUDrawableBatch& catTextDrawableBatch;
-    sf::CPUDrawableBatch& hudDrawableBatch;
-    sf::CPUDrawableBatch& hudTopDrawableBatch;     // drawn on top of ImGui
-    sf::CPUDrawableBatch& hudBottomDrawableBatch;  // drawn below ImGui
-    sf::CPUDrawableBatch& cpuTopDrawableBatch;     // drawn on top of ImGui
-    sf::CPUDrawableBatch& catTextTopDrawableBatch; // drawn on top of ImGui
-    sf::CPUDrawableBatch& tempDrawableBatch;       // for misc one-off draws (hexed cat effect)
+    za::CPUDrawableBatch& bubbleDrawableBatch;
+    za::CPUDrawableBatch& starBubbleDrawableBatch;
+    za::CPUDrawableBatch& bombBubbleDrawableBatch;
+    za::CPUDrawableBatch& cpuCloudDrawableBatch;
+    za::CPUDrawableBatch& cpuTopCloudDrawableBatch;
+    za::CPUDrawableBatch& cpuCloudHudDrawableBatch;
+    za::CPUDrawableBatch& cpuCloudUiDrawableBatch;
+    za::CPUDrawableBatch& cpuDrawableBatchBeforeCats;
+    za::CPUDrawableBatch& cpuDrawableBatch;
+    za::CPUDrawableBatch& cpuDrawableBatchAfterCats;
+    za::CPUDrawableBatch& cpuDrawableBatchAdditive;
+    za::CPUDrawableBatch& minimapDrawableBatch;
+    za::CPUDrawableBatch& catTextDrawableBatch;
+    za::CPUDrawableBatch& hudDrawableBatch;
+    za::CPUDrawableBatch& hudTopDrawableBatch;     // drawn on top of ImGui
+    za::CPUDrawableBatch& hudBottomDrawableBatch;  // drawn below ImGui
+    za::CPUDrawableBatch& cpuTopDrawableBatch;     // drawn on top of ImGui
+    za::CPUDrawableBatch& catTextTopDrawableBatch; // drawn on top of ImGui
+    za::CPUDrawableBatch& tempDrawableBatch;       // for misc one-off draws (hexed cat effect)
 
     struct HexedCatDrawCommand // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        sf::base::SizeT renderTextureIndex;
-        sf::Vec2f       position;
+        zb::SizeT renderTextureIndex;
+        za::Vec2f       position;
         float           phaseSeed;
         float           effectStrength;
         bool            top;
     };
 
-    sf::base::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
+    zb::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
 
     ////////////////////////////////////////////////////////////
-    void drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states);
+    void drawBatch(const za::CPUDrawableBatch& batch, const za::RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     // Screen shake effect state
@@ -564,7 +564,7 @@ struct Main
         float bottom;
 
         ////////////////////////////////////////////////////////////
-        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool isInside(const sf::Vec2f point) const noexcept
+        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool isInside(const za::Vec2f point) const noexcept
         {
             return (point.x >= left) && (point.x <= right) && (point.y >= top) && (point.y <= bottom);
         }
@@ -580,21 +580,21 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Tip state
-    sf::base::Optional<TimedCountdown> tipTCByte;
-    sf::base::Optional<TimedCountdown> tipTCBackground;
-    sf::base::Optional<TimedCountdown> tipTCBytePreEnd;
-    sf::base::Optional<TimedCountdown> tipTCByteEnd;
-    sf::base::Optional<TimedCountdown> tipTCBackgroundEnd;
+    zb::Optional<TimedCountdown> tipTCByte;
+    zb::Optional<TimedCountdown> tipTCBackground;
+    zb::Optional<TimedCountdown> tipTCBytePreEnd;
+    zb::Optional<TimedCountdown> tipTCByteEnd;
+    zb::Optional<TimedCountdown> tipTCBackgroundEnd;
     Countdown                          tipCountdownChar;
-    sf::base::String                   tipString;
+    zb::String                   tipString;
     TextEffectWiggle                   tipStringWiggle{0.00175f, 4.f};
-    sf::base::SizeT                    tipCharIdx{0u};
+    zb::SizeT                    tipCharIdx{0u};
 
     ////////////////////////////////////////////////////////////
     // Text buffers
-    sf::Text& textNameBuffer;
-    sf::Text& textStatusBuffer;
-    sf::Text& textMoneyBuffer;
+    za::Text& textNameBuffer;
+    za::Text& textStatusBuffer;
+    za::Text& textMoneyBuffer;
 
     ////////////////////////////////////////////////////////////
     // Spent money count-down effect
@@ -603,24 +603,24 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Thread pool
-    sf::base::ThreadPool threadPool;
+    zb::ThreadPool threadPool;
 
     ////////////////////////////////////////////////////////////
     // Cached views
-    MainOwnedPtr<sf::View> gameViewStorage;
-    sf::View&              gameView; // TODO P1: compute on the fly, don't cache...
+    MainOwnedPtr<za::View> gameViewStorage;
+    za::View&              gameView; // TODO P1: compute on the fly, don't cache...
 
-    MainOwnedPtr<sf::View> nonScaledHUDViewStorage;
-    sf::View&              nonScaledHUDView; // TODO P1: compute on the fly, don't cache...
+    MainOwnedPtr<za::View> nonScaledHUDViewStorage;
+    za::View&              nonScaledHUDView; // TODO P1: compute on the fly, don't cache...
 
-    MainOwnedPtr<sf::View> scaledHUDViewStorage;
-    sf::View&              scaledHUDView; // TODO P1: compute on the fly, don't cache...
+    MainOwnedPtr<za::View> scaledHUDViewStorage;
+    za::View&              scaledHUDView; // TODO P1: compute on the fly, don't cache...
 
     ////////////////////////////////////////////////////////////
     // $ps sampler
     MoneyType      moneyGainedLastSecond{0u};
     Sampler<float> samplerMoneyPerSecond{/* capacity */ 60u};
-    sf::base::I64  moneyGainedUsAccumulator{0};
+    zb::I64  moneyGainedUsAccumulator{0};
 
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
@@ -654,13 +654,13 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Background hue changing based on shrine
-    sf::Angle currentBackgroundHue;
-    sf::Angle targetBackgroundHue;
-    sf::Color outlineHueColor{colorBlueOutline};
+    za::Angle currentBackgroundHue;
+    za::Angle targetBackgroundHue;
+    za::Color outlineHueColor{colorBlueOutline};
 
     ////////////////////////////////////////////////////////////
     // Victory state
-    sf::base::Optional<TimedCountdown> victoryTC;
+    zb::Optional<TimedCountdown> victoryTC;
     Countdown                          cdLetterAppear;
     Countdown                          cdLetterText;
 
@@ -672,22 +672,22 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Logging -- `logFile` is a non-owning view that may be null if
     // the log file failed to open (e.g. read-only filesystem).
-    MainOwnedPtr<sf::OutFile> logFileStorage;
-    sf::OutFile*              logFile;
+    MainOwnedPtr<za::OutFile> logFileStorage;
+    za::OutFile*              logFile;
 
     ////////////////////////////////////////////////////////////
     // Achievement progress tracking
     struct AchievementProgress
     {
-        sf::base::SizeT value;
-        sf::base::SizeT threshold;
+        zb::SizeT value;
+        zb::SizeT threshold;
     };
 
-    sf::base::Array<sf::base::Optional<AchievementProgress>, sf::base::getArraySize(achievementData)> achievementProgress{};
+    zb::Array<zb::Optional<AchievementProgress>, zb::getArraySize(achievementData)> achievementProgress{};
 
     ////////////////////////////////////////////////////////////
     // PP purchase undo
-    sf::base::Vector<sf::base::FixedFunction<void(), 128>> undoPPPurchase;
+    zb::Vector<zb::FixedFunction<void(), 128>> undoPPPurchase;
     Countdown                                              undoPPPurchaseTimer;
 
     ////////////////////////////////////////////////////////////
@@ -706,7 +706,7 @@ struct Main
     void addMoney(MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::base::Vector<sf::base::Vector<sf::base::StringView>> makeShuffledCatNames(RNGFast& rng);
+    [[nodiscard]] static zb::Vector<zb::Vector<zb::StringView>> makeShuffledCatNames(RNGFast& rng);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getTPWorkerCount();
@@ -715,7 +715,7 @@ struct Main
     [[nodiscard]] SizeT getNextCatNameIdx(CatType catType);
 
     ////////////////////////////////////////////////////////////
-    Particle& implEmplaceParticle(sf::Vec2f    position,
+    Particle& implEmplaceParticle(za::Vec2f    position,
                                   ParticleType particleType,
                                   float        scaleMult,
                                   float        speedMult,
@@ -731,17 +731,17 @@ struct Main
     void spawnHUDBottomParticle(const ParticleData& particleData, float hue, ParticleType particleType);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool spawnEarnedCoinParticle(sf::Vec2f startPosition);
+    [[nodiscard]] bool spawnEarnedCoinParticle(za::Vec2f startPosition);
 
     ////////////////////////////////////////////////////////////
     void spawnParticle(const ParticleData& particleData, float hue, ParticleType particleType);
 
     ////////////////////////////////////////////////////////////
     // Definitions in `BubbleIdleMainInline.hpp`
-    void spawnParticles(SizeT n, sf::Vec2f position, auto... args);
-    void spawnParticlesWithHue(float hue, SizeT n, sf::Vec2f position, auto... args);
-    void spawnParticlesNoGravity(SizeT n, sf::Vec2f position, auto... args);
-    void spawnParticlesWithHueNoGravity(float hue, SizeT n, sf::Vec2f position, auto... args);
+    void spawnParticles(SizeT n, za::Vec2f position, auto... args);
+    void spawnParticlesWithHue(float hue, SizeT n, za::Vec2f position, auto... args);
+    void spawnParticlesNoGravity(SizeT n, za::Vec2f position, auto... args);
+    void spawnParticlesWithHueNoGravity(float hue, SizeT n, za::Vec2f position, auto... args);
 
     ////////////////////////////////////////////////////////////
     // Definition in `BubbleIdleMainInline.hpp`
@@ -763,10 +763,10 @@ struct Main
     void statSecondsPlayed();
 
     ////////////////////////////////////////////////////////////
-    void statHighestStarBubblePopCombo(sf::base::U64 comboValue);
+    void statHighestStarBubblePopCombo(zb::U64 comboValue);
 
     ////////////////////////////////////////////////////////////
-    void statHighestNovaBubblePopCombo(sf::base::U64 comboValue);
+    void statHighestNovaBubblePopCombo(zb::U64 comboValue);
 
     ////////////////////////////////////////////////////////////
     void statAbsorbedStarBubble();
@@ -787,38 +787,38 @@ struct Main
     void statRitual(CatType catType);
 
     ////////////////////////////////////////////////////////////
-    void statHighestSimultaneousMaintenances(sf::base::U64 value);
+    void statHighestSimultaneousMaintenances(zb::U64 value);
 
     ////////////////////////////////////////////////////////////
-    void statHighestDPS(sf::base::U64 value);
+    void statHighestDPS(zb::U64 value);
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool keyDown(sf::Keyboard::Key key) const;
+    [[nodiscard]] bool keyDown(za::Keyboard::Key key) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mBtnDown(sf::Mouse::Button button, bool penetrateUI) const;
+    [[nodiscard]] bool mBtnDown(za::Mouse::Button button, bool penetrateUI) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path);
+    [[nodiscard]] za::Rect2f addImgResourceToAtlas(const za::Path& path);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgResourceToUIAtlas(const sf::Path& path);
+    [[nodiscard]] za::Rect2f addImgResourceToUIAtlas(const za::Path& path);
 
     ////////////////////////////////////////////////////////////
-    void playSound(const LoadedSound& ls, sf::base::SizeT maxOverlap = 255u);
+    void playSound(const LoadedSound& ls, zb::SizeT maxOverlap = 255u);
 
     ////////////////////////////////////////////////////////////
     // Definitions in `BubbleIdleMainInline.hpp`
-    void                  forEachBubbleInRadiusSquared(sf::Vec2f center, float radiusSq, auto&& func);
-    void                  forEachBubbleInRadius(sf::Vec2f center, float radius, auto&& func);
-    [[nodiscard]] Bubble* pickRandomBubbleInRadiusMatching(sf::Vec2f center, float radius, auto&& predicate);
+    void                  forEachBubbleInRadiusSquared(za::Vec2f center, float radiusSq, auto&& func);
+    void                  forEachBubbleInRadius(za::Vec2f center, float radius, auto&& func);
+    [[nodiscard]] Bubble* pickRandomBubbleInRadiusMatching(za::Vec2f center, float radius, auto&& predicate);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Bubble* pickRandomBubbleInRadius(sf::Vec2f center, float radius);
+    [[nodiscard]] Bubble* pickRandomBubbleInRadius(za::Vec2f center, float radius);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getResolution() const;
+    [[nodiscard]] za::Vec2f getResolution() const;
 
     ////////////////////////////////////////////////////////////
     // Definitions in `BubbleIdleMainInline.hpp`
@@ -826,37 +826,37 @@ struct Main
     [[nodiscard]] float getComputedRangeByCatTypeOrCopyCat(CatType catType) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getViewCenter() const;
+    [[nodiscard]] za::Vec2f getViewCenter() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getViewCenterWithoutScroll() const;
+    [[nodiscard]] za::Vec2f getViewCenterWithoutScroll() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] CullingBoundaries getViewCullingBoundaries(float offset) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vec2f         getCatRangeCenter(const Cat& cat);
+    [[nodiscard]] static za::Vec2f         getCatRangeCenter(const Cat& cat);
     [[nodiscard]] float                    getWindRepulsionMult() const;
     [[nodiscard]] float                    getWindAttractionMult() const;
     [[nodiscard]] static constexpr CatType shrineTypeToCatType(ShrineType shrineType);
-    [[nodiscard]] sf::Sprite               particleToSprite(const Particle& particle) const;
-    [[nodiscard]] sf::Vec2f                getEdgeSpawnPosition(const sf::Rect2f& bounds, float thickness);
-    [[nodiscard]] sf::Vec2u                getNewResolution() const;
+    [[nodiscard]] za::Sprite               particleToSprite(const Particle& particle) const;
+    [[nodiscard]] za::Vec2f                getEdgeSpawnPosition(const za::Rect2f& bounds, float thickness);
+    [[nodiscard]] za::Vec2u                getNewResolution() const;
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnCat(sf::Vec2f pos, CatType catType, float hue);
+    Cat& spawnCat(za::Vec2f pos, CatType catType, float hue);
 
     ////////////////////////////////////////////////////////////
     Cat& spawnCatCentered(CatType catType, float hue, bool placeInHand = true);
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnSpecialCat(sf::Vec2f pos, CatType catType);
+    Cat& spawnSpecialCat(za::Vec2f pos, CatType catType);
 
     ////////////////////////////////////////////////////////////
     void resetTipState();
 
     ////////////////////////////////////////////////////////////
-    void doTip(const sf::base::String& str, SizeT maxPrestigeLevel = 0u);
+    void doTip(const zb::String& str, SizeT maxPrestigeLevel = 0u);
 
     ////////////////////////////////////////////////////////////
     // Definitions in `BubbleIdleMainInline.hpp`
@@ -864,34 +864,34 @@ struct Main
     [[nodiscard]] bool isDevilcatHellsingedActive() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getAspectRatioScalingFactor(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
+    [[nodiscard]] float getAspectRatioScalingFactor(za::Vec2f originalSize, za::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getCappedGameViewAspectRatio(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
+    [[nodiscard]] float getCappedGameViewAspectRatio(za::Vec2f originalSize, za::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getExpandedGameViewSize(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
+    [[nodiscard]] za::Vec2f getExpandedGameViewSize(za::Vec2f originalSize, za::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledGameView(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
+    [[nodiscard]] za::View createScaledGameView(za::Vec2f originalSize, za::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledTopGameView(sf::Vec2f originalSize, sf::Vec2f windowSize) const;
+    [[nodiscard]] za::View createScaledTopGameView(za::Vec2f originalSize, za::Vec2f windowSize) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getCurrentGameViewSize() const;
+    [[nodiscard]] za::Vec2f getCurrentGameViewSize() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float clampGameViewCenterX(float desiredCenterX, float viewWidth) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View makeScaledHUDView(sf::Vec2f resolution, float scale) const;
+    [[nodiscard]] za::View makeScaledHUDView(za::Vec2f resolution, float scale) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getHUDMousePos() const;
+    [[nodiscard]] za::Vec2f getHUDMousePos() const;
 
     ////////////////////////////////////////////////////////////
-    template <sf::base::SizeT BufferIdx = 0u, typename T>
+    template <zb::SizeT BufferIdx = 0u, typename T>
     static const char* toStringWithSeparators(const T value)
     {
         // Thread-local buffer to store the result
@@ -953,10 +953,10 @@ struct Main
     void                uiBeginTooltip(float width);
     void                uiEndTooltip();
     void                uiMakeTooltip(bool small = false);
-    void                uiMakeShrineOrCatTooltip(sf::Vec2f mousePos);
+    void                uiMakeShrineOrCatTooltip(za::Vec2f mousePos);
 
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] AnimatedButtonOutcome : sf::base::U8
+    enum class [[nodiscard]] AnimatedButtonOutcome : zb::U8
     {
         None,
         Clicked,
@@ -967,22 +967,22 @@ struct Main
 
     struct TabButtonPalette
     {
-        sf::Color idle;
-        sf::Color hovered;
-        sf::Color active;
+        za::Color idle;
+        za::Color hovered;
+        za::Color active;
     };
 
     [[nodiscard]] bool drawTabButton(float                   scaleMult,
                                      const char*             label,
                                      bool                    selected,
                                      const TabButtonPalette& palette,
-                                     sf::Vec2f               size   = {},
+                                     za::Vec2f               size   = {},
                                      bool                    square = false);
 
     [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(
-        const sf::Texture& tx,
+        const za::Texture& tx,
         const char*        label,
-        sf::Vec2f          btnSize,
+        za::Vec2f          btnSize,
         float              fontScale,
         float              fontScaleMult,
         float              btnSizeMult  = 1.f,
@@ -1014,7 +1014,7 @@ struct Main
         const char* currencyFmt);
 
     ////////////////////////////////////////////////////////////
-    void switchToBGM(sf::base::SizeT index, bool force);
+    void switchToBGM(zb::SizeT index, bool force);
 
     ////////////////////////////////////////////////////////////
     static inline constexpr const char* bgmPaths[] = {
@@ -1030,10 +1030,10 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<BGMBuffer>& getCurrentBGMBuffer();
+    zb::Optional<BGMBuffer>& getCurrentBGMBuffer();
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<BGMBuffer>& getNextBGMBuffer();
+    zb::Optional<BGMBuffer>& getNextBGMBuffer();
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getHueByCatType(CatType catType);
@@ -1043,8 +1043,8 @@ struct Main
 
     void uiBeginColumns() const;
     void uiCenteredText(const char* str, float offsetX = 0.f, float offsetY = 0.f);
-    void uiCenteredTextColored(sf::Color color, const char* str, float offsetX = 0.f, float offsetY = 0.f);
-    [[nodiscard]] sf::Vec2f uiGetWindowPos() const;
+    void uiCenteredTextColored(za::Color color, const char* str, float offsetX = 0.f, float offsetY = 0.f);
+    [[nodiscard]] za::Vec2f uiGetWindowPos() const;
     void                    uiDrawExitPopup(float newScalingFactor);
     void                    uiClearLabel();
     void                    uiSetLabel(const char* fmt, ...) BUBBLE_IDLE_PRINTF_FORMAT(2, 3);
@@ -1094,28 +1094,28 @@ struct Main
 
     void                           uiDrawCloudWindowBackground();
     [[nodiscard]] bool             uiDrawQuickbarIconButton(const char* label, bool selected, float scaleMult = 1.f);
-    void                           uiDrawQuickbarCopyCat(sf::Vec2f quickBarPos, Cat& copyCat);
-    void                           uiDrawQuickbarBackgroundSelector(sf::Vec2f quickBarPos);
-    void                           uiDrawQuickbarBGMSelector(sf::Vec2f quickBarPos);
-    void                           uiDrawQuickbarQuickSettings(sf::Vec2f quickBarPos);
-    void                           uiDrawQuickbarVolumeControls(sf::Vec2f quickBarPos);
+    void                           uiDrawQuickbarCopyCat(za::Vec2f quickBarPos, Cat& copyCat);
+    void                           uiDrawQuickbarBackgroundSelector(za::Vec2f quickBarPos);
+    void                           uiDrawQuickbarBGMSelector(za::Vec2f quickBarPos);
+    void                           uiDrawQuickbarQuickSettings(za::Vec2f quickBarPos);
+    void                           uiDrawQuickbarVolumeControls(za::Vec2f quickBarPos);
     void                           uiDrawQuickbar();
     void                           uiDrawMinimapZoomButtons();
     void                           uiDrawDebugWindow();
-    void                           uiDraw(sf::Vec2f mousePos);
+    void                           uiDraw(za::Vec2f mousePos);
     void                           uiDpsMeter();
     void                           uiSpeedrunning();
     void                           uiTabBar();
-    void                           uiSetUnlockLabelY(sf::base::SizeT unlockId);
-    [[nodiscard]] bool             checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
-    void                           uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings& drawParams);
-    void                           uiImgsep(const sf::Rect2f& txr, const char* sepLabel, bool first = false);
-    void                           uiImgsep2(const sf::Rect2f& txr, const char* sepLabel);
+    void                           uiSetUnlockLabelY(zb::SizeT unlockId);
+    [[nodiscard]] bool             checkUiUnlock(zb::SizeT unlockId, bool unlockCondition);
+    void                           uiImageFromAtlas(const za::Rect2f& txr, const za::DrawTextureSettings& drawParams);
+    void                           uiImgsep(const za::Rect2f& txr, const char* sepLabel, bool first = false);
+    void                           uiImgsep2(const za::Rect2f& txr, const char* sepLabel);
     void                           uiTabBarShop();
     void                           uiShopDrawCoreUpgrades();
     void                           uiShopDrawSpecialCats();
     void                           uiShopDrawUniqueCatBonuses();
-    [[nodiscard]] sf::base::String uiShopBuildNextGoalsText();
+    [[nodiscard]] zb::String uiShopBuildNextGoalsText();
     void uiShopCooldownButton(const char* label, CatType catType, const char* additionalInfo = "");
     void uiShopRangeButton(const char* label, CatType catType, const char* additionalInfo = "");
     bool uiCheckbox(const char* label, bool* b);
@@ -1136,13 +1136,13 @@ struct Main
     void uiSettingsDrawDebugTab();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<sf::Rect2f> getAoEDragRect(sf::Vec2f mousePos) const;
+    [[nodiscard]] zb::Optional<za::Rect2f> getAoEDragRect(za::Vec2f mousePos) const;
 
     ////////////////////////////////////////////////////////////
     void resetAllDraggedCats();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT pickDragPivotCatIndex() const;
+    [[nodiscard]] zb::SizeT pickDragPivotCatIndex() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isCatBeingDragged(const Cat& cat) const;
@@ -1202,17 +1202,17 @@ struct Main
     static inline constexpr ManaType spellManaCostByIndex[4] = {5u, 20u, 30u, 40u};
 
     ////////////////////////////////////////////////////////////
-    void castSpellByIndex(sf::base::SizeT index, Cat* wizardCat, Cat* copyCat);
+    void castSpellByIndex(zb::SizeT index, Cat* wizardCat, Cat* copyCat);
 
     ////////////////////////////////////////////////////////////
     struct FormatTimeResult
     {
-        sf::base::U64 h;
-        sf::base::U64 m;
-        sf::base::U64 s;
+        zb::U64 h;
+        zb::U64 m;
+        zb::U64 s;
     };
 
-    [[nodiscard]] static constexpr FormatTimeResult formatTime(const sf::base::U64 seconds)
+    [[nodiscard]] static constexpr FormatTimeResult formatTime(const zb::U64 seconds)
     {
         return {seconds / 3600u, (seconds / 60u) % 60u, seconds % 60u};
     }
@@ -1220,21 +1220,21 @@ struct Main
     ////////////////////////////////////////////////////////////
     struct FormatSpeedrunTimeResult
     {
-        sf::base::U64 hours;
-        sf::base::U64 mins;
-        sf::base::U64 secs;
-        sf::base::U64 millis;
+        zb::U64 hours;
+        zb::U64 mins;
+        zb::U64 secs;
+        zb::U64 millis;
     };
 
-    [[nodiscard]] static constexpr FormatSpeedrunTimeResult formatSpeedrunTime(const sf::Time time)
+    [[nodiscard]] static constexpr FormatSpeedrunTimeResult formatSpeedrunTime(const za::Time time)
     {
-        const sf::base::I64 elapsedTime       = time.asMicroseconds();
-        const sf::base::U64 totalMicroseconds = (elapsedTime >= 0) ? static_cast<sf::base::U64>(elapsedTime) : 0ULL;
+        const zb::I64 elapsedTime       = time.asMicroseconds();
+        const zb::U64 totalMicroseconds = (elapsedTime >= 0) ? static_cast<zb::U64>(elapsedTime) : 0ULL;
 
-        constexpr sf::base::U64 usPerMs   = 1000ULL;
-        constexpr sf::base::U64 usPerSec  = 1000ULL * usPerMs; // 1,000,000
-        constexpr sf::base::U64 usPerMin  = 60ULL * usPerSec;  // 60,000,000
-        constexpr sf::base::U64 usPerHour = 60ULL * usPerMin;  // 3,600,000,000
+        constexpr zb::U64 usPerMs   = 1000ULL;
+        constexpr zb::U64 usPerSec  = 1000ULL * usPerMs; // 1,000,000
+        constexpr zb::U64 usPerMin  = 60ULL * usPerSec;  // 60,000,000
+        constexpr zb::U64 usPerHour = 60ULL * usPerMin;  // 3,600,000,000
 
         return {totalMicroseconds / usPerHour,
                 (totalMicroseconds % usPerHour) / usPerMin,
@@ -1243,13 +1243,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mustApplyMewltiplierAura(sf::Vec2f bubblePosition) const;
+    [[nodiscard]] bool mustApplyMewltiplierAura(za::Vec2f bubblePosition) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] MoneyType computeFinalReward(const Bubble& bubble, float multiplier, float comboMult, const Cat* popperCat) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vec2u getReasonableWindowSize(float scalingFactorMult = 1.f);
+    [[nodiscard]] static za::Vec2u getReasonableWindowSize(float scalingFactorMult = 1.f);
 
     ////////////////////////////////////////////////////////////
     struct SelectorEntry
@@ -1259,13 +1259,13 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] int pickSelectedIndex(const sf::base::Vector<SelectorEntry>& entries, int selectedIndex);
+    [[nodiscard]] int pickSelectedIndex(const zb::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void selectBackground(const sf::base::Vector<SelectorEntry>& entries, int selectedIndex);
+    void selectBackground(const zb::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void selectBGM(const sf::base::Vector<SelectorEntry>& entries, int selectedIndex);
+    void selectBGM(const zb::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
     void updateSelectedBackgroundSelectorIndex() const;
@@ -1276,7 +1276,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     struct SelectorData
     {
-        sf::base::Vector<SelectorEntry> entries;
+        zb::Vector<SelectorEntry> entries;
         int                             selectedIndex = -1;
     };
 
@@ -1296,7 +1296,7 @@ struct Main
     void forceResetProfile();
 
     ////////////////////////////////////////////////////////////
-    TextParticle& makeRewardTextParticle(sf::Vec2f position);
+    TextParticle& makeRewardTextParticle(za::Vec2f position);
 
     ////////////////////////////////////////////////////////////
     void shrineCollectReward(Shrine& shrine, MoneyType reward, const Bubble& bubble);
@@ -1305,7 +1305,7 @@ struct Main
     void doExplosion(Bubble& bubble);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f fromWorldToHud(sf::Vec2f point) const;
+    [[nodiscard]] za::Vec2f fromWorldToHud(za::Vec2f point) const;
 
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] BubblePopData
@@ -1331,27 +1331,27 @@ struct Main
     void gameLoopCheats() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Mouse::Button getLMB() const;
+    [[nodiscard]] za::Mouse::Button getLMB() const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Mouse::Button getRMB() const;
+    [[nodiscard]] za::Mouse::Button getRMB() const;
     [[nodiscard]] bool              gameLoopHandleEvents(FrameInput& frameInput, bool shouldDrawUI);
     void                            gameLoopPrepareInput(FrameInput& frameInput, float deltaTimeMs);
     void gameLoopUpdateFrameWorld(float deltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate);
-    void gameLoopUpdateFrameUi(sf::Time deltaTime, float deltaTimeMs, const FrameInput& frameInput);
+    void gameLoopUpdateFrameUi(za::Time deltaTime, float deltaTimeMs, const FrameInput& frameInput);
     [[nodiscard]] FrameViewState gameLoopComputeViews();
     void                         gameLoopRenderFrame(float                   deltaTimeMs,
                                                      bool                    shouldDrawUI,
-                                                     sf::base::U8            shouldDrawUIAlpha,
+                                                     zb::U8            shouldDrawUIAlpha,
                                                      const FrameInput&       frameInput,
                                                      const FrameUpdateState& frameUpdate,
                                                      const FrameViewState&   frameViews);
     void                         gameLoopPresentFrame(const FrameViewState& frameViews);
-    void               gameLoopUpdateScrolling(float deltaTimeMs, const sf::base::Vector<sf::Vec2f>& downFingers);
+    void               gameLoopUpdateScrolling(float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers);
     void               gameLoopUpdateTransitions(float deltaTimeMs);
     void               gameLoopUpdateBubbles(float deltaTimeMs);
     void               gameLoopUpdateAttractoBuff(float deltaTimeMs) const;
-    [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vec2f>& clickPosition);
+    [[nodiscard]] bool gameLoopUpdateBubbleClick(zb::Optional<za::Vec2f>& clickPosition);
     void               gameLoopUpdateCatActionNormal(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionUni(float /* deltaTimeMs */, Cat& cat);
     void               gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
@@ -1370,7 +1370,7 @@ struct Main
     void               hexCat(Cat& cat, SizeT catIdx, bool copy);
     void               gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */,
                                                         Cat&                          cat,
-                                                        sf::base::Vector<HexSession>& sessionsToUse,
+                                                        zb::Vector<HexSession>& sessionsToUse,
                                                         SizeT                         nCatsToHex);
     void               gameLoopUpdateCatActionWitch(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionWizard(float deltaTimeMs, Cat& cat);
@@ -1381,7 +1381,7 @@ struct Main
     void               gameLoopUpdateCatActionCopy(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionDuck(float deltaTimeMs, Cat& cat);
     [[nodiscard]] auto makeMagnetAction(
-        sf::Vec2f          position,
+        za::Vec2f          position,
         CatType            catType,
         float              deltaTimeMs,
         auto               countdownPm,
@@ -1396,7 +1396,7 @@ struct Main
     [[nodiscard]] bool isCatDraggable(const Cat& cat) const;
     [[nodiscard]] bool isAOESelecting() const;
 
-    void gameLoopUpdateCatDragging(float deltaTimeMs, SizeT countFingersDown, sf::Vec2f mousePos);
+    void gameLoopUpdateCatDragging(float deltaTimeMs, SizeT countFingersDown, za::Vec2f mousePos);
     void gameLoopUpdateShrines(float deltaTimeMs);
 
     void collectDollImpl(Doll& d, HexSession& session, bool copy);
@@ -1406,9 +1406,9 @@ struct Main
     void addEventBubblefall(float regionCenterX);
     void addEventInvincibleBubble();
 
-    void gameLoopUpdateDollsImpl(float deltaTimeMs, sf::Vec2f mousePos, sf::base::Vector<HexSession>& sessionsToUse, bool copy);
-    void gameLoopUpdateDolls(float deltaTimeMs, sf::Vec2f mousePos);
-    void gameLoopUpdateCopyDolls(float deltaTimeMs, sf::Vec2f mousePos);
+    void gameLoopUpdateDollsImpl(float deltaTimeMs, za::Vec2f mousePos, zb::Vector<HexSession>& sessionsToUse, bool copy);
+    void gameLoopUpdateDolls(float deltaTimeMs, za::Vec2f mousePos);
+    void gameLoopUpdateCopyDolls(float deltaTimeMs, za::Vec2f mousePos);
     void gameLoopUpdateHellPortals(float deltaTimeMs);
     void gameLoopUpdateWitchBuffs(float deltaTimeMs);
     void gameLoopUpdateEvents(float deltaTimeMs);
@@ -1436,22 +1436,22 @@ struct Main
     void gameLoopUpdateAchievements();
     void gameLoopDrawBubbles();
     void gameLoopDisplayBubblesWithoutShader();
-    void gameLoopDrawCursorTrail(sf::Vec2f mousePos);
+    void gameLoopDrawCursorTrail(za::Vec2f mousePos);
     void gameLoopDrawMinimapIcons();
     void gameLoopDisplayBubblesWithShader();
-    void gameLoopDrawCats(sf::Vec2f mousePos, float deltaTimeMs);
+    void gameLoopDrawCats(za::Vec2f mousePos, float deltaTimeMs);
 
     [[nodiscard]] bool isCatPerformingRitual(Cat& witch, Cat& cat) const;
 
     void gameLoopDrawCat(Cat&      cat,
                          float     deltaTimeMs,
-                         sf::Vec2f mousePos,
-                         const sf::Rect2f* const (&catTxrsByType)[nCatTypes],
-                         const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
-                         const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes]);
+                         za::Vec2f mousePos,
+                         const za::Rect2f* const (&catTxrsByType)[nCatTypes],
+                         const za::Rect2f* const (&catPawTxrsByType)[nCatTypes],
+                         const za::Rect2f* const (&catTailTxrsByType)[nCatTypes]);
 
-    void                gameLoopDrawShrines(sf::Vec2f mousePos);
-    void                gameLoopDrawDolls(sf::Vec2f mousePos);
+    void                gameLoopDrawShrines(za::Vec2f mousePos);
+    void                gameLoopDrawDolls(za::Vec2f mousePos);
     void                gameLoopDrawHellPortals();
     void                gameLoopDrawParticles();
     void                gameLoopDrawHUDParticles();
@@ -1461,36 +1461,36 @@ struct Main
     void                gameLoopDrawTextParticles();
     [[nodiscard]] float getLeftMostUsefulX() const;
     void                gameLoopDrawScrollArrowHint(float deltaTimeMs);
-    void                gameLoopDrawImGui(sf::base::U8 shouldDrawUIAlpha);
+    void                gameLoopDrawImGui(zb::U8 shouldDrawUIAlpha);
     void                gameLoopUpdatePurchaseUnlockedEffects(float deltaTimeMs);
     [[nodiscard]] bool  shouldDrawGrabbingCursor() const;
     void                gameLoopDrawCursor(float deltaTimeMs, float cursorGrow);
     void                gameLoopDrawCursorComboText(float deltaTimeMs, float cursorGrow);
     void                gameLoopDrawCursorComboBar();
-    void drawMinimap(bool back, sf::RenderTarget& rt, const sf::View& hudView, sf::Vec2f resolution, sf::base::U8 shouldDrawUIAlpha);
-    void drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, sf::Vec2f resolution, float hudScale) const;
-    [[nodiscard]] sf::Rect2f getViewportPixelBounds(const sf::View& view, sf::Vec2f targetSize) const;
+    void drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView, za::Vec2f resolution, zb::U8 shouldDrawUIAlpha);
+    void drawSplashScreen(za::RenderTarget& rt, const za::View& view, za::Vec2f resolution, float hudScale) const;
+    [[nodiscard]] za::Rect2f getViewportPixelBounds(const za::View& view, za::Vec2f targetSize) const;
     void                     gameLoopDrawDollParticleBorder(float hueMod);
     void                     gameLoopTips(float deltaTimeMs);
-    void                     recreateImGuiRenderTexture(sf::Vec2u newResolution);
-    void                     recreateBackgroundRenderTexture(sf::Vec2u newResolution);
-    void                     recreateGameRenderTexture(sf::Vec2u newResolution);
+    void                     recreateImGuiRenderTexture(za::Vec2u newResolution);
+    void                     recreateBackgroundRenderTexture(za::Vec2u newResolution);
+    void                     recreateGameRenderTexture(za::Vec2u newResolution);
     void setPostProcessUniforms(float vibrance, float saturation, float lightness, float sharpness, float blur) const;
     void updateProcessedBackground();
-    void drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
-                                              const sf::View&   backgroundView,
-                                              sf::Vec2f         activeGameViewCenter) const;
-    [[nodiscard]] sf::RenderTexture& getHexedCatRenderTexture(sf::base::SizeT index);
-    void enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch, sf::Vec2f position, bool top, float phaseSeed, float effectStrength);
-    void                drawHexedCatDrawCommands(const sf::View& view, bool top);
-    void                gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf::View& view);
+    void drawActivatedShrineBackgroundEffects(za::RenderTarget& rt,
+                                              const za::View&   backgroundView,
+                                              za::Vec2f         activeGameViewCenter) const;
+    [[nodiscard]] za::RenderTexture& getHexedCatRenderTexture(zb::SizeT index);
+    void enqueueHexedCatDrawCommand(const za::CPUDrawableBatch& batch, za::Vec2f position, bool top, float phaseSeed, float effectStrength);
+    void                drawHexedCatDrawCommands(const za::View& view, bool top);
+    void                gameLoopDisplayCloudBatch(const za::CPUDrawableBatch& batch, const za::View& view);
     void                recreateWindow();
     void                resizeWindow();
     [[nodiscard]] float gameLoopUpdateCursorGrowthEffect(float deltaTimeMs, bool anyBubblePoppedByClicking);
     void                gameLoopUpdateCombo(float                         deltaTimeMs,
                                             bool                          anyBubblePoppedByClicking,
-                                            sf::Vec2f                     mousePos,
-                                            sf::base::Optional<sf::Vec2f> clickPosition);
+                                            za::Vec2f                     mousePos,
+                                            zb::Optional<za::Vec2f> clickPosition);
     void                gameLoopUpdateCollisionsBubbleBubble(float deltaTimeMs);
     void                gameLoopUpdateCollisionsCatCat(float deltaTimeMs);
     void                gameLoopUpdateCollisionsCatShrine(float deltaTimeMs) const;
@@ -1498,19 +1498,19 @@ struct Main
     void                gameLoopUpdateCollisionsBubbleHellPortal();
     void                gameLoopUpdateScreenShake(float deltaTimeMs);
     void                gameLoopUpdateParticlesAndTextParticles(float deltaTimeMs);
-    void                gameLoopUpdateSounds(float deltaTimeMs, sf::Vec2f mousePos);
-    void                gameLoopUpdateTimePlayed(sf::base::I64 elapsedUs);
-    void                gameLoopUpdateAutosave(sf::base::I64 elapsedUs);
-    void                gameLoopUpdateAndDrawFixedMenuBackground(float deltaTimeMs, sf::base::I64 elapsedUs);
-    void                gameLoopUpdateAndDrawBackground(float deltaTimeMs, const sf::View& gameBackgroundView);
+    void                gameLoopUpdateSounds(float deltaTimeMs, za::Vec2f mousePos);
+    void                gameLoopUpdateTimePlayed(zb::I64 elapsedUs);
+    void                gameLoopUpdateAutosave(zb::I64 elapsedUs);
+    void                gameLoopUpdateAndDrawFixedMenuBackground(float deltaTimeMs, zb::I64 elapsedUs);
+    void                gameLoopUpdateAndDrawBackground(float deltaTimeMs, const za::View& gameBackgroundView);
     void                gameLoopUpdateMoneyText(float deltaTimeMs, float yBelowMinimap);
     void                gameLoopUpdateSpentMoneyEffect(float deltaTimeMs);
-    sf::TextData        gameLoopUpdateComboText(float deltaTimeMs, float yBelowMinimap);
-    sf::TextData        gameLoopUpdateBuffText(const sf::Rect2f& comboBounds);
+    za::TextData        gameLoopUpdateComboText(float deltaTimeMs, float yBelowMinimap);
+    za::TextData        gameLoopUpdateBuffText(const za::Rect2f& comboBounds);
     void                gameLoopPrestigeAvailableReminder();
     void                gameLoopReminderBuyCombo();
     void                gameLoopReminderSpendPPs();
-    void                gameLoopUpdateDpsSampler(sf::base::I64 elapsedUs);
+    void                gameLoopUpdateDpsSampler(zb::I64 elapsedUs);
 
     void drawCloudFrame(const CloudFrameDrawSettings& settings);
 

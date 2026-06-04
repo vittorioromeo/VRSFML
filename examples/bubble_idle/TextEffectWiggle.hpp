@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
-namespace sf
+namespace za
 {
 class Text;
 }
@@ -30,13 +30,13 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    void apply(sf::Text& text);
+    void apply(za::Text& text);
 
     ////////////////////////////////////////////////////////////
-    void unapply(sf::Text& text);
+    void unapply(za::Text& text);
 
 private:
-    sf::base::Vector<sf::Vec2f> m_oldVertexPositions;
+    zb::Vector<za::Vec2f> m_oldVertexPositions;
     float                       m_time = 0.f;
     float                       m_frequency;
     float                       m_amplitude;

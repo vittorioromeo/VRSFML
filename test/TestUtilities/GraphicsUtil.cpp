@@ -2,47 +2,47 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/StencilMode.hpp"
-#include "SFML/Graphics/Transform.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/StencilMode.hpp"
+#include "Zancle/Graphics/Transform.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToChars.hpp"
-#include "SFML/Base/Trait/IsFloatingPoint.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToChars.hpp"
+#include "ZancleBase/Trait/IsFloatingPoint.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-sf::base::String gfxFloatToString(const float value, const int precision = 6)
+zb::String gfxFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
-    char*      end = sf::base::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<sf::base::SizeT>(end - buf);
-    return sf::base::String{buf, len};
+    char*      end = zb::toChars(buf, buf + sizeof(buf), value, precision);
+    const auto len = static_cast<zb::SizeT>(end - buf);
+    return zb::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::base::String gfxIntToString(const T value)
+zb::String gfxIntToString(const T value)
 {
     char       buf[32];
-    char*      end = sf::base::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<sf::base::SizeT>(end - buf);
-    return sf::base::String{buf, len};
+    char*      end = zb::toChars(buf, buf + sizeof(buf), value);
+    const auto len = static_cast<zb::SizeT>(end - buf);
+    return zb::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String hexToString(const sf::base::U32 value)
+zb::String hexToString(const zb::U32 value)
 {
     char buf[10];
     buf[0]    = '0';
@@ -55,116 +55,116 @@ sf::base::String hexToString(const sf::base::U32 value)
         const unsigned nibble = (value >> shift) & 0xFu;
         buf[pos++]            = static_cast<char>(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
     } while (shift > 0);
-    return sf::base::String{buf, static_cast<sf::base::SizeT>(pos)};
+    return zb::String{buf, static_cast<zb::SizeT>(pos)};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String stencilComparisonToString(const sf::StencilComparison comparison)
+zb::String stencilComparisonToString(const za::StencilComparison comparison)
 {
     switch (comparison)
     {
-        case sf::StencilComparison::Never:
-            return sf::base::String{"Never"};
-        case sf::StencilComparison::Less:
-            return sf::base::String{"Less"};
-        case sf::StencilComparison::LessEqual:
-            return sf::base::String{"LessEqual"};
-        case sf::StencilComparison::Greater:
-            return sf::base::String{"Greater"};
-        case sf::StencilComparison::GreaterEqual:
-            return sf::base::String{"GreaterEqual"};
-        case sf::StencilComparison::Equal:
-            return sf::base::String{"Equal"};
-        case sf::StencilComparison::NotEqual:
-            return sf::base::String{"NotEqual"};
-        case sf::StencilComparison::Always:
-            return sf::base::String{"Always"};
+        case za::StencilComparison::Never:
+            return zb::String{"Never"};
+        case za::StencilComparison::Less:
+            return zb::String{"Less"};
+        case za::StencilComparison::LessEqual:
+            return zb::String{"LessEqual"};
+        case za::StencilComparison::Greater:
+            return zb::String{"Greater"};
+        case za::StencilComparison::GreaterEqual:
+            return zb::String{"GreaterEqual"};
+        case za::StencilComparison::Equal:
+            return zb::String{"Equal"};
+        case za::StencilComparison::NotEqual:
+            return zb::String{"NotEqual"};
+        case za::StencilComparison::Always:
+            return zb::String{"Always"};
     }
-    return sf::base::String{};
+    return zb::String{};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String stencilUpdateOperationToString(const sf::StencilUpdateOperation updateOperation)
+zb::String stencilUpdateOperationToString(const za::StencilUpdateOperation updateOperation)
 {
     switch (updateOperation)
     {
-        case sf::StencilUpdateOperation::Keep:
-            return sf::base::String{"Keep"};
-        case sf::StencilUpdateOperation::Zero:
-            return sf::base::String{"Zero"};
-        case sf::StencilUpdateOperation::Replace:
-            return sf::base::String{"Replace"};
-        case sf::StencilUpdateOperation::Increment:
-            return sf::base::String{"Increment"};
-        case sf::StencilUpdateOperation::Decrement:
-            return sf::base::String{"Decrement"};
-        case sf::StencilUpdateOperation::Invert:
-            return sf::base::String{"Invert"};
+        case za::StencilUpdateOperation::Keep:
+            return zb::String{"Keep"};
+        case za::StencilUpdateOperation::Zero:
+            return zb::String{"Zero"};
+        case za::StencilUpdateOperation::Replace:
+            return zb::String{"Replace"};
+        case za::StencilUpdateOperation::Increment:
+            return zb::String{"Increment"};
+        case za::StencilUpdateOperation::Decrement:
+            return zb::String{"Decrement"};
+        case za::StencilUpdateOperation::Invert:
+            return zb::String{"Invert"};
     }
-    return sf::base::String{};
+    return zb::String{};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String vec2ToString(const sf::Vec2<float> v)
+zb::String vec2ToString(const za::Vec2<float> v)
 {
-    return sf::base::String{"("} + gfxFloatToString(v.x) + sf::base::String{", "} + gfxFloatToString(v.y) +
-           sf::base::String{")"};
+    return zb::String{"("} + gfxFloatToString(v.x) + zb::String{", "} + gfxFloatToString(v.y) +
+           zb::String{")"};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::base::String rectToString(const sf::Rect2<T>& rect)
+zb::String rectToString(const za::Rect2<T>& rect)
 {
-    if constexpr (sf::base::isFloatingPoint<T>)
-        return sf::base::String{"(position=("} + gfxFloatToString(rect.position.x) + sf::base::String{", "} +
-               gfxFloatToString(rect.position.y) + sf::base::String{"), size=("} + gfxFloatToString(rect.size.x) +
-               sf::base::String{", "} + gfxFloatToString(rect.size.y) + sf::base::String{"))"};
+    if constexpr (zb::isFloatingPoint<T>)
+        return zb::String{"(position=("} + gfxFloatToString(rect.position.x) + zb::String{", "} +
+               gfxFloatToString(rect.position.y) + zb::String{"), size=("} + gfxFloatToString(rect.size.x) +
+               zb::String{", "} + gfxFloatToString(rect.size.y) + zb::String{"))"};
     else
-        return sf::base::String{"(position=("} + gfxIntToString(rect.position.x) + sf::base::String{", "} +
-               gfxIntToString(rect.position.y) + sf::base::String{"), size=("} + gfxIntToString(rect.size.x) +
-               sf::base::String{", "} + gfxIntToString(rect.size.y) + sf::base::String{"))"};
+        return zb::String{"(position=("} + gfxIntToString(rect.position.x) + zb::String{", "} +
+               gfxIntToString(rect.position.y) + zb::String{"), size=("} + gfxIntToString(rect.size.x) +
+               zb::String{", "} + gfxIntToString(rect.size.y) + zb::String{"))"};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String blendModeToString(const sf::BlendMode& blendMode)
+zb::String blendModeToString(const za::BlendMode& blendMode)
 {
-    return sf::base::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) +
-           sf::base::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) +
-           sf::base::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorEquation)) + sf::base::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.alphaSrcFactor)) + sf::base::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.alphaDstFactor)) + sf::base::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.alphaEquation)) + sf::base::String{" )"};
+    return zb::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) +
+           zb::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) +
+           zb::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorEquation)) + zb::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaSrcFactor)) + zb::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaDstFactor)) + zb::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaEquation)) + zb::String{" )"};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String stencilModeToString(const sf::StencilMode& stencilMode)
+zb::String stencilModeToString(const za::StencilMode& stencilMode)
 {
-    return sf::base::String{"( "} + stencilComparisonToString(stencilMode.stencilComparison) + sf::base::String{", "} +
-           stencilUpdateOperationToString(stencilMode.stencilUpdateOperation) + sf::base::String{", "} +
-           sf::base::String{stencilMode.stencilOnly ? "true" : "false"} + sf::base::String{", "} +
-           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + sf::base::String{", "} +
-           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + sf::base::String{" )"};
+    return zb::String{"( "} + stencilComparisonToString(stencilMode.stencilComparison) + zb::String{", "} +
+           stencilUpdateOperationToString(stencilMode.stencilUpdateOperation) + zb::String{", "} +
+           zb::String{stencilMode.stencilOnly ? "true" : "false"} + zb::String{", "} +
+           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + zb::String{", "} +
+           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + zb::String{" )"};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String colorToString(const sf::Color color)
+zb::String colorToString(const za::Color color)
 {
-    return hexToString(color.toInteger()) + sf::base::String{" (r="} + gfxIntToString(int{color.r}) +
-           sf::base::String{", g="} + gfxIntToString(int{color.g}) + sf::base::String{", b="} +
-           gfxIntToString(int{color.b}) + sf::base::String{", a="} + gfxIntToString(int{color.a}) +
-           sf::base::String{")"};
+    return hexToString(color.toInteger()) + zb::String{" (r="} + gfxIntToString(int{color.r}) +
+           zb::String{", g="} + gfxIntToString(int{color.g}) + zb::String{", b="} +
+           gfxIntToString(int{color.b}) + zb::String{", a="} + gfxIntToString(int{color.a}) +
+           zb::String{")"};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String transformToString(const sf::Transform& transform)
+zb::String transformToString(const za::Transform& transform)
 {
     // clang-format off
     float matrix[]{{},  {},  0.f, 0.f,
@@ -175,96 +175,96 @@ sf::base::String transformToString(const sf::Transform& transform)
 
     transform.writeTo4x4Matrix(matrix);
 
-    return gfxFloatToString(matrix[0]) + sf::base::String{", "} + gfxFloatToString(matrix[4]) + sf::base::String{", "} +
-           gfxFloatToString(matrix[12]) + sf::base::String{", "} + gfxFloatToString(matrix[1]) +
-           sf::base::String{", "} + gfxFloatToString(matrix[5]) + sf::base::String{", "} +
-           gfxFloatToString(matrix[13]) + sf::base::String{", "} + gfxFloatToString(matrix[3]) +
-           sf::base::String{", "} + gfxFloatToString(matrix[7]) + sf::base::String{", "} + gfxFloatToString(matrix[15]);
+    return gfxFloatToString(matrix[0]) + zb::String{", "} + gfxFloatToString(matrix[4]) + zb::String{", "} +
+           gfxFloatToString(matrix[12]) + zb::String{", "} + gfxFloatToString(matrix[1]) +
+           zb::String{", "} + gfxFloatToString(matrix[5]) + zb::String{", "} +
+           gfxFloatToString(matrix[13]) + zb::String{", "} + gfxFloatToString(matrix[3]) +
+           zb::String{", "} + gfxFloatToString(matrix[7]) + zb::String{", "} + gfxFloatToString(matrix[15]);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String viewToString(const sf::View& view)
+zb::String viewToString(const za::View& view)
 {
-    return sf::base::String{"( center="} + vec2ToString(view.center) + sf::base::String{", size="} +
-           vec2ToString(view.size) + sf::base::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) +
-           sf::base::String{" deg"} + sf::base::String{", viewport="} + rectToString(view.viewport) +
-           sf::base::String{", scissor="} + rectToString(view.scissor) + sf::base::String{" )"};
+    return zb::String{"( center="} + vec2ToString(view.center) + zb::String{", size="} +
+           vec2ToString(view.size) + zb::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) +
+           zb::String{" deg"} + zb::String{", viewport="} + rectToString(view.viewport) +
+           zb::String{", scissor="} + rectToString(view.scissor) + zb::String{" )"};
 }
 
 } // namespace
 
 
-namespace sf
+namespace za
 {
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::BlendMode& blendMode) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::BlendMode& blendMode) noexcept
 {
-    const sf::base::String s = blendModeToString(blendMode);
+    const zb::String s = blendModeToString(blendMode);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::StencilComparison comparison) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::StencilComparison comparison) noexcept
 {
-    const sf::base::String s = stencilComparisonToString(comparison);
+    const zb::String s = stencilComparisonToString(comparison);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::StencilUpdateOperation updateOperation) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::StencilUpdateOperation updateOperation) noexcept
 {
-    const sf::base::String s = stencilUpdateOperationToString(updateOperation);
+    const zb::String s = stencilUpdateOperationToString(updateOperation);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::StencilMode& stencilMode) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::StencilMode& stencilMode) noexcept
 {
-    const sf::base::String s = stencilModeToString(stencilMode);
+    const zb::String s = stencilModeToString(stencilMode);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Color& color) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Color& color) noexcept
 {
-    const sf::base::String s = colorToString(color);
+    const zb::String s = colorToString(color);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Transform& transform) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Transform& transform) noexcept
 {
-    const sf::base::String s = transformToString(transform);
+    const zb::String s = transformToString(transform);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::View& view) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::View& view) noexcept
 {
-    const sf::base::String s = viewToString(view);
+    const zb::String s = viewToString(view);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::View::ScissorRect& scissorRect) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::View::ScissorRect& scissorRect) noexcept
 {
-    const sf::base::String s = rectToString(static_cast<const sf::Rect2<float>&>(scissorRect));
+    const zb::String s = rectToString(static_cast<const za::Rect2<float>&>(scissorRect));
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
-} // namespace sf
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
+bool operator==(const za::Transform& lhs, const Approx<za::Transform>& rhs)
 {
     // clang-format off
     float lhsMatrix[]{{},  {},  0.f, 0.f,
@@ -290,10 +290,10 @@ bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const sf::Color& lhs, const Approx<sf::Color>& rhs)
+bool operator==(const za::Color& lhs, const Approx<za::Color>& rhs)
 {
-    return sf::base::fabs(static_cast<float>(lhs.r - rhs.value.r)) < 2.f &&
-           sf::base::fabs(static_cast<float>(lhs.g - rhs.value.g)) < 2.f &&
-           sf::base::fabs(static_cast<float>(lhs.b - rhs.value.b)) < 2.f &&
-           sf::base::fabs(static_cast<float>(lhs.a - rhs.value.a)) < 2.f;
+    return zb::fabs(static_cast<float>(lhs.r - rhs.value.r)) < 2.f &&
+           zb::fabs(static_cast<float>(lhs.g - rhs.value.g)) < 2.f &&
+           zb::fabs(static_cast<float>(lhs.b - rhs.value.b)) < 2.f &&
+           zb::fabs(static_cast<float>(lhs.a - rhs.value.a)) < 2.f;
 }

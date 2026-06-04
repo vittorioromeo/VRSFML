@@ -6,17 +6,17 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Remainder.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Remainder.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ struct [[nodiscard]] Cat
     //
     // TODO P2: when more cat-specific structs accumulate, replace
     // `Optional<WardenBonkState>` (and friends like `astroState`) with a
-    // single `sf::base::Variant<...>` keyed off `CatType`.
+    // single `zb::Variant<...>` keyed off `CatType`.
     struct [[nodiscard]] WardenBonkState
     {
         // Sequential phases: Windup raises the baton up-and-behind; Travel
@@ -58,7 +58,7 @@ struct [[nodiscard]] Cat
         //   - Return start = `cat.pawPosition`
         //   - Return end   = idle paw pose
         // Per-phase durations live in `GameConstants` so they're tunable.
-        enum class [[nodiscard]] Phase : sf::base::U8
+        enum class [[nodiscard]] Phase : zb::U8
         {
             Windup,
             Travel,
@@ -68,19 +68,19 @@ struct [[nodiscard]] Cat
 
         Phase                               phase   = Phase::Windup;
         float                               phaseMs = 0.f; // counts down to 0
-        sf::base::Optional<sf::base::SizeT> pendingTargetIdx{sf::base::nullOpt};
+        zb::Optional<zb::SizeT> pendingTargetIdx{zb::nullOpt};
     };
 
     ////////////////////////////////////////////////////////////
     Progress spawnEffectTimer{};
 
-    sf::Vec2f position;
+    za::Vec2f position;
 
     float     wobbleRadians{0.f};
     Countdown cooldown;
 
-    sf::Vec2f pawPosition;
-    sf::Angle pawRotation{sf::Angle::Zero};
+    za::Vec2f pawPosition;
+    za::Angle pawRotation{za::Angle::Zero};
 
     float pawOpacity = 255.f;
 
@@ -92,7 +92,7 @@ struct [[nodiscard]] Cat
 
     // Wardencat bonk animation state: lazily emplaced when a wardencat
     // starts a bonk action, reset when the return phase completes.
-    sf::base::Optional<WardenBonkState> wardenBonk{sf::base::nullOpt};
+    zb::Optional<WardenBonkState> wardenBonk{zb::nullOpt};
 
     // While > 0 the cat rocks side-to-side like a struck pendulum -- used by
     // the Warden's bonk to give the target a visible reaction. Ticked down
@@ -104,21 +104,21 @@ struct [[nodiscard]] Cat
     Countdown inspiredCountdown{};
     Countdown boostCountdown{};
 
-    sf::base::SizeT nameIdx;
+    zb::SizeT nameIdx;
 
     TextShakeEffect textStatusShakeEffect{};
     TextShakeEffect textMoneyShakeEffect{};
 
-    sf::base::U32 hits = 0u;
+    zb::U32 hits = 0u;
 
     CatType type;
 
-    sf::base::Optional<Transition> hexedTimer{sf::base::nullOpt};
-    sf::base::Optional<Transition> hexedCopyTimer{sf::base::nullOpt};
+    zb::Optional<Transition> hexedTimer{zb::nullOpt};
+    zb::Optional<Transition> hexedCopyTimer{zb::nullOpt};
 
     MoneyType moneyEarned = 0u;
 
-    sf::base::Optional<AstroState> astroState{sf::base::nullOpt};
+    zb::Optional<AstroState> astroState{zb::nullOpt};
 
     Countdown blinkCountdown{};
     Countdown blinkAnimCountdown{};
@@ -135,14 +135,14 @@ struct [[nodiscard]] Cat
     // the cat early by grabbing and shaking it: `napShakeProgress` (0..1)
     // accumulates drag motion and triggers wake-up on reaching 1.
     // `napWakeWobble` is a transient feedback rotation that decays to zero.
-    sf::base::Optional<Transition> napTransition{sf::base::nullOpt};
-    sf::base::Optional<Countdown>  napSleepCountdown{sf::base::nullOpt};
+    zb::Optional<Transition> napTransition{zb::nullOpt};
+    zb::Optional<Countdown>  napSleepCountdown{zb::nullOpt};
     float                          napShakeProgress{0.f};
     float                          napWakeWobble{0.f};
 
     // Transient per-frame kinematics used to derive a velocity-based tilt
     // while being dragged (and also the delta for `napShakeProgress`).
-    sf::Vec2f lastFramePosition{};
+    za::Vec2f lastFramePosition{};
     float     dragTiltRadians{0.f};
 
     // Per-cat retrigger countdown for the looping `sleep` sound. Reset to
@@ -171,7 +171,7 @@ struct [[nodiscard]] Cat
     {
         textStatusShakeEffect.update(deltaTime);
         textMoneyShakeEffect.update(deltaTime);
-        wobbleRadians = sf::base::remainder(wobbleRadians + deltaTime * 0.002f, sf::base::tau);
+        wobbleRadians = zb::remainder(wobbleRadians + deltaTime * 0.002f, zb::tau);
     }
 
     ////////////////////////////////////////////////////////////
@@ -193,23 +193,23 @@ struct [[nodiscard]] Cat
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::base::Optional<Transition>& getHexedTimer()
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline zb::Optional<Transition>& getHexedTimer()
     {
-        SFML_BASE_ASSERT(isHexedOrCopyHexed());
+        ZB_ASSERT(isHexedOrCopyHexed());
         return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline const sf::base::Optional<Transition>& getHexedTimer() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline const zb::Optional<Transition>& getHexedTimer() const
     {
-        SFML_BASE_ASSERT(isHexedOrCopyHexed());
+        ZB_ASSERT(isHexedOrCopyHexed());
         return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition(const bool enableBobbing) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline za::Vec2f getDrawPosition(const bool enableBobbing) const
     {
-        return enableBobbing ? position + sf::Vec2f{0.f, sf::base::sin(wobbleRadians) * 7.f} : position;
+        return enableBobbing ? position + za::Vec2f{0.f, zb::sin(wobbleRadians) * 7.f} : position;
     }
 
     ////////////////////////////////////////////////////////////
@@ -241,10 +241,10 @@ struct [[nodiscard]] Cat
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isCloseToStartX() const noexcept
     {
-        SFML_BASE_ASSERT(type == CatType::Astro);
-        SFML_BASE_ASSERT(astroState.hasValue());
+        ZB_ASSERT(type == CatType::Astro);
+        ZB_ASSERT(astroState.hasValue());
 
-        return astroState->wrapped && sf::base::fabs(position.x - astroState->startX) < 400.f;
+        return astroState->wrapped && zb::fabs(position.x - astroState->startX) < 400.f;
     }
 
     ////////////////////////////////////////////////////////////

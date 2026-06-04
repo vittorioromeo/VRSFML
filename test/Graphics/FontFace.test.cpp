@@ -1,48 +1,48 @@
 #include "SystemUtil.hpp"
 
-#include "SFML/Graphics/FontFace.hpp"
+#include "Zancle/Graphics/FontFace.hpp"
 
-#include "SFML/Graphics/FontInfo.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/FontInfo.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
 #include "LoadIntoMemoryUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/System/FileInputStream.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/FileInputStream.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::FontFace" * tst::skip(skipDisplayTests))
+TEST_CASE("[Graphics] za::FontFace" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::FontFace));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::FontFace));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::FontFace));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::FontFace));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::FontFace));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::FontFace));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::FontFace));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::FontFace));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::FontFace));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(za::FontFace));
     }
 
     SECTION("openFromFile()")
     {
         SECTION("Invalid filename")
         {
-            CHECK(!sf::FontFace::openFromFile("does/not/exist.ttf").hasValue());
+            CHECK(!za::FontFace::openFromFile("does/not/exist.ttf").hasValue());
         }
 
         SECTION("Valid file")
         {
-            const auto fontFace = sf::FontFace::openFromFile("tuffy.ttf").value();
+            const auto fontFace = za::FontFace::openFromFile("tuffy.ttf").value();
             CHECK(fontFace.getInfo().family == "Tuffy");
             CHECK(fontFace.hasGlyph(0x41));
             CHECK(fontFace.hasGlyph(0xC0));
@@ -58,15 +58,15 @@ TEST_CASE("[Graphics] sf::FontFace" * tst::skip(skipDisplayTests))
     {
         SECTION("Invalid data and size")
         {
-            CHECK(!sf::FontFace::openFromMemory(nullptr, 1).hasValue());
+            CHECK(!za::FontFace::openFromMemory(nullptr, 1).hasValue());
             const unsigned char testByte{0xCD};
-            CHECK(!sf::FontFace::openFromMemory(&testByte, 0).hasValue());
+            CHECK(!za::FontFace::openFromMemory(&testByte, 0).hasValue());
         }
 
         SECTION("Valid data")
         {
             const auto memory   = loadIntoMemory("tuffy.ttf");
-            const auto fontFace = sf::FontFace::openFromMemory(memory.data(), memory.size()).value();
+            const auto fontFace = za::FontFace::openFromMemory(memory.data(), memory.size()).value();
             CHECK(fontFace.getInfo().family == "Tuffy");
             CHECK(fontFace.hasGlyph(0x41));
             CHECK(fontFace.getLineSpacing(24) == 30);
@@ -75,8 +75,8 @@ TEST_CASE("[Graphics] sf::FontFace" * tst::skip(skipDisplayTests))
 
     SECTION("openFromStream()")
     {
-        auto       stream   = sf::FileInputStream::open("tuffy.ttf").value();
-        const auto fontFace = sf::FontFace::openFromStream(stream).value();
+        auto       stream   = za::FileInputStream::open("tuffy.ttf").value();
+        const auto fontFace = za::FontFace::openFromStream(stream).value();
         CHECK(fontFace.getInfo().family == "Tuffy");
         CHECK(fontFace.hasGlyph(0x41));
         CHECK(fontFace.getKerning(0x41, 0x42, 12, false) == -1);

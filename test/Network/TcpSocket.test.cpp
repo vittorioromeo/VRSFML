@@ -1,37 +1,37 @@
-#include "SFML/Network/TcpSocket.hpp"
+#include "Zancle/Network/TcpSocket.hpp"
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
 
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/IpAddressUtils.hpp"
+#include "Zancle/Network/IpAddress.hpp"
+#include "Zancle/Network/IpAddressUtils.hpp"
 
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Network] sf::TcpSocket")
+TEST_CASE("[Network] za::TcpSocket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::TcpSocket));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::TcpSocket));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::TcpSocket));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::TcpSocket));
-        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::TcpSocket));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::TcpSocket));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::TcpSocket));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::TcpSocket));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::TcpSocket));
+        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::TcpSocket));
     }
 
     SECTION("Factory construction")
     {
-        auto tcpSocketOpt = sf::TcpSocket::create(/* isBlocking */ true);
+        auto tcpSocketOpt = za::TcpSocket::create(/* isBlocking */ true);
         REQUIRE(tcpSocketOpt.hasValue());
 
         CHECK(tcpSocketOpt->getLocalPort() == 0);
@@ -42,33 +42,33 @@ TEST_CASE("[Network] sf::TcpSocket")
 }
 
 
-#ifdef SFML_RUN_CONNECTION_TESTS
+#ifdef ZA_RUN_CONNECTION_TESTS
 
-TEST_CASE("[Network] sf::TcpSocket Connection")
+TEST_CASE("[Network] za::TcpSocket Connection")
 {
     SECTION("Connection")
     {
-        const auto githubAddress = sf::IpAddressUtils::resolve("github.com");
+        const auto githubAddress = za::IpAddressUtils::resolve("github.com");
         REQUIRE(githubAddress.hasValue());
 
-        auto tcpSocketOpt = sf::TcpSocket::create(/* isBlocking */ true);
+        auto tcpSocketOpt = za::TcpSocket::create(/* isBlocking */ true);
         REQUIRE(tcpSocketOpt.hasValue());
 
         auto& tcpSocket = *tcpSocketOpt;
 
-        CHECK(tcpSocket.setupTlsServer("", "") == sf::TcpSocket::TlsStatus::NotConnected);
-        CHECK(tcpSocket.setupTlsClient("") == sf::TcpSocket::TlsStatus::NotConnected);
+        CHECK(tcpSocket.setupTlsServer("", "") == za::TcpSocket::TlsStatus::NotConnected);
+        CHECK(tcpSocket.setupTlsClient("") == za::TcpSocket::TlsStatus::NotConnected);
 
         SECTION("Non-TLS")
         {
-            CHECK(tcpSocket.connect(*githubAddress, 80, sf::milliseconds(1000)) == sf::TcpSocket::Status::Done);
+            CHECK(tcpSocket.connect(*githubAddress, 80, za::milliseconds(1000)) == za::TcpSocket::Status::Done);
             CHECK_FALSE(tcpSocket.getCurrentCiphersuiteName().hasValue());
         }
 
         SECTION("TLS")
         {
-            CHECK(tcpSocket.connect(*githubAddress, 443, sf::milliseconds(1000)) == sf::TcpSocket::Status::Done);
-            CHECK(tcpSocket.setupTlsClient("github.com") == sf::TcpSocket::TlsStatus::HandshakeComplete);
+            CHECK(tcpSocket.connect(*githubAddress, 443, za::milliseconds(1000)) == za::TcpSocket::Status::Done);
+            CHECK(tcpSocket.setupTlsClient("github.com") == za::TcpSocket::TlsStatus::HandshakeComplete);
 
             SECTION("Ciphersuite")
             {

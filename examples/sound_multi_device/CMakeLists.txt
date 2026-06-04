@@ -2,6 +2,6 @@
 set(SRC SoundMultiDevice.cpp)
 
 # define the sound_multi_device target
-sfml_add_example(sound_multi_device
+zancle_add_example(sound_multi_device
                  SOURCES ${SRC}
-                 DEPENDS SFML::Audio)
+                 DEPENDS Zancle::Audio)

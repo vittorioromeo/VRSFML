@@ -8,31 +8,31 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
 
 
 namespace
@@ -42,7 +42,7 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+    za::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
                                         .size           = resolution.toVec2u(),
                                         .title          = "Showcase",
@@ -53,18 +53,18 @@ private:
                                     .value();
 
     ////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u, .smooth = true}).value();
+    za::RenderTexture m_rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u, .smooth = true}).value();
 
     ////////////////////////////////////////////////////////////
-    sf::ImGuiContext m_imGuiContext;
+    za::ImGuiContext m_imGuiContext;
 
     ////////////////////////////////////////////////////////////
-    sf::View m_worldView  = sf::View::fromScreenSize(resolution);
-    sf::View m_windowView = computeAspectRatioAwareView(m_window.getSize().toVec2f(), resolution);
+    za::View m_worldView  = za::View::fromScreenSize(resolution);
+    za::View m_windowView = computeAspectRatioAwareView(m_window.getSize().toVec2f(), resolution);
 
     ////////////////////////////////////////////////////////////
-    sf::Clock m_clock;
-    sf::Clock m_fpsClock;
+    za::Clock m_clock;
+    za::Clock m_fpsClock;
 
     ////////////////////////////////////////////////////////////
     Sampler<float> m_samplesEventMs{/* capacity */ 64u};
@@ -76,14 +76,14 @@ private:
 
     ////////////////////////////////////////////////////////////
     unsigned int    m_lastFrameDrawCallCount = 0u;
-    sf::base::SizeT m_lastFrameDrawnVertices = 0u;
+    zb::SizeT m_lastFrameDrawnVertices = 0u;
 
     ////////////////////////////////////////////////////////////
-    sf::TextureAtlas m_textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
+    za::TextureAtlas m_textureAtlas{za::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     ImFont*        m_imGuiFont{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/Born2bSportyFS.ttf", 18.f)};
-    const sf::Font m_font = sf::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
+    const za::Font m_font = za::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
 
     ////////////////////////////////////////////////////////////
     GameDependencies m_deps{&m_window, &m_rtGame, &m_worldView, &m_font};
@@ -135,16 +135,16 @@ private:
                          samples.data(),
                          static_cast<int>(samples.capacity()),
                          static_cast<int>(samples.insertionIndex()),
-                         (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
+                         (zb::toString(samples.getAverageAs<double>()) + unit).cStr(),
                          0.f,
                          upperBound,
                          ImVec2{256.f, 32.f});
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgToAtlas(const sf::Path& path)
+    [[nodiscard]] za::Rect2f addImgToAtlas(const za::Path& path)
     {
-        return m_textureAtlas.add(sf::Image::loadFromFile(path).value()).value();
+        return m_textureAtlas.add(za::Image::loadFromFile(path).value()).value();
     }
 
     ////////////////////////////////////////////////////////////
@@ -152,11 +152,11 @@ private:
     {
         m_clock.restart();
 
-        while (sf::base::Optional event = m_window.pollEvent())
+        while (zb::Optional event = m_window.pollEvent())
         {
             m_imGuiContext.processEvent(m_window, *event);
 
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return true;
 
             if (handleAspectRatioAwareResize(*event, resolution, m_windowView))
@@ -165,8 +165,8 @@ private:
             if (ImGui::GetIO().WantCaptureKeyboard)
                 continue;
 
-            if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
-                if (eKeyPressed->code == sf::Keyboard::Key::Space)
+            if (auto* eKeyPressed = event->getIf<za::Event::KeyPressed>())
+                if (eKeyPressed->code == za::Keyboard::Key::Space)
                 {
                     ++m_activeExample;
 
@@ -181,11 +181,11 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Time runUpdate()
+    [[nodiscard]] za::Time runUpdate()
     {
         m_clock.restart();
 
-        const sf::Time deltaTime   = m_fpsClock.restart();
+        const za::Time deltaTime   = m_fpsClock.restart();
         const float    deltaTimeMs = deltaTime.asSeconds() * 1000.f;
 
         getActiveExample().update(deltaTimeMs * 0.01f);
@@ -196,7 +196,7 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    void runImGui(sf::Time deltaTime)
+    void runImGui(za::Time deltaTime)
     {
         m_clock.restart();
 
@@ -208,7 +208,7 @@ private:
         ImGui::SetNextItemWidth(120.f);
         {
             const char* names[exampleCount];
-            for (sf::base::SizeT i = 0u; i < exampleCount; ++i)
+            for (zb::SizeT i = 0u; i < exampleCount; ++i)
                 names[i] = m_examples[i]->name;
 
             ImGui::Combo("Example", &m_activeExample, names, exampleCount);
@@ -272,7 +272,7 @@ public:
             if (runEventHandling())
                 return true;
 
-            const sf::Time deltaTime = runUpdate();
+            const za::Time deltaTime = runUpdate();
 
             runImGui(deltaTime);
             runDraw();
@@ -291,8 +291,8 @@ public:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto audioContext    = sf::AudioContext::create().value();
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto audioContext    = za::AudioContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     Game game;
 

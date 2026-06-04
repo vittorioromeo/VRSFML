@@ -10,7 +10,7 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include <cstdio>
 

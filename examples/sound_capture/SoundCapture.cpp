@@ -1,26 +1,26 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/CaptureDevice.hpp"
-#include "SFML/Audio/CaptureDeviceHandle.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
-#include "SFML/Audio/SoundBufferRecorder.hpp"
-#include "SFML/Audio/SoundRecorder.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/CaptureDevice.hpp"
+#include "Zancle/Audio/CaptureDeviceHandle.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/SoundBufferRecorder.hpp"
+#include "Zancle/Audio/SoundRecorder.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Thread.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Scn/ScnStdin.hpp"
-#include "SFML/Base/Scn/ScnString.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Scn/ScnStdin.hpp"
+#include "ZancleBase/Scn/ScnString.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -30,75 +30,75 @@
 int main()
 {
     // Create the audio context
-    auto audioContext = sf::AudioContext::create().value();
+    auto audioContext = za::AudioContext::create().value();
 
     // Get the available capture devices
-    auto deviceHandles = sf::AudioContext::getAvailableCaptureDeviceHandles();
+    auto deviceHandles = za::AudioContext::getAvailableCaptureDeviceHandles();
 
     // Check if any device can capture audio
     if (deviceHandles.empty())
     {
-        sf::base::printErrLn("Sorry, audio capture is not supported by your system");
+        zb::printErrLn("Sorry, audio capture is not supported by your system");
         return 1;
     }
 
     // List the available capture device handles
-    sf::base::printLn("Available capture devices:\n");
+    zb::printLn("Available capture devices:\n");
 
-    for (sf::base::SizeT i = 0u; i < deviceHandles.size(); ++i)
-        sf::base::printLn("{}: {}", i, deviceHandles[i].getName());
+    for (zb::SizeT i = 0u; i < deviceHandles.size(); ++i)
+        zb::printLn("{}: {}", i, deviceHandles[i].getName());
 
-    sf::base::printLn("");
+    zb::printLn("");
 
     // Choose the capture device
-    sf::base::SizeT deviceIndex = 0;
+    zb::SizeT deviceIndex = 0;
 
     if (deviceHandles.size() > 1)
     {
         deviceIndex = deviceHandles.size();
-        sf::base::print("Please choose the capture device to use [0-{}]: ", deviceHandles.size() - 1);
+        zb::print("Please choose the capture device to use [0-{}]: ", deviceHandles.size() - 1);
 
         do
         {
-            (void)sf::base::scnStdinInto(deviceIndex);
-            sf::base::scnStdinIgnoreLine();
+            (void)zb::scnStdinInto(deviceIndex);
+            zb::scnStdinIgnoreLine();
         } while (deviceIndex >= deviceHandles.size());
     }
 
     // Choose the sample rate
     unsigned int sampleRate = 0;
-    sf::base::print("Please choose the sample rate for sound capture (44100 is CD quality): ");
-    (void)sf::base::scnStdinInto(sampleRate);
-    sf::base::scnStdinIgnoreLine();
+    zb::print("Please choose the sample rate for sound capture (44100 is CD quality): ");
+    (void)zb::scnStdinInto(sampleRate);
+    zb::scnStdinIgnoreLine();
 
     // Wait for user input...
-    sf::base::print("Press enter to start recording audio");
-    sf::base::scnStdinIgnoreLine();
+    zb::print("Press enter to start recording audio");
+    zb::scnStdinIgnoreLine();
 
     // Create the capture device
-    sf::CaptureDevice captureDevice(deviceHandles[deviceIndex]);
+    za::CaptureDevice captureDevice(deviceHandles[deviceIndex]);
 
     // Here we'll use an integrated custom recorder, which saves the captured data into a sound buffer
-    sf::SoundBufferRecorder recorder;
+    za::SoundBufferRecorder recorder;
 
     // Audio capture is done in a separate thread, so we can block the main thread while it is capturing
     if (!recorder.start(captureDevice, sampleRate))
     {
-        sf::base::printErrLn("Failed to start recorder");
+        zb::printErrLn("Failed to start recorder");
         return 1;
     }
 
-    sf::base::print("Recording... press enter to stop");
-    sf::base::scnStdinIgnoreLine();
+    zb::print("Recording... press enter to stop");
+    zb::scnStdinIgnoreLine();
 
     if (!recorder.stop())
-        sf::base::printErrLn("Failed to stop sound buffer recorder");
+        zb::printErrLn("Failed to stop sound buffer recorder");
 
     // Get the buffer containing the captured data
-    const sf::SoundBuffer& buffer = recorder.getBuffer();
+    const za::SoundBuffer& buffer = recorder.getBuffer();
 
     // Display captured sound information
-    sf::base::printLn("Sound information:{} {} seconds{} {} samples / seconds{} {} channels",
+    zb::printLn("Sound information:{} {} seconds{} {} samples / seconds{} {} channels",
                       '\n',
                       buffer.getDuration().asSeconds(),
                       '\n',
@@ -107,46 +107,46 @@ int main()
                       buffer.getChannelCount());
 
     // Choose what to do with the recorded sound data
-    sf::base::print("What do you want to do with captured sound (p = play, s = save) ? ");
-    const char choice = sf::base::scnStdin<char>().valueOr('p');
-    sf::base::scnStdinIgnoreLine();
+    zb::print("What do you want to do with captured sound (p = play, s = save) ? ");
+    const char choice = zb::scnStdin<char>().valueOr('p');
+    zb::scnStdinIgnoreLine();
 
     if (choice == 's')
     {
         // Choose the filename
-        sf::base::String filename;
-        sf::base::print("Choose the file to create: ");
-        (void)sf::base::scnStdinReadLine(filename);
+        zb::String filename;
+        zb::print("Choose the file to create: ");
+        (void)zb::scnStdinReadLine(filename);
 
         // Save the buffer
         if (!buffer.saveToFile(filename))
-            sf::base::printErrLn("Could not save sound buffer to file");
+            zb::printErrLn("Could not save sound buffer to file");
     }
     else
     {
         // Create the default playback device
-        sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+        za::PlaybackDevice playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
         // Create a sound instance and play it
-        sf::Sound sound(playbackDevice, buffer);
+        za::Sound sound(playbackDevice, buffer);
         sound.play();
 
         // Wait until finished
         while (sound.isPlaying())
         {
             // Display the playing position
-            sf::base::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
-            sf::base::print("");
+            zb::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
+            zb::print("");
 
             // Leave some CPU time for other threads
-            sf::ThisThread::sleepFor(sf::milliseconds(100));
+            za::ThisThread::sleepFor(za::milliseconds(100));
         }
     }
 
     // Finished!
-    sf::base::printLn("\nDone!");
+    zb::printLn("\nDone!");
 
     // Wait until the user presses 'enter' key
-    sf::base::printLn("Press enter to exit...");
-    sf::base::scnStdinIgnoreLine();
+    zb::printLn("Press enter to exit...");
+    zb::scnStdinIgnoreLine();
 }

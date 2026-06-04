@@ -16,21 +16,21 @@
 #include "Stats.hpp"
 #include "UIState.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/Base/Algorithm/Count.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Algorithm/Count.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 void Main::uiTabBarStats()
 {
     constexpr TabButtonPalette palette{
-        .idle    = sf::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
-        .hovered = sf::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
-        .active  = sf::Color::fromFloats(0.35f, 0.55f, 0.95f, 1.0f),
+        .idle    = za::Color::fromFloats(0.15f, 0.35f, 0.60f, 1.0f),
+        .hovered = za::Color::fromFloats(0.25f, 0.45f, 0.80f, 1.0f),
+        .active  = za::Color::fromFloats(0.35f, 0.55f, 0.95f, 1.0f),
     };
 
     const auto displayStats = [&](const Stats& stats)
@@ -381,11 +381,11 @@ void Main::uiTabBarStats()
 
         case 3:
         {
-            const sf::base::SizeT nAchievementsUnlocked = sf::base::countTruthy(profile.unlockedAchievements,
+            const zb::SizeT nAchievementsUnlocked = zb::countTruthy(profile.unlockedAchievements,
                                                                                 profile.unlockedAchievements + nAchievements);
 
             uiSetFontScale(uiNormalFontScale);
-            ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, sf::base::getArraySize(achievementData));
+            ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, zb::getArraySize(achievementData));
 
             static bool showCompleted = true;
             uiSetFontScale(0.75f);
@@ -396,7 +396,7 @@ void Main::uiTabBarStats()
 
             ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
-            sf::base::U64 id = 0u;
+            zb::U64 id = 0u;
             for (const auto& [name, description, secret] : achievementData)
             {
                 const bool unlocked = profile.unlockedAchievements[id];
@@ -407,10 +407,10 @@ void Main::uiTabBarStats()
                     continue;
                 }
 
-                const sf::Color titleColor = unlocked ? colorBlueOutline
+                const za::Color titleColor = unlocked ? colorBlueOutline
                                                       : colorBlueOutline.withLightness(0.48f).withSaturation(0.35f);
 
-                const sf::Color bodyColor = unlocked ? colorBlueOutline.withLightness(0.38f).withSaturation(0.55f)
+                const za::Color bodyColor = unlocked ? colorBlueOutline.withLightness(0.38f).withSaturation(0.55f)
                                                      : colorBlueOutline.withLightness(0.45f).withSaturation(0.2f);
 
                 uiSetFontScale(uiNormalFontScale * 1.15f);

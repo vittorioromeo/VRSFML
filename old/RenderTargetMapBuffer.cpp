@@ -3,7 +3,7 @@
         auto&           object,
         base::SizeT&    capacity,
         const void*     data,
-        sf::base::SizeT byteCount)
+        zb::SizeT byteCount)
     {
         reallocObjectIfNeeded(type, object, capacity, byteCount);
 #if 1
@@ -15,7 +15,7 @@
                                      GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT |
                                          GL_MAP_UNSYNCHRONIZED_BIT);
 
-        SFML_BASE_MEMCPY(ptr, data, byteCount);
+        ZB_MEMCPY(ptr, data, byteCount);
         glUnmapBuffer(type);
 #endif
     }

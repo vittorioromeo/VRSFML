@@ -1,6 +1,6 @@
 # all source files
 set(SRC Keyboard.cpp)
-if(SFML_OS_IOS)
+if(ZA_OS_IOS)
     set(RESOURCES
         resources/error_005.ogg
         resources/mouseclick1.ogg
@@ -10,7 +10,7 @@ if(SFML_OS_IOS)
 endif()
 
 # define the keyboard target
-sfml_add_example(keyboard GUI_APP
+zancle_add_example(keyboard GUI_APP
                  SOURCES ${SRC}
                  BUNDLE_RESOURCES ${RESOURCES}
-                 DEPENDS SFML::Audio SFML::Graphics)
+                 DEPENDS Zancle::Audio Zancle::Graphics)

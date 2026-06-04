@@ -1,19 +1,19 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
 namespace
@@ -95,7 +95,7 @@ struct Obj
     }
 };
 
-constexpr sf::base::SizeT defaultCapacity = 10; // Define a capacity for InPlaceVector
+constexpr zb::SizeT defaultCapacity = 10; // Define a capacity for InPlaceVector
 
 TEST_CASE("[Base] Base/InPlaceVector.hpp")
 {
@@ -103,30 +103,30 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
 
         // InPlaceVector itself is not trivial due to custom destructor and copy/move ops
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::InPlaceVector<Obj, defaultCapacity>));
 
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::InPlaceVector<Obj, defaultCapacity>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::InPlaceVector<Obj, defaultCapacity>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::InPlaceVector<int, defaultCapacity>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::InPlaceVector<Obj, defaultCapacity>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::InPlaceVector<int, defaultCapacity>));
     }
 
     SECTION("Empty")
@@ -145,7 +145,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
         resetCounters();
 
-        sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+        zb::InPlaceVector<Obj, defaultCapacity> tv;
         DO_EMPTY_CHECKS_IPV(tv);
         CHECK(tv.capacity() == defaultCapacity);
 
@@ -153,24 +153,24 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         DO_EMPTY_CHECKS_IPV(tv);
         CHECK(tv.capacity() == defaultCapacity);
 
-        sf::base::InPlaceVector<Obj, defaultCapacity> tv2 = tv;
+        zb::InPlaceVector<Obj, defaultCapacity> tv2 = tv;
         DO_EMPTY_CHECKS_IPV(tv2);
         CHECK(tv2.capacity() == defaultCapacity);
         CHECK(copyCtorCount == 0); // No elements to copy
 
-        sf::base::InPlaceVector<Obj, defaultCapacity> tv3 = SFML_BASE_MOVE(tv);
+        zb::InPlaceVector<Obj, defaultCapacity> tv3 = ZB_MOVE(tv);
         DO_EMPTY_CHECKS_IPV(tv3);
         CHECK(tv3.capacity() == defaultCapacity);
         CHECK(moveCtorCount == 0); // No elements to move
 
-        sf::base::InPlaceVector<Obj, defaultCapacity> tv4;
+        zb::InPlaceVector<Obj, defaultCapacity> tv4;
         tv4 = tv;
         DO_EMPTY_CHECKS_IPV(tv4);
         CHECK(tv4.capacity() == defaultCapacity);
         CHECK(copyAssignCount == 0); // No elements to copy assign
 
-        sf::base::InPlaceVector<Obj, defaultCapacity> tv5;
-        tv5 = SFML_BASE_MOVE(tv4);
+        zb::InPlaceVector<Obj, defaultCapacity> tv5;
+        tv5 = ZB_MOVE(tv4);
         DO_EMPTY_CHECKS_IPV(tv5);
         CHECK(tv5.capacity() == defaultCapacity);
         CHECK(moveAssignCount == 0); // No elements to move assign
@@ -186,22 +186,22 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     {
         resetCounters();
         {
-            sf::base::InPlaceVector<Obj, 5> tv(3); // Default construct 3 Objs
+            zb::InPlaceVector<Obj, 5> tv(3); // Default construct 3 Objs
             CHECK(tv.size() == 3);
             CHECK(defaultCtorCount == 3);
-            for (sf::base::SizeT i = 0; i < 3; ++i)
+            for (zb::SizeT i = 0; i < 3; ++i)
                 CHECK(tv[i].value == 0);
         }
         CHECK(dtorCount == 3);
 
         resetCounters();
         {
-            sf::base::InPlaceVector<Obj, 5> tv(2, Obj(77)); // Construct 2 Objs with value 77
+            zb::InPlaceVector<Obj, 5> tv(2, Obj(77)); // Construct 2 Objs with value 77
             CHECK(tv.size() == 2);
             CHECK(intCtorCount == 1);  // For temporary Obj(77)
             CHECK(copyCtorCount == 2); // Copying Obj(77) into vector
             CHECK(dtorCount == 1);     // For temporary Obj(77)
-            for (sf::base::SizeT i = 0; i < 2; ++i)
+            for (zb::SizeT i = 0; i < 2; ++i)
                 CHECK(tv[i].value == 77);
         }
         CHECK(dtorCount == 1 + 2); // 1 temp + 2 in vector
@@ -212,7 +212,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(intCtorCount == 3);
             resetCounters(); // Focus on vector construction
 
-            sf::base::InPlaceVector<Obj, 5> tv(source, source + 3);
+            zb::InPlaceVector<Obj, 5> tv(source, source + 3);
             CHECK(tv.size() == 3);
             CHECK(copyCtorCount == 3); // Copying from source array
             CHECK(tv[0].value == 1);
@@ -223,7 +223,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
         resetCounters();
         {
-            sf::base::InPlaceVector<Obj, 5> tv{Obj(10), Obj(20)};
+            zb::InPlaceVector<Obj, 5> tv{Obj(10), Obj(20)};
             CHECK(tv.size() == 2);
             CHECK(intCtorCount == 2);  // For temporaries in initializer list
             CHECK(copyCtorCount == 2); // For copying from initializer list (if not elided)
@@ -241,7 +241,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     {
         resetCounters();
         {
-            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            zb::InPlaceVector<Obj, defaultCapacity> tv;
             DO_EMPTY_CHECKS_IPV(tv);
             CHECK(tv.capacity() == defaultCapacity);
 
@@ -276,7 +276,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             CHECK(tv.size() == 5u);
             CHECK(tv.capacity() == defaultCapacity);
             CHECK(tv[0].value == 42);
-            for (sf::base::SizeT i = 1; i < 5; ++i)
+            for (zb::SizeT i = 1; i < 5; ++i)
                 CHECK(tv[i].value == 0);
             CHECK(defaultCtorCount == 4);
 
@@ -299,8 +299,8 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     {
         resetCounters();
         {
-            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
-            for (sf::base::SizeT i = 0; i < defaultCapacity / 2; ++i)
+            zb::InPlaceVector<Obj, defaultCapacity> tv;
+            for (zb::SizeT i = 0; i < defaultCapacity / 2; ++i)
                 tv.unsafeEmplaceBack(5);
 
             CHECK(intCtorCount == defaultCapacity / 2);
@@ -321,7 +321,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("erase")
     {
-        sf::base::InPlaceVector<Obj, 10> tv; // Capacity of 10
+        zb::InPlaceVector<Obj, 10> tv; // Capacity of 10
 
         // Populate the vector: 10, 20, 30, 40, 50
         tv.emplaceBack(10);
@@ -403,7 +403,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
         // --- Edge case: Erase from single-element vector ---
         resetCounters();
-        sf::base::InPlaceVector<Obj, 1> tvSingle;
+        zb::InPlaceVector<Obj, 1> tvSingle;
         tvSingle.emplaceBack(100);
         REQUIRE(tvSingle.size() == 1);
         CHECK(intCtorCount == 1);
@@ -418,7 +418,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("erase range")
     {
-        sf::base::InPlaceVector<Obj, 10> tv;
+        zb::InPlaceVector<Obj, 10> tv;
         // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
         for (int i = 0; i < 10; ++i)
             tv.emplaceBack(i);
@@ -433,7 +433,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         REQUIRE(itRet == tv.begin() + 2);
         CHECK(itRet->value == 5); // Element 5 is now at index 2
         int expectedValues1[] = {0, 1, 5, 6, 7, 8, 9};
-        for (sf::base::SizeT i = 0; i < tv.size(); ++i)
+        for (zb::SizeT i = 0; i < tv.size(); ++i)
             CHECK(tv[i].value == expectedValues1[i]);
 
         CHECK(moveAssignCount == 5); // 5,6,7,8,9 are moved
@@ -460,10 +460,10 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     SECTION("Swap")
     {
         resetCounters();
-        sf::base::InPlaceVector<Obj, 5> v1;
+        zb::InPlaceVector<Obj, 5> v1;
         v1.emplaceBack(1); // {1}
         v1.emplaceBack(2); // {1, 2}
-        sf::base::InPlaceVector<Obj, 5> v2;
+        zb::InPlaceVector<Obj, 5> v2;
         v2.emplaceBack(10); // {10}
         v2.emplaceBack(20); // {10, 20}
         v2.emplaceBack(30); // {10, 20, 30}
@@ -496,7 +496,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
         // Test swap with empty vector
         resetCounters();
-        sf::base::InPlaceVector<Obj, 5> vEmpty;
+        zb::InPlaceVector<Obj, 5> vEmpty;
         v1.swap(vEmpty); // v1: {10,20,30}, vEmpty: {}
         CHECK(v1.empty());
         CHECK(vEmpty.size() == 3);
@@ -509,16 +509,16 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Comparison operators")
     {
-        sf::base::InPlaceVector<Obj, 5> v1;
+        zb::InPlaceVector<Obj, 5> v1;
         v1.emplaceBack(1);
         v1.emplaceBack(2);
-        sf::base::InPlaceVector<Obj, 5> v2;
+        zb::InPlaceVector<Obj, 5> v2;
         v2.emplaceBack(1);
         v2.emplaceBack(2);
-        sf::base::InPlaceVector<Obj, 5> v3;
+        zb::InPlaceVector<Obj, 5> v3;
         v3.emplaceBack(1);
         v3.emplaceBack(3);
-        sf::base::InPlaceVector<Obj, 5> v4;
+        zb::InPlaceVector<Obj, 5> v4;
         v4.emplaceBack(1);
 
         CHECK((v1 == v2));
@@ -529,8 +529,8 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         CHECK((v4 != v1));
         CHECK((v1 == v1));
 
-        sf::base::InPlaceVector<Obj, 5> empty1;
-        sf::base::InPlaceVector<Obj, 5> empty2;
+        zb::InPlaceVector<Obj, 5> empty1;
+        zb::InPlaceVector<Obj, 5> empty2;
         CHECK((empty1 == empty2));
         CHECK((empty1 != v1));
     }
@@ -538,7 +538,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     SECTION("unsafePushBackMultiple and pushBackMultiple")
     {
         resetCounters();
-        sf::base::InPlaceVector<Obj, 10> tv;
+        zb::InPlaceVector<Obj, 10> tv;
         tv.pushBackMultiple(Obj(1), Obj(2), Obj(3));
         CHECK(tv.size() == 3);
         CHECK(intCtorCount == 3);  // For Obj(1), Obj(2), Obj(3) temporaries
@@ -561,7 +561,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
     SECTION("emplaceRange and unsafeEmplaceBackRange")
     {
         resetCounters();
-        sf::base::InPlaceVector<Obj, 10> tv;
+        zb::InPlaceVector<Obj, 10> tv;
         Obj                              source[] = {Obj(10), Obj(20), Obj(30)};
         CHECK(intCtorCount == 3); // For source array
         resetCounters();
@@ -602,7 +602,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
             NonMovable& operator=(NonMovable&&)      = delete;
         };
 
-        sf::base::InPlaceVector<NonMovable, 5> tv;
+        zb::InPlaceVector<NonMovable, 5> tv;
         tv.emplaceBack();
         CHECK(tv.size() == 1);
     }
@@ -612,7 +612,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         SUBCASE("Emplace into empty vector")
         {
             resetCounters();
-            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            zb::InPlaceVector<Obj, defaultCapacity> tv;
 
             Obj* itRet = tv.emplace(tv.begin(), 42);
 
@@ -629,7 +629,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         SUBCASE("Emplace at the end")
         {
             resetCounters();
-            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            zb::InPlaceVector<Obj, defaultCapacity> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(20);
             resetCounters();
@@ -652,7 +652,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         SUBCASE("Emplace in the middle")
         {
             resetCounters();
-            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            zb::InPlaceVector<Obj, defaultCapacity> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(30);
             tv.emplaceBack(40);
@@ -678,7 +678,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         SUBCASE("Emplace at the beginning")
         {
             resetCounters();
-            sf::base::InPlaceVector<Obj, defaultCapacity> tv;
+            zb::InPlaceVector<Obj, defaultCapacity> tv;
             tv.emplaceBack(20);
             tv.emplaceBack(30);
             REQUIRE(tv.size() == 2);
@@ -702,11 +702,11 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Temporary assignment")
     {
-        sf::base::InPlaceVector<int, 5> v0;
+        zb::InPlaceVector<int, 5> v0;
 
         CHECK(v0.size() == 0);
 
-        v0 = sf::base::InPlaceVector<int, 5>{1, 2, 3};
+        v0 = zb::InPlaceVector<int, 5>{1, 2, 3};
 
         CHECK(v0.size() == 3);
         CHECK(v0[0] == 1);
@@ -716,7 +716,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Init list assignment")
     {
-        sf::base::InPlaceVector<int, 5> v0;
+        zb::InPlaceVector<int, 5> v0;
 
         CHECK(v0.size() == 0);
 
@@ -730,7 +730,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element")
     {
-        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        zb::InPlaceVector<Obj, defaultCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -746,7 +746,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Self-aliasing: insert at begin from last element")
     {
-        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        zb::InPlaceVector<Obj, defaultCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -762,7 +762,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Self-aliasing: insert at middle from element that gets shifted")
     {
-        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        zb::InPlaceVector<Obj, defaultCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -778,7 +778,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Self-aliasing: emplace at begin from back()")
     {
-        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        zb::InPlaceVector<Obj, defaultCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -795,7 +795,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
 
     SECTION("Self-aliasing: emplaceBack from own element")
     {
-        sf::base::InPlaceVector<Obj, defaultCapacity> v;
+        zb::InPlaceVector<Obj, defaultCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);

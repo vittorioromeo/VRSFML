@@ -6,16 +6,16 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Xoroshiro128PlusPlusBitGenerator.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Math/Sqrt.hpp"
-#include "SFML/Base/Trait/IsIntegral.hpp"
-#include "SFML/Base/Trait/MakeUnsigned.hpp"
+#include "ZancleBase/AssertAndAssume.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Math/Sqrt.hpp"
+#include "ZancleBase/Trait/IsIntegral.hpp"
+#include "ZancleBase/Trait/MakeUnsigned.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ private:
     Xoroshiro128PlusPlusBitGenerator m_engine;
 
 public:
-    using SeedType = sf::base::U64; //!< Type used for seeding
+    using SeedType = zb::U64; //!< Type used for seeding
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor. Initializes with a fixed internal seed.
@@ -60,16 +60,16 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline T getI(const T min, const T max)
     {
-        static_assert(SFML_BASE_IS_INTEGRAL(T));
+        static_assert(ZB_IS_INTEGRAL(T));
 
-        SFML_BASE_ASSERT_AND_ASSUME(min <= max);
+        ZB_ASSERT_AND_ASSUME(min <= max);
 
-        using UnsignedT = SFML_BASE_MAKE_UNSIGNED(T);
+        using UnsignedT = ZB_MAKE_UNSIGNED(T);
 
         const auto unsignedMin = static_cast<UnsignedT>(min);
         const auto unsignedMax = static_cast<UnsignedT>(max);
 
-        const auto range = static_cast<sf::base::U64>(unsignedMax - unsignedMin) + sf::base::U64{1};
+        const auto range = static_cast<zb::U64>(unsignedMax - unsignedMin) + zb::U64{1};
 
         return min + static_cast<T>(m_engine.next() % range);
     }
@@ -85,14 +85,14 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getF(const float min, const float max)
     {
-        SFML_BASE_ASSERT_AND_ASSUME(min <= max);
+        ZB_ASSERT_AND_ASSUME(min <= max);
 
         // Returns a float in the inclusive range [min, max].
 
         // We extract 24 random bits, which is enough to fill the 23-bit mantissa of a float,
         // and normalize by dividing by (2^24 - 1).
 
-        const auto  randomBits = static_cast<sf::base::U32>(m_engine.next() >> (64u - 24u)); // Extract 24 bits.
+        const auto  randomBits = static_cast<zb::U32>(m_engine.next() >> (64u - 24u)); // Extract 24 bits.
         const float normalized = static_cast<float>(randomBits) / float{(1 << 24) - 1};      // Normalize to [0, 1].
 
         return min + normalized * (max - min);
@@ -104,10 +104,10 @@ public:
     /// \param mins Vec2 containing minimum inclusive values `(x, y)`.
     /// \param maxs Vec2 containing maximum inclusive values `(x, y)`.
     ///
-    /// \return A random sf::Vec2f within the specified bounds.
+    /// \return A random za::Vec2f within the specified bounds.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getVec2f(const sf::Vec2f mins, const sf::Vec2f maxs)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getVec2f(const za::Vec2f mins, const za::Vec2f maxs)
     {
         return {getF(mins.x, maxs.x), getF(mins.y, maxs.y)};
     }
@@ -117,10 +117,10 @@ public:
     ///
     /// \param maxs Vec2 containing maximum inclusive values `(x, y)`.
     ///
-    /// \return A random sf::Vec2f within the range `[0, maxs.x]` and `[0, maxs.y]`.
+    /// \return A random za::Vec2f within the range `[0, maxs.x]` and `[0, maxs.y]`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getVec2f(const sf::Vec2f maxs)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getVec2f(const za::Vec2f maxs)
     {
         return {getF(0.f, maxs.x), getF(0.f, maxs.y)};
     }
@@ -131,16 +131,16 @@ public:
     /// \param center Center of the circle.
     /// \param radius Radius of the circle.
     ///
-    /// \return A random `sf::Vec2f` inside the specified circle.
+    /// \return A random `za::Vec2f` inside the specified circle.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getPointInCircle(const sf::Vec2f center, const float radius)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getPointInCircle(const za::Vec2f center, const float radius)
     {
-        const float angle    = getF(0.f, sf::base::tau);
-        const float distance = radius * SFML_BASE_MATH_SQRTF(getF(0.f, 1.f));
+        const float angle    = getF(0.f, zb::tau);
+        const float distance = radius * ZB_MATH_SQRTF(getF(0.f, 1.f));
 
         // Compute the point's coordinates using polar-to-Cartesian conversion.
-        return {center.x + distance * SFML_BASE_MATH_COSF(angle), center.y + distance * SFML_BASE_MATH_SINF(angle)};
+        return {center.x + distance * ZB_MATH_COSF(angle), center.y + distance * ZB_MATH_SINF(angle)};
     }
 
     ////////////////////////////////////////////////////////////
@@ -157,12 +157,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Generates a random 2D unit vector (direction).
     ///
-    /// \return A random `sf::Vec2f` with magnitude `1`.
+    /// \return A random `za::Vec2f` with magnitude `1`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getDirVec2f()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getDirVec2f()
     {
-        const float angle = getF(0.f, sf::base::tau);
-        return {SFML_BASE_MATH_COSF(angle), SFML_BASE_MATH_SINF(angle)};
+        const float angle = getF(0.f, zb::tau);
+        return {ZB_MATH_COSF(angle), ZB_MATH_SINF(angle)};
     }
 };

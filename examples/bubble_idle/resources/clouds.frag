@@ -1,9 +1,9 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 uniform float u_time;
 uniform vec2 u_resolution;
@@ -56,11 +56,11 @@ float sampleDensity(vec2 uv, float radius)
 {
     vec2 offset = (radius * 1.5) / u_resolution;
 
-    float d = texture(sf_u_texture, uv).a * 0.36;
-    d += texture(sf_u_texture, uv + offset).a * 0.20;
-    d += texture(sf_u_texture, uv - offset).a * 0.20;
-    d += texture(sf_u_texture, uv + vec2(-offset.x, offset.y)).a * 0.20;
-    d += texture(sf_u_texture, uv + vec2(offset.x, -offset.y)).a * 0.20;
+    float d = texture(za_u_texture, uv).a * 0.36;
+    d += texture(za_u_texture, uv + offset).a * 0.20;
+    d += texture(za_u_texture, uv - offset).a * 0.20;
+    d += texture(za_u_texture, uv + vec2(-offset.x, offset.y)).a * 0.20;
+    d += texture(za_u_texture, uv + vec2(offset.x, -offset.y)).a * 0.20;
 
     return d;
 }
@@ -68,16 +68,16 @@ float sampleDensity(vec2 uv, float radius)
 void main()
 {
     // Inline raw mask fetch to avoid function call overhead
-    float rawMask = texture(sf_u_texture, sf_v_texCoord).a;
+    float rawMask = texture(za_u_texture, za_v_texCoord).a;
 
     if (rawMask <= 0.001)
     {
-        sf_fragColor = vec4(0.0);
+        za_fragColor = vec4(0.0);
         return;
     }
 
-    float smallDensity = sampleDensity(sf_v_texCoord, 2.0);
-    float largeDensity = sampleDensity(sf_v_texCoord, 6.5);
+    float smallDensity = sampleDensity(za_v_texCoord, 2.0);
+    float largeDensity = sampleDensity(za_v_texCoord, 6.5);
 
     vec2 texel = 1.0 / u_resolution;
 
@@ -85,10 +85,10 @@ void main()
     vec2 offsetX = vec2(texel.x * 3.0, 0.0);
     vec2 offsetY = vec2(0.0, texel.y * 3.0);
 
-    float dx = sampleDensity(sf_v_texCoord + offsetX, 6.5) -
-               sampleDensity(sf_v_texCoord - offsetX, 6.5);
-    float dy = sampleDensity(sf_v_texCoord + offsetY, 6.5) -
-               sampleDensity(sf_v_texCoord - offsetY, 6.5);
+    float dx = sampleDensity(za_v_texCoord + offsetX, 6.5) -
+               sampleDensity(za_v_texCoord - offsetX, 6.5);
+    float dy = sampleDensity(za_v_texCoord + offsetY, 6.5) -
+               sampleDensity(za_v_texCoord - offsetY, 6.5);
 
     vec3 normal = normalize(vec3(-dx * 7.0, -dy * 9.0, 1.0));
 
@@ -119,10 +119,10 @@ void main()
 
     if (alpha <= 0.001)
     {
-        sf_fragColor = vec4(0.0);
+        za_fragColor = vec4(0.0);
         return;
     }
 
     // Keep the cloud layer premultiplied
-    sf_fragColor = vec4(color * alpha, alpha);
+    za_fragColor = vec4(color * alpha, alpha);
 }

@@ -24,22 +24,22 @@ namespace
 
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float mysin(float x)
 {
-    float sign = 1.0f - 2.0f * (x > sf::base::pi);
-    x -= sf::base::pi * (x > sf::base::pi);
+    float sign = 1.0f - 2.0f * (x > zb::pi);
+    x -= zb::pi * (x > zb::pi);
 
-    float mirror = sf::base::pi - x;
-    x            = (x > ::sf::base::halfPi) * mirror + (x <= ::sf::base::halfPi) * x;
+    float mirror = zb::pi - x;
+    x            = (x > ::zb::halfPi) * mirror + (x <= ::zb::halfPi) * x;
 
     return sign * approxsin(x);
 }
 
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float mycos(float x)
 {
-    float sign = 1.0f - 2.0f * (x >= sf::base::pi);
-    x -= sf::base::pi * (x >= sf::base::pi);
+    float sign = 1.0f - 2.0f * (x >= zb::pi);
+    x -= zb::pi * (x >= zb::pi);
 
-    float mirror     = sf::base::pi - x;
-    float use_mirror = x > ::sf::base::halfPi;
+    float mirror     = zb::pi - x;
+    float use_mirror = x > ::zb::halfPi;
     x                = use_mirror * mirror + (1.0f - use_mirror) * x;
     sign *= 1.0f - 2.0f * use_mirror;
 

@@ -1,14 +1,14 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
 uniform float u_time;
 uniform bool u_waveEnabled;
 
 ////////////////////////////////////////////////////////////
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 in vec2 v_worldPos;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 ////////////////////////////////////////////////////////////
 // Rotates hue in RGB space
@@ -39,7 +39,7 @@ vec3 rotateHueRGB(vec3 color, float angle_degrees)
 ////////////////////////////////////////////////////////////
 void main()
 {
-    vec2 waveCoord = sf_v_texCoord;
+    vec2 waveCoord = za_v_texCoord;
 
     if (u_waveEnabled)
     {
@@ -54,21 +54,21 @@ void main()
     }
 
     // Sample texture at distorted coordinates
-    vec4 texColor = texture(sf_u_texture, waveCoord);
+    vec4 texColor = texture(za_u_texture, waveCoord);
 
     if (texColor.a < 0.01)
         discard;
 
     const vec2 flagTarget = vec2(1.0 / 255.0);
     const vec2 epsilon    = vec2(0.001);
-    bool       hueDriven  = all(lessThanEqual(abs(sf_v_color.rg - flagTarget), epsilon));
+    bool       hueDriven  = all(lessThanEqual(abs(za_v_color.rg - flagTarget), epsilon));
 
     if (!hueDriven)
     {
-        sf_fragColor = sf_v_color * texColor;
+        za_fragColor = za_v_color * texColor;
         return;
     }
 
-    vec3 finalColor = rotateHueRGB(texColor.rgb, float(sf_v_color.b) * 360.0);
-    sf_fragColor    = vec4(finalColor, sf_v_color.a * texColor.a);
+    vec3 finalColor = rotateHueRGB(texColor.rgb, float(za_v_color.b) * 360.0);
+    za_fragColor    = vec4(finalColor, za_v_color.a * texColor.a);
 }

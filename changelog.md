@@ -9,7 +9,7 @@
 -   Improved diagnostics when C++ language version is too low (#3383)
 -   Fixed build errors when compiling in C++20 mode (#3394)
 -   [iOS] Fixed iOS debug build (#3427)
--   Removed `-s` suffix for sfml-main (#3431)
+-   Removed `-s` suffix for zancle-main (#3431)
 -   Prevented recreation of UDev target which broke package manager workflows (#3450)
 -   Fixed bug with installing pkgconfig files (#3451)
 -   Fixed CMake 4 build error (#3462)
@@ -19,24 +19,24 @@
 
 **Bugfixes**
 
--   [Windows] Silenced C4275 warning for `sf::Exception` (#3405)
+-   [Windows] Silenced C4275 warning for `za::Exception` (#3405)
 -   Fixed printing Unicode filepaths when error occurs (#3407)
 
 ### Window
 
 **Bugfixes**
 
--   Improved `sf::Event::visit` and `sf::WindowBase::handleEvents` (#3399)
+-   Improved `za::Event::visit` and `za::WindowBase::handleEvents` (#3399)
 -   [Windows] Fixed calculating window size with a menu or an extended style (#3448)
--   [Windows] Fixed crash when constructing a window from a `sf::WindowHandle` (#3469)
+-   [Windows] Fixed crash when constructing a window from a `za::WindowHandle` (#3469)
 
 ### Graphics
 
 **Bugfixes**
 
--   Fixed `sf::Image` support for Unicode filenames (#3403)
--   Ensured `sf::Image` remains unchanged after an unsuccessful load (#3409)
--   Fixed opening `sf::Font` from non-ASCII paths (#3422)
+-   Fixed `za::Image` support for Unicode filenames (#3403)
+-   Ensured `za::Image` remains unchanged after an unsuccessful load (#3409)
+-   Fixed opening `za::Font` from non-ASCII paths (#3422)
 -   [Android] Fixed crash when loading missing resources (#3476)
 
 ### Network
@@ -44,7 +44,7 @@
 **Bugfixes**
 
 -   Fixed comments and address ordering in IpAddress::getLocalAddress (#3428)
--   Fixed unsigned overflow in `sf::Packet` size check (#3441)
+-   Fixed unsigned overflow in `za::Packet` size check (#3441)
 
 ## SFML 3.0.0
 
@@ -62,10 +62,10 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 -   Removed OpenAL shared library requirement (#2749)
 -   Used `[[nodiscard]]` (#1891, #1889, #1888, #1887, #1890, #1887, #2010, #3137, #3138)
 -   Made many APIs `constexpr`-capable (#1903, #1909, #1904, #1910, #1934, #1937, #1999, #2000, #2377)
--   Changed many `(x, y)` APIs to instead use `sf::Vec2<T>` (#1902, #1942, #1948, #2055, #2972)
+-   Changed many `(x, y)` APIs to instead use `za::Vec2<T>` (#1902, #1942, #1948, #2055, #2972)
 -   Removed deprecated APIs (#1881, #1886)
--   Added `SFML::` namespace to CMake targets (#1947)
--   Added support for PCH builds via `SFML_ENABLE_PCH` CMake option (#1895)
+-   Added `Zancle::` namespace to CMake targets (#1947)
+-   Added support for PCH builds via `ZA_ENABLE_PCH` CMake option (#1895)
 -   Added CMake preset to do developer builds (#2642)
 -   Added move semantics to many types (#1932, #2014, #2016, #2273, #2276, #2277, #2329, #2487, #2658, #2656, #2805, #3142)
 -   Added debug assertions to catch common bugs (#2404, #2586, #2595, #2682, #2725, #3122, #3211)
@@ -79,7 +79,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 -   Removed custom fixed width integer aliases (#2192, #2196, #2199, #2200)
 -   Improved object lifetime safety (#2332, #2336, #3126)
 -   Used `std::optional` to express nullable parameters and return values (#1952, #2449, #2756, #2803, #2963, #2964, #3106)
--   [Android] Removed sfml-activity (#2783)
+-   [Android] Removed zancle-activity (#2783)
 -   Consistently used `getNativeHandle` function name (#2669)
 -   [Windows] Added support for UCRT MinGW (#3115)
 -   [Windows] Added support for Windows ARM64 (#3111)
@@ -92,15 +92,15 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 **Features**
 
 -   Replaced multithreading primitives with standard C++ ones (#1863)
--   Replaced `sf::NonCopyable` with `= delete` (#1901)
--   Added `sf::Angle` (#1969)
--   Added extension methods for `sf::Vec2<T>` (#1979)
--   Made `sf::Clock` pausable (#2004)
--   Added polar coordinate `sf::Vec2<T>` constructor (#2085)
--   Added extension methods for `sf::Vec3<T>` (#2086)
--   Improved `sf::Time` interoperability with `<chrono>` (#2133)
--   Removed `sf::MemoryInputStream` default constructor (#3085)
--   Disallowed constructing `sf::String` from `nullptr` (#3144)
+-   Replaced `za::NonCopyable` with `= delete` (#1901)
+-   Added `za::Angle` (#1969)
+-   Added extension methods for `za::Vec2<T>` (#1979)
+-   Made `za::Clock` pausable (#2004)
+-   Added polar coordinate `za::Vec2<T>` constructor (#2085)
+-   Added extension methods for `za::Vec3<T>` (#2086)
+-   Improved `za::Time` interoperability with `<chrono>` (#2133)
+-   Removed `za::MemoryInputStream` default constructor (#3085)
+-   Disallowed constructing `za::String` from `nullptr` (#3144)
 
 **Bugfixes**
 
@@ -110,10 +110,10 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 
 **Features**
 
--   Added `sf::WindowBase::set{Min|Max}imumSize()` (#2519)
+-   Added `za::WindowBase::set{Min|Max}imumSize()` (#2519)
 -   Optimized WGL context creation performance on some systems (#2616)
--   Rewrote `sf::Event` API to improve type safety (#2766)
--   Added `sf::State` for specifying fullscreen or floating windows (#2818)
+-   Rewrote `za::Event` API to improve type safety (#2766)
+-   Added `za::State` for specifying fullscreen or floating windows (#2818)
 -   Renamed `XButton1` and `XButton2` to `Extra1` and `Extra2` (#2838)
 -   Added raw mouse input support (#3057)
 -   Added `timeout` parameter to `waitEvent` (#3094)
@@ -124,9 +124,9 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 -   Fixed `wglGetProcAddress` not providing OpenGL 1.1 functions when the context is provided by an Nvidia ICD (#2498)
 -   [macOS] Fixed macOS window resizing bug (#2538)
 -   [macOS] Fixed macOS window height bug (#2631)
--   Fixed `sf::Context::setActive` bug (#2816)
+-   Fixed `za::Context::setActive` bug (#2816)
 -   [Windows] Fixed F13-F24 and consumer key names not being returned on Windows (#2873)
--   [Windows] Changed `sf::Context::getFunction` to return `nullptr` when called on Windows without an active context (#2925)
+-   [Windows] Changed `za::Context::getFunction` to return `nullptr` when called on Windows without an active context (#2925)
 -   [Linux] Fixed broken joystick axis mappings under Linux (#3167)
 -   [macOS] Fixed how macOS fullscreen video modes are detected (#3151, #3348)
 -   [macOS] Avoided unnecessary permission request prompts (#3232)
@@ -137,35 +137,35 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 **Features**
 
 -   Added support for stencil testing (#1453)
--   Added texture coordinate type to `sf::RenderStates` (#1807)
--   Added `bool` return value to `sf::Image::copy` to signal success/failure (#2137)
--   Reduced `sf::Transformable` object size (#2288)
--   Allowed setting window icon with `sf::Image` (#2417)
--   Removed `sf::Text` default constructor (#2486)
--   Removed `sf::Sprite` default constructor (#2494)
--   Added `sf::Shape::getGeometricCenter()` (#2537)
+-   Added texture coordinate type to `za::RenderStates` (#1807)
+-   Added `bool` return value to `za::Image::copy` to signal success/failure (#2137)
+-   Reduced `za::Transformable` object size (#2288)
+-   Allowed setting window icon with `za::Image` (#2417)
+-   Removed `za::Text` default constructor (#2486)
+-   Removed `za::Sprite` default constructor (#2494)
+-   Added `za::Shape::getGeometricCenter()` (#2537)
 -   Changed pointer return type to reference (#2637)
--   Added `sf::Rect<T>::getCenter()` (#2776)
--   Removed `sf::View::reset` in favor of assignment operations (#2942)
--   Implemented `sf::Rect<T>` as position and size vectors (#2972)
--   Ensured a new font page in `sf::Font::loadPage` is created only when needed (#3099)
--   Renamed `sf::Font::loadFromFile` to `sf::Font::openFromFile` (#3129)
+-   Added `za::Rect<T>::getCenter()` (#2776)
+-   Removed `za::View::reset` in favor of assignment operations (#2942)
+-   Implemented `za::Rect<T>` as position and size vectors (#2972)
+-   Ensured a new font page in `za::Font::loadPage` is created only when needed (#3099)
+-   Renamed `za::Font::loadFromFile` to `za::Font::openFromFile` (#3129)
 
 **Bugfixes**
 
 -   Fixed EGL pixel format selection and OpenGL version parsing (#2438)
--   [Android] Fixed texture being upside down on Android when copying the texture of an `sf::RenderTexture` (#2719)
--   Fixed FBO `sf::RenderTarget` tracking (#2726)
+-   [Android] Fixed texture being upside down on Android when copying the texture of an `za::RenderTexture` (#2719)
+-   Fixed FBO `za::RenderTarget` tracking (#2726)
 -   Fixed shader loading check for empty streams (#2869)
 -   Added sanity checks for OpenGL extensions to make sure the required entry points are actually available (#3052)
--   Fixed cache state not correctly being ignored when switching between `sf::RenderTarget`s within a single context (#3114)
+-   Fixed cache state not correctly being ignored when switching between `za::RenderTarget`s within a single context (#3114)
 -   Correctly drained OpenGL errors in [E]GLCheck (#3247)
 
 ### Audio
 
 **Features**
 
--   Removed `sf::Sound` default constructor (#2640)
+-   Removed `za::Sound` default constructor (#2640)
 -   Replaced audio backend with miniaudio (#2749)
 -   Added support for user defined sound effect implementations (#2973)
 -   Added support for changing the audio playback device during runtime (#3029)
@@ -173,17 +173,17 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 
 **Bugfixes**
 
--   Fixed `sf::SoundStream::play` bug (#2037)
--   Fixed poor `sf::SoundStream::setPlayingOffset` precision (#3101)
+-   Fixed `za::SoundStream::play` bug (#2037)
+-   Fixed poor `za::SoundStream::setPlayingOffset` precision (#3101)
 -   Fixed a bug when reading Ogg files on big endian systems (#3340)
 
 ### Network
 
 **Bugfixes**
 
--   Removed invalid internal state from `sf::IpAddress` (#2145)
+-   Removed invalid internal state from `za::IpAddress` (#2145)
 -   Fixed sockets not closing before being moved into (#2758)
--   Fixed how `sf::IpAddress`'s internal representation is stored on big endian systems (#3339)
+-   Fixed how `za::IpAddress`'s internal representation is stored on big endian systems (#3339)
 
 ## SFML 2.6.2
 
@@ -194,7 +194,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 -   Replace deprecated CMake command `exec_program` (#2888)
 -   Fix Doxygen Generation (#2986, #2812, #2813)
 -   [iOS] Use built-in iOS support for CMake (#3113)
--   [Windows] Fix `SFML_USE_STATIC_STD_LIBS` behavior (#3131)
+-   [Windows] Fix `ZA_USE_STATIC_STD_LIBS` behavior (#3131)
 -   [Windows] Add support for UCRT MinGW (#2289, #2821, #3054, #3115)
 -   [Windows] Add support for Windows ARM64 (#3111, #3176)
 -   Fix Nix pkg-config support (#2835)
@@ -215,7 +215,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 
 **Bugfixes**
 
--   [Windows] Fix MSVC warning about uninitialized `sf::Glyph` members (#2929)
+-   [Windows] Fix MSVC warning about uninitialized `za::Glyph` members (#2929)
 -   Prevent crash when setting empty uniform array (#3185, #3186)
 
 ### Audio
@@ -226,7 +226,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 
 ## SFML 2.6.1
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.1
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.6.1
 
 ### General
 
@@ -259,7 +259,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.1
 
 ## SFML 2.6.0
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.6.0
 
 ### General
 
@@ -289,7 +289,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 -   [Android] Adjust NDK search path to support newer NDKs (#1575)
 -   [macOS] Copy logo.png to Resources in Cocoa example (#1818)
 -   [Windows] Add support for Visual Studio 2022 (#1819)
--   [Android] Build sfml-main with position-independent code (#2393, #2397)
+-   [Android] Build zancle-main with position-independent code (#2393, #2397)
 
 ### System
 
@@ -299,7 +299,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 
 **Bugfixes**
 
--   [Windows] Fix overflow when using `sf::Clock` for long time (#1765, #1771)
+-   [Windows] Fix overflow when using `za::Clock` for long time (#1765, #1771)
 
 ### Window
 
@@ -317,7 +317,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 
 **Bugfixes**
 
--   Fix `sf::Context::getActiveThreadLocalGlContext` to stop returning inactive contexts (#1794)
+-   Fix `za::Context::getActiveThreadLocalGlContext` to stop returning inactive contexts (#1794)
 -   [Linux] Fixed crash with X11 when `$DISPLAY` is not `0.0` (#724, #1504)
 -   [Android] Ensure `setActive(false)` is called before the surface is destroyed in EglContext (#1530, #1531)
 -   [Android] Fixed EGL incorrectly being passed the anti-aliasing level as `EGL_SAMPLE_BUFFERS` instead of `EGL_SAMPLES` (#1533, #1534)
@@ -349,7 +349,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 **Features**
 
 -   Allow re-creation of the shared context as a core context if the user requests a core profile context (#1434, #1443)
--   Added `getPosition()` and `getSize()` to `sf::Rect` (#1047)
+-   Added `getPosition()` and `getSize()` to `za::Rect` (#1047)
 -   Added `Font::hasGlyph` field (#1644)
 -   Implemented saveToMemory and saveImageToMemory (#988, #1597, #1669)
 -   Implement smoothing for fonts (#1690, #2064, #2072)
@@ -361,40 +361,40 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 
 **Bugfixes**
 
--   Fixed missing checks for empty vertex arrays when updating the vertex buffers in `sf::Text` (#1558, #1560)
--   Remove unnecessary `glFlush()` in `sf::Texture` (#1609)
+-   Fixed missing checks for empty vertex arrays when updating the vertex buffers in `za::Text` (#1558, #1560)
+-   Remove unnecessary `glFlush()` in `za::Texture` (#1609)
 -   Fixed text rendering artifacts on Radeon cards (#1568)
 -   Force OpenGL states to be reset when RenderTarget detects that a new context has to be tracked (#1625, #1630)
--   Don't set default Texture Rect of a `sf::Sprite` before the user provided one (#1725)
+-   Don't set default Texture Rect of a `za::Sprite` before the user provided one (#1725)
 -   Added auto hinting compensation to fix too wide gaps between small glyphs (#1745, #1746)
--   Fix support for sRGB color space in `sf::RenderTexture` (#1092, #1757)
+-   Fix support for sRGB color space in `za::RenderTexture` (#1092, #1757)
 -   Fix incorrect glyph rect for text outline (#1826, #1827, #1836)
--   Fix alpha value calculation for semi-transparent pixels on fully transparent pixels with `sf::Image::copy()` (#1993)
--   Fix getLocalBounds inconsistency for `sf::Text` (#2129, #2132)
+-   Fix alpha value calculation for semi-transparent pixels on fully transparent pixels with `za::Image::copy()` (#1993)
+-   Fix getLocalBounds inconsistency for `za::Text` (#2129, #2132)
 -   [iOS] Ensure the proper default framebuffer is bound when activating a RenderWindow (#1471, #1487)
 
 ### Audio
 
 **Features**
 
--   Allow explicitly closing `sf::InputSoundFile` (#1516)
+-   Allow explicitly closing `za::InputSoundFile` (#1516)
 -   Replace use of auto_ptr for future-proofing (#1546)
--   Adjustable processing interval in `sf::SoundStream` (#1517, #1666)
--   Fix `sf::Music` sometimes failing to loop after seeking (#1707)
+-   Adjustable processing interval in `za::SoundStream` (#1517, #1666)
+-   Fix `za::Music` sometimes failing to loop after seeking (#1707)
 -   Add MP3 decoding support (#1232, #1796, #1851)
 
 **Bugfixes**
 
 -   Rename FindVorbis -> FindVORBIS, for consistency with exported variables (#1626, #1629)
 -   Fix naming of VORBIS in `SFMLConfigDependencies.cmake.in` (#1636, #1637)
--   Fixed copy assign operator in `sf::Sound` so it checks for self-assignment (#1744)
+-   Fixed copy assign operator in `za::Sound` so it checks for self-assignment (#1744)
 -   Fix SoundStream::play to restart the sound if it was played before (#2175)
 
 ### Networking
 
 **Features**
 
--   Added method to get the current read position of `sf::Packet` (#1382, #1641)
+-   Added method to get the current read position of `za::Packet` (#1382, #1641)
 
 **Bugfixes**
 
@@ -402,14 +402,14 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.6.0
 
 ## SFML 2.5.1
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.1
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.5.1
 
 ### General
 
 -   Various CMake fixes (#1414, #1416, #1436, #1439, #1467, #1470)
 -   Fixed the installation of pkg-config files (#1466)
 -   Fixed two conversion warnings (#1454)
--   [Android] Fixes all symbols in sfml-main are hidden (#1457, #1460)
+-   [Android] Fixes all symbols in zancle-main are hidden (#1457, #1460)
 -   [Android] Fixed some `#define` flag problem (#1458)
 -   [Android] Fix deadlock in main cleanup (#1265)
 -   [iOS] Modernized toolchain file (#1411)
@@ -432,12 +432,12 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.1
 
 **Bugfixes**
 
--   Fixed a bug in which a `sf::RenderTexture` would not be re-activated after being re-created (#1438)
--   Fixed `sf::RenderTextureImplFBO`'s destructor incorrectly triggering deletion of other `sf::RenderTextureImplFBO`'s active FBOs (#1440)
--   Fix `sf::RenderWindow::setActive` incorrectly trying to unbind an FBO during deactivation (#1442)
--   Fixed `sf::RenderTexture::display()` dereferencing a NULL pointer when being called before `sf::RenderTexture::create()` (#1446)
--   Fixed bug in `sf::Text` when applying an outline color/thickness (#1176)
--   Squash duplicated `sf::Font` glyphs to single chars (#1461)
+-   Fixed a bug in which a `za::RenderTexture` would not be re-activated after being re-created (#1438)
+-   Fixed `za::RenderTextureImplFBO`'s destructor incorrectly triggering deletion of other `za::RenderTextureImplFBO`'s active FBOs (#1440)
+-   Fix `za::RenderWindow::setActive` incorrectly trying to unbind an FBO during deactivation (#1442)
+-   Fixed `za::RenderTexture::display()` dereferencing a NULL pointer when being called before `za::RenderTexture::create()` (#1446)
+-   Fixed bug in `za::Text` when applying an outline color/thickness (#1176)
+-   Squash duplicated `za::Font` glyphs to single chars (#1461)
 -   Fixed two issues with glyph sub-pixel positioning (#1452)
 -   Reduced context locking & unlocking while creating textures (#1459)
 -   Fixed the error message when the wrong bitmap font size is selected (#1456, #1474, #1492)
@@ -450,7 +450,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.1
 
 ## SFML 2.5.0
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.5.0
 
 ### General
 
@@ -459,7 +459,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 -   Improve packaging support (#1173)
 -   Added Tagfile generation and search (#1327)
 -   Added CMake variables to select the modules to be built (#798, #800)
--   Do not install extlibs if `SFML_USE_SYSTEM_DEPS` is true (#1236, #1237)
+-   Do not install extlibs if `ZA_USE_SYSTEM_DEPS` is true (#1236, #1237)
 -   Fixed various type conversion/comparison warnings (#1325)
 -   [Android] Increased minimum API version to 14 (#1362)
 -   [Android] Removed custom toolchain and added support for the newest NDK version and Gradle (#1350, #1393)
@@ -479,8 +479,8 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 
 **Bugfixes**
 
--   Added protected destructor to `sf::NonCopyable` to prevent possible resource leaks (#1125, #1161)
--   Fixed crash when `sf::Clock` is constructed in a global scope (#1258)
+-   Added protected destructor to `za::NonCopyable` to prevent possible resource leaks (#1125, #1161)
+-   Fixed crash when `za::Clock` is constructed in a global scope (#1258)
 
 ### Window
 
@@ -497,7 +497,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 
 -   [Android] Return correct key code for delete/backspace (#1309, #1362)
 -   [iOS] Don't need to find vorbisfile or vorbisenc (#1347)
--   [Linux] Fixed `sf::Window::getPosition()` returning incorrect position because of differences in window managers (#1228, #1266)
+-   [Linux] Fixed `za::Window::getPosition()` returning incorrect position because of differences in window managers (#1228, #1266)
 -   [Linux] Fix X11 key repeat handling not filtering out events from other windows (#1223, #1230, #1291)
 -   [Linux] Restore fullscreen of a non-visible window (#1339)
 -   [macOS] Fixed window menu not working (#1091, #1180, #1193)
@@ -510,26 +510,26 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 
 **Features**
 
--   Implemented additional line spacing and letter spacing in `sf::Text` (#928, #1366)
--   Added `sf::VertexBuffer` class (#1308)
+-   Implemented additional line spacing and letter spacing in `za::Text` (#928, #1366)
+-   Added `za::VertexBuffer` class (#1308)
 -   Added GPU local texture copying support, allowing performance optimizations and texture swapping (#1119, #1319, #1320)
 -   Optimize performance by skipping `glTexCoordPointer()` call if not needed (#1015)
 -   Generate shape outline vertices only if necessary (#925, #1356)
 -   Removed dependency to libjpeg, stb_image_write now supports writing JPEG files (#1278, #1279)
--   Enable comparing `sf::Transform` and optimize resetting OpenGL back to the identity matrix (#1298)
--   Added missing `setActive()` virtual method to `sf::RenderTarget` (#1157)
+-   Enable comparing `za::Transform` and optimize resetting OpenGL back to the identity matrix (#1298)
+-   Added missing `setActive()` virtual method to `za::RenderTarget` (#1157)
 -   Updated stb_image to v2.16 and stb_image_write to v1.07 (#1270)
--   Added `sf::RenderTexture` stencil and multisampling support (#1274, #1285)
--   Added example demonstrating `sf::VertexBuffer`, `sf::Shader` and `sf::Thread` usage (#1352)
--   Optimized `sf::RenderTexture` performance (#1379)
+-   Added `za::RenderTexture` stencil and multisampling support (#1274, #1285)
+-   Added example demonstrating `za::VertexBuffer`, `za::Shader` and `za::Thread` usage (#1352)
+-   Optimized `za::RenderTexture` performance (#1379)
 
 **Bugfixes**
 
--   Properly free memory in `sf::Font::cleanup()` (#1119)
--   Fixed memory leak in `sf::Font` (#1216)
+-   Properly free memory in `za::Font::cleanup()` (#1119)
+-   Fixed memory leak in `za::Font` (#1216)
 -   Fix OpenGL texture coordinate pointer not being updated correctly under certain conditions (#1297)
 -   Fix for broken text when the font is reloaded (#1345)
--   Fix memory leak in `sf::Text` (#1233, #1360)
+-   Fix memory leak in `za::Text` (#1233, #1360)
 -   Fixed strict aliasing punning warning when generating the key of a glyph in Font.cpp (#1187, #1396)
 -   Fixed OpenGL version string being parsed incorrectly on some platforms (#1249, #1390)
 -   [macOS] Worked around render target bug (#1132, #1342)
@@ -539,16 +539,16 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 
 **Features**
 
--   Added loop point support to `sf::Music` (#177, #629)
+-   Added loop point support to `za::Music` (#177, #629)
 -   Added support for the extensible PCM wave file format (#1296)
 -   [iOS] Enable audio module (#1338)
 
 **Bugfixes**
 
--   Fixed inconsistent seek behavior in `sf::SoundStream` (#1118)
--   Fixed stack overflow in `sf::SoundStream::fillAndPushBuffer()` (#1154)
+-   Fixed inconsistent seek behavior in `za::SoundStream` (#1118)
+-   Fixed stack overflow in `za::SoundStream::fillAndPushBuffer()` (#1154)
 -   Fixed seeking quirks in the FLAC reader (#966, #1162)
--   Allow polymorphism with `sf::SoundSource` (#1185)
+-   Allow polymorphism with `za::SoundSource` (#1185)
 -   Fixed WAV file writer writing wrong header values (#1280, #1281)
 -   Small bugfix to argument of `alcCaptureOpenDevice()` (#1304, #1305)
 -   [iOS] Find OpenAL correctly (#1263, #1376)
@@ -568,13 +568,13 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.5.0
 
 ## SFML 2.4.2
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.2
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.4.2
 
 ### System
 
 **Bugfixes**
 
--   [Windows] Removed thread affinity changes in sf::Clock (#1107)
+-   [Windows] Removed thread affinity changes in za::Clock (#1107)
 
 ### Window
 
@@ -589,15 +589,15 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.2
 
 **Bugfixes**
 
--   Optimized sf::Image::create and made it more exception safe (#1166)
+-   Optimized za::Image::create and made it more exception safe (#1166)
 
 ## SFML 2.4.1
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.1
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.4.1
 
 ### General
 
--   [kFreeBSD] Define SFML_OS_FREEBSD when compiling for kFreeBSD (#1129)
+-   [kFreeBSD] Define ZA_OS_FREEBSD when compiling for kFreeBSD (#1129)
 -   [Windows] Added some simple messaging when trying to build under Cygwin (#1153)
 
 ### Window
@@ -631,7 +631,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.1
 
 ## SFML 2.4.0
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.0
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.4.0
 
 ### General
 
@@ -649,19 +649,19 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.0
 
 ### Deprecated API
 
--   sf::RenderWindow::capture(): Use a sf::Texture and its sf::Texture::update(const Window&) function and copy its contents into an sf::Image instead.
--   sf::Shader::setParameter(): Use setUniform() instead.
--   sf::Text::getColor(): There is now fill and outline colors instead of a single global color. Use getFillColor() or getOutlineColor() instead.
--   sf::Text::setColor(): There is now fill and outline colors instead of a single global color. Use setFillColor() or setOutlineColor() instead.
--   sf::LinesStrip: Use LineStrip instead.
--   sf::TrianglesFan: Use TriangleFan instead.
--   sf::TrianglesStrip: Use TriangleStrip instead.
+-   za::RenderWindow::capture(): Use a za::Texture and its za::Texture::update(const Window&) function and copy its contents into an za::Image instead.
+-   za::Shader::setParameter(): Use setUniform() instead.
+-   za::Text::getColor(): There is now fill and outline colors instead of a single global color. Use getFillColor() or getOutlineColor() instead.
+-   za::Text::setColor(): There is now fill and outline colors instead of a single global color. Use setFillColor() or setOutlineColor() instead.
+-   za::LinesStrip: Use LineStrip instead.
+-   za::TrianglesFan: Use TriangleFan instead.
+-   za::TrianglesStrip: Use TriangleStrip instead.
 
 ### System
 
 **Features**
 
--   [Android] Added sf::getNativeActivity() (#1005, #680)
+-   [Android] Added za::getNativeActivity() (#1005, #680)
 
 **Bugfixes**
 
@@ -684,7 +684,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.0
 -   Updated platform-specific handle documentation (#961)
 -   [Android] Accept touch events from "multiple" devices (#954, #953)
 -   [Android] Copy the selected EGL context's settings to SFML (#1039)
--   [Linux] Fixed modifiers causing sf::Keyboard::Unknown being returned (#1022, #1012)
+-   [Linux] Fixed modifiers causing za::Keyboard::Unknown being returned (#1022, #1012)
 -   [macOS] Improved memory management on macOS (#962, #790)
 -   [macOS] Fixed crash when resizing a window to a zero-height/width size (#986, #984)
 -   [macOS] Use the mouse button constant instead of 0 to avoid a compiler error on macOS (#1035)
@@ -719,7 +719,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.0
 -   [macOS] Updates OpenAL-soft for macOS to version 1.17.2 (#1057, #900, #1000)
 -   Fixed a bug where vorbis can't handle large buffers (#1067)
 -   Added support for 24-bit .wav files (#958, #955)
--   Fixed threading issue in sf::SoundRecorder (#1011)
+-   Fixed threading issue in za::SoundRecorder (#1011)
 -   Made WAV file reader no longer assume that data chunk goes till end of file to prevent reading trailing metadata as samples (#1018)
 -   Fixed seeking in multi channel FLAC files (#1041, #1040)
 
@@ -735,7 +735,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.4.0
 
 ## SFML 2.3.2
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3.2
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.3.2
 
 ### General
 
@@ -763,7 +763,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3.2
 
 ## SFML 2.3.1
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3.1
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.3.1
 
 ### Window
 
@@ -791,16 +791,16 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3.1
 
 ## SFML 2.3
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.3
 
 ### General
 
--   Examples only link against sfml-main in release mode (#610, #766)
+-   Examples only link against zancle-main in release mode (#610, #766)
 -   Replaced unsigned int with base::SizeT for array indices and sizes (#739)
 -   Fixed some issues with the Doxygen documentation (#750)
 -   Added support for EditorConfig (#751)
 -   Hide success message for CMake in quiet mode (#753)
--   Improved documentation for statuses with sf::Ftp (#763)
+-   Improved documentation for statuses with za::Ftp (#763)
 -   Moved stb_image into the extlibs directory (#795)
 -   Changed the SOVERSION to major.minor (#812)
 -   Fixed warnings about switch-statements (#863)
@@ -811,7 +811,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3
 
 ### Deprecated API
 
--   sf::Event::MouseWheelEvent: This event is deprecated and potentially inaccurate. Use MouseWheelScrollEvent instead.
+-   za::Event::MouseWheelEvent: This event is deprecated and potentially inaccurate. Use MouseWheelScrollEvent instead.
 
 ### Window
 
@@ -827,7 +827,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3
 -   Fixed simultaneous context operations causing crashes on some AMD hardware (#778, #779)
 -   Fixed joystick identification (#809, #811)
 -   [iOS] Fixed various issues including stencil bits, device orientation and retina support (#748)
--   [iOS] Fixed inconsistency between sf::Touch::getPosition and touch events (#875)
+-   [iOS] Fixed inconsistency between za::Touch::getPosition and touch events (#875)
 -   [Linux] Fixed Alt+F4 not getting triggered in window mode (#274)
 -   [Linux] Fixed Unix joystick stuff (#838)
 -   [macOS] Fixed typo in JoystickImpl.cpp to prevent a crash (#762, #765)
@@ -838,7 +838,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3
 **Features**
 
 -   Replaced GLEW with loader generated by glLoadGen (#779)
--   Added a new constructor to sf::Color that takes an sf::Uint32 (#722)
+-   Added a new constructor to za::Color that takes an za::Uint32 (#722)
 -   Updated stb_image to v2.02 (#777)
 -   Updated FreeType to v2.5.5 (#799, #804)
 -   Added checks for software OpenGL (#870)
@@ -858,18 +858,18 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.3
 
 **Bugfixes**
 
--   Fixed access violation error in the destructor of sf::AudioDevice (#30, #602)
--   [macOS] Fixed threading issue with sf::SoundStream and OpenAL (#541, #831)
+-   Fixed access violation error in the destructor of za::AudioDevice (#30, #602)
+-   [macOS] Fixed threading issue with za::SoundStream and OpenAL (#541, #831)
 
 ### Network
 
 **Bugfixes**
 
--   Fixed sf::TcpSocket not handling partial sends properly (#749, #796)
+-   Fixed za::TcpSocket not handling partial sends properly (#749, #796)
 
 ## SFML 2.2
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.2
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.2
 
 ### General
 
@@ -900,15 +900,15 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.2
 
 **Features**
 
--   Added substring and replace functions to sf::String (#21, #355)
--   Added toUtfX to sf::String (#501)
+-   Added substring and replace functions to za::String (#21, #355)
+-   Added toUtfX to za::String (#501)
 -   Added fromUtfX functions to set the internal data to a string by converting from another string in a fixed encoding (#196)
--   Added modulo operator for sf::Time (#429, #430)
--   Added division operator for sf::Time (#453)
+-   Added modulo operator for za::Time (#429, #430)
+-   Added division operator for za::Time (#453)
 
 **Bugfixes**
 
--   Ensured a high resolution for sf::sleep (#439, #475)
+-   Ensured a high resolution for za::sleep (#439, #475)
 -   [Windows] Fixed stack unalignment by two internal functions (#412)
 
 ### Window
@@ -916,7 +916,7 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.2
 **Features**
 
 -   Added window methods to request and to check focus (#518, #525, #613, #723, #735)
--   Provide name, manufacturer ID and product ID via sf::Joystick (#152, #528)
+-   Provide name, manufacturer ID and product ID via za::Joystick (#152, #528)
 -   [FreeBSD] Joystick support (#477)
 -   [macOS] Improved integration with menus and dock actions (#11)
 -   [macOS] Support for OpenGL 3.2 (#84)
@@ -927,18 +927,18 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.2
 
 **Bugfixes**
 
--   sf::Window::create() now also resets framerate limit (#371)
+-   za::Window::create() now also resets framerate limit (#371)
 -   Fixed OpenGL context leak (#635, #705)
 -   Fixed various joystick problems (memory leak, accelerometer detected, code refactoring) (#660, #686, #742, #743)
--   Optimized sf::Window::waitEvent a bit, no sleep if events are available at first try (ff555d6)
+-   Optimized za::Window::waitEvent a bit, no sleep if events are available at first try (ff555d6)
 -   [Linux] Output error message when XOpenDisplay() fails (#508, #616)
--   [Linux] Resize window with setSize when sf::Style::Resize is set (#466)
+-   [Linux] Resize window with setSize when za::Style::Resize is set (#466)
 -   [Linux] Fixed broken key repeat on window recreation (#564, #567)
 -   [macOS] Fixed KeyReleased not being fired in fullscreen mode (#465)
 -   [macOS] Fixed an issue where disconnecting the keyboard would cause a crash (#467)
 -   [macOS] Fixed unexpected resizing behavior (#468)
 -   [macOS] Improved resizing windows (#474)
--   [macOS] Fixed memory leak with sf::Window::create() (#484)
+-   [macOS] Fixed memory leak with za::Window::create() (#484)
 -   [macOS] Fixed menu shortcuts in fullscreen on macOS (#527)
 -   [macOS] Improved cursor hiding (#703)
 -   [macOS] Fixed right click not detected with trackpads (#716, #730)
@@ -946,41 +946,41 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.2
 -   [Windows] Fixed Unicode inconsistency (#635)
 -   [Windows] Fixed Alt+F4 and mouse clicks issues (#437, #457)
 -   [Windows] Send MouseButtonReleased event when the mouse is outside of the window (#455, #457)
--   [Windows] Fixed sf::Joystick wrong registry usage (#701, #702, #706)
+-   [Windows] Fixed za::Joystick wrong registry usage (#701, #702, #706)
 
 ### Graphics
 
 **Features**
 
--   Provide more information about the loaded font in sf::Font (#164)
+-   Provide more information about the loaded font in za::Font (#164)
 -   Implemented a more flexible blending system (#298)
 -   Added strikethrough text style (#243, #362, #682)
--   Slight optimization for sf::Text::setString (#413)
--   Added subtraction operator for sf::Color (#114, #145)
--   Optimized sf::Image::flipVertically/flipHorizontally (#555)
--   Changed sf::Font measurements from int to float to allow better underline drawing (#693)
+-   Slight optimization for za::Text::setString (#413)
+-   Added subtraction operator for za::Color (#114, #145)
+-   Optimized za::Image::flipVertically/flipHorizontally (#555)
+-   Changed za::Font measurements from int to float to allow better underline drawing (#693)
 
 **Bugfixes**
 
 -   Improved text quality for small and pixelated fonts (#228)
--   Yet another fix for Intel GPUs with sf::RenderTexture (#418)
+-   Yet another fix for Intel GPUs with za::RenderTexture (#418)
 -   Removed VTab since it causes issues and doesn't have a use nowadays (#442, #445, #460, #588)
 -   Fixed broken BDF and PCF font formats (#448)
--   Fixed compilation issue with newer versions of GCC for sf::Rect (#458)
+-   Fixed compilation issue with newer versions of GCC for za::Rect (#458)
 -   Fixed resetGLStates() not explicitly setting the default polygon mode (#480)
--   Fixed division-by-zero in sf::RectangleShape (#499)
--   Fixed potential memory leak in sf::Font (#509)
+-   Fixed division-by-zero in za::RectangleShape (#499)
+-   Fixed potential memory leak in za::Font (#509)
 -   Updated glext and removed glxext (#511, #583)
--   Make sure texture unit 0 is active when resetting sf::RenderTarget states (#523, #591)
+-   Make sure texture unit 0 is active when resetting za::RenderTarget states (#523, #591)
 -   Fixed texture rect computation in fonts (#669)
 -   Improved rendering of underlined text (#593)
 -   Avoided repeated output of error messages (#566)
 -   Fixed text rendered with vertical offset on ascent and font size mismatch (#576)
 -   Fixed rounding problem for viewports (#598)
--   Fixed sf::Shader::isAvailable() possibly breaking context management (#211, #603, #608, #603)
--   Fixed sf::Texture::getMaximumSize() possibly breaking context management (#666)
--   Fixed various sf::Text rendering issues (#692, #699)
--   The texture matrix is now reset in sf::Texture::bind(NULL) (7c4b058)
+-   Fixed za::Shader::isAvailable() possibly breaking context management (#211, #603, #608, #603)
+-   Fixed za::Texture::getMaximumSize() possibly breaking context management (#666)
+-   Fixed various za::Text rendering issues (#692, #699)
+-   The texture matrix is now reset in za::Texture::bind(NULL) (7c4b058)
 -   [Windows] Fixed DPI scaling causing strange window behavior (#679, #681, #688)
 
 ### Audio
@@ -988,36 +988,36 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.2
 **Features**
 
 -   Added support for selecting the audio capture device (#220, #470)
--   Make sf::SoundRecorder processing frequency configurable (#333)
--   Added up vector to sf::Listener (#545)
+-   Make za::SoundRecorder processing frequency configurable (#333)
+-   Added up vector to za::Listener (#545)
 
 **Bugfixes**
 
--   Prevented sf::SoundStream::setPlayingOffset() from restarting playing even when paused (#203, #592)
--   Fixed sf::SoundBuffer contents not being able to be updated when still attached to sounds (#354, 367, #390, #589)
+-   Prevented za::SoundStream::setPlayingOffset() from restarting playing even when paused (#203, #592)
+-   Fixed za::SoundBuffer contents not being able to be updated when still attached to sounds (#354, 367, #390, #589)
 -   Catch audio format error and prevent division by zero (#529)
--   Fixed sf::SoundBuffer returning wrong duration for sounds containing more than ~4.3 million samples (2ff58ed)
--   Optimized sf::Listener with a cache (d97e524)
+-   Fixed za::SoundBuffer returning wrong duration for sounds containing more than ~4.3 million samples (2ff58ed)
+-   Optimized za::Listener with a cache (d97e524)
 
 ### Network
 
 **Features**
 
--   Added support for PUT and DELETE in sf::Http (#257, #312, #607)
+-   Added support for PUT and DELETE in za::Http (#257, #312, #607)
 -   Added support for chunked HTTP transfers (#296, #337)
--   Added support for 64-bit integers in sf::Packet (#710)
--   Made sf::Ftp::sendCommand() public (2c5cab5)
+-   Added support for 64-bit integers in za::Packet (#710)
+-   Made za::Ftp::sendCommand() public (2c5cab5)
 
 **Bugfixes**
 
 -   Checked socket descriptor limit (#153, #628, #683)
--   Fixed sf::TcpSocket::connect()'s switching from blocking to non-blocking mode on immediate connection success (#221)
+-   Fixed za::TcpSocket::connect()'s switching from blocking to non-blocking mode on immediate connection success (#221)
 -   Fixed FTP download and upload file sizes being limited by available RAM (#565, #590)
--   Fixed C++11 compiler warnings for sf::Uint8 (#731, #732)
+-   Fixed C++11 compiler warnings for za::Uint8 (#731, #732)
 
 ## SFML 2.1
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.1
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.1
 
 ### General
 
@@ -1061,10 +1061,10 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.1
 
 **Bugfixes**
 
--   Fixed bounding rect of sf::Text ignoring whitespaces (#216)
+-   Fixed bounding rect of za::Text ignoring whitespaces (#216)
 -   Solved graphics resources not updated or corrupted when loaded in a thread (#411)
--   Fixed white pixel showing on first character of sf::Text (#414)
--   sf::Rect::contains and sf::Rect::intersects now handle rectangles with negative dimensions correctly (#219)
+-   Fixed white pixel showing on first character of za::Text (#414)
+-   za::Rect::contains and za::Rect::intersects now handle rectangles with negative dimensions correctly (#219)
 -   Fixed Shape::setTextureRect not working when called before setTexture
 
 ### Audio
@@ -1083,20 +1083,20 @@ Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.1
 **Features**
 
 -   Replaced the deprecated gethostbyname with getaddrinfo (#47)
--   Minor improvements to sf::Packet operators (now using strlen and wcslen instead of explicit loops) (#118)
+-   Minor improvements to za::Packet operators (now using strlen and wcslen instead of explicit loops) (#118)
 
 **Bugfixes**
 
--   Fixed non-blocking connection with a sf::TcpSocket on Windows
+-   Fixed non-blocking connection with a za::TcpSocket on Windows
 -   Fixed TCP packet data corruption in non-blocking mode (#402, #119)
 -   On Unix systems, a socket disconnection no longer stops the program with signal SIGPIPE (#72)
 
 ## SFML 2.0
 
-Also available on the website: https://www.sfml-dev.org/changelog.php#sfml-2.0
+Also available on the website: https://www.zancle-dev.org/changelog.php#zancle-2.0
 
 No changelog available. _Everything changed._
 
 ## Older Releases
 
-See the website for changelogs of older releases: https://www.sfml-dev.org/changelog.php
+See the website for changelogs of older releases: https://www.zancle-dev.org/changelog.php

@@ -1,51 +1,51 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/Clock.hpp"
+#include "Zancle/System/Clock.hpp"
 
-#include "SFML/System/Thread.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[System] sf::Clock")
+TEST_CASE("[System] za::Clock")
 {
     SECTION("Type traits")
     {
         // cannot be trivially copiable/movable due to pimpl
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Clock));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Clock));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Clock));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Clock));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Clock));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Clock));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Clock));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Clock));
     }
 
     SECTION("Construction")
     {
-        const sf::Clock clock;
+        const za::Clock clock;
         CHECK(clock.isRunning());
-        CHECK(clock.getElapsedTime() >= sf::microseconds(0));
+        CHECK(clock.getElapsedTime() >= za::microseconds(0));
     }
 
     SECTION("getElapsedTime()")
     {
-        const sf::Clock clock;
-        CHECK(clock.getElapsedTime() >= sf::microseconds(0));
+        const za::Clock clock;
+        CHECK(clock.getElapsedTime() >= za::microseconds(0));
         const auto elapsed = clock.getElapsedTime();
-        sf::ThisThread::sleepFor(sf::milliseconds(1));
+        za::ThisThread::sleepFor(za::milliseconds(1));
         CHECK(clock.getElapsedTime() > elapsed);
     }
 
     SECTION("start/stop")
     {
-        sf::Clock clock;
+        za::Clock clock;
         clock.stop();
         CHECK(!clock.isRunning());
         const auto elapsed = clock.getElapsedTime();
-        sf::ThisThread::sleepFor(sf::milliseconds(1));
+        za::ThisThread::sleepFor(za::milliseconds(1));
         CHECK(elapsed == clock.getElapsedTime());
 
         clock.start();
@@ -55,18 +55,18 @@ TEST_CASE("[System] sf::Clock")
 
     SECTION("restart()")
     {
-        sf::Clock clock;
-        CHECK(clock.restart() >= sf::microseconds(0));
+        za::Clock clock;
+        CHECK(clock.restart() >= za::microseconds(0));
         CHECK(clock.isRunning());
-        sf::ThisThread::sleepFor(sf::milliseconds(1));
+        za::ThisThread::sleepFor(za::milliseconds(1));
         const auto elapsed = clock.restart();
         CHECK(clock.restart() < elapsed);
     }
 
     SECTION("reset()")
     {
-        sf::Clock clock;
-        CHECK(clock.reset() >= sf::microseconds(0));
+        za::Clock clock;
+        CHECK(clock.reset() >= za::microseconds(0));
         CHECK(!clock.isRunning());
     }
 }

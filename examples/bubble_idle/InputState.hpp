@@ -1,15 +1,15 @@
 #pragma once
 
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
-namespace sf
+namespace za
 {
 class Event;
 }
@@ -18,12 +18,12 @@ class Event;
 ////////////////////////////////////////////////////////////
 struct InputState
 {
-    sf::base::Array<sf::base::Optional<sf::Vec2i>, 32> fingerPositions{};
+    zb::Array<zb::Optional<za::Vec2i>, 32> fingerPositions{};
 
-    sf::Vec2i mousePosition;
+    za::Vec2i mousePosition;
 
-    sf::base::Array<bool, sf::Keyboard::KeyCount> keys{};
-    sf::base::Array<bool, sf::Mouse::ButtonCount> buttons{};
+    zb::Array<bool, za::Keyboard::KeyCount> keys{};
+    zb::Array<bool, za::Mouse::ButtonCount> buttons{};
 
     bool alt{};
     bool control{};
@@ -31,5 +31,5 @@ struct InputState
     bool system{};
 
     ////////////////////////////////////////////////////////////
-    void apply(const sf::Event& event);
+    void apply(const za::Event& event);
 };

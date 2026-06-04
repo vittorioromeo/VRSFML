@@ -105,7 +105,7 @@ The generation system is the cleanest part of the design: it lets the user mutat
 
 ### 2.4 The vertex contract
 
-The GL vertex layout is hardcoded across `RenderTarget` (attribute setup at [RenderTarget.cpp:136-168](src/SFML/Graphics/RenderTarget.cpp#L136)) and `DefaultShader` (`layout(location=0..2)` for position/color/texCoord). Every `DrawableBatchImpl::add` emits `sf::Vertex` directly (`pos:Vec2f`, `color:Color`, `texCoords:Vec2f` -- 20 B logical, 28 B with alignment as documented). The shader normalizes texCoords via `sf_u_invTextureSize` at location 3.
+The GL vertex layout is hardcoded across `RenderTarget` (attribute setup at [RenderTarget.cpp:136-168](src/SFML/Graphics/RenderTarget.cpp#L136)) and `DefaultShader` (`layout(location=0..2)` for position/color/texCoord). Every `DrawableBatchImpl::add` emits `za::Vertex` directly (`pos:Vec2f`, `color:Color`, `texCoords:Vec2f` -- 20 B logical, 28 B with alignment as documented). The shader normalizes texCoords via `za_u_invTextureSize` at location 3.
 
 This is a tight, consistent contract. Customizing the vertex layout requires touching multiple files (see TODO at [Vertex.hpp:95](include/SFML/Graphics/Vertex.hpp#L95)).
 
@@ -183,7 +183,7 @@ This is a tight, consistent contract. Customizing the vertex layout requires tou
 ### 5.2 Issues
 
 * **C3 (latent): `m_uniformGeneration` is `base::U8`** ([Shader.hpp:649](include/SFML/Graphics/Priv/ShaderBase.hpp#L649)). After 256 uniform writes the counter wraps. If a user does exactly 256 writes between two draws sharing an autobatch, `hasGenerationMismatch` returns `false` and the batch is *not* flushed, replaying the second draw with the first draw's uniform values. **Fix**: widen to `U32`. Free -- the struct already has alignment slack.
-* **`Shader::setUniform(loc, Texture&)` stores a raw `Texture*`** with no lifetime tracking ([Shader.cpp:748](src/SFML/Graphics/Shader.cpp#L748)). Compare to `Texture`'s `SFML_DEFINE_LIFETIME_DEPENDEE(Texture, GlyphMappedText)` ([Texture.hpp:508](include/SFML/Graphics/Texture.hpp#L508)) which only covers `GlyphMappedText`. **Fix**: add the dependee macro for `Shader`.
+* **`Shader::setUniform(loc, Texture&)` stores a raw `Texture*`** with no lifetime tracking ([Shader.cpp:748](src/SFML/Graphics/Shader.cpp#L748)). Compare to `Texture`'s `ZA_DEFINE_LIFETIME_DEPENDEE(Texture, GlyphMappedText)` ([Texture.hpp:508](include/SFML/Graphics/Texture.hpp#L508)) which only covers `GlyphMappedText`. **Fix**: add the dependee macro for `Shader`.
 * **`getUniformLocation` calls `glGetUniformLocation` on every lookup** with no internal cache ([Shader.cpp:587](src/SFML/Graphics/Shader.cpp#L587)). Documented as "user caches this", but naïve uses will hit the GL driver per frame.
 * **`isGeometryAvailable()` is broken**: returns `GL_VERSION_3_2`, a preprocessor macro that expands to `1` on desktop, not a runtime feature check ([Shader.cpp:867](src/SFML/Graphics/Shader.cpp#L867)). Should be `GLAD_GL_VERSION_3_2`.
 * **Compile error log buffer is fixed 1024 bytes** ([Shader.cpp:930, 979](src/SFML/Graphics/Shader.cpp#L930)). Truncates long driver messages. Use `glGetProgramiv(GL_INFO_LOG_LENGTH)` to size dynamically.
@@ -235,7 +235,7 @@ Verified by direct grep:
 Other texture-side issues:
 
 * **C5 (already covered)**: `Shader::setUniform(loc, Texture&)` raw pointer.
-* **Copy ctor dead initializer**: [Texture.cpp:85-99](src/SFML/Graphics/Texture.cpp#L85). The hand-written member-init list is immediately overwritten by `*this = SFML_BASE_MOVE(*texture)`.
+* **Copy ctor dead initializer**: [Texture.cpp:85-99](src/SFML/Graphics/Texture.cpp#L85). The hand-written member-init list is immediately overwritten by `*this = ZB_MOVE(*texture)`.
 * **`copyToImage` aborts on FBO failure** ([Texture.cpp:373](src/SFML/Graphics/Texture.cpp#L373)) where every other failure path returns `nullOpt`.
 * **`TextureAtlas::add` padding is one-sided** ([TextureAtlasUtils.cpp:44](src/SFML/Graphics/TextureAtlasUtils.cpp#L44)). Padding applies only on right/bottom; bilinear filtering bleeds from the top/left neighbor.
 

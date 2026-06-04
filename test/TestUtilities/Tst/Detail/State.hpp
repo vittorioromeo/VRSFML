@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace tst::detail
@@ -42,8 +42,8 @@ struct DecisionPoint
     // The list of distinct subcases discovered at this decision depth in
     // the current TEST_CASE body. `branchCount` mirrors `subcases.size()`
     // but kept separate for clarity with the doctest algorithm.
-    sf::base::Vector<SubcaseSignature> subcases;
-    sf::base::SizeT                    branchCount = 0u;
+    zb::Vector<SubcaseSignature> subcases;
+    zb::SizeT                    branchCount = 0u;
 };
 
 
@@ -52,21 +52,21 @@ struct TraversalState
 {
     // The currently-chosen path through the subcase tree on this run.
     // `decisionPath[d]` is the sibling index picked at decision depth `d`.
-    sf::base::Vector<sf::base::SizeT> decisionPath;
+    zb::Vector<zb::SizeT> decisionPath;
 
     // What we've actually discovered while running -- one entry per
     // decision depth, holding all sibling subcases observed.
-    sf::base::Vector<DecisionPoint> discoveredDecisionPath;
+    zb::Vector<DecisionPoint> discoveredDecisionPath;
 
     // Stack of decision depths corresponding to the currently active
     // (entered) subcases. Used to restore `decisionDepth` on unwind.
-    sf::base::Vector<sf::base::SizeT> enteredSubcaseDepths;
+    zb::Vector<zb::SizeT> enteredSubcaseDepths;
 
     // Active subcase path, used only for doctest-style diagnostics.
-    sf::base::Vector<SubcaseSignature> activeSubcases;
+    zb::Vector<SubcaseSignature> activeSubcases;
 
-    sf::base::SizeT activeSubcaseDepth = 0u;
-    sf::base::SizeT decisionDepth      = 0u;
+    zb::SizeT activeSubcaseDepth = 0u;
+    zb::SizeT decisionDepth      = 0u;
 
     void resetForTestCase() noexcept;
     void resetForRun() noexcept;
@@ -82,14 +82,14 @@ struct ContextState
     TraversalState traversal;
 
     // Active INFO messages (scoped). Most-recent at the back.
-    sf::base::Vector<sf::base::String> infoStack;
+    zb::Vector<zb::String> infoStack;
 
     // Total stats across the whole run.
-    sf::base::SizeT totalAssertions  = 0u;
-    sf::base::SizeT failedAssertions = 0u;
-    sf::base::SizeT totalTestCases   = 0u;
-    sf::base::SizeT failedTestCases  = 0u;
-    sf::base::SizeT skippedTestCases = 0u;
+    zb::SizeT totalAssertions  = 0u;
+    zb::SizeT failedAssertions = 0u;
+    zb::SizeT totalTestCases   = 0u;
+    zb::SizeT failedTestCases  = 0u;
+    zb::SizeT skippedTestCases = 0u;
 
     // Per-test-case state.
     bool        currentTestFailed = false;
@@ -99,7 +99,7 @@ struct ContextState
 
     // Rendered operands of the most recent failed assertion (cold path).
     char            decompBuf[512];
-    sf::base::SizeT decompLen = 0u;
+    zb::SizeT decompLen = 0u;
     bool            hasDecomp = false;
 
     // Sentinel thrown by `REQUIRE` failure to unwind the test body.
@@ -111,8 +111,8 @@ struct ContextState
     bool listOnly = false;
 
     // Filter substrings. Tests with a name *containing* one of these run.
-    sf::base::Vector<sf::base::String> filterInclude;
-    sf::base::Vector<sf::base::String> filterExclude;
+    zb::Vector<zb::String> filterInclude;
+    zb::Vector<zb::String> filterExclude;
 };
 
 
@@ -121,7 +121,7 @@ struct ContextState
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Vector<TestCaseInfo>& registeredTestCases() noexcept;
+[[nodiscard]] zb::Vector<TestCaseInfo>& registeredTestCases() noexcept;
 
 } // namespace tst::detail
 

@@ -2,16 +2,16 @@
 
 #include "ShowcaseExample.hpp"
 
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,15 +22,15 @@ private:
     bool m_useAlternativeMusicSource = false;
 
     ////////////////////////////////////////////////////////////
-    sf::SoundBuffer m_sbByteMeow  = sf::SoundBuffer::loadFromFile("resources/bytemeow.ogg").value();
-    sf::MusicReader m_msBGMWizard = sf::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
+    za::SoundBuffer m_sbByteMeow  = za::SoundBuffer::loadFromFile("resources/bytemeow.ogg").value();
+    za::MusicReader m_msBGMWizard = za::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::PlaybackDevice, 8> m_playbackDevices;
+    zb::InPlaceVector<za::PlaybackDevice, 8> m_playbackDevices;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::Sound, 32> m_activeSounds;
-    sf::base::Optional<sf::Music>          m_activeMusic;
+    zb::InPlaceVector<za::Sound, 32> m_activeSounds;
+    zb::Optional<za::Music>          m_activeMusic;
 
     ////////////////////////////////////////////////////////////
     void refreshPlaybackDevices();

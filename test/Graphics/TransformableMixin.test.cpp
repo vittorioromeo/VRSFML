@@ -2,57 +2,57 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/TransformableMixin.hpp"
+#include "Zancle/Graphics/TransformableMixin.hpp"
 
-#include "SFML/Graphics/Priv/TransformableMacros.hpp"
+#include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
 
 
-struct TestTransformable : sf::TransformableMixin
+struct TestTransformable : za::TransformableMixin
 {
-    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+    ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
 };
 
 
-TEST_CASE("[Graphics] sf::Transformable")
+TEST_CASE("[Graphics] za::Transformable")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(TestTransformable));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(TestTransformable));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(TestTransformable));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(TestTransformable)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TestTransformable));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(TestTransformable, TestTransformable));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(TestTransformable)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(TestTransformable));
+        STATIC_CHECK(ZB_IS_AGGREGATE(TestTransformable));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(TestTransformable));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(TestTransformable, TestTransformable));
     }
 
     SECTION("Construction")
     {
         const TestTransformable transformable;
-        CHECK(transformable.position == sf::Vec2f{0, 0});
-        CHECK(transformable.rotation == sf::Angle::Zero);
-        CHECK(transformable.scale == sf::Vec2f{1, 1});
-        CHECK(transformable.origin == sf::Vec2f{0, 0});
-        CHECK(transformable.getTransform() == sf::Transform());
-        CHECK(transformable.getInverseTransform() == sf::Transform());
+        CHECK(transformable.position == za::Vec2f{0, 0});
+        CHECK(transformable.rotation == za::Angle::Zero);
+        CHECK(transformable.scale == za::Vec2f{1, 1});
+        CHECK(transformable.origin == za::Vec2f{0, 0});
+        CHECK(transformable.getTransform() == za::Transform());
+        CHECK(transformable.getInverseTransform() == za::Transform());
     }
 
     SECTION("Setters and getters")
@@ -60,22 +60,22 @@ TEST_CASE("[Graphics] sf::Transformable")
         TestTransformable transformable;
 
         transformable.position = {3, 4};
-        CHECK(transformable.position == sf::Vec2f{3, 4});
+        CHECK(transformable.position == za::Vec2f{3, 4});
 
-        transformable.rotation = sf::degrees(3.14f);
-        CHECK(transformable.rotation == Approx(sf::degrees(3.14f)));
-        transformable.rotation = sf::degrees(540);
-        CHECK(transformable.rotation == Approx(sf::degrees(180)));
-        transformable.rotation = sf::degrees(-72);
-        CHECK(transformable.rotation == Approx(sf::degrees(288)));
+        transformable.rotation = za::degrees(3.14f);
+        CHECK(transformable.rotation == Approx(za::degrees(3.14f)));
+        transformable.rotation = za::degrees(540);
+        CHECK(transformable.rotation == Approx(za::degrees(180)));
+        transformable.rotation = za::degrees(-72);
+        CHECK(transformable.rotation == Approx(za::degrees(288)));
 
         transformable.scale = {5, 6};
-        CHECK(transformable.scale == sf::Vec2f{5, 6});
+        CHECK(transformable.scale == za::Vec2f{5, 6});
 
         transformable.origin = {7, 8};
-        CHECK(transformable.origin == sf::Vec2f{7, 8});
+        CHECK(transformable.origin == za::Vec2f{7, 8});
 
-        sf::Transform transform;
+        za::Transform transform;
         transform.translate(transformable.position - transformable.origin);
         transform.rotate(transformable.rotation, transformable.origin);
         transform.scaleBy(transformable.scale, transformable.origin);
@@ -112,7 +112,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(lhsMatrix[14] == Approx(rhsMatrix[14]));
         CHECK(lhsMatrix[15] == Approx(rhsMatrix[15]));
 
-        const sf::Transform inverseTransform = transform.getInverse();
+        const za::Transform inverseTransform = transform.getInverse();
         transformable.getInverseTransform().writeTo4x4Matrix(lhsMatrix);
         inverseTransform.writeTo4x4Matrix(rhsMatrix);
 
@@ -137,38 +137,38 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("Movement")
     {
         TestTransformable transformable;
-        CHECK(transformable.position == sf::Vec2f{0, 0});
+        CHECK(transformable.position == za::Vec2f{0, 0});
         transformable.position += {9, 10};
-        CHECK(transformable.position == sf::Vec2f{9, 10});
+        CHECK(transformable.position == za::Vec2f{9, 10});
         transformable.position += {-15, 2};
-        CHECK(transformable.position == sf::Vec2f(-6, 12));
+        CHECK(transformable.position == za::Vec2f(-6, 12));
     }
 
     SECTION("Rotation")
     {
         TestTransformable transformable;
-        CHECK(transformable.rotation == sf::Angle::Zero);
-        transformable.rotation += sf::degrees(15);
-        CHECK(transformable.rotation == Approx(sf::degrees(15)));
-        transformable.rotation += sf::degrees(360);
-        CHECK(transformable.rotation == Approx(sf::degrees(15)));
-        transformable.rotation += sf::degrees(-25);
-        CHECK(transformable.rotation == Approx(sf::degrees(350)));
-        transformable.rotation += sf::degrees(-720);
-        CHECK(transformable.rotation == Approx(sf::degrees(350)));
-        transformable.rotation += sf::degrees(-370);
-        CHECK(transformable.rotation == Approx(sf::degrees(340)));
+        CHECK(transformable.rotation == za::Angle::Zero);
+        transformable.rotation += za::degrees(15);
+        CHECK(transformable.rotation == Approx(za::degrees(15)));
+        transformable.rotation += za::degrees(360);
+        CHECK(transformable.rotation == Approx(za::degrees(15)));
+        transformable.rotation += za::degrees(-25);
+        CHECK(transformable.rotation == Approx(za::degrees(350)));
+        transformable.rotation += za::degrees(-720);
+        CHECK(transformable.rotation == Approx(za::degrees(350)));
+        transformable.rotation += za::degrees(-370);
+        CHECK(transformable.rotation == Approx(za::degrees(340)));
     }
 
     SECTION("scaleBy()")
     {
         TestTransformable transformable;
-        CHECK(transformable.scale == sf::Vec2f{1, 1});
+        CHECK(transformable.scale == za::Vec2f{1, 1});
         transformable.scaleBy({2, 3});
-        CHECK(transformable.scale == sf::Vec2f{2, 3});
+        CHECK(transformable.scale == za::Vec2f{2, 3});
         transformable.scaleBy({2, 1});
-        CHECK(transformable.scale == sf::Vec2f{4, 3});
+        CHECK(transformable.scale == za::Vec2f{4, 3});
         transformable.scaleBy({-1, -1});
-        CHECK(transformable.scale == sf::Vec2f(-4, -3));
+        CHECK(transformable.scale == za::Vec2f(-4, -3));
     }
 }

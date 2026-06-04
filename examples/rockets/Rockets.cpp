@@ -6,52 +6,52 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DefaultShader.hpp"
-#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/Glsl.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/InstanceAttributeBinder.hpp"
-#include "SFML/Graphics/InstancedQuad.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/VAOHandle.hpp"
-#include "SFML/Graphics/VBOHandle.hpp"
-#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DefaultShader.hpp"
+#include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/InstanceAttributeBinder.hpp"
+#include "Zancle/Graphics/InstancedQuad.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/VAOHandle.hpp"
+#include "Zancle/Graphics/VBOHandle.hpp"
+#include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Algorithm/SwapAndPop.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/SwapAndPop.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/UniquePtr.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
@@ -61,7 +61,7 @@ namespace
 ////////////////////////////////////////////////////////////
 struct ParticleInstanceData // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
+    za::Vec2f position;
     float     scale;
     float     rotation;
     float     opacity;
@@ -71,15 +71,15 @@ struct ParticleInstanceData // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 constexpr const char* instancedVertexShader = R"glsl(
 
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 2) uniform sampler2D za_u_texture;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 layout(location = 4) uniform vec4 u_texRect;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color; // Unused but part of `sf::Vertex` struct
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color; // Unused but part of `za::Vertex` struct
+layout(location = 2) in vec2 za_a_texCoord;
 
 // Per-instance attributes (unique for each sprite)
 layout(location = 3) in vec2 instance_position;
@@ -87,13 +87,13 @@ layout(location = 4) in float instance_scale;
 layout(location = 5) in float instance_rotation;
 layout(location = 6) in float instance_opacity;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+out vec4 za_v_color;
+out vec2 za_v_texCoord;
 
 void main()
 {
     // scale in local (pixel) space
-    vec2 local = sf_a_position * u_texRect.zw;
+    vec2 local = za_a_position * u_texRect.zw;
 
     // inline rotate + scale
     float c = cos(instance_rotation);
@@ -102,23 +102,23 @@ void main()
     float y = local.x * s + local.y * c;
     vec2 worldPos = instance_position + instance_scale * vec2(x, y);
 
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)), dot(sf_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
+    gl_Position = vec4(dot(za_u_mvpRow0, vec3(worldPos, 1.0)), dot(za_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
 
-    sf_v_color = vec4(1.0, 1.0, 1.0, instance_opacity);
+    za_v_color = vec4(1.0, 1.0, 1.0, instance_opacity);
 
-    vec2 final_texCoord = u_texRect.xy + (sf_a_texCoord * u_texRect.zw);
-    sf_v_texCoord = final_texCoord * sf_u_invTextureSize;
+    vec2 final_texCoord = u_texRect.xy + (za_a_texCoord * u_texRect.zw);
+    za_v_texCoord = final_texCoord * za_u_invTextureSize;
 }
 
 )glsl";
 
 
 ////////////////////////////////////////////////////////////
-sf::Shader*                            instanceRenderingShader        = nullptr;
-const sf::Shader::UniformLocation*     instanceRenderingULTextureRect = nullptr;
-sf::VAOHandle*                         instanceRenderingVAOGroup      = nullptr;
-sf::VBOHandle*                         instanceRenderingVBOs          = nullptr; // points to array of 4
-sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
+za::Shader*                            instanceRenderingShader        = nullptr;
+const za::Shader::UniformLocation*     instanceRenderingULTextureRect = nullptr;
+za::VAOHandle*                         instanceRenderingVAOGroup      = nullptr;
+za::VBOHandle*                         instanceRenderingVBOs          = nullptr; // points to array of 4
+zb::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
 
 
 ////////////////////////////////////////////////////////////
@@ -126,27 +126,27 @@ RNGFast rng;
 
 
 ////////////////////////////////////////////////////////////
-sf::Texture* txAtlas = nullptr;
-sf::Rect2f   txrSmoke;
-sf::Rect2f   txrFire;
-sf::Rect2f   txrRocket;
+za::Texture* txAtlas = nullptr;
+za::Rect2f   txrSmoke;
+za::Rect2f   txrFire;
+za::Rect2f   txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const sf::base::SizeT nInstances)
+[[nodiscard]] za::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const zb::SizeT nInstances)
 {
     return {
         .vaoHandle     = *instanceRenderingVAOGroup,
-        .vertexSpan    = sf::instancedQuadVertices,
-        .indexSpan     = sf::instancedQuadIndices,
+        .vertexSpan    = za::instancedQuadVertices,
+        .indexSpan     = za::instancedQuadIndices,
         .instanceCount = nInstances,
-        .primitiveType = sf::PrimitiveType::Triangles,
+        .primitiveType = za::PrimitiveType::Triangles,
     };
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::RenderStates makeInstancedDrawRenderStates(const sf::View& view)
+[[nodiscard]] za::RenderStates makeInstancedDrawRenderStates(const za::View& view)
 {
     return {.view = view, .texture = txAtlas, .shader = instanceRenderingShader};
 }
@@ -154,40 +154,40 @@ sf::Rect2f   txrRocket;
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
-    sf::RenderTarget& rt,
-    const sf::View&   view,
-    const sf::Vec2f   position,
-    const sf::Vec2f   scale,
+    za::RenderTarget& rt,
+    const za::View&   view,
+    const za::Vec2f   position,
+    const za::Vec2f   scale,
     const float       rotation,
-    const sf::Rect2f  txr,
+    const za::Rect2f  txr,
     const float       opacity)
 {
     rt.draw(
-        sf::Sprite{
+        za::Sprite{
             .position    = position,
             .scale       = scale,
             .origin      = txr.size / 2.f,
-            .rotation    = sf::radians(rotation),
+            .rotation    = za::radians(rotation),
             .textureRect = txr,
-            .color       = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(opacity * 255.f)),
+            .color       = za::Color::whiteWithAlpha(static_cast<zb::U8>(opacity * 255.f)),
         },
-        sf::RenderStates{.view = view, .texture = txAtlas});
+        za::RenderStates{.view = view, .texture = txAtlas});
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void drawRocketImpl(sf::RenderTarget& rt, const sf::View& view, const sf::Vec2f position)
+[[gnu::always_inline]] inline void drawRocketImpl(za::RenderTarget& rt, const za::View& view, const za::Vec2f position)
 {
     rt.draw(
-        sf::Sprite{
+        za::Sprite{
             .position    = position,
             .scale       = {0.15f, 0.15f},
             .origin      = txrRocket.size / 2.f,
-            .rotation    = sf::radians(0.f),
+            .rotation    = za::radians(0.f),
             .textureRect = txrRocket,
-            .color       = sf::Color::White,
+            .color       = za::Color::White,
         },
-        sf::RenderStates{.view = view, .texture = txAtlas});
+        za::RenderStates{.view = view, .texture = txAtlas});
 }
 
 
@@ -202,9 +202,9 @@ struct Entity
 {
     World* world = nullptr;
 
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     bool alive = true;
 
@@ -216,7 +216,7 @@ struct Entity
         velocity += acceleration * dt;
     }
 
-    virtual void draw(sf::RenderTarget&, const sf::View&)
+    virtual void draw(za::RenderTarget&, const za::View&)
     {
     }
 };
@@ -224,21 +224,21 @@ struct Entity
 ////////////////////////////////////////////////////////////
 struct World
 {
-    sf::base::Vector<sf::base::UniquePtr<Entity>> entities;
+    zb::Vector<zb::UniquePtr<Entity>> entities;
 
     void cleanup()
     {
-        sf::base::vectorSwapAndPopIf(entities, [](const auto& entity) { return !entity->alive; });
+        zb::vectorSwapAndPopIf(entities, [](const auto& entity) { return !entity->alive; });
     }
 
     void update(float dt)
     {
         // Cannot use range-based `for` as new elements are created while updating
-        for (sf::base::SizeT i = 0u; i < entities.size(); ++i) // NOLINT(modernize-loop-convert)
+        for (zb::SizeT i = 0u; i < entities.size(); ++i) // NOLINT(modernize-loop-convert)
             entities[i]->update(dt);
     }
 
-    void draw(sf::RenderTarget& rt, const sf::View& view)
+    void draw(za::RenderTarget& rt, const za::View& view)
     {
         for (const auto& entity : entities)
             entity->draw(rt, view);
@@ -247,10 +247,10 @@ struct World
     template <typename T>
     T& addEntity()
     {
-        auto  newEntity = sf::base::makeUnique<T>();
+        auto  newEntity = zb::makeUnique<T>();
         auto& result    = *newEntity;
 
-        entities.emplaceBack(SFML_BASE_MOVE(newEntity));
+        entities.emplaceBack(ZB_MOVE(newEntity));
 
         result.world = this;
         return result;
@@ -302,7 +302,7 @@ struct Particle : Entity // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 struct SmokeParticle final : Particle
 {
-    void draw(sf::RenderTarget& rt, const sf::View& view) override
+    void draw(za::RenderTarget& rt, const za::View& view) override
     {
         drawParticleImpl(rt, view, position, {scale, scale}, rotation, txrSmoke, opacity);
     }
@@ -311,7 +311,7 @@ struct SmokeParticle final : Particle
 ////////////////////////////////////////////////////////////
 struct FireParticle final : Particle
 {
-    void draw(sf::RenderTarget& rt, const sf::View& view) override
+    void draw(za::RenderTarget& rt, const za::View& view) override
     {
         drawParticleImpl(rt, view, position, {scale, scale}, rotation, txrFire, opacity);
     }
@@ -386,8 +386,8 @@ struct Rocket final : Entity
     {
         Entity::update(dt);
 
-        smokeEmitter->position = position - sf::Vec2f{12.f, 0.f};
-        fireEmitter->position  = position - sf::Vec2f{12.f, 0.f};
+        smokeEmitter->position = position - za::Vec2f{12.f, 0.f};
+        fireEmitter->position  = position - za::Vec2f{12.f, 0.f};
 
         if (position.x > 1680.f + 64.f)
         {
@@ -398,7 +398,7 @@ struct Rocket final : Entity
         }
     }
 
-    void draw(sf::RenderTarget& rt, const sf::View& view) override
+    void draw(za::RenderTarget& rt, const za::View& view) override
     {
         drawRocketImpl(rt, view, position);
     }
@@ -420,7 +420,7 @@ namespace Shared
 
 ////////////////////////////////////////////////////////////
 template <typename TParticle>
-[[nodiscard, gnu::always_inline]] inline TParticle makeAoSSmokeParticle(const sf::Vec2f position)
+[[nodiscard, gnu::always_inline]] inline TParticle makeAoSSmokeParticle(const za::Vec2f position)
 {
     return {
         .position     = position,
@@ -440,7 +440,7 @@ template <typename TParticle>
 
 ////////////////////////////////////////////////////////////
 template <typename TParticle>
-[[nodiscard, gnu::always_inline]] inline TParticle makeAoSFireParticle(const sf::Vec2f position)
+[[nodiscard, gnu::always_inline]] inline TParticle makeAoSFireParticle(const za::Vec2f position)
 {
     return {
         .position     = position,
@@ -475,9 +475,9 @@ enum class ParticleType
 ////////////////////////////////////////////////////////////
 struct Emitter
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float spawnTimer;
     float spawnRate;
@@ -488,9 +488,9 @@ struct Emitter
 ////////////////////////////////////////////////////////////
 struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float scale;
     float opacity;
@@ -506,25 +506,25 @@ struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
-    sf::base::SizeT smokeEmitterIdx;
-    sf::base::SizeT fireEmitterIdx;
+    zb::SizeT smokeEmitterIdx;
+    zb::SizeT fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World
 {
-    sf::base::Vector<sf::base::Optional<Emitter>> emitters;
-    sf::base::Vector<Particle>                    particles;
-    sf::base::Vector<Rocket>                      rockets;
+    zb::Vector<zb::Optional<Emitter>> emitters;
+    zb::Vector<Particle>                    particles;
+    zb::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addEmitter(const Emitter& emitter)
+    [[nodiscard]] zb::SizeT addEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
+        for (zb::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
@@ -579,7 +579,7 @@ struct World
 
         {
             SFEX_PROFILE_SCOPE("emitters");
-            for (sf::base::Optional<Emitter>& e : emitters)
+            for (zb::Optional<Emitter>& e : emitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -608,11 +608,11 @@ struct World
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (sf::base::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
-                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
+                    se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (sf::base::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
-                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
+                    fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
     }
@@ -620,9 +620,9 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        sf::base::vectorSwapAndPopIf(particles, [](const Particle& p) { return p.opacity <= 0.f; });
+        zb::vectorSwapAndPopIf(particles, [](const Particle& p) { return p.opacity <= 0.f; });
 
-        sf::base::vectorSwapAndPopIf(rockets,
+        zb::vectorSwapAndPopIf(rockets,
                                      [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -636,11 +636,11 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt, const sf::View& view)
+    void draw(za::RenderTarget& rt, const za::View& view)
     {
-        const auto drawParticlesInstanced = [&](const auto& instanceBuffer, const sf::Rect2f& txr)
+        const auto drawParticlesInstanced = [&](const auto& instanceBuffer, const za::Rect2f& txr)
         {
-            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](za::InstanceAttributeBinder& binder)
             {
                 binder.uploadContiguousData(instanceRenderingVBOs[0], instanceBuffer);
 
@@ -651,7 +651,7 @@ struct World
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
-                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
+                                                za::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()),
                                             setupSpriteInstanceAttribs,
@@ -700,17 +700,17 @@ template <typename TEmitter>
 struct AddU16EmitterMixin
 {
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::U16 addEmitter(sf::base::Vector<sf::base::Optional<TEmitter>>& emitters, const TEmitter& emitter)
+    [[nodiscard]] zb::U16 addEmitter(zb::Vector<zb::Optional<TEmitter>>& emitters, const TEmitter& emitter)
     {
-        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
+        for (zb::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
-                return static_cast<sf::base::U16>(i);
+                return static_cast<zb::U16>(i);
             }
 
         emitters.emplaceBack(emitter);
-        return static_cast<sf::base::U16>(emitters.size() - 1);
+        return static_cast<zb::U16>(emitters.size() - 1);
     }
 };
 
@@ -754,9 +754,9 @@ namespace AOSImproved
 ////////////////////////////////////////////////////////////
 struct Emitter
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float spawnTimer;
     float spawnRate;
@@ -765,9 +765,9 @@ struct Emitter
 ////////////////////////////////////////////////////////////
 struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float scale;
     float opacity;
@@ -781,22 +781,22 @@ struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
-    sf::base::U16 smokeEmitterIdx;
-    sf::base::U16 fireEmitterIdx;
+    zb::U16 smokeEmitterIdx;
+    zb::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
-    sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
-    sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
-    sf::base::Vector<Particle>                    smokeParticles;
-    sf::base::Vector<Particle>                    fireParticles;
-    sf::base::Vector<Rocket>                      rockets;
+    zb::Vector<zb::Optional<Emitter>> smokeEmitters;
+    zb::Vector<zb::Optional<Emitter>> fireEmitters;
+    zb::Vector<Particle>                    smokeParticles;
+    zb::Vector<Particle>                    fireParticles;
+    zb::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -810,7 +810,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             p.rotation += p.angularVelocity * dt;
         };
 
-        const auto updateEmitter = [&](sf::base::Optional<Emitter>& e, auto&& fSpawn)
+        const auto updateEmitter = [&](zb::Optional<Emitter>& e, auto&& fSpawn)
         {
             if (!e.hasValue())
                 return;
@@ -840,14 +840,14 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
 
-            for (sf::base::Optional<Emitter>& e : smokeEmitters)
+            for (zb::Optional<Emitter>& e : smokeEmitters)
                 updateEmitter(e, [&] { smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position)); });
         }
 
         {
             SFEX_PROFILE_SCOPE("fire emitters");
 
-            for (sf::base::Optional<Emitter>& e : fireEmitters)
+            for (zb::Optional<Emitter>& e : fireEmitters)
                 updateEmitter(e, [&] { fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position)); });
         }
 
@@ -859,11 +859,11 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
-                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                    se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
-                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                    fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
     }
@@ -871,10 +871,10 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        sf::base::vectorSwapAndPopIf(smokeParticles, [](const Particle& p) { return p.opacity <= 0.f; });
-        sf::base::vectorSwapAndPopIf(fireParticles, [](const Particle& p) { return p.opacity <= 0.f; });
+        zb::vectorSwapAndPopIf(smokeParticles, [](const Particle& p) { return p.opacity <= 0.f; });
+        zb::vectorSwapAndPopIf(fireParticles, [](const Particle& p) { return p.opacity <= 0.f; });
 
-        sf::base::vectorSwapAndPopIf(rockets,
+        zb::vectorSwapAndPopIf(rockets,
                                      [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -888,20 +888,20 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt, const sf::View& view)
+    void draw(za::RenderTarget& rt, const za::View& view)
     {
-        const auto drawParticlesInstanced = [&](const sf::Rect2f& txr, const auto& particles)
+        const auto drawParticlesInstanced = [&](const za::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.size();
 
             instanceRenderingDataBuffer[0].clear();
             instanceRenderingDataBuffer[0].reserve(nParticles);
 
-            for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+            for (zb::SizeT i = 0u; i < nParticles; ++i)
                 instanceRenderingDataBuffer[0]
                     .emplaceBack(particles[i].position, particles[i].scale, particles[i].rotation, particles[i].opacity);
 
-            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](za::InstanceAttributeBinder& binder)
             {
                 binder.uploadContiguousData(instanceRenderingVBOs[0], instanceRenderingDataBuffer[0]);
 
@@ -912,7 +912,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
-                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
+                                                za::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
                                             setupSpriteInstanceAttribs,
@@ -947,17 +947,17 @@ namespace SOAManual
 ////////////////////////////////////////////////////////////
 struct ParticleSoA
 {
-    sf::base::Vector<sf::Vec2f> positions;
-    sf::base::Vector<sf::Vec2f> velocities;
-    sf::base::Vector<sf::Vec2f> accelerations;
+    zb::Vector<za::Vec2f> positions;
+    zb::Vector<za::Vec2f> velocities;
+    zb::Vector<za::Vec2f> accelerations;
 
-    sf::base::Vector<float> scales;
-    sf::base::Vector<float> opacities;
-    sf::base::Vector<float> rotations;
+    zb::Vector<float> scales;
+    zb::Vector<float> opacities;
+    zb::Vector<float> rotations;
 
-    sf::base::Vector<float> scaleRates;
-    sf::base::Vector<float> opacityChanges;
-    sf::base::Vector<float> angularVelocities;
+    zb::Vector<float> scaleRates;
+    zb::Vector<float> opacityChanges;
+    zb::Vector<float> angularVelocities;
 
     ////////////////////////////////////////////////////////////
     void forEachVector(auto&& f)
@@ -976,7 +976,7 @@ struct ParticleSoA
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] sf::base::SizeT getSize() const
+    [[nodiscard, gnu::always_inline]] zb::SizeT getSize() const
     {
         return positions.size();
     }
@@ -985,9 +985,9 @@ struct ParticleSoA
 ////////////////////////////////////////////////////////////
 struct Emitter
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float spawnTimer;
     float spawnRate;
@@ -996,22 +996,22 @@ struct Emitter
 ////////////////////////////////////////////////////////////
 struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
-    sf::base::U16 smokeEmitterIdx;
-    sf::base::U16 fireEmitterIdx;
+    zb::U16 smokeEmitterIdx;
+    zb::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
-    sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
-    sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
+    zb::Vector<zb::Optional<Emitter>> smokeEmitters;
+    zb::Vector<zb::Optional<Emitter>> fireEmitters;
     ParticleSoA                                   smokeParticles;
     ParticleSoA                                   fireParticles;
-    sf::base::Vector<Rocket>                      rockets;
+    zb::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1020,7 +1020,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             const auto nParticles = soa.getSize();
 
-            for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+            for (zb::SizeT i = 0u; i < nParticles; ++i)
             {
                 soa.velocities[i] += soa.accelerations[i] * dt;
                 soa.positions[i] += soa.velocities[i] * dt;
@@ -1043,7 +1043,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
 
-            for (sf::base::Optional<Emitter>& e : smokeEmitters)
+            for (zb::Optional<Emitter>& e : smokeEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1070,7 +1070,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("fire emitters");
 
-            for (sf::base::Optional<Emitter>& e : fireEmitters)
+            for (zb::Optional<Emitter>& e : fireEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1102,11 +1102,11 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
-                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                    se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
-                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                    fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
     }
@@ -1115,25 +1115,25 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     {
         const auto soaEraseIf = [&](ParticleSoA& soa, auto&& predicate)
         {
-            sf::base::SizeT currentSize = soa.positions.size();
+            zb::SizeT currentSize = soa.positions.size();
 
-            for (sf::base::SizeT i = currentSize; i-- > 0u;)
+            for (zb::SizeT i = currentSize; i-- > 0u;)
             {
                 if (!predicate(soa, i))
                     continue;
 
                 --currentSize;
-                soa.forEachVector([&](auto& vec) { vec[i] = SFML_BASE_MOVE(vec[currentSize]); });
+                soa.forEachVector([&](auto& vec) { vec[i] = ZB_MOVE(vec[currentSize]); });
             }
 
             soa.forEachVector([&](auto& vec) { vec.resize(currentSize); });
         };
 
         soaEraseIf(smokeParticles,
-                   [](const ParticleSoA& soa, const sf::base::SizeT i) { return soa.opacities[i] <= 0.f; });
-        soaEraseIf(fireParticles, [](const ParticleSoA& soa, const sf::base::SizeT i) { return soa.opacities[i] <= 0.f; });
+                   [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
+        soaEraseIf(fireParticles, [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
 
-        sf::base::vectorSwapAndPopIf(rockets,
+        zb::vectorSwapAndPopIf(rockets,
                                      [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -1147,16 +1147,16 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt, const sf::View& view)
+    void draw(za::RenderTarget& rt, const za::View& view)
     {
-        const auto drawParticlesInstanced = [&](const sf::Rect2f& txr, const auto& particles)
+        const auto drawParticlesInstanced = [&](const za::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.positions.size();
 
-            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](za::InstanceAttributeBinder& binder)
             {
                 binder.uploadContiguousData(instanceRenderingVBOs[0], particles.positions);
-                binder.setupFlat<sf::Vec2f>(3);
+                binder.setupFlat<za::Vec2f>(3);
 
                 binder.uploadContiguousData(instanceRenderingVBOs[1], particles.scales);
                 binder.setupFlat<float>(4);
@@ -1169,7 +1169,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
-                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
+                                                za::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
                                             setupSpriteInstanceAttribs,
@@ -1203,9 +1203,9 @@ namespace SOAMeta
 ////////////////////////////////////////////////////////////
 struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float scale;
     float opacity;
@@ -1222,9 +1222,9 @@ using ParticleSoA = SoAFor<Particle>;
 ////////////////////////////////////////////////////////////
 struct Emitter
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
     float spawnTimer;
     float spawnRate;
@@ -1233,22 +1233,22 @@ struct Emitter
 ////////////////////////////////////////////////////////////
 struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
-    sf::Vec2f acceleration;
+    za::Vec2f position;
+    za::Vec2f velocity;
+    za::Vec2f acceleration;
 
-    sf::base::U16 smokeEmitterIdx;
-    sf::base::U16 fireEmitterIdx;
+    zb::U16 smokeEmitterIdx;
+    zb::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
-    sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
-    sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
+    zb::Vector<zb::Optional<Emitter>> smokeEmitters;
+    zb::Vector<zb::Optional<Emitter>> fireEmitters;
     ParticleSoA                                   smokeParticles;
     ParticleSoA                                   fireParticles;
-    sf::base::Vector<Rocket>                      rockets;
+    zb::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1256,9 +1256,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         auto updateParticles = [&](auto& soa)
         {
             soa.withAll(
-                [&](sf::Vec2f&      position,
-                    sf::Vec2f&      velocity,
-                    const sf::Vec2f acceleration,
+                [&](za::Vec2f&      position,
+                    za::Vec2f&      velocity,
+                    const za::Vec2f acceleration,
                     float&          scale,
                     float&          opacity,
                     float&          rotation,
@@ -1287,7 +1287,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
 
-            for (sf::base::Optional<Emitter>& e : smokeEmitters)
+            for (zb::Optional<Emitter>& e : smokeEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1308,7 +1308,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("fire emitters");
 
-            for (sf::base::Optional<Emitter>& e : fireEmitters)
+            for (zb::Optional<Emitter>& e : fireEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1334,11 +1334,11 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
-                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                    se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
-                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (zb::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                    fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
     }
@@ -1349,7 +1349,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         smokeParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
         fireParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
 
-        sf::base::vectorSwapAndPopIf(rockets,
+        zb::vectorSwapAndPopIf(rockets,
                                      [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -1363,16 +1363,16 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt, const sf::View& view)
+    void draw(za::RenderTarget& rt, const za::View& view)
     {
-        const auto drawParticlesInstanced = [&](const sf::Rect2f& txr, const auto& particles)
+        const auto drawParticlesInstanced = [&](const za::Rect2f& txr, const auto& particles)
         {
             const auto nParticles = particles.getSize();
 
-            auto setupSpriteInstanceAttribs = [&](sf::InstanceAttributeBinder& binder)
+            auto setupSpriteInstanceAttribs = [&](za::InstanceAttributeBinder& binder)
             {
                 binder.uploadContiguousData(instanceRenderingVBOs[0], particles.template get<&Particle::position>());
-                binder.setupFlat<sf::Vec2f>(3);
+                binder.setupFlat<za::Vec2f>(3);
 
                 binder.uploadContiguousData(instanceRenderingVBOs[1], particles.template get<&Particle::scale>());
                 binder.setupFlat<float>(4);
@@ -1385,7 +1385,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
-                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
+                                                za::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles),
                                             setupSpriteInstanceAttribs,
@@ -1435,12 +1435,12 @@ int main()
     //
     //
     // Set up graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     //
     //
     // Set up window and render texture
-    constexpr sf::Vec2f resolution{1680.f, 1050.f};
+    constexpr za::Vec2f resolution{1680.f, 1050.f};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -1456,23 +1456,23 @@ int main()
                       .value();
 
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), resolution);
-    auto worldView  = sf::View::fromScreenSize(resolution);
+    auto worldView  = za::View::fromScreenSize(resolution);
 
     auto rtGame = makeAARenderTexture(resolution.toVec2u(), {.antiAliasingLevel = 8u}).value();
 
     //
     //
     // Set up imgui
-    sf::ImGuiContext imGuiContext;
+    za::ImGuiContext imGuiContext;
 
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({512u, 256u}, {.smooth = true}).value()};
+    za::TextureAtlas textureAtlas{za::Texture::create({512u, 256u}, {.smooth = true}).value()};
     txAtlas = &textureAtlas.getTexture();
 
-    const auto addImgResourceToAtlas = [&](const sf::Path& path)
-    { return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value(); };
+    const auto addImgResourceToAtlas = [&](const za::Path& path)
+    { return textureAtlas.add(za::Image::loadFromFile("resources" / path).value()).value(); };
 
     //
     //
@@ -1490,16 +1490,16 @@ int main()
     //
     // Instanced rendering setup
     // TODO P0: cleanup, improve user-facing API
-    auto instancedRenderingShaderImpl = sf::Shader::loadFromMemory({.vertexCode   = instancedVertexShader,
-                                                                    .fragmentCode = sf::DefaultShader::srcFragment})
+    auto instancedRenderingShaderImpl = za::Shader::loadFromMemory({.vertexCode   = instancedVertexShader,
+                                                                    .fragmentCode = za::DefaultShader::srcFragment})
                                             .value();
 
     instanceRenderingShader = &instancedRenderingShaderImpl;
 
-    auto instancedRenderingVAOGroupImpl = sf::VAOHandle{};
+    auto instancedRenderingVAOGroupImpl = za::VAOHandle{};
     instanceRenderingVAOGroup           = &instancedRenderingVAOGroupImpl;
 
-    sf::VBOHandle instanceRenderingVBOsImpl[4];
+    za::VBOHandle instanceRenderingVBOsImpl[4];
     instanceRenderingVBOs = instanceRenderingVBOsImpl;
 
     const auto instanceRenderingULTextureRectImpl = instancedRenderingShaderImpl.getUniformLocation("u_texRect").value();
@@ -1553,7 +1553,7 @@ int main()
     //
     //
     // Set up clock and time sampling
-    sf::Clock fpsClock;
+    za::Clock fpsClock;
 
     Sampler<float> samplesUpdateMs(/* capacity */ 32u);
     Sampler<float> samplesDrawMs(/* capacity */ 32u);
@@ -1563,11 +1563,11 @@ int main()
     struct [[nodiscard]] SamplerScopeGuard
     {
         Sampler<float>& sampler;
-        sf::Time        startTime = sf::Clock::now();
+        za::Time        startTime = za::Clock::now();
 
         ~SamplerScopeGuard()
         {
-            sampler.record((sf::Clock::now() - startTime).asSeconds() * 1000.f);
+            sampler.record((za::Clock::now() - startTime).asSeconds() * 1000.f);
         }
     };
 
@@ -1579,7 +1579,7 @@ int main()
         window.setResizable(false);
         window.setHasTitlebar(false);
 
-        window.setSize(sf::VideoModeUtils::getDesktopMode().size);
+        window.setSize(za::VideoModeUtils::getDesktopMode().size);
         window.setPosition({0, 0});
     };
 
@@ -1588,8 +1588,8 @@ int main()
         window.setResizable(true);
         window.setHasTitlebar(true);
 
-        window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2u);
-        window.setGlobalCenter(sf::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
+        window.setSize(za::VideoModeUtils::getDesktopMode().size / 2u);
+        window.setGlobalCenter(za::VideoModeUtils::getDesktopMode().size.toVec2f() / 2.f);
     };
 
     //
@@ -1609,25 +1609,25 @@ int main()
         ////////////////////////////////////////////////////////////
         // ---
         {
-            while (sf::base::Optional event = window.pollEvent())
+            while (zb::Optional event = window.pollEvent())
             {
                 imGuiContext.processEvent(window, *event);
 
-                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
 
                 if (handleAspectRatioAwareResize(*event, resolution, windowView))
                     continue;
 
-                if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
+                if (auto* eKeyPressed = event->getIf<za::Event::KeyPressed>())
                 {
-                    if (eKeyPressed->code == sf::Keyboard::Key::Num8)
+                    if (eKeyPressed->code == za::Keyboard::Key::Num8)
                         imguiMult -= 0.25f;
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num9)
+                    else if (eKeyPressed->code == za::Keyboard::Key::Num9)
                         imguiMult += 0.25f;
-                    else if (eKeyPressed->code == sf::Keyboard::Key::F)
+                    else if (eKeyPressed->code == za::Keyboard::Key::F)
                         makeFullscreen();
-                    else if (eKeyPressed->code == sf::Keyboard::Key::W)
+                    else if (eKeyPressed->code == za::Keyboard::Key::W)
                         makeWindowed();
                 }
             }

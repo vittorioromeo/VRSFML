@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
 
 
 namespace tsurv
@@ -15,7 +15,7 @@ template <typename TCommand>
 struct [[nodiscard]] AnimationTimeline
 {
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<TCommand, 128> commands;
+    zb::InPlaceVector<TCommand, 128> commands;
     float                                  timeOnCurrentCommand = 0.f;
 
 
@@ -43,7 +43,7 @@ struct [[nodiscard]] AnimationTimeline
     ////////////////////////////////////////////////////////////
     void popFrontCommand()
     {
-        SFML_BASE_ASSERT(!commands.empty());
+        ZB_ASSERT(!commands.empty());
 
         commands.erase(commands.begin());
         timeOnCurrentCommand = 0.f;
@@ -89,14 +89,14 @@ struct [[nodiscard]] AnimationTimeline
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getProgress() const
     {
-        SFML_BASE_ASSERT(!commands.empty());
+        ZB_ASSERT(!commands.empty());
 
         const float duration = commands.front().duration;
 
         if (duration <= 0.f)
             return 1.f;
 
-        return sf::base::clamp(timeOnCurrentCommand / duration, 0.f, 1.f);
+        return zb::clamp(timeOnCurrentCommand / duration, 0.f, 1.f);
     }
 
 

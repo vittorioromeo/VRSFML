@@ -2,36 +2,36 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Glsl.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/InstanceAttributeBinder.hpp"
-#include "SFML/Graphics/InstancedQuad.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/StencilMode.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/VAOHandle.hpp"
-#include "SFML/Graphics/VBOHandle.hpp"
-#include "SFML/Graphics/Vertex.hpp"
-#include "SFML/Graphics/VertexBuffer.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/InstanceAttributeBinder.hpp"
+#include "Zancle/Graphics/InstancedQuad.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RectangleShape.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/StencilMode.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/VAOHandle.hpp"
+#include "Zancle/Graphics/VBOHandle.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/VertexBuffer.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/WindowContext.hpp"
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/Glad.hpp"
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
 
-#include "SFML/System/Err.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Thread.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Thread.hpp"
 
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of
@@ -49,18 +49,18 @@
 // graphics context. Used to build true multi-context regression coverage.
 struct TestContext
 {
-    decltype(sf::WindowContext::createGlContext(sf::ContextSettings{})) glContext;
+    decltype(za::WindowContext::createGlContext(za::ContextSettings{})) glContext;
 
-    TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
+    TestContext() : glContext(za::WindowContext::createGlContext(za::ContextSettings{}))
     {
-        if (!sf::WindowContext::setActiveThreadLocalGlContext(*glContext, true))
-            sf::priv::errMsg("Failed to activate TestContext on construction");
+        if (!za::WindowContext::setActiveThreadLocalGlContext(*glContext, true))
+            za::priv::errMsg("Failed to activate TestContext on construction");
     }
 
     ~TestContext()
     {
-        if (glContext != nullptr && !sf::WindowContext::setActiveThreadLocalGlContext(*glContext, false))
-            sf::priv::errMsg("Failed to deactivate TestContext on destruction");
+        if (glContext != nullptr && !za::WindowContext::setActiveThreadLocalGlContext(*glContext, false))
+            za::priv::errMsg("Failed to deactivate TestContext on destruction");
     }
 
     TestContext(const TestContext&)                = delete;
@@ -70,7 +70,7 @@ struct TestContext
 
     [[nodiscard]] bool setActive(bool active) const
     {
-        return sf::WindowContext::setActiveThreadLocalGlContext(*glContext, active);
+        return za::WindowContext::setActiveThreadLocalGlContext(*glContext, active);
     }
 
     [[nodiscard]] unsigned int getId() const
@@ -83,28 +83,28 @@ struct TestContext
 namespace
 {
 constexpr auto blinkAlphaFragSource = R"glsl(
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 layout(location = 7) uniform float blink_alpha;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
-    sf_fragColor = sf_v_color * blink_alpha;
+    za_fragColor = za_v_color * blink_alpha;
 }
 )glsl";
 
 constexpr auto instancedVertexSource = R"glsl(
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color;
+layout(location = 2) in vec2 za_a_texCoord;
 
 layout(location = 3) in vec2 instance_offset;
 layout(location = 4) in vec4 instance_color;
@@ -113,10 +113,10 @@ out vec4 v_color;
 
 void main()
 {
-    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+    vec2 worldPos = instance_offset + (za_a_position * vec2(20.0, 20.0));
 
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
+    gl_Position = vec4(dot(za_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(za_u_mvpRow1, vec3(worldPos, 1.0)),
                        0.0,
                        1.0);
 
@@ -127,11 +127,11 @@ void main()
 constexpr auto instancedFragmentSource = R"glsl(
 in vec4 v_color;
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
-    sf_fragColor = v_color;
+    za_fragColor = v_color;
 }
 )glsl";
 
@@ -140,29 +140,29 @@ void main()
 
 TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Stencil Tests")
     {
-        auto renderTexture = sf::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).value();
+        auto renderTexture = za::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).value();
 
-        renderTexture.clear(sf::Color::Red, sf::StencilValue{127u});
+        renderTexture.clear(za::Color::Red, za::StencilValue{127u});
 
-        const sf::RectangleShape shape1{{.fillColor = sf::Color::Green, .size = {100.f, 100.f}}};
-        const sf::RectangleShape shape2{{.fillColor = sf::Color::Blue, .size = {100.f, 100.f}}};
+        const za::RectangleShape shape1{{.fillColor = za::Color::Green, .size = {100.f, 100.f}}};
+        const za::RectangleShape shape2{{.fillColor = za::Color::Blue, .size = {100.f, 100.f}}};
 
         SECTION("Stencil-Only")
         {
             renderTexture.draw(shape1,
-                               sf::RenderStates{.stencilMode = {
-                                                    .stencilComparison      = sf::StencilComparison::Always,
-                                                    .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                               za::RenderStates{.stencilMode = {
+                                                    .stencilComparison      = za::StencilComparison::Always,
+                                                    .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                     .stencilOnly            = true,
-                                                    .stencilReference       = sf::StencilValue{1u},
-                                                    .stencilMask            = sf::StencilValue{0xFFu},
+                                                    .stencilReference       = za::StencilValue{1u},
+                                                    .stencilMask            = za::StencilValue{0xFFu},
                                                 }});
             renderTexture.display();
-            CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+            CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
         }
 
         SECTION("Comparisons")
@@ -170,216 +170,216 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             SECTION("Always")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{1u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{1u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Equal")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{126u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{126u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
 
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Greater")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Greater,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Greater,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{126u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{126u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Greater,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Greater,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Greater,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Greater,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{128u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{128u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("GreaterEqual")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::GreaterEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::GreaterEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{126u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{126u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::GreaterEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::GreaterEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
                 renderTexture.draw(shape2,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::GreaterEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::GreaterEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{128u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{128u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
 
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Blue);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Blue);
             }
 
             SECTION("Less")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Less,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Less,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{128u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{128u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Less,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Less,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Less,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Less,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{126u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{126u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("LessEqual")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::LessEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::LessEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{128u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{128u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::LessEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::LessEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
                 renderTexture.draw(shape2,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::LessEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::LessEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{126u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{126u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
 
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Blue);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Blue);
             }
 
             SECTION("Never")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Never,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Never,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
             }
 
             SECTION("NotEqual")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::NotEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::NotEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Red);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Red);
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::NotEqual,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::NotEqual,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{128u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{128u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
         }
 
@@ -388,151 +388,151 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             SECTION("Decrement")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Decrement,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Decrement,
                                                         .stencilOnly            = true,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Decrement,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Decrement,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{126u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{126u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Increment")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Increment,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Increment,
                                                         .stencilOnly            = true,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Increment,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Increment,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{128u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{128u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Invert")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Invert,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Invert,
                                                         .stencilOnly            = true,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Invert,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Invert,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{0x80u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{0x80u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Keep")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = true,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Keep,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Keep,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Replace")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Replace,
                                                         .stencilOnly            = true,
-                                                        .stencilReference       = sf::StencilValue{255u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{255u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Replace,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{255u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{255u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
 
             SECTION("Zero")
             {
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Always,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Zero,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Always,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Zero,
                                                         .stencilOnly            = true,
-                                                        .stencilReference       = sf::StencilValue{127u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{127u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.draw(shape1,
-                                   sf::RenderStates{.stencilMode = {
-                                                        .stencilComparison      = sf::StencilComparison::Equal,
-                                                        .stencilUpdateOperation = sf::StencilUpdateOperation::Zero,
+                                   za::RenderStates{.stencilMode = {
+                                                        .stencilComparison      = za::StencilComparison::Equal,
+                                                        .stencilUpdateOperation = za::StencilUpdateOperation::Zero,
                                                         .stencilOnly            = false,
-                                                        .stencilReference       = sf::StencilValue{0u},
-                                                        .stencilMask            = sf::StencilValue{0xFFu},
+                                                        .stencilReference       = za::StencilValue{0u},
+                                                        .stencilMask            = za::StencilValue{0xFFu},
                                                     }});
                 renderTexture.display();
-                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Green);
+                CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == za::Color::Green);
             }
         }
     }
 
     SECTION("Auto-batch generation counter tests")
     {
-        auto renderTexture = sf::RenderTexture::create({100, 100}).value();
+        auto renderTexture = za::RenderTexture::create({100, 100}).value();
 
-        const sf::RectangleShape shape{{.fillColor = sf::Color::Red, .size = {100.f, 100.f}}};
+        const za::RectangleShape shape{{.fillColor = za::Color::Red, .size = {100.f, 100.f}}};
 
         SECTION("Shader uniform mutation breaks batch")
         {
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
+            auto shader = za::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
             shader.setUniform(loc, 1.f);
 
-            const sf::RenderStates states{.shader = &shader};
+            const za::RenderStates states{.shader = &shader};
 
             // Two draws without mutation: single batch, 1 draw call
             renderTexture.clear();
@@ -550,11 +550,11 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 
         SECTION("Manual flush before uniform mutation preserves correct rendering")
         {
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
+            auto shader = za::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
 
-            const sf::RenderStates states{.shader = &shader};
+            const za::RenderStates states{.shader = &shader};
 
             // Correct order: flush, then mutate, then draw
             // The flush drains the pending batch with the OLD uniform value,
@@ -581,11 +581,11 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 
         SECTION("Flush before display is redundant (display already flushes)")
         {
-            auto shader = sf::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
+            auto shader = za::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
 
             const auto loc = shader.getUniformLocation("blink_alpha").value();
 
-            const sf::RenderStates states{.shader = &shader};
+            const za::RenderStates states{.shader = &shader};
 
             // With redundant flush before display: uniform set before draw,
             // then flush (no-op since display would do it), then display.
@@ -606,20 +606,20 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
         {
             struct InstanceData
             {
-                sf::Vec2f offset;
-                sf::Color color;
+                za::Vec2f offset;
+                za::Color color;
             };
 
-            auto shader = sf::Shader::loadFromMemory(
+            auto shader = za::Shader::loadFromMemory(
                               {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
                               .value();
 
-            sf::VAOHandle vaoHandle;
-            sf::VBOHandle instanceVBO;
+            za::VAOHandle vaoHandle;
+            za::VBOHandle instanceVBO;
 
             const auto drawInstance = [&](InstanceData instance)
             {
-                auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+                auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
                 {
                     binder.uploadContiguousData(instanceVBO, &instance);
                     binder.setupField<&InstanceData::offset>(3);
@@ -629,75 +629,75 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 renderTexture.drawInstancedIndexedVertices(
                     {
                         .vaoHandle     = vaoHandle,
-                        .vertexSpan    = sf::instancedQuadVertices,
-                        .indexSpan     = sf::instancedQuadIndices,
+                        .vertexSpan    = za::instancedQuadVertices,
+                        .indexSpan     = za::instancedQuadIndices,
                         .instanceCount = 1u,
-                        .primitiveType = sf::PrimitiveType::Triangles,
+                        .primitiveType = za::PrimitiveType::Triangles,
                     },
                     setupAttribs,
-                    {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+                    {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
             };
 
-            renderTexture.clear(sf::Color::Black);
+            renderTexture.clear(za::Color::Black);
 
-            drawInstance({.offset = {10.f, 10.f}, .color = sf::Color::Green});
-            drawInstance({.offset = {60.f, 10.f}, .color = sf::Color::Red});
+            drawInstance({.offset = {10.f, 10.f}, .color = za::Color::Green});
+            drawInstance({.offset = {60.f, 10.f}, .color = za::Color::Red});
 
             renderTexture.display();
 
             const auto image = renderTexture.getTexture().copyToImage();
 
-            CHECK(image.getPixel({15, 15}) == sf::Color::Green);
-            CHECK(image.getPixel({65, 15}) == sf::Color::Red);
+            CHECK(image.getPixel({15, 15}) == za::Color::Green);
+            CHECK(image.getPixel({65, 15}) == za::Color::Red);
         }
 
         SECTION("SOA instanced draw with separate VBOs per field")
         {
-            auto shader = sf::Shader::loadFromMemory(
+            auto shader = za::Shader::loadFromMemory(
                               {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
                               .value();
 
-            sf::VAOHandle vaoHandle;
-            sf::VBOHandle offsetVBO;
-            sf::VBOHandle colorVBO;
+            za::VAOHandle vaoHandle;
+            za::VBOHandle offsetVBO;
+            za::VBOHandle colorVBO;
 
-            const auto drawInstance = [&](const sf::Vec2f offset, const sf::Color color)
+            const auto drawInstance = [&](const za::Vec2f offset, const za::Color color)
             {
-                const sf::Vec2f instanceOffsetData[]{offset};
-                const sf::Color instanceColorData[]{color};
+                const za::Vec2f instanceOffsetData[]{offset};
+                const za::Color instanceColorData[]{color};
 
-                auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+                auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
                 {
                     binder.uploadContiguousData(offsetVBO, instanceOffsetData);
-                    binder.setupFlat<sf::Vec2f>(3);
+                    binder.setupFlat<za::Vec2f>(3);
 
                     binder.uploadContiguousData(colorVBO, instanceColorData);
-                    binder.setupFlat<sf::Color>(4);
+                    binder.setupFlat<za::Color>(4);
                 };
 
                 renderTexture.drawInstancedIndexedVertices(
                     {
                         .vaoHandle     = vaoHandle,
-                        .vertexSpan    = sf::instancedQuadVertices,
-                        .indexSpan     = sf::instancedQuadIndices,
+                        .vertexSpan    = za::instancedQuadVertices,
+                        .indexSpan     = za::instancedQuadIndices,
                         .instanceCount = 1u,
-                        .primitiveType = sf::PrimitiveType::Triangles,
+                        .primitiveType = za::PrimitiveType::Triangles,
                     },
                     setupAttribs,
-                    {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+                    {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
             };
 
-            renderTexture.clear(sf::Color::Black);
+            renderTexture.clear(za::Color::Black);
 
-            drawInstance({10.f, 10.f}, sf::Color::Green);
-            drawInstance({60.f, 10.f}, sf::Color::Red);
+            drawInstance({10.f, 10.f}, za::Color::Green);
+            drawInstance({60.f, 10.f}, za::Color::Red);
 
             renderTexture.display();
 
             const auto image = renderTexture.getTexture().copyToImage();
 
-            CHECK(image.getPixel({15, 15}) == sf::Color::Green);
-            CHECK(image.getPixel({65, 15}) == sf::Color::Red);
+            CHECK(image.getPixel({15, 15}) == za::Color::Green);
+            CHECK(image.getPixel({65, 15}) == za::Color::Red);
         }
 
         SECTION("Mixed instanced and immediate draws preserve GL_ARRAY_BUFFER for the active VAO")
@@ -718,26 +718,26 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             //   instanced -> instanced (same VAO, non-rebind branch)
             //   instanced -> immediate (different VAO, rebind branch)
             //   immediate -> instanced (different VAO, rebind branch)
-            auto rt = sf::RenderTexture::create({100, 100}).value();
+            auto rt = za::RenderTexture::create({100, 100}).value();
 
-            auto shader = sf::Shader::loadFromMemory(
+            auto shader = za::Shader::loadFromMemory(
                               {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
                               .value();
 
-            sf::VAOHandle vaoHandle;
-            sf::VBOHandle instanceVBO;
+            za::VAOHandle vaoHandle;
+            za::VBOHandle instanceVBO;
 
             struct InstanceData
             {
-                sf::Vec2f offset;
-                sf::Color color;
+                za::Vec2f offset;
+                za::Color color;
             };
 
-            const auto drawInstanced = [&](sf::Vec2f offset, sf::Color color)
+            const auto drawInstanced = [&](za::Vec2f offset, za::Color color)
             {
                 const InstanceData instance{offset, color};
 
-                auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+                auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
                 {
                     binder.uploadContiguousData(instanceVBO, &instance);
                     binder.setupField<&InstanceData::offset>(3);
@@ -747,59 +747,59 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 rt.drawInstancedIndexedVertices(
                     {
                         .vaoHandle     = vaoHandle,
-                        .vertexSpan    = sf::instancedQuadVertices,
-                        .indexSpan     = sf::instancedQuadIndices,
+                        .vertexSpan    = za::instancedQuadVertices,
+                        .indexSpan     = za::instancedQuadIndices,
                         .instanceCount = 1u,
-                        .primitiveType = sf::PrimitiveType::Triangles,
+                        .primitiveType = za::PrimitiveType::Triangles,
                     },
                     setupAttribs,
-                    {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+                    {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
             };
 
-            rt.clear(sf::Color::Black);
+            rt.clear(za::Color::Black);
 
             // Two consecutive instanced draws on the same VAOHandle. After
             // the first, GL_ARRAY_BUFFER points at the instance VBO; the
             // second must rebind the VAO's shared mesh VBO before
             // `streamVerticesToGPU` runs.
-            drawInstanced({15.f, 15.f}, sf::Color::Green);
-            drawInstanced({40.f, 15.f}, sf::Color::Red);
+            drawInstanced({15.f, 15.f}, za::Color::Green);
+            drawInstanced({40.f, 15.f}, za::Color::Red);
 
             // Immediate non-instanced draw (different VAO -> rebind branch).
-            rt.draw(sf::RectangleShape{{.position = {55.f, 5.f}, .fillColor = sf::Color::Blue, .size = {20.f, 20.f}}});
+            rt.draw(za::RectangleShape{{.position = {55.f, 5.f}, .fillColor = za::Color::Blue, .size = {20.f, 20.f}}});
 
             // Back to instanced (different VAO -> rebind branch).
-            drawInstanced({15.f, 40.f}, sf::Color::Yellow);
+            drawInstanced({15.f, 40.f}, za::Color::Yellow);
 
             // Another consecutive instanced draw (same VAO -> non-rebind
             // branch must once again restore GL_ARRAY_BUFFER).
-            drawInstanced({40.f, 40.f}, sf::Color::Magenta);
+            drawInstanced({40.f, 40.f}, za::Color::Magenta);
 
             // Final transitions: instanced -> immediate -> instanced again.
-            rt.draw(sf::RectangleShape{{.position = {55.f, 30.f}, .fillColor = sf::Color::Cyan, .size = {20.f, 20.f}}});
-            drawInstanced({15.f, 65.f}, sf::Color{255u, 128u, 0u, 255u}); // orange
+            rt.draw(za::RectangleShape{{.position = {55.f, 30.f}, .fillColor = za::Color::Cyan, .size = {20.f, 20.f}}});
+            drawInstanced({15.f, 65.f}, za::Color{255u, 128u, 0u, 255u}); // orange
 
             rt.display();
 
             const auto img = rt.getTexture().copyToImage();
-            CHECK(img.getPixel({15, 15}) == sf::Color::Green);
-            CHECK(img.getPixel({40, 15}) == sf::Color::Red);
-            CHECK(img.getPixel({65, 15}) == sf::Color::Blue);
-            CHECK(img.getPixel({15, 40}) == sf::Color::Yellow);
-            CHECK(img.getPixel({40, 40}) == sf::Color::Magenta);
-            CHECK(img.getPixel({65, 40}) == sf::Color::Cyan);
-            CHECK(img.getPixel({15, 65}) == sf::Color{255u, 128u, 0u, 255u});
+            CHECK(img.getPixel({15, 15}) == za::Color::Green);
+            CHECK(img.getPixel({40, 15}) == za::Color::Red);
+            CHECK(img.getPixel({65, 15}) == za::Color::Blue);
+            CHECK(img.getPixel({15, 40}) == za::Color::Yellow);
+            CHECK(img.getPixel({40, 40}) == za::Color::Magenta);
+            CHECK(img.getPixel({65, 40}) == za::Color::Cyan);
+            CHECK(img.getPixel({15, 65}) == za::Color{255u, 128u, 0u, 255u});
         }
 
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
         SECTION("Persistent GPU batches can reserve before clear when reused across frames")
         {
-            auto batchRenderTexture = sf::RenderTexture::create({100, 100}).value();
+            auto batchRenderTexture = za::RenderTexture::create({100, 100}).value();
 
-            sf::PersistentGPUDrawableBatch batch;
-            const sf::RectangleShape rect{{.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {30.f, 30.f}}};
+            za::PersistentGPUDrawableBatch batch;
+            const za::RectangleShape rect{{.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}};
 
-            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.clear(za::Color::Black);
             batch.add(rect);
             batchRenderTexture.draw(batch);
             batchRenderTexture.display();
@@ -812,38 +812,38 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             batch.clear();
             batch.add(rect);
 
-            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.clear(za::Color::Black);
             batchRenderTexture.draw(batch);
             batchRenderTexture.display();
 
             const auto image = batchRenderTexture.getTexture().copyToImage();
-            CHECK(image.getPixel({20, 20}) == sf::Color::Green);
+            CHECK(image.getPixel({20, 20}) == za::Color::Green);
         }
 
         SECTION("Persistent GPU batches can be refilled from a worker thread after clear")
         {
-            auto batchRenderTexture = sf::RenderTexture::create({100, 100}).value();
+            auto batchRenderTexture = za::RenderTexture::create({100, 100}).value();
 
-            sf::PersistentGPUDrawableBatch batch;
-            const sf::RectangleShape rect{{.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {30.f, 30.f}}};
+            za::PersistentGPUDrawableBatch batch;
+            const za::RectangleShape rect{{.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}};
 
             batch.add(rect);
 
-            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.clear(za::Color::Black);
             batchRenderTexture.draw(batch);
             batchRenderTexture.display();
 
             batch.clear();
 
-            sf::Thread worker{[&batch, &rect] { batch.add(rect); }};
+            za::Thread worker{[&batch, &rect] { batch.add(rect); }};
             worker.join();
 
-            batchRenderTexture.clear(sf::Color::Black);
+            batchRenderTexture.clear(za::Color::Black);
             batchRenderTexture.draw(batch);
             batchRenderTexture.display();
 
             const auto image = batchRenderTexture.getTexture().copyToImage();
-            CHECK(image.getPixel({20, 20}) == sf::Color::Green);
+            CHECK(image.getPixel({20, 20}) == za::Color::Green);
         }
 #endif
     }
@@ -856,14 +856,14 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
         constexpr auto solidColorFragSource = R"glsl(
 layout(location = 7) uniform vec4 u_color;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
-    sf_fragColor = u_color;
+    za_fragColor = u_color;
 }
 )glsl";
 
@@ -875,14 +875,14 @@ void main()
             // SFML's cache claims is bound. The next draw with the same view
             // would skip `applyView` (cache hit on `lastView`) and render at
             // the wrong viewport.
-            auto rt = sf::RenderTexture::create({100, 100}).value();
+            auto rt = za::RenderTexture::create({100, 100}).value();
 
-            const sf::RectangleShape leftRect{
-                {.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {20.f, 20.f}}};
-            const sf::RectangleShape rightRect{
-                {.position = {60.f, 60.f}, .fillColor = sf::Color::Red, .size = {20.f, 20.f}}};
+            const za::RectangleShape leftRect{
+                {.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {20.f, 20.f}}};
+            const za::RectangleShape rightRect{
+                {.position = {60.f, 60.f}, .fillColor = za::Color::Red, .size = {20.f, 20.f}}};
 
-            rt.clear(sf::Color::Black);
+            rt.clear(za::Color::Black);
             rt.draw(leftRect);
             rt.flush(); // commit the draw so cache.lastView is set on the live view
 
@@ -899,8 +899,8 @@ void main()
             rt.display();
 
             const auto img = rt.getTexture().copyToImage();
-            CHECK(img.getPixel({15, 15}) == sf::Color::Green);
-            CHECK(img.getPixel({65, 65}) == sf::Color::Red);
+            CHECK(img.getPixel({15, 15}) == za::Color::Green);
+            CHECK(img.getPixel({65, 65}) == za::Color::Red);
         }
 
         SECTION("setUniform applies to the right shader when many shaders interleave")
@@ -908,9 +908,9 @@ void main()
             // Regression: `Shader::UniformBinder` now reads the bound program
             // from a thread_local cache instead of querying GL. Stress the
             // cache by mutating uniforms on multiple shaders interleaved.
-            auto shaderA = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-            auto shaderB = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-            auto shaderC = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            auto shaderA = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            auto shaderB = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            auto shaderC = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
 
             const auto locA = shaderA.getUniformLocation("u_color").value();
             const auto locB = shaderB.getUniformLocation("u_color").value();
@@ -920,26 +920,26 @@ void main()
             // `UniformBinder` that reads from / writes to the program cache.
             for (int i = 0; i < 8; ++i)
             {
-                shaderA.setUniform(locA, sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f}); // red
-                shaderB.setUniform(locB, sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f}); // green
-                shaderC.setUniform(locC, sf::Glsl::Vec4{0.f, 0.f, 1.f, 1.f}); // blue
+                shaderA.setUniform(locA, za::Glsl::Vec4{1.f, 0.f, 0.f, 1.f}); // red
+                shaderB.setUniform(locB, za::Glsl::Vec4{0.f, 1.f, 0.f, 1.f}); // green
+                shaderC.setUniform(locC, za::Glsl::Vec4{0.f, 0.f, 1.f, 1.f}); // blue
             }
 
-            auto                     rt = sf::RenderTexture::create({60, 20}).value();
-            const sf::RectangleShape full{{.size = {20.f, 20.f}}};
+            auto                     rt = za::RenderTexture::create({60, 20}).value();
+            const za::RectangleShape full{{.size = {20.f, 20.f}}};
 
-            rt.clear(sf::Color::Black);
-            rt.draw(full, sf::RenderStates{.shader = &shaderA});
-            rt.draw(sf::RectangleShape{{.position = {20.f, 0.f}, .size = {20.f, 20.f}}},
-                    sf::RenderStates{.shader = &shaderB});
-            rt.draw(sf::RectangleShape{{.position = {40.f, 0.f}, .size = {20.f, 20.f}}},
-                    sf::RenderStates{.shader = &shaderC});
+            rt.clear(za::Color::Black);
+            rt.draw(full, za::RenderStates{.shader = &shaderA});
+            rt.draw(za::RectangleShape{{.position = {20.f, 0.f}, .size = {20.f, 20.f}}},
+                    za::RenderStates{.shader = &shaderB});
+            rt.draw(za::RectangleShape{{.position = {40.f, 0.f}, .size = {20.f, 20.f}}},
+                    za::RenderStates{.shader = &shaderC});
             rt.display();
 
             const auto img = rt.getTexture().copyToImage();
-            CHECK(img.getPixel({10, 10}) == sf::Color::Red);
-            CHECK(img.getPixel({30, 10}) == sf::Color::Green);
-            CHECK(img.getPixel({50, 10}) == sf::Color::Blue);
+            CHECK(img.getPixel({10, 10}) == za::Color::Red);
+            CHECK(img.getPixel({30, 10}) == za::Color::Green);
+            CHECK(img.getPixel({50, 10}) == za::Color::Blue);
         }
 
         SECTION("Destroying a shader does not poison the program cache")
@@ -948,15 +948,15 @@ void main()
             // destroyed program was the cached one. Without this, GL handle
             // reuse could lead `useProgram(reusedHandle)` to skip the bind
             // on a cache hit and leave the wrong (deleted) program current.
-            auto                     rt = sf::RenderTexture::create({40, 40}).value();
-            const sf::RectangleShape full{{.size = {40.f, 40.f}}};
+            auto                     rt = za::RenderTexture::create({40, 40}).value();
+            const za::RectangleShape full{{.size = {40.f, 40.f}}};
 
             {
-                auto shaderTemp = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-                shaderTemp.setUniform(shaderTemp.getUniformLocation("u_color").value(), sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
+                auto shaderTemp = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+                shaderTemp.setUniform(shaderTemp.getUniformLocation("u_color").value(), za::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
 
-                rt.clear(sf::Color::Black);
-                rt.draw(full, sf::RenderStates{.shader = &shaderTemp});
+                rt.clear(za::Color::Black);
+                rt.draw(full, za::RenderStates{.shader = &shaderTemp});
                 rt.display();
                 // shaderTemp's program is now in the cache as the last bound program.
             }
@@ -964,17 +964,17 @@ void main()
 
             // A new shader may receive the same GL handle; either way, the
             // cache must not skip the rebind.
-            auto shaderNew = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
-            shaderNew.setUniform(shaderNew.getUniformLocation("u_color").value(), sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+            auto shaderNew = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            shaderNew.setUniform(shaderNew.getUniformLocation("u_color").value(), za::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
 
-            rt.clear(sf::Color::Black);
-            rt.draw(full, sf::RenderStates{.shader = &shaderNew});
+            rt.clear(za::Color::Black);
+            rt.draw(full, za::RenderStates{.shader = &shaderNew});
             rt.display();
 
-            CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+            CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == za::Color::Green);
         }
 
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+#ifndef ZA_SYSTEM_EMSCRIPTEN
         // Emscripten/WebGL does not support multiple GL contexts.
         SECTION("Shader cache is invalidated when active GL context changes")
         {
@@ -986,19 +986,19 @@ void main()
             // the active-context id genuinely changes between calls.
             // RenderTextures alone don't trigger it because they share the
             // active context rather than carrying their own.
-            auto rt = sf::RenderTexture::create({40, 40}).value();
+            auto rt = za::RenderTexture::create({40, 40}).value();
 
-            auto       shader = sf::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+            auto       shader = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
             const auto loc    = shader.getUniformLocation("u_color").value();
 
-            const sf::RectangleShape full{{.size = {40.f, 40.f}}};
+            const za::RectangleShape full{{.size = {40.f, 40.f}}};
 
             // 1) Prime the cache on the shared graphics context by drawing
             //    once. After this, `currentProgramCacheValue` holds shader's
             //    program id, tagged with the shared context's id.
-            shader.setUniform(loc, sf::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
-            rt.clear(sf::Color::Black);
-            rt.draw(full, sf::RenderStates{.shader = &shader});
+            shader.setUniform(loc, za::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
+            rt.clear(za::Color::Black);
+            rt.draw(full, za::RenderStates{.shader = &shader});
             rt.display();
 
             // 2) Activate a fresh GL context. In this context, no shader is
@@ -1017,7 +1017,7 @@ void main()
                 //    mismatch, queries GL (which returns 0), so saves 0 and
                 //    binds the shader. Without the fix, it would trust the
                 //    stale cache value and skip the bind.
-                shader.setUniform(loc, sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+                shader.setUniform(loc, za::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
             }
             // TestContext destructor reactivates the shared context. Note
             // that on the shared context, the cache value is now stale in
@@ -1027,12 +1027,12 @@ void main()
             // 4) Draw again on the shared context, this time with green.
             //    With the fix: re-tag fires, fallback query runs, shader
             //    rebinds correctly, uniform applies.
-            shader.setUniform(loc, sf::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
-            rt.clear(sf::Color::Black);
-            rt.draw(full, sf::RenderStates{.shader = &shader});
+            shader.setUniform(loc, za::Glsl::Vec4{0.f, 1.f, 0.f, 1.f});
+            rt.clear(za::Color::Black);
+            rt.draw(full, za::RenderStates{.shader = &shader});
             rt.display();
 
-            CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+            CHECK(rt.getTexture().copyToImage().getPixel({20, 20}) == za::Color::Green);
         }
 #endif
 
@@ -1043,30 +1043,30 @@ void main()
             // `resetGLStatesImpl` reapplies `cache.lastView` per target, so
             // switching contexts mid-frame doesn't leave the GL viewport
             // pointing at the previous target's rectangle.
-            auto rtSmall = sf::RenderTexture::create({40, 40}).value();
-            auto rtLarge = sf::RenderTexture::create({80, 80}).value();
+            auto rtSmall = za::RenderTexture::create({40, 40}).value();
+            auto rtLarge = za::RenderTexture::create({80, 80}).value();
 
-            const sf::RectangleShape rectSmall{
-                {.position = {10.f, 10.f}, .fillColor = sf::Color::Green, .size = {20.f, 20.f}}};
-            const sf::RectangleShape rectLarge{
-                {.position = {30.f, 30.f}, .fillColor = sf::Color::Red, .size = {20.f, 20.f}}};
+            const za::RectangleShape rectSmall{
+                {.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {20.f, 20.f}}};
+            const za::RectangleShape rectLarge{
+                {.position = {30.f, 30.f}, .fillColor = za::Color::Red, .size = {20.f, 20.f}}};
 
             // Interleaved draws: each pass forces a setActive() between the
             // two RTs. If the viewport tracking regresses, one of these
             // produces blank pixels where geometry should be.
             for (int i = 0; i < 3; ++i)
             {
-                rtSmall.clear(sf::Color::Black);
+                rtSmall.clear(za::Color::Black);
                 rtSmall.draw(rectSmall);
                 rtSmall.display();
 
-                rtLarge.clear(sf::Color::Black);
+                rtLarge.clear(za::Color::Black);
                 rtLarge.draw(rectLarge);
                 rtLarge.display();
             }
 
-            CHECK(rtSmall.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
-            CHECK(rtLarge.getTexture().copyToImage().getPixel({40, 40}) == sf::Color::Red);
+            CHECK(rtSmall.getTexture().copyToImage().getPixel({20, 20}) == za::Color::Green);
+            CHECK(rtLarge.getTexture().copyToImage().getPixel({40, 40}) == za::Color::Red);
         }
 
         SECTION("VertexBuffer draws correctly when interleaved with regular draws")
@@ -1081,55 +1081,55 @@ void main()
             //
             // Mixed sequence below stresses the handoff:
             //   regular draw -> VB draw -> regular draw -> VB draw -> regular draw
-            auto rt = sf::RenderTexture::create({120, 30}).value();
-            rt.clear(sf::Color::Black);
+            auto rt = za::RenderTexture::create({120, 30}).value();
+            rt.clear(za::Color::Black);
 
             // 1) Regular draw to prime the cache.
-            rt.draw(sf::RectangleShape{{.position = {0.f, 0.f}, .fillColor = sf::Color::Green, .size = {20.f, 30.f}}});
+            rt.draw(za::RectangleShape{{.position = {0.f, 0.f}, .fillColor = za::Color::Green, .size = {20.f, 30.f}}});
 
             // 2) VertexBuffer draw at x=[20, 40).
-            sf::VertexBuffer vb1{sf::PrimitiveType::TriangleStrip};
+            za::VertexBuffer vb1{za::PrimitiveType::TriangleStrip};
             REQUIRE(vb1.create(4u));
-            const sf::Vertex v1[]{
-                {{20.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
-                {{40.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
-                {{20.f, 30.f}, sf::Color::Red, {0.f, 0.f}},
-                {{40.f, 30.f}, sf::Color::Red, {0.f, 0.f}},
+            const za::Vertex v1[]{
+                {{20.f, 0.f}, za::Color::Red, {0.f, 0.f}},
+                {{40.f, 0.f}, za::Color::Red, {0.f, 0.f}},
+                {{20.f, 30.f}, za::Color::Red, {0.f, 0.f}},
+                {{40.f, 30.f}, za::Color::Red, {0.f, 0.f}},
             };
             REQUIRE(vb1.update(v1));
             rt.draw(vb1);
 
             // 3) Regular draw at x=[40, 60), checks the standard VAO
             //    attribs were restored after the VB draw.
-            rt.draw(sf::RectangleShape{{.position = {40.f, 0.f}, .fillColor = sf::Color::Blue, .size = {20.f, 30.f}}});
+            rt.draw(za::RectangleShape{{.position = {40.f, 0.f}, .fillColor = za::Color::Blue, .size = {20.f, 30.f}}});
 
             // 4) Another VertexBuffer draw immediately after a regular draw.
-            sf::VertexBuffer vb2{sf::PrimitiveType::TriangleStrip};
+            za::VertexBuffer vb2{za::PrimitiveType::TriangleStrip};
             REQUIRE(vb2.create(4u));
-            const sf::Vertex v2[]{
-                {{60.f, 0.f}, sf::Color::Yellow, {0.f, 0.f}},
-                {{80.f, 0.f}, sf::Color::Yellow, {0.f, 0.f}},
-                {{60.f, 30.f}, sf::Color::Yellow, {0.f, 0.f}},
-                {{80.f, 30.f}, sf::Color::Yellow, {0.f, 0.f}},
+            const za::Vertex v2[]{
+                {{60.f, 0.f}, za::Color::Yellow, {0.f, 0.f}},
+                {{80.f, 0.f}, za::Color::Yellow, {0.f, 0.f}},
+                {{60.f, 30.f}, za::Color::Yellow, {0.f, 0.f}},
+                {{80.f, 30.f}, za::Color::Yellow, {0.f, 0.f}},
             };
             REQUIRE(vb2.update(v2));
             rt.draw(vb2);
 
             // 5) Final regular draw at x=[80, 120) -- same standard VAO
             //    must again be in a valid state.
-            rt.draw(sf::RectangleShape{{.position = {80.f, 0.f}, .fillColor = sf::Color::Magenta, .size = {40.f, 30.f}}});
+            rt.draw(za::RectangleShape{{.position = {80.f, 0.f}, .fillColor = za::Color::Magenta, .size = {40.f, 30.f}}});
 
             rt.display();
 
             const auto img = rt.getTexture().copyToImage();
-            CHECK(img.getPixel({10, 15}) == sf::Color::Green);
-            CHECK(img.getPixel({30, 15}) == sf::Color::Red);
-            CHECK(img.getPixel({50, 15}) == sf::Color::Blue);
-            CHECK(img.getPixel({70, 15}) == sf::Color::Yellow);
-            CHECK(img.getPixel({100, 15}) == sf::Color::Magenta);
+            CHECK(img.getPixel({10, 15}) == za::Color::Green);
+            CHECK(img.getPixel({30, 15}) == za::Color::Red);
+            CHECK(img.getPixel({50, 15}) == za::Color::Blue);
+            CHECK(img.getPixel({70, 15}) == za::Color::Yellow);
+            CHECK(img.getPixel({100, 15}) == za::Color::Magenta);
         }
 
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+#ifndef ZA_SYSTEM_EMSCRIPTEN
         // Emscripten/WebGL does not support multiple GL contexts.
         SECTION("Persistent GL states are reset when an RT moves to a context already owned by another RT")
         {
@@ -1145,16 +1145,16 @@ void main()
             //
             // We exercise the case using `GL_CULL_FACE` + `glCullFace(GL_FRONT_AND_BACK)`,
             // which culls every triangle until something disables it.
-            auto rtA = sf::RenderTexture::create({40, 40}).value();
-            auto rtB = sf::RenderTexture::create({40, 40}).value();
+            auto rtA = za::RenderTexture::create({40, 40}).value();
+            auto rtB = za::RenderTexture::create({40, 40}).value();
 
-            const sf::RectangleShape full{{.fillColor = sf::Color::Green, .size = {40.f, 40.f}}};
+            const za::RectangleShape full{{.fillColor = za::Color::Green, .size = {40.f, 40.f}}};
 
             // 1) Prime rtA on the shared graphics context. After this draw
             //    rtA's `glStatesSet` is true, slot[shared] = rtA.id, and the
             //    shared context's GL state is the one `resetGLStatesImpl`
             //    establishes (cull off, etc.).
-            rtA.clear(sf::Color::Red);
+            rtA.clear(za::Color::Red);
             rtA.draw(full);
             rtA.display();
 
@@ -1166,7 +1166,7 @@ void main()
                 //    rtB's `glStatesSet` is forced false → `setupDraw` runs
                 //    `resetGLStatesImpl` on `fresh` → `fresh`'s persistent
                 //    GL state is sane. After this, slot[fresh] = rtB.id.
-                rtB.clear(sf::Color::Black);
+                rtB.clear(za::Color::Black);
                 rtB.draw(full);
                 rtB.display();
 
@@ -1187,7 +1187,7 @@ void main()
                 //    false` on this branch (or tags it with the context id),
                 //    so the draw resets persistent state and the green quad
                 //    actually rasterizes.
-                rtA.clear(sf::Color::Red);
+                rtA.clear(za::Color::Red);
                 rtA.draw(full);
                 rtA.display();
 
@@ -1198,7 +1198,7 @@ void main()
 
             // With the fix: green wrote to the FBO. With the bug: every
             // triangle was culled, so the pixel is still the red clear value.
-            CHECK(rtA.getTexture().copyToImage().getPixel({20, 20}) == sf::Color::Green);
+            CHECK(rtA.getTexture().copyToImage().getPixel({20, 20}) == za::Color::Green);
         }
 #endif
     }

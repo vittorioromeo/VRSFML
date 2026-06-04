@@ -1,79 +1,79 @@
-#include "SFML/Graphics/Image.hpp"
+#include "Zancle/Graphics/Image.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/FileInputStream.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/FileInputStream.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
-TEST_CASE("[Graphics] sf::Image")
+TEST_CASE("[Graphics] za::Image")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Image));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Image));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Image));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Image));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Image));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Image));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Image));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Image));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Image));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Image));
     }
 
     SECTION("Construction")
     {
         SECTION("Invalid size")
         {
-            CHECK(!sf::Image::create({10, 0}, sf::Color::Magenta).hasValue());
-            CHECK(!sf::Image::create({0, 10}, sf::Color::Magenta).hasValue());
+            CHECK(!za::Image::create({10, 0}, za::Color::Magenta).hasValue());
+            CHECK(!za::Image::create({0, 10}, za::Color::Magenta).hasValue());
         }
 
         SECTION("Vec2 constructor")
         {
-            const auto image = sf::Image::create(sf::Vec2u{10, 10}).value();
-            CHECK(image.getSize() == sf::Vec2u{10, 10});
+            const auto image = za::Image::create(za::Vec2u{10, 10}).value();
+            CHECK(image.getSize() == za::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color::Black);
+                    CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color::Black);
                 }
             }
         }
 
         SECTION("Vec2 and color constructor")
         {
-            const auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
-            CHECK(image.getSize() == sf::Vec2u{10, 10});
+            const auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Red).value();
+            CHECK(image.getSize() == za::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color::Red);
+                    CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color::Red);
                 }
             }
         }
 
-        SECTION("Vec2 and sf::base::U8* constructor")
+        SECTION("Vec2 and zb::U8* constructor")
         {
             // 10 x 10, with 4 color channels array
-            sf::base::U8 pixels[400]{};
-            for (sf::base::SizeT i = 0; i < 400; i += 4)
+            zb::U8 pixels[400]{};
+            for (zb::SizeT i = 0; i < 400; i += 4)
             {
                 pixels[i]     = 255; // r
                 pixels[i + 1] = 0;   // g
@@ -81,15 +81,15 @@ TEST_CASE("[Graphics] sf::Image")
                 pixels[i + 3] = 255; // a
             }
 
-            const auto image = sf::Image::create(sf::Vec2u{10, 10}, pixels).value();
-            CHECK(image.getSize() == sf::Vec2u{10, 10});
+            const auto image = za::Image::create(za::Vec2u{10, 10}, pixels).value();
+            CHECK(image.getSize() == za::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color::Red);
+                    CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color::Red);
                 }
             }
         }
@@ -99,75 +99,75 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("Invalid file") // TODO P1: fails under CLANG64 env
         {
-            CHECK(!sf::Image::loadFromFile(".").hasValue());
-            CHECK(!sf::Image::loadFromFile("this/does/not/exist.jpg").hasValue());
+            CHECK(!za::Image::loadFromFile(".").hasValue());
+            CHECK(!za::Image::loadFromFile("this/does/not/exist.jpg").hasValue());
 
             // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
-            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-ñ.png")).hasValue());
+            CHECK(!za::Image::loadFromFile(za::Path(U"missing-file-ñ.png")).hasValue());
 
             // small n with acute accent, from Polish, outside of Latin 1 codepage
-            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-ń.png")).hasValue());
+            CHECK(!za::Image::loadFromFile(za::Path(U"missing-file-ń.png")).hasValue());
 
             // CJK symbol for Sun, outside of any European language codepage
-            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-日.png")).hasValue());
+            CHECK(!za::Image::loadFromFile(za::Path(U"missing-file-日.png")).hasValue());
 
             // snail emoji, outside of Unicode Basic Multilingual Plane
-            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-🐌.png")).hasValue());
+            CHECK(!za::Image::loadFromFile(za::Path(U"missing-file-🐌.png")).hasValue());
         }
 
         SECTION("Successful load")
         {
-            sf::base::Optional<sf::Image> image;
+            zb::Optional<za::Image> image;
 
             SECTION("bmp")
             {
-                image = sf::Image::loadFromFile("sfml-logo-big.bmp");
+                image = za::Image::loadFromFile("zancle-logo-big.bmp");
                 REQUIRE(image.hasValue());
-                CHECK(image->getPixel({0, 0}) == sf::Color::White);
-                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
+                CHECK(image->getPixel({0, 0}) == za::Color::White);
+                CHECK(image->getPixel({200, 150}) == za::Color(144, 208, 62));
             }
 
             SECTION("png")
             {
-                image = sf::Image::loadFromFile("sfml-logo-big.png");
+                image = za::Image::loadFromFile("zancle-logo-big.png");
                 REQUIRE(image.hasValue());
-                CHECK(image->getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
+                CHECK(image->getPixel({0, 0}) == za::Color(255, 255, 255, 0));
+                CHECK(image->getPixel({200, 150}) == za::Color(144, 208, 62));
             }
 
             SECTION("jpg")
             {
-                image = sf::Image::loadFromFile("sfml-logo-big.jpg");
+                image = za::Image::loadFromFile("zancle-logo-big.jpg");
                 REQUIRE(image.hasValue());
-                CHECK(image->getPixel({0, 0}) == sf::Color::White);
-                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
+                CHECK(image->getPixel({0, 0}) == za::Color::White);
+                CHECK(image->getPixel({200, 150}) == za::Color(144, 208, 62));
             }
 
             SECTION("gif")
             {
-                image = sf::Image::loadFromFile("sfml-logo-big.gif");
+                image = za::Image::loadFromFile("zancle-logo-big.gif");
                 REQUIRE(image.hasValue());
-                CHECK(image->getPixel({0, 0}) == sf::Color::White);
-                CHECK(image->getPixel({200, 150}) == sf::Color(146, 210, 62));
+                CHECK(image->getPixel({0, 0}) == za::Color::White);
+                CHECK(image->getPixel({200, 150}) == za::Color(146, 210, 62));
             }
 
             SECTION("psd")
             {
-                image = sf::Image::loadFromFile("sfml-logo-big.psd");
+                image = za::Image::loadFromFile("zancle-logo-big.psd");
                 REQUIRE(image.hasValue());
-                CHECK(image->getPixel({0, 0}) == sf::Color::White);
-                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
+                CHECK(image->getPixel({0, 0}) == za::Color::White);
+                CHECK(image->getPixel({200, 150}) == za::Color(144, 208, 62));
             }
 
             SECTION("qoi")
             {
-                image = sf::Image::loadFromFile("sfml-logo-big.qoi");
+                image = za::Image::loadFromFile("zancle-logo-big.qoi");
                 REQUIRE(image.hasValue());
-                CHECK(image->getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
+                CHECK(image->getPixel({0, 0}) == za::Color(255, 255, 255, 0));
+                CHECK(image->getPixel({200, 150}) == za::Color(144, 208, 62));
             }
 
-            CHECK(image->getSize() == sf::Vec2u{1001, 304});
+            CHECK(image->getSize() == za::Vec2u{1001, 304});
             CHECK(image->getPixelsPtr() != nullptr);
         }
     }
@@ -176,18 +176,18 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("Invalid pointer")
         {
-            CHECK(!sf::Image::loadFromMemory(nullptr, 1).hasValue());
+            CHECK(!za::Image::loadFromMemory(nullptr, 1).hasValue());
         }
 
         SECTION("Invalid size")
         {
             const unsigned char testByte{0xAB};
-            CHECK(!sf::Image::loadFromMemory(&testByte, 0).hasValue());
+            CHECK(!za::Image::loadFromMemory(&testByte, 0).hasValue());
         }
 
         SECTION("Failed load")
         {
-            sf::base::Vector<sf::base::U8> memory;
+            zb::Vector<zb::U8> memory;
 
             SECTION("Empty")
             {
@@ -196,38 +196,38 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("Junk data")
             {
-                memory.pushBackMultiple(sf::base::U8{1}, sf::base::U8{2}, sf::base::U8{3}, sf::base::U8{4});
+                memory.pushBackMultiple(zb::U8{1}, zb::U8{2}, zb::U8{3}, zb::U8{4});
             }
 
-            CHECK(!sf::Image::loadFromMemory(memory.data(), memory.size()).hasValue());
+            CHECK(!za::Image::loadFromMemory(memory.data(), memory.size()).hasValue());
         }
 
         SECTION("Successful load")
         {
-            const auto memory = sf::Image::create({24, 24}, sf::Color::Green).value().saveToMemory(sf::Image::SaveFormat::PNG);
+            const auto memory = za::Image::create({24, 24}, za::Color::Green).value().saveToMemory(za::Image::SaveFormat::PNG);
 
-            const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
-            CHECK(image.getSize() == sf::Vec2u{24, 24});
+            const auto image = za::Image::loadFromMemory(memory.data(), memory.size()).value();
+            CHECK(image.getSize() == za::Vec2u{24, 24});
 
             CHECK(image.getPixelsPtr() != nullptr);
-            CHECK(image.getPixel({0, 0}) == sf::Color::Green);
-            CHECK(image.getPixel({23, 23}) == sf::Color::Green);
+            CHECK(image.getPixel({0, 0}) == za::Color::Green);
+            CHECK(image.getPixel({23, 23}) == za::Color::Green);
         }
     }
 
     SECTION("loadFromStream()")
     {
-        auto       stream = sf::FileInputStream::open("sfml-logo-big.png").value();
-        const auto image  = sf::Image::loadFromStream(stream).value();
-        CHECK(image.getSize() == sf::Vec2u{1001, 304});
+        auto       stream = za::FileInputStream::open("zancle-logo-big.png").value();
+        const auto image  = za::Image::loadFromStream(stream).value();
+        CHECK(image.getSize() == za::Vec2u{1001, 304});
         CHECK(image.getPixelsPtr() != nullptr);
-        CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-        CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
+        CHECK(image.getPixel({0, 0}) == za::Color(255, 255, 255, 0));
+        CHECK(image.getPixel({200, 150}) == za::Color(144, 208, 62));
     }
 
     SECTION("saveToFile()")
     {
-        const auto image = sf::Image::create({256, 256}, sf::Color::Magenta).value();
+        const auto image = za::Image::create({256, 256}, za::Color::Magenta).value();
 
         SECTION("No extension")
         {
@@ -245,11 +245,11 @@ TEST_CASE("[Graphics] sf::Image")
         {
             SECTION("To .bmp")
             {
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.bmp");
+                auto filename = za::Path::getTempDirectory().value() / za::Path("test.bmp");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -257,11 +257,11 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To .tga")
             {
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.tga");
+                auto filename = za::Path::getTempDirectory().value() / za::Path("test.tga");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -269,11 +269,11 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To .png")
             {
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.png");
+                auto filename = za::Path::getTempDirectory().value() / za::Path("test.png");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -281,11 +281,11 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To .qoi")
             {
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path("test.qoi");
+                auto filename = za::Path::getTempDirectory().value() / za::Path("test.qoi");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -294,11 +294,11 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Spanish Latin1 filename .png")
             {
                 // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-ñ.png");
+                auto filename = za::Path::getTempDirectory().value() / za::Path(U"test-ñ.png");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -307,11 +307,11 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Polish filename .png")
             {
                 // small n with acute accent, from Polish, outside of Latin 1 codepage
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-ń.png");
+                auto filename = za::Path::getTempDirectory().value() / za::Path(U"test-ń.png");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -320,11 +320,11 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Japanese CJK filename .png")
             {
                 // CJK symbol for Sun, outside of any European language codepage
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-日.png");
+                auto filename = za::Path::getTempDirectory().value() / za::Path(U"test-日.png");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -333,11 +333,11 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To emoji non-BMP Unicode filename .png")
             {
                 // snail emoji, outside of Unicode Basic Multilingual Plane
-                auto filename = sf::Path::getTempDirectory().value() / sf::Path(U"test-🐌.png");
+                auto filename = za::Path::getTempDirectory().value() / za::Path(U"test-🐌.png");
                 CHECK(image.saveToFile(filename));
 
-                const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                const auto loadedImage = za::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == za::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.removeFromDisk());
@@ -349,15 +349,15 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("saveToMemory()")
     {
-        const auto image = sf::Image::create({16, 16}, sf::Color::Magenta).value();
+        const auto image = za::Image::create({16, 16}, za::Color::Magenta).value();
 
         SECTION("Successful save")
         {
-            sf::base::Vector<sf::base::U8> output;
+            zb::Vector<zb::U8> output;
 
             SECTION("To bmp")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::BMP);
+                output = image.saveToMemory(za::Image::SaveFormat::BMP);
                 REQUIRE(output.size() == 1146);
                 CHECK(output[0] == 66);
                 CHECK(output[1] == 77);
@@ -371,7 +371,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To tga")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::TGA);
+                output = image.saveToMemory(za::Image::SaveFormat::TGA);
                 REQUIRE(output.size() == 98);
                 CHECK(output[0] == 0);
                 CHECK(output[1] == 0);
@@ -381,7 +381,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To png")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::PNG);
+                output = image.saveToMemory(za::Image::SaveFormat::PNG);
                 REQUIRE(output.size() == 92);
                 CHECK(output[0] == 137);
                 CHECK(output[1] == 80);
@@ -391,7 +391,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To qoi")
             {
-                output = image.saveToMemory(sf::Image::SaveFormat::QOI);
+                output = image.saveToMemory(za::Image::SaveFormat::QOI);
                 REQUIRE(output.size() == 28);
                 CHECK(output[0] == 113);
                 CHECK(output[1] == 111);
@@ -405,87 +405,87 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Set/get pixel")
     {
-        auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Green).value();
-        CHECK(image.getPixel(sf::Vec2u{2, 2}) == sf::Color::Green);
+        auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Green).value();
+        CHECK(image.getPixel(za::Vec2u{2, 2}) == za::Color::Green);
 
-        image.setPixel(sf::Vec2u{2, 2}, sf::Color::Blue);
-        CHECK(image.getPixel(sf::Vec2u{2, 2}) == sf::Color::Blue);
+        image.setPixel(za::Vec2u{2, 2}, za::Color::Blue);
+        CHECK(image.getPixel(za::Vec2u{2, 2}) == za::Color::Blue);
     }
 
     SECTION("Copy from Image")
     {
         SECTION("Copy (Image, Vec2u)")
         {
-            const auto image1 = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Blue).value();
-            auto       image2 = sf::Image::create(sf::Vec2u{10, 10}).value();
-            CHECK(image2.copy(image1, sf::Vec2u{0, 0}));
+            const auto image1 = za::Image::create(za::Vec2u{10, 10}, za::Color::Blue).value();
+            auto       image2 = za::Image::create(za::Vec2u{10, 10}).value();
+            CHECK(image2.copy(image1, za::Vec2u{0, 0}));
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image1.getPixel(sf::Vec2u{i, j}) == image2.getPixel(sf::Vec2u{i, j}));
+                    CHECK(image1.getPixel(za::Vec2u{i, j}) == image2.getPixel(za::Vec2u{i, j}));
                 }
             }
         }
 
         SECTION("Copy (Image, Vec2u, Rect2i)")
         {
-            const auto image1 = sf::Image::create(sf::Vec2u{5, 5}, sf::Color::Blue).value();
-            auto       image2 = sf::Image::create(sf::Vec2u{10, 10}).value();
-            CHECK(image2.copy(image1, sf::Vec2u{0, 0}, sf::Rect2i(sf::Vec2i{0, 0}, sf::Vec2i{5, 5})));
+            const auto image1 = za::Image::create(za::Vec2u{5, 5}, za::Color::Blue).value();
+            auto       image2 = za::Image::create(za::Vec2u{10, 10}).value();
+            CHECK(image2.copy(image1, za::Vec2u{0, 0}, za::Rect2i(za::Vec2i{0, 0}, za::Vec2i{5, 5})));
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
                     if (i <= 4 && j <= 4)
-                        CHECK(image2.getPixel(sf::Vec2u{i, j}) == sf::Color::Blue);
+                        CHECK(image2.getPixel(za::Vec2u{i, j}) == za::Color::Blue);
                     else
-                        CHECK(image2.getPixel(sf::Vec2u{i, j}) == sf::Color::Black);
+                        CHECK(image2.getPixel(za::Vec2u{i, j}) == za::Color::Black);
                 }
             }
         }
 
         SECTION("Copy (Image, Vec2u, Rect2i, bool)")
         {
-            const sf::Color dest(255, 0, 0, 255);
-            const sf::Color source(5, 255, 78, 232);
+            const za::Color dest(255, 0, 0, 255);
+            const za::Color source(5, 255, 78, 232);
 
             // Create the composited color for via the alpha composite over operation
-            const auto a = static_cast<sf::base::U8>(source.a + (dest.a * (255 - source.a)) / 255);
-            const auto r = static_cast<sf::base::U8>(
+            const auto a = static_cast<zb::U8>(source.a + (dest.a * (255 - source.a)) / 255);
+            const auto r = static_cast<zb::U8>(
                 ((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
-            const auto g = static_cast<sf::base::U8>(
+            const auto g = static_cast<zb::U8>(
                 ((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
-            const auto b = static_cast<sf::base::U8>(
+            const auto b = static_cast<zb::U8>(
                 ((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
-            const sf::Color composite(r, g, b, a);
+            const za::Color composite(r, g, b, a);
 
-            auto       image1 = sf::Image::create(sf::Vec2u{10, 10}, dest).value();
-            const auto image2 = sf::Image::create(sf::Vec2u{10, 10}, source).value();
-            CHECK(image1.copy(image2, sf::Vec2u{0, 0}, sf::Rect2i(sf::Vec2i{0, 0}, sf::Vec2i{10, 10}), true));
+            auto       image1 = za::Image::create(za::Vec2u{10, 10}, dest).value();
+            const auto image2 = za::Image::create(za::Vec2u{10, 10}, source).value();
+            CHECK(image1.copy(image2, za::Vec2u{0, 0}, za::Rect2i(za::Vec2i{0, 0}, za::Vec2i{10, 10}), true));
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image1.getPixel(sf::Vec2u{i, j}) == composite);
+                    CHECK(image1.getPixel(za::Vec2u{i, j}) == composite);
                 }
             }
         }
 
         SECTION("Copy (Out of bounds sourceRect)")
         {
-            const auto image1 = sf::Image::create(sf::Vec2u{5, 5}, sf::Color::Blue).value();
-            auto       image2 = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
-            CHECK(!image2.copy(image1, sf::Vec2u{0, 0}, sf::Rect2i(sf::Vec2i{5, 5}, sf::Vec2i{9, 9})));
+            const auto image1 = za::Image::create(za::Vec2u{5, 5}, za::Color::Blue).value();
+            auto       image2 = za::Image::create(za::Vec2u{10, 10}, za::Color::Red).value();
+            CHECK(!image2.copy(image1, za::Vec2u{0, 0}, za::Rect2i(za::Vec2i{5, 5}, za::Vec2i{9, 9})));
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image2.getPixel(sf::Vec2u{i, j}) == sf::Color::Red);
+                    CHECK(image2.getPixel(za::Vec2u{i, j}) == za::Color::Red);
                 }
             }
         }
@@ -495,28 +495,28 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("createMaskFromColor(Color)")
         {
-            auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Blue).value();
-            image.createMaskFromColor(sf::Color::Blue);
+            auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Blue).value();
+            image.createMaskFromColor(za::Color::Blue);
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color(0, 0, 255, 0));
+                    CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color(0, 0, 255, 0));
                 }
             }
         }
 
-        SECTION("createMaskFromColor(Color, sf::base::U8)")
+        SECTION("createMaskFromColor(Color, zb::U8)")
         {
-            auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Blue).value();
-            image.createMaskFromColor(sf::Color::Blue, 100);
+            auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Blue).value();
+            image.createMaskFromColor(za::Color::Blue, 100);
 
-            for (sf::base::U32 i = 0; i < 10; ++i)
+            for (zb::U32 i = 0; i < 10; ++i)
             {
-                for (sf::base::U32 j = 0; j < 10; ++j)
+                for (zb::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color(0, 0, 255, 100));
+                    CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color(0, 0, 255, 100));
                 }
             }
         }
@@ -524,19 +524,19 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Flip horizontally")
     {
-        auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
-        image.setPixel(sf::Vec2u{0, 0}, sf::Color::Green);
+        auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Red).value();
+        image.setPixel(za::Vec2u{0, 0}, za::Color::Green);
         image.flipHorizontally();
 
-        CHECK(image.getPixel(sf::Vec2u{9, 0}) == sf::Color::Green);
+        CHECK(image.getPixel(za::Vec2u{9, 0}) == za::Color::Green);
     }
 
     SECTION("Flip vertically")
     {
-        auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
-        image.setPixel(sf::Vec2u{0, 0}, sf::Color::Green);
+        auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Red).value();
+        image.setPixel(za::Vec2u{0, 0}, za::Color::Green);
         image.flipVertically();
 
-        CHECK(image.getPixel(sf::Vec2u{0, 9}) == sf::Color::Green);
+        CHECK(image.getPixel(za::Vec2u{0, 9}) == za::Color::Green);
     }
 }

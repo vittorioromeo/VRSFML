@@ -2,60 +2,60 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
 
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Trait/IsConstructible.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Trait/IsConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
 {
 
-class TestRenderTarget : public sf::RenderTarget
+class TestRenderTarget : public za::RenderTarget
 {
 public:
     TestRenderTarget() = default;
 
 private:
-    [[nodiscard]] sf::Vec2u getSize() const override
+    [[nodiscard]] za::Vec2u getSize() const override
     {
         return {640, 480};
     }
 };
 
-TEST_CASE("[Graphics] sf::RenderTarget")
+TEST_CASE("[Graphics] za::RenderTarget")
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::RenderTarget));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::RenderTarget));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::RenderTarget));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::RenderTarget));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::RenderTarget));
+        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::RenderTarget));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::RenderTarget));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::RenderTarget));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderTarget));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderTarget));
     }
 
     SECTION("Construction")
     {
         const TestRenderTarget renderTarget;
 
-        const auto defaultView = sf::View::fromScreenSize({640.f, 480.f});
+        const auto defaultView = za::View::fromScreenSize({640.f, 480.f});
 
-        CHECK(defaultView.center == sf::Vec2f{320, 240});
-        CHECK(defaultView.size == sf::Vec2f{640, 480});
-        CHECK(defaultView.rotation == sf::Angle::Zero);
-        CHECK(defaultView.viewport == sf::Rect2f({0, 0}, {1, 1}));
+        CHECK(defaultView.center == za::Vec2f{320, 240});
+        CHECK(defaultView.size == za::Vec2f{640, 480});
+        CHECK(defaultView.rotation == za::Angle::Zero);
+        CHECK(defaultView.viewport == za::Rect2f({0, 0}, {1, 1}));
         CHECK(!renderTarget.isSrgb());
     }
 
@@ -64,7 +64,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         TestRenderTarget renderTarget0;
         TestRenderTarget renderTarget1;
 
-        renderTarget1 = SFML_BASE_MOVE(renderTarget0);
+        renderTarget1 = ZB_MOVE(renderTarget0);
     }
 
     SECTION("setActive()")

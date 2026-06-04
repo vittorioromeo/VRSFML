@@ -23,145 +23,145 @@
 
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Priv/ShaderBase.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextUtils.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/TextureWrapMode.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Priv/ShaderBase.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TextUtils.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/UniquePtr.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
-constexpr sf::TextureLoadSettings bgSettings{.smooth = true, .wrapMode = sf::TextureWrapMode::Repeat};
+constexpr za::TextureLoadSettings bgSettings{.smooth = true, .wrapMode = za::TextureWrapMode::Repeat};
 } // namespace
 
 
 ////////////////////////////////////////////////////////////
 struct MainDrawableBatches
 {
-    sf::CPUDrawableBatch bubbleDrawableBatch;
-    sf::CPUDrawableBatch starBubbleDrawableBatch;
-    sf::CPUDrawableBatch bombBubbleDrawableBatch;
-    sf::CPUDrawableBatch cpuCloudDrawableBatch;
-    sf::CPUDrawableBatch cpuTopCloudDrawableBatch;
-    sf::CPUDrawableBatch cpuCloudHudDrawableBatch;
-    sf::CPUDrawableBatch cpuCloudUiDrawableBatch;
-    sf::CPUDrawableBatch cpuDrawableBatchBeforeCats;
-    sf::CPUDrawableBatch cpuDrawableBatch;
-    sf::CPUDrawableBatch cpuDrawableBatchAfterCats;
-    sf::CPUDrawableBatch cpuDrawableBatchAdditive;
-    sf::CPUDrawableBatch minimapDrawableBatch;
-    sf::CPUDrawableBatch catTextDrawableBatch;
-    sf::CPUDrawableBatch hudDrawableBatch;
-    sf::CPUDrawableBatch hudTopDrawableBatch;
-    sf::CPUDrawableBatch hudBottomDrawableBatch;
-    sf::CPUDrawableBatch cpuTopDrawableBatch;
-    sf::CPUDrawableBatch catTextTopDrawableBatch;
-    sf::CPUDrawableBatch tempDrawableBatch;
+    za::CPUDrawableBatch bubbleDrawableBatch;
+    za::CPUDrawableBatch starBubbleDrawableBatch;
+    za::CPUDrawableBatch bombBubbleDrawableBatch;
+    za::CPUDrawableBatch cpuCloudDrawableBatch;
+    za::CPUDrawableBatch cpuTopCloudDrawableBatch;
+    za::CPUDrawableBatch cpuCloudHudDrawableBatch;
+    za::CPUDrawableBatch cpuCloudUiDrawableBatch;
+    za::CPUDrawableBatch cpuDrawableBatchBeforeCats;
+    za::CPUDrawableBatch cpuDrawableBatch;
+    za::CPUDrawableBatch cpuDrawableBatchAfterCats;
+    za::CPUDrawableBatch cpuDrawableBatchAdditive;
+    za::CPUDrawableBatch minimapDrawableBatch;
+    za::CPUDrawableBatch catTextDrawableBatch;
+    za::CPUDrawableBatch hudDrawableBatch;
+    za::CPUDrawableBatch hudTopDrawableBatch;
+    za::CPUDrawableBatch hudBottomDrawableBatch;
+    za::CPUDrawableBatch cpuTopDrawableBatch;
+    za::CPUDrawableBatch catTextTopDrawableBatch;
+    za::CPUDrawableBatch tempDrawableBatch;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct MainTextureStorage
 {
-    sf::Texture txLogo;
-    sf::Texture txFixedBg;
-    sf::Texture txBackgroundChunk;
-    sf::Texture txBackgroundChunkDesaturated;
-    sf::Texture txClouds;
-    sf::Texture txTintedClouds;
-    sf::Texture txBgSwamp;
-    sf::Texture txBgObservatory;
-    sf::Texture txBgAimTraining;
-    sf::Texture txBgFactory;
-    sf::Texture txBgWindTunnel;
-    sf::Texture txBgMagnetosphere;
-    sf::Texture txBgAuditorium;
-    sf::Texture txDrawings;
-    sf::Texture txTipBg;
-    sf::Texture txTipByte;
-    sf::Texture txCursor;
-    sf::Texture txCursorMultipop;
-    sf::Texture txCursorLaser;
-    sf::Texture txCursorGrab;
-    sf::Texture txArrow;
-    sf::Texture txUnlock;
-    sf::Texture txPurchasable;
-    sf::Texture txLetter;
-    sf::Texture txLetterText;
-    sf::Texture txFrame;
-    sf::Texture txFrameTiny;
-    sf::Texture txCloudBtn;
-    sf::Texture txCloudBtnSmall;
-    sf::Texture txCloudBtnSquare;
-    sf::Texture txCloudBtnSquare2;
+    za::Texture txLogo;
+    za::Texture txFixedBg;
+    za::Texture txBackgroundChunk;
+    za::Texture txBackgroundChunkDesaturated;
+    za::Texture txClouds;
+    za::Texture txTintedClouds;
+    za::Texture txBgSwamp;
+    za::Texture txBgObservatory;
+    za::Texture txBgAimTraining;
+    za::Texture txBgFactory;
+    za::Texture txBgWindTunnel;
+    za::Texture txBgMagnetosphere;
+    za::Texture txBgAuditorium;
+    za::Texture txDrawings;
+    za::Texture txTipBg;
+    za::Texture txTipByte;
+    za::Texture txCursor;
+    za::Texture txCursorMultipop;
+    za::Texture txCursorLaser;
+    za::Texture txCursorGrab;
+    za::Texture txArrow;
+    za::Texture txUnlock;
+    za::Texture txPurchasable;
+    za::Texture txLetter;
+    za::Texture txLetterText;
+    za::Texture txFrame;
+    za::Texture txFrameTiny;
+    za::Texture txCloudBtn;
+    za::Texture txCloudBtnSmall;
+    za::Texture txCloudBtnSquare;
+    za::Texture txCloudBtnSquare2;
 
     MainTextureStorage() :
-        txLogo(sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()),
-        txFixedBg(sf::Texture::loadFromFile("resources/fixedbg.png",
-                                            {.smooth = true, .wrapMode = sf::TextureWrapMode::MirroredRepeat})
+        txLogo(za::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()),
+        txFixedBg(za::Texture::loadFromFile("resources/fixedbg.png",
+                                            {.smooth = true, .wrapMode = za::TextureWrapMode::MirroredRepeat})
                       .value()),
-        txBackgroundChunk(sf::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()),
-        txBackgroundChunkDesaturated(sf::Texture::loadFromFile("resources/bgtestdesaturated.png", bgSettings).value()),
-        txClouds(sf::Texture::loadFromFile("resources/clouds.png", bgSettings).value()),
-        txTintedClouds(sf::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()),
-        txBgSwamp(sf::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()),
-        txBgObservatory(sf::Texture::loadFromFile("resources/bgobservatory.png", bgSettings).value()),
-        txBgAimTraining(sf::Texture::loadFromFile("resources/bgaimtraining.png", bgSettings).value()),
-        txBgFactory(sf::Texture::loadFromFile("resources/bgfactory.png", bgSettings).value()),
-        txBgWindTunnel(sf::Texture::loadFromFile("resources/bgwindtunnel.png", bgSettings).value()),
-        txBgMagnetosphere(sf::Texture::loadFromFile("resources/bgmagnetosphere.png", bgSettings).value()),
-        txBgAuditorium(sf::Texture::loadFromFile("resources/bgauditorium.png", bgSettings).value()),
-        txDrawings(sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()),
-        txTipBg(sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()),
-        txTipByte(sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()),
-        txCursor(sf::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()),
-        txCursorMultipop(sf::Texture::loadFromFile("resources/cursormultipop.png", {.smooth = true}).value()),
-        txCursorLaser(sf::Texture::loadFromFile("resources/cursorlaser.png", {.smooth = true}).value()),
-        txCursorGrab(sf::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()),
-        txArrow(sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()),
-        txUnlock(sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()),
-        txPurchasable(sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()),
-        txLetter(sf::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()),
-        txLetterText(sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()),
-        txFrame(sf::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()),
-        txFrameTiny(sf::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()),
-        txCloudBtn(sf::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()),
-        txCloudBtnSmall(sf::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()),
-        txCloudBtnSquare(sf::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()),
-        txCloudBtnSquare2(sf::Texture::loadFromFile("resources/cloudbtnsquare2.png", {.smooth = true}).value())
+        txBackgroundChunk(za::Texture::loadFromFile("resources/bgtest.png", bgSettings).value()),
+        txBackgroundChunkDesaturated(za::Texture::loadFromFile("resources/bgtestdesaturated.png", bgSettings).value()),
+        txClouds(za::Texture::loadFromFile("resources/clouds.png", bgSettings).value()),
+        txTintedClouds(za::Texture::loadFromFile("resources/tintedclouds.png", bgSettings).value()),
+        txBgSwamp(za::Texture::loadFromFile("resources/bgswamp.png", bgSettings).value()),
+        txBgObservatory(za::Texture::loadFromFile("resources/bgobservatory.png", bgSettings).value()),
+        txBgAimTraining(za::Texture::loadFromFile("resources/bgaimtraining.png", bgSettings).value()),
+        txBgFactory(za::Texture::loadFromFile("resources/bgfactory.png", bgSettings).value()),
+        txBgWindTunnel(za::Texture::loadFromFile("resources/bgwindtunnel.png", bgSettings).value()),
+        txBgMagnetosphere(za::Texture::loadFromFile("resources/bgmagnetosphere.png", bgSettings).value()),
+        txBgAuditorium(za::Texture::loadFromFile("resources/bgauditorium.png", bgSettings).value()),
+        txDrawings(za::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()),
+        txTipBg(za::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()),
+        txTipByte(za::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()),
+        txCursor(za::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()),
+        txCursorMultipop(za::Texture::loadFromFile("resources/cursormultipop.png", {.smooth = true}).value()),
+        txCursorLaser(za::Texture::loadFromFile("resources/cursorlaser.png", {.smooth = true}).value()),
+        txCursorGrab(za::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()),
+        txArrow(za::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()),
+        txUnlock(za::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()),
+        txPurchasable(za::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()),
+        txLetter(za::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()),
+        txLetterText(za::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()),
+        txFrame(za::Texture::loadFromFile("resources/frame.png", {.smooth = true}).value()),
+        txFrameTiny(za::Texture::loadFromFile("resources/frametiny.png", {.smooth = true}).value()),
+        txCloudBtn(za::Texture::loadFromFile("resources/cloudbtn.png", {.smooth = true}).value()),
+        txCloudBtnSmall(za::Texture::loadFromFile("resources/cloudbtnsmall.png", {.smooth = true}).value()),
+        txCloudBtnSquare(za::Texture::loadFromFile("resources/cloudbtnsquare.png", {.smooth = true}).value()),
+        txCloudBtnSquare2(za::Texture::loadFromFile("resources/cloudbtnsquare2.png", {.smooth = true}).value())
     {
     }
 };
@@ -170,32 +170,32 @@ struct MainTextureStorage
 ////////////////////////////////////////////////////////////
 struct MainTextStorage
 {
-    sf::Text moneyText;
-    sf::Text demoText;
-    sf::Text textNameBuffer;
-    sf::Text textStatusBuffer;
-    sf::Text textMoneyBuffer;
+    za::Text moneyText;
+    za::Text demoText;
+    za::Text textNameBuffer;
+    za::Text textStatusBuffer;
+    za::Text textMoneyBuffer;
 
-    explicit MainTextStorage(const sf::Font& fontSuperBakery) :
+    explicit MainTextStorage(const za::Font& fontSuperBakery) :
         moneyText(fontSuperBakery,
                   {.position         = Main::moneyTextInitialPosition,
                    .string           = "$0",
                    .characterSize    = 64u,
-                   .fillColor        = sf::Color::White,
+                   .fillColor        = za::Color::White,
                    .outlineColor     = colorBlueOutline,
                    .outlineThickness = 4.f}),
         demoText(fontSuperBakery,
                  {.position         = {},
                   .string           = "DEMO VERSION",
                   .characterSize    = 48u,
-                  .fillColor        = sf::Color::White,
+                  .fillColor        = za::Color::White,
                   .outlineColor     = colorBlueOutline,
                   .outlineThickness = 3.f}),
         textNameBuffer(fontSuperBakery,
                        {
                            .string           = "",
                            .characterSize    = 48u,
-                           .fillColor        = sf::Color::White,
+                           .fillColor        = za::Color::White,
                            .outlineColor     = colorBlueOutline,
                            .outlineThickness = 3.f,
                        }),
@@ -203,7 +203,7 @@ struct MainTextStorage
                          {
                              .string           = "",
                              .characterSize    = 32u,
-                             .fillColor        = sf::Color::White,
+                             .fillColor        = za::Color::White,
                              .outlineColor     = colorBlueOutline,
                              .outlineThickness = 2.f,
                          }),
@@ -211,7 +211,7 @@ struct MainTextStorage
                         {
                             .string           = "",
                             .characterSize    = 24u,
-                            .fillColor        = sf::Color::White,
+                            .fillColor        = za::Color::White,
                             .outlineColor     = colorBlueOutline,
                             .outlineThickness = 1.5f,
                         })
@@ -229,17 +229,17 @@ void MainOwnedDeleter<T>::operator()(T* ptr) noexcept
 
 
 ////////////////////////////////////////////////////////////
-template struct MainOwnedDeleter<sf::RenderTexture>;
-template struct MainOwnedDeleter<sf::AudioContext>;
-template struct MainOwnedDeleter<sf::TextureAtlas>;
-template struct MainOwnedDeleter<sf::RenderWindow>;
-template struct MainOwnedDeleter<sf::Font>;
-template struct MainOwnedDeleter<sf::GraphicsContext>;
-template struct MainOwnedDeleter<sf::ImGuiContext>;
-template struct MainOwnedDeleter<sf::Listener>;
-template struct MainOwnedDeleter<sf::OutFile>;
-template struct MainOwnedDeleter<sf::PlaybackDevice>;
-template struct MainOwnedDeleter<sf::View>;
+template struct MainOwnedDeleter<za::RenderTexture>;
+template struct MainOwnedDeleter<za::AudioContext>;
+template struct MainOwnedDeleter<za::TextureAtlas>;
+template struct MainOwnedDeleter<za::RenderWindow>;
+template struct MainOwnedDeleter<za::Font>;
+template struct MainOwnedDeleter<za::GraphicsContext>;
+template struct MainOwnedDeleter<za::ImGuiContext>;
+template struct MainOwnedDeleter<za::Listener>;
+template struct MainOwnedDeleter<za::OutFile>;
+template struct MainOwnedDeleter<za::PlaybackDevice>;
+template struct MainOwnedDeleter<za::View>;
 template struct MainOwnedDeleter<ComboState>;
 template struct MainOwnedDeleter<InputHelper>;
 template struct MainOwnedDeleter<MainBombStorage>;
@@ -267,9 +267,9 @@ void runBubbleIdleApp()
     steamMgr.runCallbacks();
 
     // Using a heap-allocation here because `Main` exceeds the stack size
-    sf::base::makeUnique<Main>(steamMgr)->run();
+    zb::makeUnique<Main>(steamMgr)->run();
 #else
-    sf::base::makeUnique<Main>()->run();
+    zb::makeUnique<Main>()->run();
 #endif
 }
 
@@ -281,24 +281,24 @@ Main::Main(hg::Steam::SteamManager& xSteamMgr) :
 Main::Main() :
 #endif
 #ifndef BUBBLEBYTE_NO_AUDIO
-    audioContextStorage(new sf::AudioContext{sf::AudioContext::create().value()}),
+    audioContextStorage(new za::AudioContext{za::AudioContext::create().value()}),
     audioContext(*audioContextStorage),
-    playbackDeviceStorage(new sf::PlaybackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()}),
+    playbackDeviceStorage(new za::PlaybackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()}),
     playbackDevice(*playbackDeviceStorage),
 #endif
-    graphicsContextStorage(new sf::GraphicsContext{sf::GraphicsContext::create().value()}),
+    graphicsContextStorage(new za::GraphicsContext{za::GraphicsContext::create().value()}),
     graphicsContext(*graphicsContextStorage),
     shadersStorage(
         []
 {
-    const auto loadShader = [](const sf::Shader::LoadFromFileSettings& settings)
+    const auto loadShader = [](const za::Shader::LoadFromFileSettings& settings)
     {
-        auto s = sf::Shader::loadFromFile(settings).value();
-        s.setUniform(s.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto s = za::Shader::loadFromFile(settings).value();
+        s.setUniform(s.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return s;
     };
 
-    const auto bind = [](const sf::Shader& s, const char* name) { return s.getUniformLocation(name).value(); };
+    const auto bind = [](const za::Shader& s, const char* name) { return s.getUniformLocation(name).value(); };
 
     auto shader = loadShader({.vertexPath = "resources/shader.vert", .fragmentPath = "resources/shader.frag"});
 
@@ -358,7 +358,7 @@ Main::Main() :
     const auto suShrineBgEffectStrength     = bind(shaderShrineBackground, "u_effectStrength");
 
     return new MainShaders{
-        .shader                       = SFML_BASE_MOVE(shader),
+        .shader                       = ZB_MOVE(shader),
         .suBackgroundTexture          = suBackgroundTexture,
         .suTime                       = suTime,
         .suResolution                 = suResolution,
@@ -377,21 +377,21 @@ Main::Main() :
         .suRimShineFallRate           = suRimShineFallRate,
         .suRimShineTimeRate           = suRimShineTimeRate,
         .suRimShineArc                = suRimShineArc,
-        .shaderPostProcess            = SFML_BASE_MOVE(shaderPostProcess),
+        .shaderPostProcess            = ZB_MOVE(shaderPostProcess),
         .suPPVibrance                 = suPPVibrance,
         .suPPSaturation               = suPPSaturation,
         .suPPLightness                = suPPLightness,
         .suPPSharpness                = suPPSharpness,
         .suPPBlur                     = suPPBlur,
-        .shaderClouds                 = SFML_BASE_MOVE(shaderClouds),
+        .shaderClouds                 = ZB_MOVE(shaderClouds),
         .suCloudTime                  = suCloudTime,
         .suCloudResolution            = suCloudResolution,
-        .shaderHexed                  = SFML_BASE_MOVE(shaderHexed),
+        .shaderHexed                  = ZB_MOVE(shaderHexed),
         .suHexedTime                  = suHexedTime,
         .suHexedSeed                  = suHexedSeed,
         .suHexedDistortionStrength    = suHexedDistortionStrength,
         .suHexedShimmerStrength       = suHexedShimmerStrength,
-        .shaderShrineBackground       = SFML_BASE_MOVE(shaderShrineBackground),
+        .shaderShrineBackground       = ZB_MOVE(shaderShrineBackground),
         .suShrineBgTime               = suShrineBgTime,
         .suShrineBgViewOrigin         = suShrineBgViewOrigin,
         .suShrineBgCenter             = suShrineBgCenter,
@@ -406,17 +406,17 @@ Main::Main() :
     };
 }()),
     shaders(*shadersStorage),
-    aaLevel(sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel())),
+    aaLevel(zb::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel())),
     gameStorage(new MainGameStorage{
         .profile =
             [&]
 {
     Profile out;
 
-    if (sf::Path{"userdata/profile.json"}.exists())
+    if (za::Path{"userdata/profile.json"}.exists())
     {
         loadProfileFromFile(out);
-        sf::base::printLn("Loaded profile from file on startup");
+        zb::printLn("Loaded profile from file on startup");
     }
 
     return out;
@@ -426,10 +426,10 @@ Main::Main() :
 {
     GameConstants out;
 
-    if (sf::Path{"resources/game_constants.json"}.exists())
+    if (za::Path{"resources/game_constants.json"}.exists())
     {
         loadGameConstantsFromFile(out);
-        sf::base::printLn("Loaded game constants from file on startup");
+        zb::printLn("Loaded game constants from file on startup");
     }
 
     return out;
@@ -439,22 +439,22 @@ Main::Main() :
     }),
     profile(gameStorage->profile),
     gameConstants(gameStorage->gameConstants),
-    fontMouldyCheeseStorage(new sf::Font{sf::Font::openFromFile("resources/fredoka.ttf").value()}),
+    fontMouldyCheeseStorage(new za::Font{za::Font::openFromFile("resources/fredoka.ttf").value()}),
     fontMouldyCheese(*fontMouldyCheeseStorage),
-    windowStorage(new sf::RenderWindow{makeWindow()}),
+    windowStorage(new za::RenderWindow{makeWindow()}),
     window(*windowStorage),
     loadingGuard(
         [&]
 {
     refreshWindowAutoBatchModeFromProfile();
-    window.clear(sf::Color::Black);
+    window.clear(za::Color::Black);
 
     window.draw(fontMouldyCheese,
-                sf::TextUtils::anchored(fontMouldyCheese,
-                                        sf::TextData{.position         = window.getSize().toVec2f() / 2.f,
+                za::TextUtils::anchored(fontMouldyCheese,
+                                        za::TextData{.position         = window.getSize().toVec2f() / 2.f,
                                                      .string           = "Loading...",
                                                      .characterSize    = 48u,
-                                                     .fillColor        = sf::Color::White,
+                                                     .fillColor        = za::Color::White,
                                                      .outlineColor     = colorBlueOutline,
                                                      .outlineThickness = 2.f},
                                         {0.5f, 0.5f}));
@@ -462,11 +462,11 @@ Main::Main() :
     window.display();
     return true;
 }()),
-    imGuiContextStorage(new sf::ImGuiContext{/* loadDefaultFont */ false}),
+    imGuiContextStorage(new za::ImGuiContext{/* loadDefaultFont */ false}),
     imGuiContext(*imGuiContextStorage),
-    textureAtlasStorage(new sf::TextureAtlas{sf::Texture::create({6000u, 4096u}, {.smooth = true}).value()}),
+    textureAtlasStorage(new za::TextureAtlas{za::Texture::create({6000u, 4096u}, {.smooth = true}).value()}),
     textureAtlas(*textureAtlasStorage),
-    fontSuperBakeryStorage(new sf::Font{sf::Font::openFromFile("resources/fredoka.ttf", &textureAtlas).value()}),
+    fontSuperBakeryStorage(new za::Font{za::Font::openFromFile("resources/fredoka.ttf", &textureAtlas).value()}),
     fontSuperBakery(*fontSuperBakeryStorage),
     fontImGuiMouldyCheese(ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)),
     fontImGuiSuperBakery(ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fredoka.ttf", 28.f)),
@@ -483,7 +483,7 @@ Main::Main() :
 
     // 3. Load FontAwesome into the SAME font object
     auto* res = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fa-solid-900.ttf", 16.0f, &iconConfig, iconRanges);
-    SFML_BASE_ASSERT(res != nullptr);
+    ZB_ASSERT(res != nullptr);
 
     ImGui::GetIO().Fonts->Build();
     return res;
@@ -492,36 +492,36 @@ Main::Main() :
     bgm(*bgmStorage),
     soundManagerStorage(new SoundManager{}),
     soundManager(*soundManagerStorage),
-    listenerStorage(new sf::Listener{}),
+    listenerStorage(new za::Listener{}),
     listener(*listenerStorage),
-    rtBackgroundStorage(new sf::RenderTexture{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(),
-                                  {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = sf::TextureWrapMode::Repeat})
+    rtBackgroundStorage(new za::RenderTexture{
+        za::RenderTexture::create(gameScreenSize.toVec2u(),
+                                  {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = za::TextureWrapMode::Repeat})
             .value()}),
     rtBackground(*rtBackgroundStorage),
-    rtBackgroundProcessedStorage(new sf::RenderTexture{
-        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtBackgroundProcessedStorage(new za::RenderTexture{
+        za::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
     rtBackgroundProcessed(*rtBackgroundProcessedStorage),
-    rtImGuiStorage(new sf::RenderTexture{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtImGuiStorage(new za::RenderTexture{
+        za::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
     rtImGui(*rtImGuiStorage),
-    rtCloudMaskStorage(new sf::RenderTexture{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtCloudMaskStorage(new za::RenderTexture{
+        za::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
     rtCloudMask(*rtCloudMaskStorage),
-    rtCloudProcessedStorage(new sf::RenderTexture{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtCloudProcessedStorage(new za::RenderTexture{
+        za::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
     rtCloudProcessed(*rtCloudProcessedStorage),
-    rtGameStorage(new sf::RenderTexture{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
+    rtGameStorage(new za::RenderTexture{
+        za::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .smooth = true}).value()}),
     rtGame(*rtGameStorage),
     hexedCatRenderTexturesStorage(new MainRenderTextureVector{[this]
 {
     MainRenderTextureVector result;
     result.reserve(maxHexedCatRenderTextures);
 
-    for (sf::base::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
+    for (zb::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
         result.emplaceBack(
-            sf::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value());
+            za::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value());
 
     return result;
 }()}),
@@ -558,7 +558,7 @@ Main::Main() :
     txCloudBtnSmall(textureStorage->txCloudBtnSmall),
     txCloudBtnSquare(textureStorage->txCloudBtnSquare),
     txCloudBtnSquare2(textureStorage->txCloudBtnSquare2),
-    uiTextureAtlasStorage(new sf::TextureAtlas{sf::Texture::create({2048u, 1024u}, {.smooth = true}).value()}),
+    uiTextureAtlasStorage(new za::TextureAtlas{za::Texture::create({2048u, 1024u}, {.smooth = true}).value()}),
     uiTextureAtlas(*uiTextureAtlasStorage),
     atlasRectsStorage(new MainAtlasRects{
         .txrIconVolume          = addImgResourceToUIAtlas("iconvolumeon.png"),
@@ -595,7 +595,7 @@ Main::Main() :
         .txrMagicSeparator1     = addImgResourceToUIAtlas("magicseparator1.png"),
         .txrMagicSeparator2     = addImgResourceToUIAtlas("magicseparator2.png"),
         .txrMagicSeparator3     = addImgResourceToUIAtlas("magicseparator3.png"),
-        .txrWhiteDot            = textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value(),
+        .txrWhiteDot            = textureAtlas.add(za::GraphicsContext::getBuiltInWhiteDotTexture()).value(),
         .txrBubble              = addImgResourceToAtlas("bubble2.png"),
         .txrBubbleStar          = addImgResourceToAtlas("bubble3.png"),
         .txrBubbleNova          = addImgResourceToAtlas("bubble4.png"),
@@ -730,8 +730,8 @@ Main::Main() :
     comboStateStorage(new ComboState{moneyTextInitialPosition}),
     comboState(*comboStateStorage),
     demoText(textStorage->demoText),
-    sweepAndPrune(sf::base::makeUnique<SweepAndPrune>()),
-    seed(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds())),
+    sweepAndPrune(zb::makeUnique<SweepAndPrune>()),
+    seed(static_cast<RNGSeedType>(za::Clock::now().asMicroseconds())),
     shuffledCatNamesPerType(makeShuffledCatNames(rng)),
     drawableBatchesStorage(new MainDrawableBatches{}),
     bubbleDrawableBatch(drawableBatchesStorage->bubbleDrawableBatch),
@@ -757,11 +757,11 @@ Main::Main() :
     textStatusBuffer(textStorage->textStatusBuffer),
     textMoneyBuffer(textStorage->textMoneyBuffer),
     threadPool(getTPWorkerCount()),
-    gameViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
+    gameViewStorage(new za::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
     gameView(*gameViewStorage),
-    nonScaledHUDViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
+    nonScaledHUDViewStorage(new za::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
     nonScaledHUDView(*nonScaledHUDViewStorage),
-    scaledHUDViewStorage(new sf::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
+    scaledHUDViewStorage(new za::View{.center = {1.f, 1.f}, .size = {1.f, 1.f}}),
     scaledHUDView(*scaledHUDViewStorage),
     bombStorage(new MainBombStorage{}),
     notificationStateStorage(new NotificationState{}),
@@ -779,8 +779,8 @@ Main::Main() :
     logFileStorage(
         []
 {
-    auto opt = sf::OutFile::open("bubblebyte.log", sf::FileOpenMode::out | sf::FileOpenMode::app);
-    return opt.hasValue() ? MainOwnedPtr<sf::OutFile>(new sf::OutFile(SFML_BASE_MOVE(*opt))) : MainOwnedPtr<sf::OutFile>{};
+    auto opt = za::OutFile::open("bubblebyte.log", za::FileOpenMode::out | za::FileOpenMode::app);
+    return opt.hasValue() ? MainOwnedPtr<za::OutFile>(new za::OutFile(ZB_MOVE(*opt))) : MainOwnedPtr<za::OutFile>{};
 }()),
     logFile(logFileStorage.get())
 {
@@ -789,7 +789,7 @@ Main::Main() :
     if (onSteamDeck)
     {
         // borderless windowed
-        profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
+        profile.resWidth = za::VideoModeUtils::getDesktopMode().size;
         profile.windowed = true;
 
         profile.uiScale = 1.25f;
@@ -797,10 +797,10 @@ Main::Main() :
 
     //
     // Playthrough
-    if (sf::Path{"userdata/playthrough.json"}.exists())
+    if (za::Path{"userdata/playthrough.json"}.exists())
     {
         loadPlaythroughFromFileAndReseed();
-        sf::base::printLn("Loaded playthrough from file on startup");
+        zb::printLn("Loaded playthrough from file on startup");
     }
     else
     {
@@ -823,10 +823,10 @@ Main::Main() :
 ////////////////////////////////////////////////////////////
 Main::~Main()
 {
-    sf::base::printLn("Saving playthrough to file on exit");
+    zb::printLn("Saving playthrough to file on exit");
     saveMainPlaythroughToFile();
 
-    sf::base::printLn("Saving profile to file on exit");
+    zb::printLn("Saving profile to file on exit");
     saveProfileToFile(profile);
 }
 
@@ -843,7 +843,7 @@ void Main::run()
     // Background music
     auto& [entries, selectedIndex] = getBGMSelectorData();
     selectBGM(entries, selectedIndex);
-    switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
+    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ true);
 
     //
     // Game loop

@@ -11,9 +11,9 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-out vec2 sf_v_texCoord;
+out vec2 za_v_texCoord;
 
-out vec4 sf_v_color; // Pass through to fragment
+out vec4 za_v_color; // Pass through to fragment
 
 // Main entry point
 void main()
@@ -32,22 +32,22 @@ void main()
 
         // Bottom left vertex
         gl_Position   = vec4(pos - half_size, 0.f, 1.f);
-        sf_v_texCoord = vec2(1.f, 1.f);
+        za_v_texCoord = vec2(1.f, 1.f);
         EmitVertex();
 
         // Bottom right vertex
         gl_Position   = vec4(pos.x + half_size.x, pos.y - half_size.y, 0.f, 1.f);
-        sf_v_texCoord = vec2(0.f, 1.f);
+        za_v_texCoord = vec2(0.f, 1.f);
         EmitVertex();
 
         // Top left vertex
         gl_Position   = vec4(pos.x - half_size.x, pos.y + half_size.y, 0.f, 1.f);
-        sf_v_texCoord = vec2(1.f, 0.f);
+        za_v_texCoord = vec2(1.f, 0.f);
         EmitVertex();
 
         // Top right vertex
         gl_Position   = vec4(pos + half_size, 0.f, 1.f);
-        sf_v_texCoord = vec2(0.f, 0.f);
+        za_v_texCoord = vec2(0.f, 0.f);
         EmitVertex();
 
         // And finalize the primitive

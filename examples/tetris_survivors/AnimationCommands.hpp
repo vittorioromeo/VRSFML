@@ -9,8 +9,8 @@
 #include "LaserDirection.hpp"
 #include "Tetramino.hpp"
 
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/Variant.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/Variant.hpp"
 
 
 namespace tsurv
@@ -39,7 +39,7 @@ struct [[nodiscard]] AnimSquish // NOLINT(cppcoreguidelines-pro-type-member-init
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] AnimClearLines
 {
-    using RowVector = sf::base::InPlaceVector<sf::base::SizeT, 8>;
+    using RowVector = zb::InPlaceVector<zb::SizeT, 8>;
 
     RowVector rows;
     bool      awardXP;
@@ -53,10 +53,10 @@ struct [[nodiscard]] AnimFadeBlocks
     struct FadingBlock // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         Block      block;
-        sf::Vec2uz position;
+        za::Vec2uz position;
     };
 
-    using FadingBlockVector = sf::base::InPlaceVector<FadingBlock, 64>;
+    using FadingBlockVector = zb::InPlaceVector<FadingBlock, 64>;
 
     FadingBlockVector fadingBlocks;
 };
@@ -82,7 +82,7 @@ struct [[nodiscard]] AnimDrill // NOLINT(cppcoreguidelines-pro-type-member-init)
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] AnimColumnClear // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2uz position;
+    za::Vec2uz position;
 };
 
 
@@ -91,8 +91,8 @@ struct [[nodiscard]] AnimLaser // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     Tetramino            tetramino;
     LaserDirection::Enum direction;
-    sf::Vec2i            gridStartPos;
-    sf::Vec2i            gridTargetPos;
+    za::Vec2i            gridStartPos;
+    za::Vec2i            gridTargetPos;
     bool                 onlyVisual;
 };
 
@@ -107,14 +107,14 @@ struct [[nodiscard]] AnimFadeAttachments // NOLINT(cppcoreguidelines-pro-type-me
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] AnimLightningStrike // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::base::SizeT numStrikes;
+    zb::SizeT numStrikes;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct AnimationCommandP0
 {
-    using VariantType = sf::base::Variant< //
+    using VariantType = zb::Variant< //
         AnimWait,
         AnimDrill,
         AnimLightningStrike,
@@ -129,7 +129,7 @@ struct AnimationCommandP0
 ////////////////////////////////////////////////////////////
 struct AnimationCommandP1
 {
-    using VariantType = sf::base::Variant< //
+    using VariantType = zb::Variant< //
         AnimHardDrop,
         AnimSquish,
         AnimClearLines,
@@ -145,7 +145,7 @@ struct AnimationCommandP1
 ////////////////////////////////////////////////////////////
 struct AnimationCommandP2
 {
-    using VariantType = sf::base::Variant< //
+    using VariantType = zb::Variant< //
         AnimClearLines>;
 
     VariantType data;

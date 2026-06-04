@@ -1,18 +1,18 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Variant.hpp"
+#include "ZancleBase/Variant.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
@@ -126,57 +126,57 @@ TEST_CASE("[Base] Base/Variant.hpp")
     {
         using namespace VariantTest;
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Variant<int, char>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::base::Variant<int, char>));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Variant<int, char>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Variant<int, char>, sf::base::Variant<int, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Variant<int, char>));
+        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<int, char>, zb::Variant<int, char>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Variant<int, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<int, char>));
 
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Variant<NonTrivial, char>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Variant<NonTrivial, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<NonTrivial, char>));
         STATIC_CHECK(
-            !SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Variant<NonTrivial, char>, sf::base::Variant<NonTrivial, char>));
+            !ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivial, char>, zb::Variant<NonTrivial, char>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<NonTrivial, char>));
 
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Variant<NonTrivialButRelocatable, char>,
-                                                        sf::base::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>,
+                                                        zb::Variant<NonTrivialButRelocatable, char>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<NonTrivialButRelocatable, char>));
     }
 
     SECTION("Copy-assign fast path (same alternative)")
     {
         using namespace VariantTest;
-        using V = sf::base::Variant<Tracker, OtherAlt>;
+        using V = zb::Variant<Tracker, OtherAlt>;
 
         V a{Tracker{1}};
         V b{Tracker{2}};
@@ -194,7 +194,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("Move-assign fast path (same alternative)")
     {
         using namespace VariantTest;
-        using V = sf::base::Variant<Tracker, OtherAlt>;
+        using V = zb::Variant<Tracker, OtherAlt>;
 
         V a{Tracker{1}};
         V b{Tracker{2}};
@@ -212,7 +212,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("Copy-assign across different alternatives still destroys + constructs")
     {
         using namespace VariantTest;
-        using V = sf::base::Variant<Tracker, OtherAlt>;
+        using V = zb::Variant<Tracker, OtherAlt>;
 
         V a{Tracker{1}};
         V b{OtherAlt{5}};
@@ -229,7 +229,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("operator=(T&&) is aliasing-safe when x refers to the active alternative")
     {
         using namespace VariantTest;
-        using V = sf::base::Variant<Tracker, OtherAlt>;
+        using V = zb::Variant<Tracker, OtherAlt>;
 
         V v{Tracker{42}};
 
@@ -247,7 +247,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("operator=(T&&) changes alternative on type mismatch")
     {
         using namespace VariantTest;
-        using V = sf::base::Variant<Tracker, OtherAlt>;
+        using V = zb::Variant<Tracker, OtherAlt>;
 
         V v{Tracker{1}};
 

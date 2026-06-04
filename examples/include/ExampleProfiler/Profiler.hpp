@@ -6,50 +6,50 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Span.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Span.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #ifdef SFEX_PROFILER_ENABLED
-    #include "SFML/System/Clock.hpp"
-    #include "SFML/System/IO.hpp"
-    #include "SFML/System/Time.hpp"
+    #include "Zancle/System/Clock.hpp"
+    #include "Zancle/System/IO.hpp"
+    #include "Zancle/System/Time.hpp"
 
-    #include "SFML/Base/Abort.hpp"
-    #include "SFML/Base/Fmt/Fmt.hpp"
-    #include "SFML/Base/Fmt/FmtNumeric.hpp"
+    #include "ZancleBase/Abort.hpp"
+    #include "ZancleBase/Fmt/Fmt.hpp"
+    #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #endif
 
 
 namespace sfex
 {
 ////////////////////////////////////////////////////////////
-using NodeId = sf::base::SizeT;
+using NodeId = zb::SizeT;
 
 
 ////////////////////////////////////////////////////////////
 inline constexpr auto          nullNode = static_cast<NodeId>(-1u);
 inline constexpr NodeId        maxNodes = 512u;
-inline constexpr sf::base::I64 nullTime = -1;
+inline constexpr zb::I64 nullTime = -1;
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ScopeInfo // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::base::StringView label;
-    sf::base::StringView file;
-    sf::base::StringView func;
+    zb::StringView label;
+    zb::StringView file;
+    zb::StringView func;
 
     int line;
 
-    sf::base::I64 timeUs;
+    zb::I64 timeUs;
 
     NodeId nodeId;
     NodeId parentNodeId;
 
-    sf::base::SizeT depth;
+    zb::SizeT depth;
 };
 
 } // namespace sfex
@@ -68,19 +68,19 @@ struct [[nodiscard]] Database
     NodeId nextNodeId    = 0u;
     NodeId currentNodeId = nullNode;
 
-    sf::base::SizeT currentDepth = 0u;
+    zb::SizeT currentDepth = 0u;
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ScopeInfo& initNode(const sf::base::StringView label,
-                                      const sf::base::StringView file,
-                                      const sf::base::StringView func,
+    [[nodiscard]] ScopeInfo& initNode(const zb::StringView label,
+                                      const zb::StringView file,
+                                      const zb::StringView func,
                                       const int                  line)
     {
         if (nextNodeId >= maxNodes) [[unlikely]]
         {
-            sf::base::printErrLn("SFEX Profiler: exceeded maximum number of nodes ({})", maxNodes);
-            sf::base::abort();
+            zb::printErrLn("SFEX Profiler: exceeded maximum number of nodes ({})", maxNodes);
+            zb::abort();
         }
 
         const NodeId id = nextNodeId++;
@@ -110,14 +110,14 @@ struct [[nodiscard]] ScopeGuard
 {
     ////////////////////////////////////////////////////////////
     ScopeInfo& scopeInfo;
-    sf::Time   startTime;
+    za::Time   startTime;
     NodeId     previousNodeId;
 
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] explicit ScopeGuard(ScopeInfo& theScopeInfo) :
         scopeInfo{theScopeInfo},
-        startTime{sf::Clock::now()},
+        startTime{za::Clock::now()},
         previousNodeId{priv::tlDatabase.currentNodeId}
     {
         auto& db = priv::tlDatabase;
@@ -133,7 +133,7 @@ struct [[nodiscard]] ScopeGuard
     {
         auto& db = priv::tlDatabase;
 
-        scopeInfo.timeUs = (sf::Clock::now() - startTime).asMicroseconds();
+        scopeInfo.timeUs = (za::Clock::now() - startTime).asMicroseconds();
         db.currentNodeId = previousNodeId;
         db.currentDepth  = scopeInfo.depth;
     }
@@ -146,10 +146,10 @@ struct [[nodiscard]] ScopeGuard
 namespace sfex
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline sf::base::Span<const ScopeInfo> getScopeInfos()
+[[nodiscard, gnu::always_inline]] inline zb::Span<const ScopeInfo> getScopeInfos()
 {
 #ifdef SFEX_PROFILER_ENABLED
-    return sf::base::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
+    return zb::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
 #else
     return {};
 #endif
@@ -198,9 +198,9 @@ namespace sfex
 
 ////////////////////////////////////////////////////////////
 // TODO P1: nicer interface?
-inline void populateNodes([[maybe_unused]] sf::base::Span<const ScopeInfo>             scopeInfos,
-                          [[maybe_unused]] sf::base::Vector<sf::base::Vector<NodeId>>& childrenMap,
-                          [[maybe_unused]] sf::base::Vector<NodeId>&                   rootNodes)
+inline void populateNodes([[maybe_unused]] zb::Span<const ScopeInfo>             scopeInfos,
+                          [[maybe_unused]] zb::Vector<zb::Vector<NodeId>>& childrenMap,
+                          [[maybe_unused]] zb::Vector<NodeId>&                   rootNodes)
 {
 #ifdef SFEX_PROFILER_ENABLED
     childrenMap.resize(maxNodes);
@@ -278,7 +278,7 @@ inline void resetNodes()
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Profiler
+/// \class za::Profiler
 /// \ingroup system
 ///
 /// TODO P1: docs

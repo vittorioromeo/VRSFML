@@ -2,10 +2,10 @@
 
 layout(location = 4) uniform float edge_threshold;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
@@ -15,33 +15,33 @@ void main()
     vec2 offy = vec2(0.0, offset);
 
     // clang-format off
-    vec4 hEdge = texture(sf_u_texture, sf_v_texCoord - offy)        * -2.0 +
-                 texture(sf_u_texture, sf_v_texCoord + offy)        *  2.0 +
-                 texture(sf_u_texture, sf_v_texCoord - offx - offy) * -1.0 +
-                 texture(sf_u_texture, sf_v_texCoord - offx + offy) *  1.0 +
-                 texture(sf_u_texture, sf_v_texCoord + offx - offy) * -1.0 +
-                 texture(sf_u_texture, sf_v_texCoord + offx + offy) *  1.0;
+    vec4 hEdge = texture(za_u_texture, za_v_texCoord - offy)        * -2.0 +
+                 texture(za_u_texture, za_v_texCoord + offy)        *  2.0 +
+                 texture(za_u_texture, za_v_texCoord - offx - offy) * -1.0 +
+                 texture(za_u_texture, za_v_texCoord - offx + offy) *  1.0 +
+                 texture(za_u_texture, za_v_texCoord + offx - offy) * -1.0 +
+                 texture(za_u_texture, za_v_texCoord + offx + offy) *  1.0;
     // clang-format on
 
     // clang-format off
-    vec4 vEdge = texture(sf_u_texture, sf_v_texCoord - offx)        *  2.0 +
-                 texture(sf_u_texture, sf_v_texCoord + offx)        * -2.0 +
-                 texture(sf_u_texture, sf_v_texCoord - offx - offy) *  1.0 +
-                 texture(sf_u_texture, sf_v_texCoord - offx + offy) * -1.0 +
-                 texture(sf_u_texture, sf_v_texCoord + offx - offy) *  1.0 +
-                 texture(sf_u_texture, sf_v_texCoord + offx + offy) * -1.0;
+    vec4 vEdge = texture(za_u_texture, za_v_texCoord - offx)        *  2.0 +
+                 texture(za_u_texture, za_v_texCoord + offx)        * -2.0 +
+                 texture(za_u_texture, za_v_texCoord - offx - offy) *  1.0 +
+                 texture(za_u_texture, za_v_texCoord - offx + offy) * -1.0 +
+                 texture(za_u_texture, za_v_texCoord + offx - offy) *  1.0 +
+                 texture(za_u_texture, za_v_texCoord + offx + offy) * -1.0;
     // clang-format on
 
     vec3 result = sqrt(hEdge.rgb * hEdge.rgb + vEdge.rgb * vEdge.rgb);
 
     float edge = length(result);
 
-    vec4 pixel = sf_v_color * texture(sf_u_texture, sf_v_texCoord);
+    vec4 pixel = za_v_color * texture(za_u_texture, za_v_texCoord);
 
     if (edge > (edge_threshold * 8.0))
         pixel.rgb = vec3(0.0, 0.0, 0.0);
     else
         pixel.a = edge_threshold;
 
-    sf_fragColor = pixel;
+    za_fragColor = pixel;
 }

@@ -2,13 +2,13 @@
 // UNIFORMS & INPUTS
 //================================================================================
 
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
 uniform vec2  u_inputSize;
 uniform float u_time;
 
-in vec2 sf_v_texCoord;
-layout(location = 0) out vec4 sf_fragColor;
+in vec2 za_v_texCoord;
+layout(location = 0) out vec4 za_fragColor;
 
 //================================================================================
 // SHADER CONFIGURATION
@@ -72,30 +72,30 @@ vec3 adjust_saturation(vec3 col, float sat)
 void main()
 {
     // 1. COORDINATE SETUP & u_curvature
-    vec2 curvedUV = curve_uv(sf_v_texCoord);
+    vec2 curvedUV = curve_uv(za_v_texCoord);
     if (curvedUV.x < 0.0 || curvedUV.x > 1.0 || curvedUV.y < 0.0 || curvedUV.y > 1.0)
     {
-        sf_fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        za_fragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 
     // 2. FAKE BLOOM / GLOW
     vec3 bloom      = vec3(0.0);
     vec2 texel_size = 1.0 / u_inputSize;
-    bloom += texture(sf_u_texture, curvedUV + vec2(0.0, -2.0 * texel_size.y)).rgb;
-    bloom += texture(sf_u_texture, curvedUV + vec2(0.0, 2.0 * texel_size.y)).rgb;
-    bloom += texture(sf_u_texture, curvedUV + vec2(-2.0 * texel_size.x, 0.0)).rgb;
-    bloom += texture(sf_u_texture, curvedUV + vec2(2.0 * texel_size.x, 0.0)).rgb;
+    bloom += texture(za_u_texture, curvedUV + vec2(0.0, -2.0 * texel_size.y)).rgb;
+    bloom += texture(za_u_texture, curvedUV + vec2(0.0, 2.0 * texel_size.y)).rgb;
+    bloom += texture(za_u_texture, curvedUV + vec2(-2.0 * texel_size.x, 0.0)).rgb;
+    bloom += texture(za_u_texture, curvedUV + vec2(2.0 * texel_size.x, 0.0)).rgb;
     bloom = pow(bloom * 0.25, vec3(4.0));
     bloom *= u_bloomStrength;
 
     // 3. MAIN TEXTURE SAMPLE & GAMMA CORRECTION
-    vec3 color = texture(sf_u_texture, curvedUV).rgb;
+    vec3 color = texture(za_u_texture, curvedUV).rgb;
     color += bloom;
     color = pow(color, vec3(u_inputGamma));
 
     // 4. DYNAMIC SCANLINES
-    float scanline_coord = (sf_v_texCoord.y * u_inputSize.y / u_scanlineHeight) - (u_time * u_scanlineScrollSpeed);
+    float scanline_coord = (za_v_texCoord.y * u_inputSize.y / u_scanlineHeight) - (u_time * u_scanlineScrollSpeed);
 
     // Get a 0.0-1.0 ramp for each scanline
     float scanline_profile = fract(scanline_coord);
@@ -159,7 +159,7 @@ void main()
     color *= mix(vec3(1.0), mask, u_maskStrength);
 
     // 6. FINAL TOUCHES
-    float vignette_coord  = length((sf_v_texCoord - 0.5) * 2.0);
+    float vignette_coord  = length((za_v_texCoord - 0.5) * 2.0);
     float vignette_factor = smoothstep(u_vignetteInnerRadius, u_vignetteOuterRadius, vignette_coord);
     color *= 1.0 - (vignette_factor * u_vignetteStrength);
 
@@ -171,5 +171,5 @@ void main()
 
     color = clamp(color, 0.0, 1.0);
 
-    sf_fragColor = vec4(color, 1.0);
+    za_fragColor = vec4(color, 1.0);
 }

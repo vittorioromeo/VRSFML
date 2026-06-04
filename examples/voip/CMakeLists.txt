@@ -4,6 +4,6 @@ set(SRC VoIP.cpp
         Server.cpp)
 
 # define the voip target
-sfml_add_example(voip
+zancle_add_example(voip
                  SOURCES ${SRC}
-                 DEPENDS SFML::Audio SFML::Network)
+                 DEPENDS Zancle::Audio Zancle::Network)

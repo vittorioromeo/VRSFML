@@ -1,19 +1,19 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseIndividualShape.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
 
-#include "SFML/System/Angle.hpp"
+#include "Zancle/System/Angle.hpp"
 
-#include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/GetArraySize.hpp"
+#include "ZancleBase/Abort.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/GetArraySize.hpp"
 
 
 namespace
@@ -64,8 +64,8 @@ decltype(auto) ExampleIndividualShape::callWithActiveShape(auto&& f)
     }
     // clang-format on
 
-    SFML_BASE_ASSERT(false);
-    sf::base::abort();
+    ZB_ASSERT(false);
+    zb::abort();
 }
 
 
@@ -84,7 +84,7 @@ void ExampleIndividualShape::update(const float deltaTimeMs)
 
     callWithActiveShape([this](auto& shapeData)
     {
-        const auto fillColor = sf::Color::Red.withRotatedHue(m_time + m_phase * 65.f);
+        const auto fillColor = za::Color::Red.withRotatedHue(m_time + m_phase * 65.f);
 
         shapeData.fillColor        = fillColor;
         shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
@@ -117,7 +117,7 @@ void ExampleIndividualShape::imgui()
         }
 
         if (ImGui::IsMouseDown(ImGuiMouseButton_Right))
-            m_rotation += sf::degrees(io.MouseDelta.x * 0.5f);
+            m_rotation += za::degrees(io.MouseDelta.x * 0.5f);
 
         if (io.MouseWheel != 0.f)
         {
@@ -146,7 +146,7 @@ void ExampleIndividualShape::imgui()
     ImGui::TextUnformatted("Drag LMB to move, drag RMB horizontally to rotate, mouse wheel to scale.");
 
     ImGui::SetNextItemWidth(120.f);
-    ImGui::Combo("Shape", &m_shapeIndex, shapeNames, sf::base::getArraySize(shapeNames));
+    ImGui::Combo("Shape", &m_shapeIndex, shapeNames, zb::getArraySize(shapeNames));
 
 #define SLIDERFLOAT(obj, member, min, max) \
     ImGui::SliderFloat(#member "##" #obj, &(obj).member, min, max, "%.3f", ImGuiSliderFlags_NoRoundToFormat)
@@ -158,7 +158,7 @@ void ExampleIndividualShape::imgui()
     SLIDERFLOAT(*this, m_position.y, -128.f, resolution.y);
     SLIDERFLOAT(*this, m_origin.x, -256.f, 256.f);
     SLIDERFLOAT(*this, m_origin.y, -256.f, 256.f);
-    SLIDERFLOAT(*this, m_rotation.radians, 0.f, sf::base::tau);
+    SLIDERFLOAT(*this, m_rotation.radians, 0.f, zb::tau);
     SLIDERFLOAT(*this, m_scale.x, 0.f, 10.f);
     SLIDERFLOAT(*this, m_scale.y, 0.f, 10.f);
     SLIDERFLOAT(*this, m_outlineThickness, -50.f, 50.f);
@@ -181,7 +181,7 @@ void ExampleIndividualShape::imgui()
 
         case 2:
             SLIDERFLOAT(m_sdCircle, radius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdCircle, startAngle.radians, 0.f, sf::base::tau);
+            SLIDERFLOAT(m_sdCircle, startAngle.radians, 0.f, zb::tau);
             SLIDERUINT(m_sdCircle, pointCount, 3u, 100u);
             break;
 
@@ -201,8 +201,8 @@ void ExampleIndividualShape::imgui()
         case 5:
             SLIDERFLOAT(m_sdCurvedArrow, outerRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdCurvedArrow, innerRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdCurvedArrow, startAngle.radians, 0.f, sf::base::tau);
-            SLIDERFLOAT(m_sdCurvedArrow, sweepAngle.radians, 0.f, sf::base::tau);
+            SLIDERFLOAT(m_sdCurvedArrow, startAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdCurvedArrow, sweepAngle.radians, 0.f, zb::tau);
             SLIDERFLOAT(m_sdCurvedArrow, headLength, 0.f, 100.f);
             SLIDERFLOAT(m_sdCurvedArrow, headWidth, 0.f, 100.f);
             SLIDERUINT(m_sdCurvedArrow, pointCount, 3u, 100u);
@@ -211,7 +211,7 @@ void ExampleIndividualShape::imgui()
         case 6:
             SLIDERFLOAT(m_sdEllipse, horizontalRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdEllipse, verticalRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdEllipse, startAngle.radians, 0.f, sf::base::tau);
+            SLIDERFLOAT(m_sdEllipse, startAngle.radians, 0.f, zb::tau);
             SLIDERUINT(m_sdEllipse, pointCount, 3u, 100u);
             break;
 
@@ -223,8 +223,8 @@ void ExampleIndividualShape::imgui()
 
         case 8:
             SLIDERFLOAT(m_sdPieSlice, radius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdPieSlice, startAngle.radians, 0.f, sf::base::tau);
-            SLIDERFLOAT(m_sdPieSlice, sweepAngle.radians, 0.f, sf::base::tau);
+            SLIDERFLOAT(m_sdPieSlice, startAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdPieSlice, sweepAngle.radians, 0.f, zb::tau);
             SLIDERUINT(m_sdPieSlice, pointCount, 3u, 100u);
             break;
 
@@ -236,15 +236,15 @@ void ExampleIndividualShape::imgui()
         case 10:
             SLIDERFLOAT(m_sdRingShape, outerRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdRingShape, innerRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdRingShape, startAngle.radians, 0.f, sf::base::tau);
+            SLIDERFLOAT(m_sdRingShape, startAngle.radians, 0.f, zb::tau);
             SLIDERUINT(m_sdRingShape, pointCount, 3u, 100u);
             break;
 
         case 11:
             SLIDERFLOAT(m_sdRingPieSlice, outerRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdRingPieSlice, innerRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdRingPieSlice, startAngle.radians, 0.f, sf::base::tau);
-            SLIDERFLOAT(m_sdRingPieSlice, sweepAngle.radians, 0.f, sf::base::tau);
+            SLIDERFLOAT(m_sdRingPieSlice, startAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdRingPieSlice, sweepAngle.radians, 0.f, zb::tau);
             SLIDERUINT(m_sdRingPieSlice, pointCount, 3u, 100u);
             break;
 
@@ -284,15 +284,15 @@ void ExampleIndividualShape::draw()
         if (m_showPositionOrigin)
         {
             m_deps.rtGame->draw(
-                sf::CircleShapeData{
-                    .position         = sf::Transform::fromPositionScaleOriginRotation(shapeData.position,
+                za::CircleShapeData{
+                    .position         = za::Transform::fromPositionScaleOriginRotation(shapeData.position,
                                                                                        shapeData.scale,
                                                                                        shapeData.origin,
                                                                                        shapeData.rotation)
                                             .transformPoint(shapeData.origin),
                     .origin           = {2.f, 2.f},
-                    .fillColor        = sf::Color::Magenta,
-                    .outlineColor     = sf::Color::Cyan,
+                    .fillColor        = za::Color::Magenta,
+                    .outlineColor     = za::Color::Cyan,
                     .outlineThickness = 1.f,
                     .radius           = 2.f,
                 },
@@ -304,11 +304,11 @@ void ExampleIndividualShape::draw()
             const auto globalBounds = shapeData.getGlobalBounds();
 
             m_deps.rtGame->draw(
-                sf::RectangleShapeData{
+                za::RectangleShapeData{
                     .position         = globalBounds.position,
                     .origin           = {0.f, 0.f},
-                    .fillColor        = sf::Color::Transparent,
-                    .outlineColor     = sf::Color::Green,
+                    .fillColor        = za::Color::Transparent,
+                    .outlineColor     = za::Color::Green,
                     .outlineThickness = 1.f,
                     .size             = globalBounds.size,
                 },
@@ -317,17 +317,17 @@ void ExampleIndividualShape::draw()
 
         if (m_showCentroid)
         {
-            const auto transform = sf::Transform::fromPositionScaleOriginRotation(shapeData.position,
+            const auto transform = za::Transform::fromPositionScaleOriginRotation(shapeData.position,
                                                                                   shapeData.scale,
                                                                                   shapeData.origin,
                                                                                   shapeData.rotation);
 
             m_deps.rtGame->draw(
-                sf::CircleShapeData{
+                za::CircleShapeData{
                     .position         = transform.transformPoint(shapeData.getCentroid()),
                     .origin           = {2.f, 2.f},
-                    .fillColor        = sf::Color::Yellow,
-                    .outlineColor     = sf::Color::Black,
+                    .fillColor        = za::Color::Yellow,
+                    .outlineColor     = za::Color::Black,
                     .outlineThickness = 1.f,
                     .radius           = 2.f,
                 },

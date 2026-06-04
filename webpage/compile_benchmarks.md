@@ -11,9 +11,9 @@ from source under a typical day-to-day development configuration.
 - **Build type**: `Debug`.
 - **Linker**: `lld` (`-fuse-ld=lld`).
 - **Linkage**: static (`BUILD_SHARED_LIBS=OFF`).
-- **Dependencies**: bundled (`SFML_USE_SYSTEM_DEPS=OFF`).
+- **Dependencies**: bundled (`ZA_USE_SYSTEM_DEPS=OFF`).
 - **Caching**: `ccache` disabled (`CMAKE_CXX_COMPILER_LAUNCHER=`).
-- **PCH**: off (`SFML_ENABLE_PCH=OFF`).
+- **PCH**: off (`ZA_ENABLE_PCH=OFF`).
 - **Hardware**: 32-thread x86-64 Linux workstation, NVMe SSD.
 - **VRSFML**: `bubble_idle` example excluded for fairness (commercial-game
   source tree, much larger than upstream's example pool).
@@ -27,7 +27,7 @@ actually does when iterating on their own code (you don't recompile
 
 ```bash
 # Removed between runs
-find <build>/src -path '*/CMakeFiles/sfml-*.dir/*' \( -name '*.o' -o -name '*.o.d' \) -delete
+find <build>/src -path '*/CMakeFiles/zancle-*.dir/*' \( -name '*.o' -o -name '*.o.d' \) -delete
 find <build>/lib -name 'libsfml-*.a' -delete
 find <build>/examples -name '*.o' -delete                       # scenarios 2, 3
 find <build>/bin -maxdepth 1 -type f ! -name 'test-*' -delete   # scenarios 2, 3
@@ -113,7 +113,7 @@ much work clang has to do to compile one translation unit on each side.
 
 - VRSFML rebuilds **2.0-2.5x faster** in wall time across every scenario.
 - VRSFML actually compiles **more** TUs in scenarios 1-3 -- extra
-  `SFML::ImGui` module, more bundled examples, larger test suite -- and is
+  `Zancle::ImGui` module, more bundled examples, larger test suite -- and is
   still ~2x faster. That means per-TU compiler work is roughly 3-4x lower.
 - Scenario 4, where both projects compile the same six user-side TUs that
   include `<SFML/Graphics.hpp>` / `<SFML/Audio.hpp>`, isolates the header
@@ -125,7 +125,7 @@ much work clang has to do to compile one translation unit on each side.
 
 ## What is still not strictly comparable
 
-- **`SFML::ImGui` module**. VRSFML ships an in-tree ImGui integration as a
+- **`Zancle::ImGui` module**. VRSFML ships an in-tree ImGui integration as a
   separate library; upstream does not. Scenarios 1-3 charge VRSFML for that
   extra surface. Scenario 4 is unaffected (none of the chosen examples use
   ImGui).
@@ -135,7 +135,7 @@ much work clang has to do to compile one translation unit on each side.
 - **Test suite size**. VRSFML's test suite has more cases. Scenario 3
   reflects that.
 
-A future "strictly comparable" run would add `SFML_BUILD_IMGUI=OFF` to
+A future "strictly comparable" run would add `ZA_BUILD_IMGUI=OFF` to
 VRSFML's configure and reduce the example/test set to the intersection of
 both projects.
 

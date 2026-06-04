@@ -1,11 +1,11 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/macOS/HIDInputManager.hpp"
-#include "SFML/Window/macOS/HIDJoystickManager.hpp"
+#include "Zancle/Window/macOS/HIDInputManager.hpp"
+#include "Zancle/Window/macOS/HIDJoystickManager.hpp"
 
 #include <array>
 
@@ -17,11 +17,11 @@ namespace
 {
 // Using a custom run loop mode solve some issues that appears when SFML
 // is used with Cocoa.
-const CFStringRef runLoopMode = CFSTR("SFML_RUN_LOOP_MODE");
+const CFStringRef runLoopMode = CFSTR("ZA_RUN_LOOP_MODE");
 } // namespace
 
 
-namespace sf::priv
+namespace za::priv
 {
 ////////////////////////////////////////////////////////////
 HIDJoystickManager& HIDJoystickManager::getInstance()
@@ -114,4 +114,4 @@ void HIDJoystickManager::pluggedOut(void* context, IOReturn, void*, IOHIDDeviceR
 }
 
 
-} // namespace sf::priv
+} // namespace za::priv

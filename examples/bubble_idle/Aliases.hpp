@@ -1,14 +1,14 @@
 #pragma once
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-using sf::base::SizeT;
-using sf::base::U8;
+using zb::SizeT;
+using zb::U8;
 
 ////////////////////////////////////////////////////////////
-using MoneyType          = sf::base::U64;
-using PrestigePointsType = sf::base::U64;
-using ManaType           = sf::base::U64;
+using MoneyType          = zb::U64;
+using PrestigePointsType = zb::U64;
+using ManaType           = zb::U64;

@@ -1,25 +1,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/PlaybackDeviceHandle.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/PlaybackDeviceHandle.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Thread.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -29,38 +29,38 @@
 int main()
 {
     // Create the audio context
-    auto audioContext = sf::AudioContext::create().value();
+    auto audioContext = za::AudioContext::create().value();
 
     // For each hardware playback device, create a SFML playback device
-    const auto playbackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
+    const auto playbackDeviceHandles = za::AudioContext::getAvailablePlaybackDeviceHandles();
     if (playbackDeviceHandles.empty())
     {
-        sf::base::printErrLn("No playback devices found.");
+        zb::printErrLn("No playback devices found.");
         return 1;
     }
 
-    sf::base::printLn("Found {} playback devices:", playbackDeviceHandles.size());
+    zb::printLn("Found {} playback devices:", playbackDeviceHandles.size());
 
-    sf::base::InPlaceVector<sf::PlaybackDevice, 8> playbackDevices;
-    for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
+    zb::InPlaceVector<za::PlaybackDevice, 8> playbackDevices;
+    for (const za::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
-        sf::base::printLn("  - {}", deviceHandle.getName());
+        zb::printLn("  - {}", deviceHandle.getName());
         playbackDevices.emplaceBack(deviceHandle);
     }
 
     // Load resources
-    auto soundBuffer  = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
-    auto musicSource0 = sf::MusicReader::openFromFile("resources/doodle_pop.ogg").value();
-    auto musicSource1 = sf::MusicReader::openFromFile("resources/ding.flac").value();
-    auto musicSource2 = sf::MusicReader::openFromFile("resources/ding.mp3").value();
+    auto soundBuffer  = za::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
+    auto musicSource0 = za::MusicReader::openFromFile("resources/doodle_pop.ogg").value();
+    auto musicSource1 = za::MusicReader::openFromFile("resources/ding.flac").value();
+    auto musicSource2 = za::MusicReader::openFromFile("resources/ding.mp3").value();
 
     // Create sound sources
-    sf::Sound sound(playbackDevices[0], soundBuffer);
+    za::Sound sound(playbackDevices[0], soundBuffer);
     sound.play();
 
-    sf::base::Optional<sf::Music> music0;
-    sf::base::Optional<sf::Music> music1;
-    sf::base::Optional<sf::Music> music2;
+    zb::Optional<za::Music> music0;
+    zb::Optional<za::Music> music1;
+    zb::Optional<za::Music> music2;
 
     if (playbackDevices.size() > 1u)
         music0.emplace(playbackDevices[1], musicSource0).play();
@@ -73,7 +73,7 @@ int main()
 
     // Keep program alive while sounds are playing and display spinning icon
     const char      messageIcons[]{'-', '\\', '|', '/'};
-    sf::base::SizeT messageIconIndex = 0u;
+    zb::SizeT messageIconIndex = 0u;
 
     const auto anySourcePlaying = [&]
     {
@@ -86,11 +86,11 @@ int main()
     while (anySourcePlaying())
     {
         // Leave some CPU time for other processes
-        sf::ThisThread::sleepFor(sf::milliseconds(100));
+        za::ThisThread::sleepFor(za::milliseconds(100));
 
         // Display a message to show we're not frozen
-        sf::base::print("\rPlaying... {}", messageIcons[messageIconIndex++ % 4]);
+        zb::print("\rPlaying... {}", messageIcons[messageIconIndex++ % 4]);
     }
 
-    sf::base::printLn("");
+    zb::printLn("");
 }

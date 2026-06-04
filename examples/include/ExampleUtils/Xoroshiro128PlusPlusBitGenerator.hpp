@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/IntTypes.hpp"
+#include "ZancleBase/AssertAndAssume.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -20,8 +20,8 @@
 class [[nodiscard]] Xoroshiro128PlusPlusBitGenerator
 {
 public:
-    using result_type = sf::base::U64; //!< Type returned by `operator()` and `next()`
-    using SeedType    = sf::base::U64; //!< Type used for seeding
+    using result_type = zb::U64; //!< Type returned by `operator()` and `next()`
+    using SeedType    = zb::U64; //!< Type used for seeding
 
 private:
     ////////////////////////////////////////////////////////////
@@ -33,11 +33,11 @@ private:
     /// \return Rotated value
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr sf::base::U64 rotl(
-        const sf::base::U64 x,
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr zb::U64 rotl(
+        const zb::U64 x,
         const unsigned      k) noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(k < 64u);
+        ZB_ASSERT_AND_ASSUME(k < 64u);
         return (x << k) | (x >> ((64u - k) & 63u));
     }
 
@@ -51,11 +51,11 @@ private:
     /// \return A 64-bit pseudo-random number derived from the seed
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] static inline sf::base::U64 splitmix64(sf::base::U64& seed) noexcept
+    [[nodiscard, gnu::always_inline]] static inline zb::U64 splitmix64(zb::U64& seed) noexcept
     {
         seed += 0x9e'37'79'b9'7f'4a'7c'15ULL;
 
-        sf::base::U64 z = seed;
+        zb::U64 z = seed;
 
         z = (z ^ (z >> 30)) * 0xbf'58'47'6d'1c'e4'e5'b9ULL;
         z = (z ^ (z >> 27)) * 0x94'd0'49'bb'13'31'11'ebULL;
@@ -85,14 +85,14 @@ private:
 
     ////////////////////////////////////////////////////////////
     // Constants for the default seed if none is provided
-    enum [[nodiscard]] DefaultSeed : sf::base::U64
+    enum [[nodiscard]] DefaultSeed : zb::U64
     {
         State0 = 123'456'789'123'456'789ULL,
         State1 = 987'654'321'987'654'321ULL
     };
 
     ////////////////////////////////////////////////////////////
-    sf::base::U64 m_state[2]{}; //!< Internal state of the generator
+    zb::U64 m_state[2]{}; //!< Internal state of the generator
 
 public:
     ////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ public:
     explicit Xoroshiro128PlusPlusBitGenerator() noexcept : m_state{DefaultSeed::State0, DefaultSeed::State1}
     {
         // Ensure default state isn't all zeros (though these constants aren't)
-        SFML_BASE_ASSERT_AND_ASSUME(m_state[0] != 0 || m_state[1] != 0);
+        ZB_ASSERT_AND_ASSUME(m_state[0] != 0 || m_state[1] != 0);
     }
 
     ////////////////////////////////////////////////////////////
@@ -126,10 +126,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline result_type next() noexcept
     {
-        const sf::base::U64 s0 = m_state[0];
-        sf::base::U64       s1 = m_state[1];
+        const zb::U64 s0 = m_state[0];
+        zb::U64       s1 = m_state[1];
 
-        const sf::base::U64 result = rotl(s0 + s1, 17u) + s0; // The '++' scrambler
+        const zb::U64 result = rotl(s0 + s1, 17u) + s0; // The '++' scrambler
 
         s1 ^= s0;
 
@@ -164,11 +164,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Returns the maximum value potentially generated (UniformRandomBitGenerator interface).
     ///
-    /// \return Maximum value of `result_type` (`sf::base::U64`)
+    /// \return Maximum value of `result_type` (`zb::U64`)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] static constexpr result_type max() noexcept
     {
-        return static_cast<sf::base::U64>(-1);
+        return static_cast<zb::U64>(-1);
     }
 };

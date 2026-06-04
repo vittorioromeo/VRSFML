@@ -1,17 +1,17 @@
-#include "SFML/Config.hpp" // IWYU pragma: keep
+#include "Zancle/Config.hpp" // IWYU pragma: keep
 
-#ifdef SFML_SYSTEM_WINDOWS
+#ifdef ZA_SYSTEM_WINDOWS
 
     #include "SystemUtil.hpp"
     #include "Tst/Tst.hpp"
 
-    #include "SFML/Window/WindowBase.hpp"
-    #include "SFML/Window/WindowContext.hpp"
+    #include "Zancle/Window/WindowBase.hpp"
+    #include "Zancle/Window/WindowContext.hpp"
 
-    #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
+    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
 
-    #include "SFML/Base/Assert.hpp"
-    #include "SFML/Base/Optional.hpp"
+    #include "ZancleBase/Assert.hpp"
+    #include "ZancleBase/Optional.hpp"
 
 
 namespace
@@ -26,7 +26,7 @@ public:
         m_classInfo.lpszClassName = L"sfml_WindowBaseTests";
 
         m_winClassId = RegisterClassW(&m_classInfo);
-        SFML_BASE_ASSERT(m_winClassId);
+        ZB_ASSERT(m_winClassId);
 
         // Create the window already visible. The SDL-backed WindowBase wraps a
         // borrowed handle without altering its visibility, so the test exercises
@@ -42,7 +42,7 @@ public:
                                  nullptr,
                                  m_classInfo.hInstance,
                                  nullptr);
-        SFML_BASE_ASSERT(m_handle);
+        ZB_ASSERT(m_handle);
     }
 
     ~NativeWindow()
@@ -73,24 +73,24 @@ private:
 };
 } // namespace
 
-TEST_CASE("[Window] sf::WindowBase (Win32)")
+TEST_CASE("[Window] za::WindowBase (Win32)")
 {
-    auto windowContext = sf::WindowContext::create().value();
+    auto windowContext = za::WindowContext::create().value();
 
-    sf::base::Optional<NativeWindow>   nativeWindow(sf::base::inPlace);
-    sf::base::Optional<sf::WindowBase> windowBase;
+    zb::Optional<NativeWindow>   nativeWindow(zb::inPlace);
+    zb::Optional<za::WindowBase> windowBase;
 
     const HWND handle = nativeWindow->getHandle();
 
     SECTION("WindowHandle constructor")
     {
-        windowBase = sf::WindowBase::create(handle);
+        windowBase = za::WindowBase::create(handle);
         CHECK(windowBase.hasValue());
     }
 
     RECT rect{};
     GetClientRect(handle, &rect);
-    CHECK(windowBase->getSize() == sf::Vec2(rect.right - rect.left, rect.bottom - rect.top).toVec2u());
+    CHECK(windowBase->getSize() == za::Vec2(rect.right - rect.left, rect.bottom - rect.top).toVec2u());
     CHECK(windowBase->getNativeHandle() == handle);
 
     CHECK(IsWindow(handle));

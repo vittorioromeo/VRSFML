@@ -1,0 +1,15 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "ZancleBase/Assert.hpp"
+
+
+////////////////////////////////////////////////////////////
+#define ZB_ASSERT_AND_ASSUME(...) \
+    ZB_ASSERT(__VA_ARGS__);       \
+    [[assume(__VA_ARGS__)]]

@@ -1,47 +1,47 @@
-#include "SFML/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Shader.hpp"
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/Glsl.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
 
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/Glad.hpp"
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
 
-#include "SFML/System/FileInputStream.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/FileInputStream.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
 {
 constexpr auto vertexSource = R"glsl(
 
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 
 layout(location = 4) uniform vec2 storm_position;
 layout(location = 5) uniform float storm_total_radius;
 layout(location = 6) uniform float storm_inner_radius;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color;
+layout(location = 2) in vec2 za_a_texCoord;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+out vec4 za_v_color;
+out vec2 za_v_texCoord;
 
 void main()
 {
-    vec2 newPosition = sf_a_position;
+    vec2 newPosition = za_a_position;
 
     vec2 offset = newPosition.xy - storm_position;
 
@@ -52,9 +52,9 @@ void main()
         newPosition.xy      = storm_position + normalize(offset) * push_distance;
     }
 
-    gl_Position   = vec4(dot(sf_u_mvpRow0, vec3(newPosition, 1.0)), dot(sf_u_mvpRow1, vec3(newPosition, 1.0)), 0.0, 1.0);
-    sf_v_texCoord = sf_a_texCoord * sf_u_invTextureSize;
-    sf_v_color    = sf_a_color;
+    gl_Position   = vec4(dot(za_u_mvpRow0, vec3(newPosition, 1.0)), dot(za_u_mvpRow1, vec3(newPosition, 1.0)), 0.0, 1.0);
+    za_v_texCoord = za_a_texCoord * za_u_invTextureSize;
+    za_v_color    = za_a_color;
 }
 
 )glsl";
@@ -74,9 +74,9 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-out vec2 sf_v_texCoord;
+out vec2 za_v_texCoord;
 
-out vec4 sf_v_color; // Pass through to fragment
+out vec4 za_v_color; // Pass through to fragment
 
 // Main entry point
 void main()
@@ -95,22 +95,22 @@ void main()
 
         // Bottom left vertex
         gl_Position   = vec4(pos - half_size, 0.f, 1.f);
-        sf_v_texCoord = vec2(1.f, 1.f);
+        za_v_texCoord = vec2(1.f, 1.f);
         EmitVertex();
 
         // Bottom right vertex
         gl_Position   = vec4(pos.x + half_size.x, pos.y - half_size.y, 0.f, 1.f);
-        sf_v_texCoord = vec2(0.f, 1.f);
+        za_v_texCoord = vec2(0.f, 1.f);
         EmitVertex();
 
         // Top left vertex
         gl_Position   = vec4(pos.x - half_size.x, pos.y + half_size.y, 0.f, 1.f);
-        sf_v_texCoord = vec2(1.f, 0.f);
+        za_v_texCoord = vec2(1.f, 0.f);
         EmitVertex();
 
         // Top right vertex
         gl_Position   = vec4(pos + half_size, 0.f, 1.f);
-        sf_v_texCoord = vec2(0.f, 0.f);
+        za_v_texCoord = vec2(0.f, 0.f);
         EmitVertex();
 
         // And finalize the primitive
@@ -122,25 +122,25 @@ void main()
 
 constexpr auto fragmentSource = R"glsl(
 
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 layout(location = 7) uniform float     blink_alpha;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
-    vec4 pixel = sf_v_color;
+    vec4 pixel = za_v_color;
     pixel.a    = blink_alpha;
 
-    sf_fragColor = pixel;
+    za_fragColor = pixel;
 }
 
 )glsl";
 
-#ifdef SFML_RUN_DISPLAY_TESTS
+#ifdef ZA_RUN_DISPLAY_TESTS
 constexpr bool skipShaderFullTest = false;
 #else
 constexpr bool skipShaderFullTest = true;
@@ -148,33 +148,33 @@ constexpr bool skipShaderFullTest = true;
 
 } // namespace
 
-TEST_CASE("[Graphics] sf::Shader" * tst::skip(skipShaderFullTest))
+TEST_CASE("[Graphics] za::Shader" * tst::skip(skipShaderFullTest))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Shader));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Shader));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Shader));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Shader));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Shader));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Shader));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Shader));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Shader));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Shader));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Shader));
     }
 
     SECTION("Move semantics")
     {
         SECTION("Construction")
         {
-            auto       movedShader = sf::Shader::loadFromFile({.vertexPath = "shader.vert"}).value();
-            const auto shader      = SFML_BASE_MOVE(movedShader);
+            auto       movedShader = za::Shader::loadFromFile({.vertexPath = "shader.vert"}).value();
+            const auto shader      = ZB_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
         SECTION("Assignment")
         {
-            auto movedShader = sf::Shader::loadFromFile({.vertexPath = "shader.vert"}).value();
-            auto shader      = sf::Shader::loadFromFile({.fragmentPath = "shader.frag"}).value();
-            shader           = SFML_BASE_MOVE(movedShader);
+            auto movedShader = za::Shader::loadFromFile({.vertexPath = "shader.vert"}).value();
+            auto shader      = za::Shader::loadFromFile({.fragmentPath = "shader.frag"}).value();
+            shader           = ZB_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
     }
@@ -183,14 +183,14 @@ TEST_CASE("[Graphics] sf::Shader" * tst::skip(skipShaderFullTest))
     {
         SECTION("One shader")
         {
-            CHECK(!sf::Shader::loadFromFile({.vertexPath = "does-not-exist.vert"}).hasValue());
+            CHECK(!za::Shader::loadFromFile({.vertexPath = "does-not-exist.vert"}).hasValue());
 
-            const auto vertexShader = sf::Shader::loadFromFile({.vertexPath = "shader.vert"});
+            const auto vertexShader = za::Shader::loadFromFile({.vertexPath = "shader.vert"});
             CHECK(vertexShader.hasValue());
             if (vertexShader.hasValue())
                 CHECK(static_cast<bool>(vertexShader->getNativeHandle()));
 
-            const auto fragmentShader = sf::Shader::loadFromFile({.fragmentPath = "shader.frag"});
+            const auto fragmentShader = za::Shader::loadFromFile({.fragmentPath = "shader.frag"});
             CHECK(fragmentShader.hasValue());
             if (fragmentShader.hasValue())
                 CHECK(static_cast<bool>(fragmentShader->getNativeHandle()));
@@ -198,11 +198,11 @@ TEST_CASE("[Graphics] sf::Shader" * tst::skip(skipShaderFullTest))
 
         SECTION("Two shaders")
         {
-            CHECK(!sf::Shader::loadFromFile({.vertexPath = "does-not-exist.vert", .fragmentPath = "shader.frag"}).hasValue());
+            CHECK(!za::Shader::loadFromFile({.vertexPath = "does-not-exist.vert", .fragmentPath = "shader.frag"}).hasValue());
 
-            CHECK(!sf::Shader::loadFromFile({.vertexPath = "shader.vert", .fragmentPath = "does-not-exist.frag"}).hasValue());
+            CHECK(!za::Shader::loadFromFile({.vertexPath = "shader.vert", .fragmentPath = "does-not-exist.frag"}).hasValue());
 
-            const auto shader = sf::Shader::loadFromFile({.vertexPath = "shader.vert", .fragmentPath = "shader.frag"});
+            const auto shader = za::Shader::loadFromFile({.vertexPath = "shader.vert", .fragmentPath = "shader.frag"});
 
             CHECK(shader.hasValue());
             if (shader.hasValue())
@@ -211,98 +211,98 @@ TEST_CASE("[Graphics] sf::Shader" * tst::skip(skipShaderFullTest))
 
         SECTION("Three shaders")
         {
-            CHECK(!sf::Shader::loadFromFile(
+            CHECK(!za::Shader::loadFromFile(
                        {.vertexPath = "does-not-exist.vert", .fragmentPath = "shader.frag", .geometryPath = "shader.geom"})
                        .hasValue());
 
-            CHECK(!sf::Shader::loadFromFile(
+            CHECK(!za::Shader::loadFromFile(
                        {.vertexPath = "shader.vert", .fragmentPath = "shader.frag", .geometryPath = "does-not-exist.geom"})
                        .hasValue());
 
-            CHECK(!sf::Shader::loadFromFile(
+            CHECK(!za::Shader::loadFromFile(
                        {.vertexPath = "shader.vert", .fragmentPath = "does-not-exist.frag", .geometryPath = "shader.geom"})
                        .hasValue());
 
-            const auto shader = sf::Shader::loadFromFile(
+            const auto shader = za::Shader::loadFromFile(
                 {.vertexPath = "shader.vert", .fragmentPath = "shader.frag", .geometryPath = "shader.geom"});
 
-            CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
+            CHECK(shader.hasValue() == za::Shader::isGeometryAvailable());
             if (shader.hasValue())
-                CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable());
+                CHECK(static_cast<bool>(shader->getNativeHandle()) == za::Shader::isGeometryAvailable());
         }
 
         SECTION("One shader with non-ASCII filename")
         {
-            CHECK(sf::Shader::loadFromFile({.vertexPath = U"shader-ń.vert"}).hasValue());
-            CHECK(sf::Shader::loadFromFile({.vertexPath = U"shader-🐌.vert"}).hasValue());
+            CHECK(za::Shader::loadFromFile({.vertexPath = U"shader-ń.vert"}).hasValue());
+            CHECK(za::Shader::loadFromFile({.vertexPath = U"shader-🐌.vert"}).hasValue());
         }
     }
 
     SECTION("loadFromMemory()")
     {
-        CHECK(sf::Shader::loadFromMemory({.vertexCode = vertexSource}).hasValue());
-        CHECK(sf::Shader::loadFromMemory({.geometryCode = geometrySource}).hasValue() == sf::Shader::isGeometryAvailable());
-        CHECK(sf::Shader::loadFromMemory({.fragmentCode = fragmentSource}).hasValue());
-        CHECK(sf::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).hasValue());
+        CHECK(za::Shader::loadFromMemory({.vertexCode = vertexSource}).hasValue());
+        CHECK(za::Shader::loadFromMemory({.geometryCode = geometrySource}).hasValue() == za::Shader::isGeometryAvailable());
+        CHECK(za::Shader::loadFromMemory({.fragmentCode = fragmentSource}).hasValue());
+        CHECK(za::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).hasValue());
 
-        const auto shader = sf::Shader::loadFromMemory(
+        const auto shader = za::Shader::loadFromMemory(
             {.vertexCode = vertexSource, .fragmentCode = fragmentSource, .geometryCode = geometrySource});
-        CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
+        CHECK(shader.hasValue() == za::Shader::isGeometryAvailable());
         if (shader.hasValue())
             CHECK(static_cast<bool>(shader->getNativeHandle()));
     }
 
     SECTION("loadFromStream()")
     {
-        auto vertexShaderStream   = sf::FileInputStream::open("shader.vert").value();
-        auto fragmentShaderStream = sf::FileInputStream::open("shader.frag").value();
-        auto geometryShaderStream = sf::FileInputStream::open("shader.geom").value();
+        auto vertexShaderStream   = za::FileInputStream::open("shader.vert").value();
+        auto fragmentShaderStream = za::FileInputStream::open("shader.frag").value();
+        auto geometryShaderStream = za::FileInputStream::open("shader.geom").value();
 
-        auto emptyStream = sf::FileInputStream::open("invalid_shader.vert").value();
+        auto emptyStream = za::FileInputStream::open("invalid_shader.vert").value();
 
         SECTION("One shader")
         {
-            CHECK(!sf::Shader::loadFromStream({.vertexStream = &emptyStream}).hasValue());
-            CHECK(sf::Shader::loadFromStream({.vertexStream = &vertexShaderStream}).hasValue());
-            CHECK(sf::Shader::loadFromStream({.fragmentStream = &fragmentShaderStream}).hasValue());
+            CHECK(!za::Shader::loadFromStream({.vertexStream = &emptyStream}).hasValue());
+            CHECK(za::Shader::loadFromStream({.vertexStream = &vertexShaderStream}).hasValue());
+            CHECK(za::Shader::loadFromStream({.fragmentStream = &fragmentShaderStream}).hasValue());
         }
 
         SECTION("Two shaders")
         {
-            CHECK(!sf::Shader::loadFromStream({.vertexStream = &emptyStream, .fragmentStream = &fragmentShaderStream})
+            CHECK(!za::Shader::loadFromStream({.vertexStream = &emptyStream, .fragmentStream = &fragmentShaderStream})
                        .hasValue());
-            CHECK(!sf::Shader::loadFromStream({.vertexStream = &vertexShaderStream, .fragmentStream = &emptyStream}).hasValue());
-            CHECK(sf::Shader::loadFromStream({.vertexStream = &vertexShaderStream, .fragmentStream = &fragmentShaderStream})
+            CHECK(!za::Shader::loadFromStream({.vertexStream = &vertexShaderStream, .fragmentStream = &emptyStream}).hasValue());
+            CHECK(za::Shader::loadFromStream({.vertexStream = &vertexShaderStream, .fragmentStream = &fragmentShaderStream})
                       .hasValue());
         }
 
         SECTION("Three shaders")
         {
-            CHECK(!sf::Shader::loadFromStream({.vertexStream   = &emptyStream,
+            CHECK(!za::Shader::loadFromStream({.vertexStream   = &emptyStream,
                                                .fragmentStream = &fragmentShaderStream,
                                                .geometryStream = &geometryShaderStream})
                        .hasValue());
-            CHECK(!sf::Shader::loadFromStream({.vertexStream   = &vertexShaderStream,
+            CHECK(!za::Shader::loadFromStream({.vertexStream   = &vertexShaderStream,
                                                .fragmentStream = &fragmentShaderStream,
                                                .geometryStream = &emptyStream})
                        .hasValue());
-            CHECK(!sf::Shader::loadFromStream({.vertexStream   = &vertexShaderStream,
+            CHECK(!za::Shader::loadFromStream({.vertexStream   = &vertexShaderStream,
                                                .fragmentStream = &emptyStream,
                                                .geometryStream = &geometryShaderStream})
                        .hasValue());
 
-            const auto shader = sf::Shader::loadFromStream(
+            const auto shader = za::Shader::loadFromStream(
                 {.vertexStream   = &vertexShaderStream,
                  .fragmentStream = &fragmentShaderStream,
                  .geometryStream = &geometryShaderStream});
 
-            CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
+            CHECK(shader.hasValue() == za::Shader::isGeometryAvailable());
             if (shader.hasValue())
-                CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable());
+                CHECK(static_cast<bool>(shader->getNativeHandle()) == za::Shader::isGeometryAvailable());
         }
     }
 
-#ifndef SFML_SYSTEM_EMSCRIPTEN // see https://github.com/emscripten-core/emscripten/issues/26844
+#ifndef ZA_SYSTEM_EMSCRIPTEN // see https://github.com/emscripten-core/emscripten/issues/26844
     SECTION("setUniformArray() readback")
     {
         // Fragment shader with uniform arrays at known layout locations.
@@ -316,11 +316,11 @@ layout(location = 17) uniform vec4  u_vec4s[2];
 layout(location = 19) uniform mat3  u_mat3s[2];
 layout(location = 25) uniform mat4  u_mat4s[2];
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
-    sf_fragColor = vec4(u_floats[0] + u_floats[1] + u_floats[2])
+    za_fragColor = vec4(u_floats[0] + u_floats[1] + u_floats[2])
                  + vec4(u_vec2s[0], u_vec2s[1])
                  + vec4(u_vec3s[0], u_vec3s[1].x)
                  + u_vec4s[0] + u_vec4s[1]
@@ -330,7 +330,7 @@ void main()
 
 )glsl";
 
-        auto       shader  = sf::Shader::loadFromMemory({.fragmentCode = uniformArrayFragSource}).value();
+        auto       shader  = za::Shader::loadFromMemory({.fragmentCode = uniformArrayFragSource}).value();
         const auto program = static_cast<GLuint>(shader.getNativeHandle());
 
         SECTION("float[]")
@@ -350,7 +350,7 @@ void main()
 
         SECTION("vec2[]")
         {
-            const sf::Glsl::Vec2 data[] = {{1.0f, 2.0f}, {3.0f, 4.0f}};
+            const za::Glsl::Vec2 data[] = {{1.0f, 2.0f}, {3.0f, 4.0f}};
             shader.setUniformArray(shader.getUniformLocation("u_vec2s").value(), data, 2);
 
             for (int i = 0; i < 2; ++i)
@@ -366,7 +366,7 @@ void main()
 
         SECTION("vec3[]")
         {
-            const sf::Glsl::Vec3 data[] = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
+            const za::Glsl::Vec3 data[] = {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}};
             shader.setUniformArray(shader.getUniformLocation("u_vec3s").value(), data, 2);
 
             for (int i = 0; i < 2; ++i)
@@ -383,7 +383,7 @@ void main()
 
         SECTION("vec4[]")
         {
-            const sf::Glsl::Vec4 data[] = {{1.0f, 2.0f, 3.0f, 4.0f}, {5.0f, 6.0f, 7.0f, 8.0f}};
+            const za::Glsl::Vec4 data[] = {{1.0f, 2.0f, 3.0f, 4.0f}, {5.0f, 6.0f, 7.0f, 8.0f}};
             shader.setUniformArray(shader.getUniformLocation("u_vec4s").value(), data, 2);
 
             for (int i = 0; i < 2; ++i)
@@ -404,7 +404,7 @@ void main()
             const float raw0[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
             const float raw1[9] = {10, 20, 30, 40, 50, 60, 70, 80, 90};
 
-            const sf::Glsl::Mat3 data[] = {sf::Glsl::Mat3(raw0), sf::Glsl::Mat3(raw1)};
+            const za::Glsl::Mat3 data[] = {za::Glsl::Mat3(raw0), za::Glsl::Mat3(raw1)};
             shader.setUniformArray(shader.getUniformLocation("u_mat3s").value(), data, 2);
 
             float readback0[9]{};
@@ -423,7 +423,7 @@ void main()
             const float raw0[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
             const float raw1[16] = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 
-            const sf::Glsl::Mat4 data[] = {sf::Glsl::Mat4(raw0), sf::Glsl::Mat4(raw1)};
+            const za::Glsl::Mat4 data[] = {za::Glsl::Mat4(raw0), za::Glsl::Mat4(raw1)};
             shader.setUniformArray(shader.getUniformLocation("u_mat4s").value(), data, 2);
 
             float readback0[16]{};

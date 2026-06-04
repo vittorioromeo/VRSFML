@@ -1,47 +1,47 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Shader.hpp"
 
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
@@ -57,7 +57,7 @@ struct Effect
 {
     virtual ~Effect() = default;
 
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
+    virtual void draw(za::RenderTarget& target, za::RenderStates states) const = 0;
     virtual void update(float time, float x, float y)                          = 0;
 };
 
@@ -68,13 +68,13 @@ struct Effect
 class Pixelate : public Effect
 {
 public:
-    explicit Pixelate(sf::Texture&& texture, sf::Shader&& shader) :
-        m_texture(SFML_BASE_MOVE(texture)),
-        m_shader(SFML_BASE_MOVE(shader)),
-        m_ulTexture(m_shader.getUniformLocation("sf_u_texture").value()),
+    explicit Pixelate(za::Texture&& texture, za::Shader&& shader) :
+        m_texture(ZB_MOVE(texture)),
+        m_shader(ZB_MOVE(shader)),
+        m_ulTexture(m_shader.getUniformLocation("za_u_texture").value()),
         m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
     {
-        m_shader.setUniform(m_ulTexture, sf::Shader::CurrentTexture);
+        m_shader.setUniform(m_ulTexture, za::Shader::CurrentTexture);
     }
 
     void update(float /* time */, float x, float y) override
@@ -82,17 +82,17 @@ public:
         m_shader.setUniform(m_ulPixelThreshold, (x + y) / 30);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         states.shader = &m_shader;
         target.draw(m_texture, states);
     }
 
 private:
-    sf::Texture                 m_texture;
-    sf::Shader                  m_shader;
-    sf::Shader::UniformLocation m_ulTexture;
-    sf::Shader::UniformLocation m_ulPixelThreshold;
+    za::Texture                 m_texture;
+    za::Shader                  m_shader;
+    za::Shader::UniformLocation m_ulTexture;
+    za::Shader::UniformLocation m_ulPixelThreshold;
 };
 
 
@@ -105,17 +105,17 @@ public:
     void update(float time, float x, float y) override
     {
         m_shader.setUniform(m_ulWavePhase, time);
-        m_shader.setUniform(m_ulWaveAmplitude, sf::Vec2f(x * 40, y * 40));
+        m_shader.setUniform(m_ulWaveAmplitude, za::Vec2f(x * 40, y * 40));
         m_shader.setUniform(m_ulBlurRadius, (x + y) * 0.008f);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         states.shader = &m_shader;
         target.draw(m_text, states);
     }
 
-    explicit WaveBlur(const sf::Font& font, sf::Shader&& shader) :
+    explicit WaveBlur(const za::Font& font, za::Shader&& shader) :
         m_text(font,
                {.position = {30.f, 20.f},
                 .string = "Praesent suscipit augue in velit pulvinar hendrerit varius purus aliquam.\n"
@@ -139,7 +139,7 @@ public:
                           "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
                           "laoreet.\n",
                 .characterSize = 22u}),
-        m_shader(SFML_BASE_MOVE(shader)),
+        m_shader(ZB_MOVE(shader)),
         m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
         m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
         m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
@@ -147,11 +147,11 @@ public:
     }
 
 private:
-    sf::Text                    m_text;
-    sf::Shader                  m_shader;
-    sf::Shader::UniformLocation m_ulWavePhase;
-    sf::Shader::UniformLocation m_ulWaveAmplitude;
-    sf::Shader::UniformLocation m_ulBlurRadius;
+    za::Text                    m_text;
+    za::Shader                  m_shader;
+    za::Shader::UniformLocation m_ulWavePhase;
+    za::Shader::UniformLocation m_ulWaveAmplitude;
+    za::Shader::UniformLocation m_ulBlurRadius;
 };
 
 
@@ -163,22 +163,22 @@ class StormBlink : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        const float radius = 200 + sf::base::cos(time) * 150;
+        const float radius = 200 + zb::cos(time) * 150;
 
-        m_shader.setUniform(m_ulStormPosition, sf::Vec2f(x * 800, y * 600));
+        m_shader.setUniform(m_ulStormPosition, za::Vec2f(x * 800, y * 600));
         m_shader.setUniform(m_ulStormInnerRadius, radius / 3);
         m_shader.setUniform(m_ulStormTotalRadius, radius);
-        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + sf::base::cos(time * 3) * 0.25f);
+        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + zb::cos(time * 3) * 0.25f);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         states.shader = &m_shader;
-        target.draw(m_points, sf::PrimitiveType::Points, states);
+        target.draw(m_points, za::PrimitiveType::Points, states);
     }
 
-    explicit StormBlink(sf::Shader&& shader) :
-        m_shader(SFML_BASE_MOVE(shader)),
+    explicit StormBlink(za::Shader&& shader) :
+        m_shader(ZB_MOVE(shader)),
         m_ulStormPosition(m_shader.getUniformLocation("storm_position").value()),
         m_ulStormInnerRadius(m_shader.getUniformLocation("storm_inner_radius").value()),
         m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
@@ -190,21 +190,21 @@ public:
             const auto x = rng.getF(0.f, 800.f);
             const auto y = rng.getF(0.f, 600.f);
 
-            const auto r = rng.getI<sf::base::U8>(0u, 255u);
-            const auto g = rng.getI<sf::base::U8>(0u, 255u);
-            const auto b = rng.getI<sf::base::U8>(0u, 255u);
+            const auto r = rng.getI<zb::U8>(0u, 255u);
+            const auto g = rng.getI<zb::U8>(0u, 255u);
+            const auto b = rng.getI<zb::U8>(0u, 255u);
 
-            m_points.emplaceBack(sf::Vec2f{x, y}, sf::Color{r, g, b});
+            m_points.emplaceBack(za::Vec2f{x, y}, za::Color{r, g, b});
         }
     }
 
 private:
-    sf::base::Vector<sf::Vertex> m_points;
-    sf::Shader                   m_shader;
-    sf::Shader::UniformLocation  m_ulStormPosition;
-    sf::Shader::UniformLocation  m_ulStormInnerRadius;
-    sf::Shader::UniformLocation  m_ulStormTotalRadius;
-    sf::Shader::UniformLocation  m_ulBlinkAlpha;
+    zb::Vector<za::Vertex> m_points;
+    za::Shader                   m_shader;
+    za::Shader::UniformLocation  m_ulStormPosition;
+    za::Shader::UniformLocation  m_ulStormInnerRadius;
+    za::Shader::UniformLocation  m_ulStormTotalRadius;
+    za::Shader::UniformLocation  m_ulBlinkAlpha;
 };
 
 
@@ -216,10 +216,10 @@ class Edge : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        m_shader.setUniform(m_ulEdgeThreshold, sf::base::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
+        m_shader.setUniform(m_ulEdgeThreshold, zb::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
 
         // Render the updated scene to the off-screen surface
-        m_surface.clear(sf::Color::White);
+        m_surface.clear(za::Color::White);
         m_surface.draw(m_backgroundTexture, {.position = {135.f, 100.f}});
 
         // Update the position of the moving entities
@@ -227,11 +227,11 @@ public:
 
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity{.textureRect = {{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
+            za::Sprite entity{.textureRect = {{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
 
             entity.position =
-                {sf::base::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
-                 sf::base::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
+                {zb::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
+                 zb::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
             m_surface.draw(entity, {.texture = &m_entityTexture});
         }
@@ -239,29 +239,29 @@ public:
         m_surface.display();
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
-        const sf::Texture& texture = m_surface.getTexture();
+        const za::Texture& texture = m_surface.getTexture();
 
         states.shader = &m_shader;
         target.draw(texture, states);
     }
 
-    explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :
-        m_surface(SFML_BASE_MOVE(surface)),
-        m_backgroundTexture(SFML_BASE_MOVE(backgroundTexture)),
-        m_entityTexture(SFML_BASE_MOVE(entityTexture)),
-        m_shader(SFML_BASE_MOVE(shader)),
+    explicit Edge(za::RenderTexture&& surface, za::Texture&& backgroundTexture, za::Texture&& entityTexture, za::Shader&& shader) :
+        m_surface(ZB_MOVE(surface)),
+        m_backgroundTexture(ZB_MOVE(backgroundTexture)),
+        m_entityTexture(ZB_MOVE(entityTexture)),
+        m_shader(ZB_MOVE(shader)),
         m_ulEdgeThreshold(m_shader.getUniformLocation("edge_threshold").value())
     {
     }
 
 private:
-    sf::RenderTexture           m_surface;
-    sf::Texture                 m_backgroundTexture;
-    sf::Texture                 m_entityTexture;
-    sf::Shader                  m_shader;
-    sf::Shader::UniformLocation m_ulEdgeThreshold;
+    za::RenderTexture           m_surface;
+    za::Texture                 m_backgroundTexture;
+    za::Texture                 m_entityTexture;
+    za::Shader                  m_shader;
+    za::Shader::UniformLocation m_ulEdgeThreshold;
 };
 
 
@@ -274,22 +274,22 @@ public:
     void update(float /* time */, float x, float y) override
     {
         // Reset our transformation matrix
-        m_transform = sf::Transform::Identity;
+        m_transform = za::Transform::Identity;
 
         // Move to the center of the window
         m_transform.translate({400.f, 300.f});
 
         // Rotate everything based on cursor position
-        m_transform.rotate(sf::degrees(x * 360.f));
+        m_transform.rotate(za::degrees(x * 360.f));
 
         // Adjust billboard size to scale between 25 and 75
-        const float size = 25 + sf::base::fabs(y) * 50;
+        const float size = 25 + zb::fabs(y) * 50;
 
         // Update the shader parameter
-        m_shader.setUniform(m_ulSize, sf::Vec2f{size, size});
+        m_shader.setUniform(m_ulSize, za::Vec2f{size, size});
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         // Prepare the render state
         states.shader    = &m_shader;
@@ -297,17 +297,17 @@ public:
         states.transform = m_transform;
 
         // Draw the point cloud
-        target.draw(m_pointCloud, sf::PrimitiveType::Points, states);
+        target.draw(m_pointCloud, za::PrimitiveType::Points, states);
     }
 
-    explicit Geometry(sf::Texture&& logoTexture, sf::Shader&& shader) :
-        m_logoTexture(SFML_BASE_MOVE(logoTexture)),
-        m_shader(SFML_BASE_MOVE(shader)),
+    explicit Geometry(za::Texture&& logoTexture, za::Shader&& shader) :
+        m_logoTexture(ZB_MOVE(logoTexture)),
+        m_shader(ZB_MOVE(shader)),
         m_ulSize(m_shader.getUniformLocation("size").value()),
         m_pointCloud(10'000)
     {
         // Move the points in the point cloud to random positions
-        for (sf::base::SizeT i = 0; i < 10'000; ++i)
+        for (zb::SizeT i = 0; i < 10'000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
             m_pointCloud[i].position = {rng.getF(-480.f, 480.f), rng.getF(-480.f, 480.f)};
@@ -315,106 +315,106 @@ public:
     }
 
 private:
-    sf::Texture                  m_logoTexture;
-    sf::Transform                m_transform;
-    sf::Shader                   m_shader;
-    sf::Shader::UniformLocation  m_ulSize;
-    sf::base::Vector<sf::Vertex> m_pointCloud;
+    za::Texture                  m_logoTexture;
+    za::Transform                m_transform;
+    za::Shader                   m_shader;
+    za::Shader::UniformLocation  m_ulSize;
+    zb::Vector<za::Vertex> m_pointCloud;
 };
 
 
 ////////////////////////////////////////////////////////////
 // Effect loading factory functions
 ////////////////////////////////////////////////////////////
-sf::base::Optional<Pixelate> tryLoadPixelate()
+zb::Optional<Pixelate> tryLoadPixelate()
 {
-    auto texture = sf::Texture::loadFromFile("resources/background.jpg");
+    auto texture = za::Texture::loadFromFile("resources/background.jpg");
     if (!texture.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    auto shader = sf::Shader::loadFromFile(
+    auto shader = za::Shader::loadFromFile(
         {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/pixelate.frag"});
     if (!shader.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    return sf::base::makeOptional<Pixelate>(SFML_BASE_MOVE(*texture), SFML_BASE_MOVE(*shader));
+    return zb::makeOptional<Pixelate>(ZB_MOVE(*texture), ZB_MOVE(*shader));
 }
 
-sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
+zb::Optional<WaveBlur> tryLoadWaveBlur(const za::Font& font)
 {
-    auto shader = sf::Shader::loadFromFile({.vertexPath = "resources/wave.vert", .fragmentPath = "resources/blur.frag"});
+    auto shader = za::Shader::loadFromFile({.vertexPath = "resources/wave.vert", .fragmentPath = "resources/blur.frag"});
     if (!shader.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    return sf::base::makeOptional<WaveBlur>(font, SFML_BASE_MOVE(*shader));
+    return zb::makeOptional<WaveBlur>(font, ZB_MOVE(*shader));
 }
 
-sf::base::Optional<StormBlink> tryLoadStormBlink()
+zb::Optional<StormBlink> tryLoadStormBlink()
 {
-    auto shader = sf::Shader::loadFromFile({.vertexPath = "resources/storm.vert", .fragmentPath = "resources/blink.frag"});
+    auto shader = za::Shader::loadFromFile({.vertexPath = "resources/storm.vert", .fragmentPath = "resources/blink.frag"});
     if (!shader.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    return sf::base::makeOptional<StormBlink>(SFML_BASE_MOVE(*shader));
+    return zb::makeOptional<StormBlink>(ZB_MOVE(*shader));
 }
 
-sf::base::Optional<Edge> tryLoadEdge()
+zb::Optional<Edge> tryLoadEdge()
 {
     // Create the off-screen surface
-    auto surface = sf::RenderTexture::create({800, 600}, {.smooth = true});
+    auto surface = za::RenderTexture::create({800, 600}, {.smooth = true});
     if (!surface.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
     // Load the background texture
-    auto backgroundTexture = sf::Texture::loadFromFile("resources/sfml.png", {.smooth = true});
+    auto backgroundTexture = za::Texture::loadFromFile("resources/sfml.png", {.smooth = true});
     if (!backgroundTexture.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
     // Load the entity texture
-    auto entityTexture = sf::Texture::loadFromFile("resources/devices.png", {.smooth = true});
+    auto entityTexture = za::Texture::loadFromFile("resources/devices.png", {.smooth = true});
     if (!entityTexture.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile(
+    auto shader = za::Shader::loadFromFile(
         {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/edge.frag"});
     if (!shader.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    shader->setUniform(shader->getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+    shader->setUniform(shader->getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
 
-    return sf::base::makeOptional<Edge>(SFML_BASE_MOVE(*surface),
-                                        SFML_BASE_MOVE(*backgroundTexture),
-                                        SFML_BASE_MOVE(*entityTexture),
-                                        SFML_BASE_MOVE(*shader));
+    return zb::makeOptional<Edge>(ZB_MOVE(*surface),
+                                        ZB_MOVE(*backgroundTexture),
+                                        ZB_MOVE(*entityTexture),
+                                        ZB_MOVE(*shader));
 }
 
-sf::base::Optional<Geometry> tryLoadGeometry()
+zb::Optional<Geometry> tryLoadGeometry()
 {
     // Check if geometry shaders are supported
-    if (!sf::Shader::isGeometryAvailable())
-        return sf::base::nullOpt;
+    if (!za::Shader::isGeometryAvailable())
+        return zb::nullOpt;
 
     // Load the logo texture
-    auto logoTexture = sf::Texture::loadFromFile("resources/logo.png");
+    auto logoTexture = za::Texture::loadFromFile("resources/logo.png");
     if (!logoTexture.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
     logoTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile({.vertexPath   = "resources/billboard.vert",
+    auto shader = za::Shader::loadFromFile({.vertexPath   = "resources/billboard.vert",
                                             .fragmentPath = "resources/billboard.frag",
                                             .geometryPath = "resources/billboard.geom"});
     if (!shader.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    shader->setUniform(shader->getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+    shader->setUniform(shader->getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
-    shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vec2f{800, 600});
+    shader->setUniform(shader->getUniformLocation("resolution").value(), za::Vec2f{800, 600});
 
-    return sf::base::makeOptional<Geometry>(SFML_BASE_MOVE(*logoTexture), SFML_BASE_MOVE(*shader));
+    return zb::makeOptional<Geometry>(ZB_MOVE(*logoTexture), ZB_MOVE(*shader));
 }
 
 } // namespace
@@ -427,54 +427,54 @@ sf::base::Optional<Geometry> tryLoadGeometry()
 int main()
 {
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Open the application font
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the effects
-    sf::base::Optional pixelateEffect   = tryLoadPixelate();
-    sf::base::Optional waveBlurEffect   = tryLoadWaveBlur(font);
-    sf::base::Optional stormBlinkEffect = tryLoadStormBlink();
-    sf::base::Optional edgeEffect       = tryLoadEdge();
-    sf::base::Optional geometryEffect   = tryLoadGeometry();
+    zb::Optional pixelateEffect   = tryLoadPixelate();
+    zb::Optional waveBlurEffect   = tryLoadWaveBlur(font);
+    zb::Optional stormBlinkEffect = tryLoadStormBlink();
+    zb::Optional edgeEffect       = tryLoadEdge();
+    zb::Optional geometryEffect   = tryLoadGeometry();
 
-    const sf::base::Array<Effect*, 5> effects{pixelateEffect.asPtr(),
+    const zb::Array<Effect*, 5> effects{pixelateEffect.asPtr(),
                                               waveBlurEffect.asPtr(),
                                               stormBlinkEffect.asPtr(),
                                               edgeEffect.asPtr(),
                                               geometryEffect.asPtr()};
 
-    const sf::base::Array<sf::base::String, 5>
+    const zb::Array<zb::String, 5>
         effectNames{"Pixelate", "Wave + Blur", "Storm + Blink", "Edge Post-effect", "Geometry Shader Billboards"};
 
     // Index of currently selected effect
-    sf::base::SizeT current = 0u;
+    zb::SizeT current = 0u;
 
     // Create the messages background
-    const auto textBackgroundTexture = sf::Texture::loadFromFile("resources/text-background.png").value();
+    const auto textBackgroundTexture = za::Texture::loadFromFile("resources/text-background.png").value();
 
     // Create the description text
-    sf::Text description(font,
+    za::Text description(font,
                          {.position         = {10.f, 530.f},
                           .string           = "Current effect: " + effectNames[current],
                           .characterSize    = 20u,
                           .fillColor        = {80, 80, 80},
-                          .outlineColor     = sf::Color::White,
+                          .outlineColor     = za::Color::White,
                           .outlineThickness = 1.5f});
 
 
     // Create the instructions text
-    sf::Text instructions(font,
+    za::Text instructions(font,
                           {.position         = {280.f, 555.f},
                            .string           = "Press left and right arrows to change the current shader",
                            .characterSize    = 20u,
                            .fillColor        = {80, 80, 80},
-                           .outlineColor     = sf::Color::White,
+                           .outlineColor     = za::Color::White,
                            .outlineThickness = 1.5f});
 
     // Create the main window
-    constexpr sf::Vec2f windowSize{800.f, 600.f};
+    constexpr za::Vec2f windowSize{800.f, 600.f};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -488,25 +488,25 @@ int main()
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     // Start the game loop
-    const sf::Clock clock;
+    const za::Clock clock;
 
     while (true)
     {
         // Process events
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            if (const auto* keyPressed = event->getIf<za::Event::KeyPressed>())
             {
                 switch (keyPressed->code)
                 {
                     // Left arrow key: previous shader
-                    case sf::Keyboard::Key::Left:
+                    case za::Keyboard::Key::Left:
                     {
                         if (current == 0)
                             current = effects.size() - 1;
@@ -517,7 +517,7 @@ int main()
                     }
 
                     // Right arrow key: next shader
-                    case sf::Keyboard::Key::Right:
+                    case za::Keyboard::Key::Right:
                     {
                         if (current == effects.size() - 1)
                             current = 0;
@@ -539,11 +539,11 @@ int main()
         if (Effect* currentEffect = effects[current])
         {
             // Update the current example
-            const auto [x, y] = sf::Mouse::getPosition(window).toVec2f().componentWiseDiv(window.getSize().toVec2f());
+            const auto [x, y] = za::Mouse::getPosition(window).toVec2f().componentWiseDiv(window.getSize().toVec2f());
             currentEffect->update(clock.getElapsedTime().asSeconds(), x, y);
 
             // Clear the window
-            window.clear(currentEffect == edgeEffect.asPtr() ? sf::Color::White : sf::Color(50, 50, 50));
+            window.clear(currentEffect == edgeEffect.asPtr() ? za::Color::White : za::Color(50, 50, 50));
 
             // Draw the current example
             window.draw(*currentEffect, {.view = windowView});
@@ -551,8 +551,8 @@ int main()
         else
         {
             // Clear the window to grey to make sure the text is always readable
-            window.clear(sf::Color(50, 50, 50));
-            window.draw(sf::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}},
+            window.clear(za::Color(50, 50, 50));
+            window.draw(za::Text{font, {.position = {320.f, 200.f}, .string = "Shader not\nsupported", .characterSize = 36u}},
                         {.view = windowView});
         }
 

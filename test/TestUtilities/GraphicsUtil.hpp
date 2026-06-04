@@ -10,7 +10,7 @@
 #include "SystemUtil.hpp"
 
 
-namespace sf
+namespace za
 {
 enum class StencilComparison : unsigned char;
 enum class StencilUpdateOperation : unsigned char;
@@ -26,21 +26,21 @@ class Rect2;
 
 // `stringifyValue` ADL overloads -- found when these operands need
 // rendering for a failed assertion.
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const BlendMode& blendMode) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, StencilComparison comparison) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, StencilUpdateOperation updateOperation) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const StencilMode& stencilMode) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Color& color) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Transform& transform) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const View& view) noexcept;
-} // namespace sf
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const BlendMode& blendMode) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, StencilComparison comparison) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, StencilUpdateOperation updateOperation) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const StencilMode& stencilMode) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Color& color) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Transform& transform) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const View& view) noexcept;
+} // namespace za
 
 
-bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs);
-bool operator==(const sf::Color& lhs, const Approx<sf::Color>& rhs);
+bool operator==(const za::Transform& lhs, const Approx<za::Transform>& rhs);
+bool operator==(const za::Color& lhs, const Approx<za::Color>& rhs);
 
 template <typename T>
-bool operator==(const sf::Rect2<T>& lhs, const Approx<sf::Rect2<T>>& rhs)
+bool operator==(const za::Rect2<T>& lhs, const Approx<za::Rect2<T>>& rhs)
 {
     return lhs.position == Approx(rhs.value.position) && lhs.size == Approx(rhs.value.size);
 }

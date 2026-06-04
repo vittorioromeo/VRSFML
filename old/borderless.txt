@@ -1,23 +1,23 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Win32/Utils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "Zancle/Window/Win32/Utils.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 
-#include "SFML/System/String.hpp"
-#include "SFML/System/Win32/WindowsHeader.hpp" // used
+#include "Zancle/System/String.hpp"
+#include "Zancle/System/Win32/WindowsHeader.hpp" // used
 
-#include "SFML/Base/Assert.hpp"
+#include "ZancleBase/Assert.hpp"
 
 #include <string>
 
 #include <cstddef>
 
 
-namespace sf::priv
+namespace za::priv
 {
 ////////////////////////////////////////////////////////////
 std::string getErrorString(DWORD error)
@@ -34,7 +34,7 @@ std::string getErrorString(DWORD error)
         return "Unknown error.";
     }
 
-    const sf::String message = buffer;
+    const za::String message = buffer;
     LocalFree(buffer);
     return message.toAnsiString<std::string>();
 }
@@ -94,7 +94,7 @@ void setWindowBorderless(
     const unsigned int width,
     const unsigned int height)
 {
-    SFML_BASE_ASSERT(hwnd != nullptr);
+    ZB_ASSERT(hwnd != nullptr);
     auto* hwndPtr = reinterpret_cast<HWND>(hwnd);
 
     int styleFlags = getWindowStyle(fullscreen, hasTitlebar, resizable);
@@ -125,4 +125,4 @@ void setWindowBorderless(
     }
 }
 
-} // namespace sf::priv
+} // namespace za::priv

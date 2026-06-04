@@ -3,13 +3,13 @@
 #include "ExactArray.hpp"
 #include "ShrineType.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 #include <climits>
 
 
 ////////////////////////////////////////////////////////////
-using MilestoneTimestamp                  = sf::base::U64;
+using MilestoneTimestamp                  = zb::U64;
 static inline constexpr auto maxMilestone = ULLONG_MAX;
 
 ////////////////////////////////////////////////////////////

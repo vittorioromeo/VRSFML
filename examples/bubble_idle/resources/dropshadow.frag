@@ -1,13 +1,13 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 // uniform float blurStrength;   // Controls the Gaussian blur standard deviation.
 // uniform float shadowOpacity;  // Overall shadow opacity multiplier (0.0 to 1.0).
 
 ////////////////////////////////////////////////////////////
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 in vec2 v_worldPos;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 ////////////////////////////////////////////////////////////
 void main()
@@ -15,8 +15,8 @@ void main()
     const float blurStrength  = 25.0;
     const float shadowOpacity = 0.25;
 
-    vec2 texSize = vec2(textureSize(sf_u_texture, 0));
-    vec2 uv      = sf_v_texCoord;
+    vec2 texSize = vec2(textureSize(za_u_texture, 0));
+    vec2 uv      = za_v_texCoord;
 
     vec4  sum         = vec4(0.0);
     float totalWeight = 0.0;
@@ -28,7 +28,7 @@ void main()
         {
             vec2  offset = vec2(float(x) * 3.0, float(y) * 3.0) / texSize;
             float weight = exp(-float(x * x + y * y) / (2.0 * blurStrength * blurStrength));
-            sum += texture2D(sf_u_texture, uv + offset) * weight;
+            sum += texture2D(za_u_texture, uv + offset) * weight;
             totalWeight += weight;
         }
     }
@@ -37,5 +37,5 @@ void main()
     vec4 blurred = sum / totalWeight;
 
     // Output black color with blurred alpha, modulated by shadowOpacity.
-    sf_fragColor = vec4(0.0, 0.0, 0.0, blurred.a * shadowOpacity);
+    za_fragColor = vec4(0.0, 0.0, 0.0, blurred.a * shadowOpacity);
 }

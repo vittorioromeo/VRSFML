@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-enum class ShrineType : sf::base::U8
+enum class ShrineType : zb::U8
 {
     Voodoo     = 0u,
     Magic      = 1u,
@@ -22,11 +22,11 @@ enum class ShrineType : sf::base::U8
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto asIdx(const ShrineType catType) noexcept
 {
-    return static_cast<sf::base::SizeT>(catType);
+    return static_cast<zb::SizeT>(catType);
 }
 
 ////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
+enum : zb::SizeT
 {
     nShrineTypes = asIdx(ShrineType::Count)
 };

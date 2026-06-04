@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
 
-namespace sf
+namespace za
 {
 class Path;
 }
@@ -18,11 +18,11 @@ class Path;
 struct [[nodiscard]] LoadedSound
 {
     ////////////////////////////////////////////////////////////
-    sf::SoundBuffer   buffer;
-    sf::AudioSettings settings;
+    za::SoundBuffer   buffer;
+    za::AudioSettings settings;
 
     ////////////////////////////////////////////////////////////
-    explicit LoadedSound(const sf::Path& filename);
+    explicit LoadedSound(const za::Path& filename);
 
     ////////////////////////////////////////////////////////////
     explicit LoadedSound(const char* filename);

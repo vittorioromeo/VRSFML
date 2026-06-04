@@ -2,12 +2,12 @@
 
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextData.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextData.hpp"
 
-#include "SFML/System/Angle.hpp"
+#include "Zancle/System/Angle.hpp"
 
-#include "SFML/Base/ClampMacro.hpp"
+#include "ZancleBase/ClampMacro.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -32,17 +32,17 @@ void TextShakeEffect::update(const float deltaTimeMs)
             angle = 0.f;
     }
 
-    grow  = SFML_BASE_CLAMP(grow, 0.f, 5.f);
-    angle = SFML_BASE_CLAMP(angle, -0.5f, 0.5f);
+    grow  = ZB_CLAMP(grow, 0.f, 5.f);
+    angle = ZB_CLAMP(angle, -0.5f, 0.5f);
 }
 
 ////////////////////////////////////////////////////////////
 void TextShakeEffect::applyToText(auto& text) const
 {
     text.scale    = {1.f + grow * 0.2f, 1.f + grow * 0.2f};
-    text.rotation = sf::radians(angle);
+    text.rotation = za::radians(angle);
 }
 
 
-template void TextShakeEffect::applyToText(sf::Text& text) const;
-template void TextShakeEffect::applyToText(sf::TextData& text) const;
+template void TextShakeEffect::applyToText(za::Text& text) const;
+template void TextShakeEffect::applyToText(za::TextData& text) const;

@@ -1,31 +1,31 @@
-#include "SFML/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Transform.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Transform.hpp"
 
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::Glsl")
+TEST_CASE("[Graphics] za::Glsl")
 {
     SECTION("Vec2")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Vec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Vec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Vec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Vec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Vec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Vec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Vec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Vec2));
         }
 
-        constexpr sf::Glsl::Vec2 vec{};
+        constexpr za::Glsl::Vec2 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
     }
@@ -34,13 +34,13 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Ivec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Ivec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Ivec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Ivec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Ivec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Ivec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Ivec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Ivec2));
         }
 
-        constexpr sf::Glsl::Ivec2 vec{};
+        constexpr za::Glsl::Ivec2 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
     }
@@ -49,13 +49,13 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Bvec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Bvec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Bvec2));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Bvec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Bvec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Bvec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Bvec2));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Bvec2));
         }
 
-        constexpr sf::Glsl::Bvec2 vec{};
+        constexpr za::Glsl::Bvec2 vec{};
         STATIC_CHECK(vec.x == false);
         STATIC_CHECK(vec.y == false);
     }
@@ -64,13 +64,13 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Vec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Vec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Vec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Vec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Vec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Vec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Vec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Vec3));
         }
 
-        constexpr sf::Glsl::Vec3 vec{};
+        constexpr za::Glsl::Vec3 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
         STATIC_CHECK(vec.z == 0);
@@ -80,13 +80,13 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Ivec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Ivec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Ivec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Ivec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Ivec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Ivec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Ivec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Ivec3));
         }
 
-        constexpr sf::Glsl::Ivec3 vec{};
+        constexpr za::Glsl::Ivec3 vec{};
         STATIC_CHECK(vec.x == 0);
         STATIC_CHECK(vec.y == 0);
         STATIC_CHECK(vec.z == 0);
@@ -96,13 +96,13 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Bvec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Bvec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Bvec3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Bvec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Bvec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Bvec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Bvec3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Bvec3));
         }
 
-        constexpr sf::Glsl::Bvec3 vec{};
+        constexpr za::Glsl::Bvec3 vec{};
         STATIC_CHECK(vec.x == false);
         STATIC_CHECK(vec.y == false);
         STATIC_CHECK(vec.z == false);
@@ -112,15 +112,15 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Vec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Vec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Vec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Vec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Vec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Vec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Vec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Vec4));
         }
 
         SECTION("Default constructor")
         {
-            constexpr sf::Glsl::Vec4 vec{};
+            constexpr za::Glsl::Vec4 vec{};
             STATIC_CHECK(vec.x == 0);
             STATIC_CHECK(vec.y == 0);
             STATIC_CHECK(vec.z == 0);
@@ -129,7 +129,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Verbose constructor")
         {
-            constexpr sf::Glsl::Vec4 vec(1, 2, 3, 4);
+            constexpr za::Glsl::Vec4 vec(1, 2, 3, 4);
             STATIC_CHECK(vec.x == 1);
             STATIC_CHECK(vec.y == 2);
             STATIC_CHECK(vec.z == 3);
@@ -138,7 +138,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Color constructor")
         {
-            constexpr sf::Glsl::Vec4 vec = sf::Color(0, 128, 192, 255);
+            constexpr za::Glsl::Vec4 vec = za::Color(0, 128, 192, 255);
             STATIC_CHECK(vec.x == 0.f);
             STATIC_CHECK(vec.w == 1.f);
             CHECK(vec.y == Approx(128 / 255.f));
@@ -150,15 +150,15 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Ivec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Ivec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Ivec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Ivec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Ivec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Ivec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Ivec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Ivec4));
         }
 
         SECTION("Default constructor")
         {
-            constexpr sf::Glsl::Ivec4 vec{};
+            constexpr za::Glsl::Ivec4 vec{};
             STATIC_CHECK(vec.x == 0);
             STATIC_CHECK(vec.y == 0);
             STATIC_CHECK(vec.z == 0);
@@ -167,7 +167,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Verbose constructor")
         {
-            constexpr sf::Glsl::Ivec4 vec(1, 2, 3, 4);
+            constexpr za::Glsl::Ivec4 vec(1, 2, 3, 4);
             STATIC_CHECK(vec.x == 1);
             STATIC_CHECK(vec.y == 2);
             STATIC_CHECK(vec.z == 3);
@@ -176,7 +176,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Color constructor")
         {
-            constexpr sf::Glsl::Ivec4 vec = sf::Color(0, 128, 192, 255);
+            constexpr za::Glsl::Ivec4 vec = za::Color(0, 128, 192, 255);
             STATIC_CHECK(vec.x == 0);
             STATIC_CHECK(vec.y == 128);
             STATIC_CHECK(vec.z == 192);
@@ -188,15 +188,15 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Bvec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Bvec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Bvec4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Bvec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Bvec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Bvec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Bvec4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Bvec4));
         }
 
         SECTION("Default constructor")
         {
-            constexpr sf::Glsl::Bvec4 vec{};
+            constexpr za::Glsl::Bvec4 vec{};
             STATIC_CHECK(vec.x == false);
             STATIC_CHECK(vec.y == false);
             STATIC_CHECK(vec.z == false);
@@ -205,7 +205,7 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Verbose constructor")
         {
-            constexpr sf::Glsl::Bvec4 vec(false, true, true, false);
+            constexpr za::Glsl::Bvec4 vec(false, true, true, false);
             STATIC_CHECK(vec.x == false);
             STATIC_CHECK(vec.y == true);
             STATIC_CHECK(vec.z == true);
@@ -217,16 +217,16 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Mat3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Mat3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Mat3));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Mat3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Mat3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Mat3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Mat3));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Mat3));
         }
 
         SECTION("Array constructor")
         {
             static constexpr float data[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-            const sf::Glsl::Mat3   mat(data);
+            const za::Glsl::Mat3   mat(data);
             CHECK(mat.array[0] == 1);
             CHECK(mat.array[1] == 2);
             CHECK(mat.array[2] == 3);
@@ -240,8 +240,8 @@ TEST_CASE("[Graphics] sf::Glsl")
 
         SECTION("Transform constructor")
         {
-            constexpr sf::Transform transform(10, 11, 12, 13, 14, 15);
-            const sf::Glsl::Mat3    mat = transform;
+            constexpr za::Transform transform(10, 11, 12, 13, 14, 15);
+            const za::Glsl::Mat3    mat = transform;
             CHECK(mat.array[0] == 10);
             CHECK(mat.array[1] == 13);
             CHECK(mat.array[2] == 0);
@@ -258,14 +258,14 @@ TEST_CASE("[Graphics] sf::Glsl")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glsl::Mat4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glsl::Mat4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glsl::Mat4));
-            STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glsl::Mat4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glsl::Mat4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glsl::Mat4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glsl::Mat4));
+            STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glsl::Mat4));
         }
 
         static constexpr float data[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-        const sf::Glsl::Mat4   mat(data);
+        const za::Glsl::Mat4   mat(data);
         CHECK(mat.array[0] == 1);
         CHECK(mat.array[1] == 2);
         CHECK(mat.array[2] == 3);
@@ -286,8 +286,8 @@ TEST_CASE("[Graphics] sf::Glsl")
 
     SECTION("Transform constructor")
     {
-        constexpr sf::Transform transform(10, 11, 12, 13, 14, 15);
-        const sf::Glsl::Mat4    mat = transform;
+        constexpr za::Transform transform(10, 11, 12, 13, 14, 15);
+        const za::Glsl::Mat4    mat = transform;
         CHECK(mat.array[0] == 10);
         CHECK(mat.array[1] == 13);
         CHECK(mat.array[2] == 0);

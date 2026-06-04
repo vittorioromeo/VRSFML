@@ -3,162 +3,162 @@
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
-#include "SFML/System/IO.hpp"
+#include "Zancle/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
+#include "Zancle/System/IO.hpp"
 
-#include "SFML/Base/Fmt/FmtToString.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Fmt/FmtToString.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <filesystem>
 #include <string>
 
 
-using sf::testing::TemporaryFile;
+using za::testing::TemporaryFile;
 
 
-TEST_CASE("[System] sf::Path")
+TEST_CASE("[System] za::Path")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Path));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Path));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Path));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Path));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Path));
+        STATIC_CHECK(ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Path));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Path));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Path));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Path));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Path));
     }
 
     SECTION("Default construction")
     {
-        const sf::Path p;
+        const za::Path p;
         CHECK(p.empty());
         CHECK(!p.exists());
     }
 
     SECTION("Construction from const char*")
     {
-        const sf::Path p("hello.txt");
+        const za::Path p("hello.txt");
         CHECK(!p.empty());
         CHECK(p.to<std::string>() == "hello.txt");
     }
 
     SECTION("Construction from const wchar_t*")
     {
-        const sf::Path p(L"hello.txt");
+        const za::Path p(L"hello.txt");
         CHECK(p.to<std::wstring>() == std::wstring(L"hello.txt"));
     }
 
     SECTION("Construction from const char32_t*")
     {
-        const sf::Path p(U"hello.txt");
+        const za::Path p(U"hello.txt");
         CHECK(p.to<std::u32string>() == std::u32string(U"hello.txt"));
     }
 
     SECTION("Construction from std::string")
     {
         const std::string s = "hello.txt";
-        const sf::Path    p(s);
+        const za::Path    p(s);
         CHECK(p.to<std::string>() == "hello.txt");
     }
 
     SECTION("Construction from std::wstring")
     {
         const std::wstring s = L"hello.txt";
-        const sf::Path     p(s);
+        const za::Path     p(s);
         CHECK(p.to<std::wstring>() == s);
     }
 
     SECTION("Construction from std::u32string")
     {
         const std::u32string s = U"hello.txt";
-        const sf::Path       p(s);
+        const za::Path       p(s);
         CHECK(p.to<std::u32string>() == s);
     }
 
     SECTION("Construction from base::String")
     {
-        const sf::base::String s("hello.txt");
-        const sf::Path         p(s);
-        CHECK(p.to<sf::base::String>() == sf::base::String("hello.txt"));
+        const zb::String s("hello.txt");
+        const za::Path         p(s);
+        CHECK(p.to<zb::String>() == zb::String("hello.txt"));
     }
 
     SECTION("Construction from std::filesystem::path")
     {
-        const auto     fsp = sf::Path("hello.txt").to<std::filesystem::path>();
-        const sf::Path p(fsp);
+        const auto     fsp = za::Path("hello.txt").to<std::filesystem::path>();
+        const za::Path p(fsp);
         CHECK(p.to<std::filesystem::path>() == fsp);
-        CHECK(p == sf::Path("hello.txt"));
+        CHECK(p == za::Path("hello.txt"));
     }
 
     SECTION("Copy construction is independent")
     {
-        const sf::Path a("foo.txt");
-        sf::Path       b(a);
+        const za::Path a("foo.txt");
+        za::Path       b(a);
         CHECK(a == b);
-        b /= sf::Path("sub");
-        CHECK(a == sf::Path("foo.txt")); // original unchanged
+        b /= za::Path("sub");
+        CHECK(a == za::Path("foo.txt")); // original unchanged
         CHECK(b != a);
     }
 
     SECTION("Copy assignment is independent")
     {
-        const sf::Path a("foo.txt");
-        sf::Path       b("bar.txt");
+        const za::Path a("foo.txt");
+        za::Path       b("bar.txt");
         b = a;
         CHECK(a == b);
-        b /= sf::Path("sub");
-        CHECK(a == sf::Path("foo.txt")); // original unchanged
+        b /= za::Path("sub");
+        CHECK(a == za::Path("foo.txt")); // original unchanged
     }
 
     SECTION("Move construction transfers state")
     {
-        sf::Path       src("foo.txt");
-        const sf::Path dst(SFML_BASE_MOVE(src));
+        za::Path       src("foo.txt");
+        const za::Path dst(ZB_MOVE(src));
         CHECK(dst.to<std::string>() == "foo.txt");
     }
 
     SECTION("Move assignment transfers state")
     {
-        sf::Path src("foo.txt");
-        sf::Path dst("bar.txt");
-        dst = SFML_BASE_MOVE(src);
+        za::Path src("foo.txt");
+        za::Path dst("bar.txt");
+        dst = ZB_MOVE(src);
         CHECK(dst.to<std::string>() == "foo.txt");
     }
 
     SECTION("filename()")
     {
-        CHECK(sf::Path("/foo/bar.txt").getFilename() == sf::Path("bar.txt"));
-        CHECK(sf::Path("bar.txt").getFilename() == sf::Path("bar.txt"));
-        CHECK(sf::Path("/foo/").getFilename().empty());
-        CHECK(sf::Path("").getFilename().empty());
+        CHECK(za::Path("/foo/bar.txt").getFilename() == za::Path("bar.txt"));
+        CHECK(za::Path("bar.txt").getFilename() == za::Path("bar.txt"));
+        CHECK(za::Path("/foo/").getFilename().empty());
+        CHECK(za::Path("").getFilename().empty());
     }
 
     SECTION("extension()")
     {
-        CHECK(sf::Path("bar.txt").getExtension() == sf::Path(".txt"));
-        CHECK(sf::Path("/foo/bar.TAR.GZ").getExtension() == sf::Path(".GZ"));
-        CHECK(sf::Path("noext").getExtension().empty());
-        CHECK(sf::Path("").getExtension().empty());
-        CHECK(sf::Path(".hidden").getExtension().empty()); // leading dot is stem, not extension
+        CHECK(za::Path("bar.txt").getExtension() == za::Path(".txt"));
+        CHECK(za::Path("/foo/bar.TAR.GZ").getExtension() == za::Path(".GZ"));
+        CHECK(za::Path("noext").getExtension().empty());
+        CHECK(za::Path("").getExtension().empty());
+        CHECK(za::Path(".hidden").getExtension().empty()); // leading dot is stem, not extension
     }
 
     SECTION("parent()")
     {
-        CHECK(sf::Path("/foo/bar.txt").getParent() == sf::Path("/foo"));
-        CHECK(sf::Path("bar.txt").getParent().empty());
+        CHECK(za::Path("/foo/bar.txt").getParent() == za::Path("/foo"));
+        CHECK(za::Path("bar.txt").getParent().empty());
     }
 
     SECTION("absolute() returns non-empty for non-empty relative path")
     {
-        const sf::Path rel("hello.txt");
+        const za::Path rel("hello.txt");
         const auto     abs = rel.getAbsolute();
         REQUIRE(abs.hasValue());
         CHECK(!abs->empty());
@@ -166,30 +166,30 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("c_str() returns non-null native string")
     {
-        const sf::Path              p("hello.txt");
-        const sf::Path::value_type* ptr = p.c_str();
+        const za::Path              p("hello.txt");
+        const za::Path::value_type* ptr = p.c_str();
         REQUIRE(ptr != nullptr);
-        const bool firstNonNull = ptr[0] != sf::Path::value_type{0};
+        const bool firstNonNull = ptr[0] != za::Path::value_type{0};
         CHECK(firstNonNull);
     }
 
     SECTION("to<T>() conversions")
     {
-        const sf::Path p("hello.txt");
+        const za::Path p("hello.txt");
         CHECK(p.to<std::string>() == "hello.txt");
         CHECK(p.to<std::wstring>() == std::wstring(L"hello.txt"));
         CHECK(p.to<std::u8string>() == std::u8string(u8"hello.txt"));
         CHECK(p.to<std::u32string>() == std::u32string(U"hello.txt"));
-        // Round-trip through std::filesystem::path and back via sf::Path
-        CHECK(sf::Path(p.to<std::filesystem::path>()) == p);
-        CHECK(p.to<sf::base::String>() == sf::base::String("hello.txt"));
+        // Round-trip through std::filesystem::path and back via za::Path
+        CHECK(za::Path(p.to<std::filesystem::path>()) == p);
+        CHECK(p.to<zb::String>() == zb::String("hello.txt"));
     }
 
     SECTION("empty()")
     {
-        CHECK(sf::Path().empty());
-        CHECK(sf::Path("").empty());
-        CHECK(!sf::Path("a").empty());
+        CHECK(za::Path().empty());
+        CHECK(za::Path("").empty());
+        CHECK(!za::Path("a").empty());
     }
 
     SECTION("exists() and removeFromDisk() with a real file")
@@ -202,114 +202,114 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("exists() returns false for non-existent path")
     {
-        CHECK(!sf::Path("this/really/should/not/exist/0xDEADBEEF.tmp").exists());
+        CHECK(!za::Path("this/really/should/not/exist/0xDEADBEEF.tmp").exists());
     }
 
     SECTION("removeFromDisk() returns false for non-existent path")
     {
-        CHECK(!sf::Path("this/really/should/not/exist/0xDEADBEEF.tmp").removeFromDisk());
+        CHECK(!za::Path("this/really/should/not/exist/0xDEADBEEF.tmp").removeFromDisk());
     }
 
     SECTION("extensionIs() matches ASCII extensions")
     {
-        CHECK(sf::Path("hello.png").extensionIs(".png"));
-        CHECK(sf::Path("hello.wav").extensionIs(".wav"));
-        CHECK(sf::Path("/path/to/hello.wav").extensionIs(".wav"));
-        CHECK(!sf::Path("hello.png").extensionIs(".jpg"));
+        CHECK(za::Path("hello.png").extensionIs(".png"));
+        CHECK(za::Path("hello.wav").extensionIs(".wav"));
+        CHECK(za::Path("/path/to/hello.wav").extensionIs(".wav"));
+        CHECK(!za::Path("hello.png").extensionIs(".jpg"));
     }
 
     SECTION("extensionIs() is case-insensitive")
     {
-        CHECK(sf::Path("hello.PNG").extensionIs(".png"));
-        CHECK(sf::Path("hello.Png").extensionIs(".pNg"));
+        CHECK(za::Path("hello.PNG").extensionIs(".png"));
+        CHECK(za::Path("hello.Png").extensionIs(".pNg"));
     }
 
     SECTION("extensionIs() returns false when no extension is present")
     {
-        CHECK(!sf::Path("hello").extensionIs(".png"));
-        CHECK(!sf::Path("").extensionIs(".png"));
+        CHECK(!za::Path("hello").extensionIs(".png"));
+        CHECK(!za::Path("").extensionIs(".png"));
     }
 
     SECTION("extensionIs() honors std::filesystem extension semantics")
     {
         // Leading dot of the filename is part of the stem, not the extension.
-        CHECK(!sf::Path(".hidden").extensionIs(".hidden"));
-        CHECK(!sf::Path("/foo/.hidden").extensionIs(".hidden"));
-        CHECK(!sf::Path(".bashrc").extensionIs(".bashrc"));
+        CHECK(!za::Path(".hidden").extensionIs(".hidden"));
+        CHECK(!za::Path("/foo/.hidden").extensionIs(".hidden"));
+        CHECK(!za::Path(".bashrc").extensionIs(".bashrc"));
 
         // `.` and `..` filenames have no extension.
-        CHECK(!sf::Path(".").extensionIs("."));
-        CHECK(!sf::Path("..").extensionIs(".."));
-        CHECK(!sf::Path("/foo/.").extensionIs("."));
-        CHECK(!sf::Path("/foo/..").extensionIs(".."));
+        CHECK(!za::Path(".").extensionIs("."));
+        CHECK(!za::Path("..").extensionIs(".."));
+        CHECK(!za::Path("/foo/.").extensionIs("."));
+        CHECK(!za::Path("/foo/..").extensionIs(".."));
 
         // Multiple dots: the rightmost wins.
-        CHECK(sf::Path("hello.tar.gz").extensionIs(".gz"));
-        CHECK(!sf::Path("hello.tar.gz").extensionIs(".tar"));
-        CHECK(!sf::Path("hello.tar.gz").extensionIs(".tar.gz"));
-        CHECK(sf::Path("/path/with.dots/file.png").extensionIs(".png"));
+        CHECK(za::Path("hello.tar.gz").extensionIs(".gz"));
+        CHECK(!za::Path("hello.tar.gz").extensionIs(".tar"));
+        CHECK(!za::Path("hello.tar.gz").extensionIs(".tar.gz"));
+        CHECK(za::Path("/path/with.dots/file.png").extensionIs(".png"));
 
         // Filename starting with a dot but containing another dot has the right-side extension.
-        CHECK(sf::Path(".foo.bar").extensionIs(".bar"));
+        CHECK(za::Path(".foo.bar").extensionIs(".bar"));
 
         // Empty extension query: matches iff the path has no extension.
-        CHECK(!sf::Path("hello.png").extensionIs(""));
-        CHECK(sf::Path("hello").extensionIs(""));
-        CHECK(sf::Path(".hidden").extensionIs(""));
-        CHECK(sf::Path("/foo/").extensionIs(""));
-        CHECK(sf::Path("").extensionIs(""));
+        CHECK(!za::Path("hello.png").extensionIs(""));
+        CHECK(za::Path("hello").extensionIs(""));
+        CHECK(za::Path(".hidden").extensionIs(""));
+        CHECK(za::Path("/foo/").extensionIs(""));
+        CHECK(za::Path("").extensionIs(""));
     }
 
     SECTION("operator/= appends path components")
     {
-        sf::Path p("foo");
-        p /= sf::Path("bar.txt");
-        CHECK(p.getFilename() == sf::Path("bar.txt"));
-        CHECK(p.getParent() == sf::Path("foo"));
+        za::Path p("foo");
+        p /= za::Path("bar.txt");
+        CHECK(p.getFilename() == za::Path("bar.txt"));
+        CHECK(p.getParent() == za::Path("foo"));
     }
 
     SECTION("operator/ composes a new path")
     {
-        const sf::Path joined = sf::Path("foo") / sf::Path("bar.txt");
-        CHECK(joined.getFilename() == sf::Path("bar.txt"));
-        CHECK(joined.getParent() == sf::Path("foo"));
+        const za::Path joined = za::Path("foo") / za::Path("bar.txt");
+        CHECK(joined.getFilename() == za::Path("bar.txt"));
+        CHECK(joined.getParent() == za::Path("foo"));
     }
 
-    SECTION("operator== / operator!= on sf::Path")
+    SECTION("operator== / operator!= on za::Path")
     {
-        CHECK(sf::Path("a.txt") == sf::Path("a.txt"));
-        CHECK(sf::Path("a.txt") != sf::Path("b.txt"));
+        CHECK(za::Path("a.txt") == za::Path("a.txt"));
+        CHECK(za::Path("a.txt") != za::Path("b.txt"));
     }
 
     SECTION("operator== / operator!= against const char*")
     {
-        CHECK(sf::Path("a.txt") == "a.txt");
-        CHECK(sf::Path("a.txt") != "b.txt");
+        CHECK(za::Path("a.txt") == "a.txt");
+        CHECK(za::Path("a.txt") != "b.txt");
     }
 
     SECTION("operator== / operator!= against const wchar_t*")
     {
         // Extra parens force the expression to evaluate to `bool` before the framework.s
         // expression decomposer runs, avoiding stringification of `wchar_t[N]`.
-        CHECK((sf::Path(L"a.txt") == L"a.txt"));
-        CHECK((sf::Path(L"a.txt") != L"b.txt"));
+        CHECK((za::Path(L"a.txt") == L"a.txt"));
+        CHECK((za::Path(L"a.txt") != L"b.txt"));
     }
 
     SECTION("operator== / operator!= against std::string")
     {
         const std::string rhs = "a.txt";
-        CHECK(sf::Path("a.txt") == rhs);
-        CHECK(sf::Path("b.txt") != rhs);
+        CHECK(za::Path("a.txt") == rhs);
+        CHECK(za::Path("b.txt") != rhs);
     }
 
     SECTION("Path formats via fmtToString(\"{}\", path)")
     {
-        CHECK(sf::base::fmtToString("{}", sf::Path("hello.txt")) == sf::base::String("hello.txt"));
+        CHECK(zb::fmtToString("{}", za::Path("hello.txt")) == zb::String("hello.txt"));
     }
 
     SECTION("tempDirectoryPath() returns an existing directory")
     {
-        const auto tmp = sf::Path::getTempDirectory();
+        const auto tmp = za::Path::getTempDirectory();
         REQUIRE(tmp.hasValue());
         CHECK(!tmp->empty());
         CHECK(tmp->exists());
@@ -317,17 +317,17 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("absolute() returns Optional that is convertible to bool")
     {
-        const auto abs = sf::Path("hello.txt").getAbsolute();
+        const auto abs = za::Path("hello.txt").getAbsolute();
         CHECK(static_cast<bool>(abs));
     }
 
     SECTION("stem()")
     {
-        CHECK(sf::Path("/foo/bar.txt").getStem() == sf::Path("bar"));
-        CHECK(sf::Path("/foo/bar.tar.gz").getStem() == sf::Path("bar.tar"));
-        CHECK(sf::Path("noext").getStem() == sf::Path("noext"));
-        CHECK(sf::Path(".hidden").getStem() == sf::Path(".hidden"));
-        CHECK(sf::Path("").getStem().empty());
+        CHECK(za::Path("/foo/bar.txt").getStem() == za::Path("bar"));
+        CHECK(za::Path("/foo/bar.tar.gz").getStem() == za::Path("bar.tar"));
+        CHECK(za::Path("noext").getStem() == za::Path("noext"));
+        CHECK(za::Path(".hidden").getStem() == za::Path(".hidden"));
+        CHECK(za::Path("").getStem().empty());
     }
 
     SECTION("isDirectory(), isRegularFile(), isSymlink() on temp file")
@@ -337,7 +337,7 @@ TEST_CASE("[System] sf::Path")
         CHECK(!tmp.getPath().isDirectory());
         CHECK(!tmp.getPath().isSymlink());
 
-        const auto tempDir = sf::Path::getTempDirectory();
+        const auto tempDir = za::Path::getTempDirectory();
         REQUIRE(tempDir.hasValue());
         CHECK(tempDir->isDirectory());
         CHECK(!tempDir->isRegularFile());
@@ -345,7 +345,7 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("isDirectory(), isRegularFile() return false for missing path")
     {
-        const sf::Path missing("this/really/should/not/exist/0xDEADBEEF.tmp");
+        const za::Path missing("this/really/should/not/exist/0xDEADBEEF.tmp");
         CHECK(!missing.isDirectory());
         CHECK(!missing.isRegularFile());
         CHECK(!missing.isSymlink());
@@ -361,7 +361,7 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("fileSize() fails for missing file")
     {
-        CHECK(!sf::Path("this/really/does/not/exist.tmp").getFileSize().hasValue());
+        CHECK(!za::Path("this/really/does/not/exist.tmp").getFileSize().hasValue());
     }
 
     SECTION("lastWriteTimeSecondsSinceEpoch() returns a sensible value")
@@ -376,32 +376,32 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("currentWorkingDirectory() returns an existing directory")
     {
-        const auto cwd = sf::Path::getCurrentDirectory();
+        const auto cwd = za::Path::getCurrentDirectory();
         REQUIRE(cwd.hasValue());
         CHECK(cwd->isDirectory());
     }
 
     SECTION("setCurrentWorkingDirectory() round-trips through getter")
     {
-        const auto originalMaybe = sf::Path::getCurrentDirectory();
+        const auto originalMaybe = za::Path::getCurrentDirectory();
         REQUIRE(originalMaybe.hasValue());
-        const sf::Path& original = *originalMaybe;
+        const za::Path& original = *originalMaybe;
 
-        const auto tempMaybe = sf::Path::getTempDirectory();
+        const auto tempMaybe = za::Path::getTempDirectory();
         REQUIRE(tempMaybe.hasValue());
 
-        REQUIRE(sf::Path::setCurrentDirectory(*tempMaybe));
-        const auto afterChange = sf::Path::getCurrentDirectory();
+        REQUIRE(za::Path::setCurrentDirectory(*tempMaybe));
+        const auto afterChange = za::Path::getCurrentDirectory();
         REQUIRE(afterChange.hasValue());
         CHECK(afterChange->isDirectory());
 
         // Restore so other tests aren't affected.
-        REQUIRE(sf::Path::setCurrentDirectory(original));
+        REQUIRE(za::Path::setCurrentDirectory(original));
     }
 
     SECTION("homeDirectory() returns a path on platforms with HOME / USERPROFILE set")
     {
-        const auto home = sf::Path::getHomeDirectory();
+        const auto home = za::Path::getHomeDirectory();
         // We don't strictly require the env var to be set, but if it is, the
         // returned path shouldn't be empty.
         if (home.hasValue())
@@ -410,23 +410,23 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("operator+= concatenates without inserting a separator")
     {
-        sf::Path p("foo");
-        p += sf::Path(".bak");
-        CHECK(p == sf::Path("foo.bak"));
+        za::Path p("foo");
+        p += za::Path(".bak");
+        CHECK(p == za::Path("foo.bak"));
     }
 
     SECTION("operator+ concatenates without inserting a separator")
     {
-        const sf::Path joined = sf::Path("file") + sf::Path(".tmp");
-        CHECK(joined == sf::Path("file.tmp"));
+        const za::Path joined = za::Path("file") + za::Path(".tmp");
+        CHECK(joined == za::Path("file.tmp"));
     }
 
     SECTION("renameTo() moves an existing file")
     {
         const TemporaryFile src("payload");
-        const auto          dstParent = sf::Path::getTempDirectory();
+        const auto          dstParent = za::Path::getTempDirectory();
         REQUIRE(dstParent.hasValue());
-        const sf::Path dst = *dstParent / sf::Path("sf_rename_target.tmp");
+        const za::Path dst = *dstParent / za::Path("sf_rename_target.tmp");
 
         // Best-effort cleanup in case a previous run left it behind.
         (void)dst.removeFromDisk();
@@ -440,23 +440,23 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("renameTo() fails for a missing source")
     {
-        const sf::Path missing("this/really/does/not/exist.tmp");
-        const sf::Path dst("sf_rename_unused_target.tmp");
+        const za::Path missing("this/really/does/not/exist.tmp");
+        const za::Path dst("sf_rename_unused_target.tmp");
         CHECK(!missing.renameTo(dst));
     }
 
     SECTION("forEachEntry() iterates over directory contents")
     {
-        const auto tempDir = sf::Path::getTempDirectory();
+        const auto tempDir = za::Path::getTempDirectory();
         REQUIRE(tempDir.hasValue());
 
         // Create a unique sub-directory with two files inside.
-        const sf::Path subdir = *tempDir / sf::Path("sf_path_iter_test_dir");
+        const za::Path subdir = *tempDir / za::Path("sf_path_iter_test_dir");
         (void)subdir.removeFromDisk(); // best-effort cleanup
         REQUIRE(subdir.createDirectoryTree());
 
-        const sf::Path fileA = subdir / sf::Path("a.txt");
-        const sf::Path fileB = subdir / sf::Path("b.txt");
+        const za::Path fileA = subdir / za::Path("a.txt");
+        const za::Path fileB = subdir / za::Path("b.txt");
         {
             const TemporaryFile srcA("aaa");
             const TemporaryFile srcB("bbb");
@@ -467,12 +467,12 @@ TEST_CASE("[System] sf::Path")
         int        count = 0;
         bool       sawA  = false;
         bool       sawB  = false;
-        const bool ok    = subdir.forEachEntry([&](const sf::Path& entry)
+        const bool ok    = subdir.forEachEntry([&](const za::Path& entry)
         {
             ++count;
-            if (entry.getFilename() == sf::Path("a.txt"))
+            if (entry.getFilename() == za::Path("a.txt"))
                 sawA = true;
-            if (entry.getFilename() == sf::Path("b.txt"))
+            if (entry.getFilename() == za::Path("b.txt"))
                 sawB = true;
         });
 
@@ -489,7 +489,7 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("forEachEntry() returns false for a non-existent path")
     {
-        const bool ok = sf::Path("this/really/does/not/exist").forEachEntry([](const sf::Path&) {});
+        const bool ok = za::Path("this/really/does/not/exist").forEachEntry([](const za::Path&) {});
         CHECK(!ok);
     }
 
@@ -499,16 +499,16 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("to<std::string>() with non-ASCII paths does not throw")
     {
-        CHECK_NOTHROW((void)sf::Path(U"hello-ñ.txt").to<std::string>());
-        CHECK_NOTHROW((void)sf::Path(U"hello-ń.txt").to<std::string>());
-        CHECK_NOTHROW((void)sf::Path(U"hello-日.txt").to<std::string>());
-        CHECK_NOTHROW((void)sf::Path(U"hello-🐌.txt").to<std::string>());
+        CHECK_NOTHROW((void)za::Path(U"hello-ñ.txt").to<std::string>());
+        CHECK_NOTHROW((void)za::Path(U"hello-ń.txt").to<std::string>());
+        CHECK_NOTHROW((void)za::Path(U"hello-日.txt").to<std::string>());
+        CHECK_NOTHROW((void)za::Path(U"hello-🐌.txt").to<std::string>());
     }
 
     SECTION("to<std::string>() produces UTF-8 for non-ASCII")
     {
         // U+00F1 (ñ) encodes to the UTF-8 bytes 0xC3 0xB1.
-        const auto s = sf::Path(U"\u00F1").to<std::string>();
+        const auto s = za::Path(U"\u00F1").to<std::string>();
         REQUIRE(s.size() == 2);
         CHECK(static_cast<unsigned char>(s[0]) == 0xC3);
         CHECK(static_cast<unsigned char>(s[1]) == 0xB1);
@@ -516,28 +516,28 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("to<base::String>() with non-ASCII paths does not throw")
     {
-        CHECK_NOTHROW((void)sf::Path(U"hello-ñ.txt").to<sf::base::String>());
-        CHECK_NOTHROW((void)sf::Path(U"hello-日.txt").to<sf::base::String>());
-        CHECK_NOTHROW((void)sf::Path(U"hello-🐌.txt").to<sf::base::String>());
+        CHECK_NOTHROW((void)za::Path(U"hello-ñ.txt").to<zb::String>());
+        CHECK_NOTHROW((void)za::Path(U"hello-日.txt").to<zb::String>());
+        CHECK_NOTHROW((void)za::Path(U"hello-🐌.txt").to<zb::String>());
     }
 
     SECTION("to<std::u32string>() round-trips non-ASCII exactly")
     {
-        CHECK(sf::Path(U"hello-🐌.txt").to<std::u32string>() == U"hello-🐌.txt");
-        CHECK(sf::Path(U"hello-日.txt").to<std::u32string>() == U"hello-日.txt");
+        CHECK(za::Path(U"hello-🐌.txt").to<std::u32string>() == U"hello-🐌.txt");
+        CHECK(za::Path(U"hello-日.txt").to<std::u32string>() == U"hello-日.txt");
     }
 
     SECTION("Path formatting with non-ASCII does not throw")
     {
         // If formatting threw, the test runner catches it and fails the test -- no explicit guard needed.
-        CHECK(!sf::base::fmtToString("{}", sf::Path(U"hello-🐌.txt")).empty());
+        CHECK(!zb::fmtToString("{}", za::Path(U"hello-🐌.txt")).empty());
     }
 
     SECTION("extensionIs() does not throw on non-ASCII paths")
     {
-        CHECK_NOTHROW((void)sf::Path(U"hello-🐌").extensionIs(".png"));
-        CHECK_NOTHROW((void)sf::Path(U"hello-ñ").extensionIs(".png"));
-        CHECK(!sf::Path(U"hello-🐌").extensionIs(".png"));
-        CHECK(sf::Path(U"hello-🐌.png").extensionIs(".png"));
+        CHECK_NOTHROW((void)za::Path(U"hello-🐌").extensionIs(".png"));
+        CHECK_NOTHROW((void)za::Path(U"hello-ñ").extensionIs(".png"));
+        CHECK(!za::Path(U"hello-🐌").extensionIs(".png"));
+        CHECK(za::Path(U"hello-🐌.png").extensionIs(".png"));
     }
 }

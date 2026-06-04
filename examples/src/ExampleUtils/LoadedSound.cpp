@@ -1,18 +1,18 @@
 #include "ExampleUtils/LoadedSound.hpp"
 
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/Path.hpp"
 
 
 ////////////////////////////////////////////////////////////
-LoadedSound::LoadedSound(const sf::Path& filename) :
-    buffer(sf::SoundBuffer::loadFromFile(sf::Path{"resources"} / filename).value())
+LoadedSound::LoadedSound(const za::Path& filename) :
+    buffer(za::SoundBuffer::loadFromFile(za::Path{"resources"} / filename).value())
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-LoadedSound::LoadedSound(const char* const filename) : LoadedSound(sf::Path{filename})
+LoadedSound::LoadedSound(const char* const filename) : LoadedSound(za::Path{filename})
 {
 }

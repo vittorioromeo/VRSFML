@@ -6,28 +6,28 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/LoadedSound.hpp"
 
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/Base/Algorithm/Find.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Algorithm/Find.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SoundManager
 {
     ////////////////////////////////////////////////////////////
-    enum : sf::base::SizeT
+    enum : zb::SizeT
     {
         maxSounds = 256u
     };
 
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::Sound, maxSounds> soundsBeingPlayed;
+    zb::InPlaceVector<za::Sound, maxSounds> soundsBeingPlayed;
 
 
     ////////////////////////////////////////////////////////////
@@ -42,18 +42,18 @@ struct [[nodiscard]] SoundManager
     ////////////////////////////////////////////////////////////
     void stopPlayingAll(const LoadedSound& ls)
     {
-        for (sf::Sound& sound : soundsBeingPlayed)
+        for (za::Sound& sound : soundsBeingPlayed)
             if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
                 sound.stop();
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::base::SizeT countPlayingPooled(const LoadedSound& ls) const
+    [[nodiscard, gnu::pure]] zb::SizeT countPlayingPooled(const LoadedSound& ls) const
     {
-        sf::base::SizeT acc = 0u;
+        zb::SizeT acc = 0u;
 
-        for (const sf::Sound& sound : soundsBeingPlayed)
+        for (const za::Sound& sound : soundsBeingPlayed)
             if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
                 ++acc;
 
@@ -62,21 +62,21 @@ struct [[nodiscard]] SoundManager
 
 
     ////////////////////////////////////////////////////////////
-    bool playPooled(sf::PlaybackDevice& playbackDevice, const LoadedSound& ls, const sf::base::SizeT maxOverlap)
+    bool playPooled(za::PlaybackDevice& playbackDevice, const LoadedSound& ls, const zb::SizeT maxOverlap)
     {
         // TODO P2 (lib): improve in library
 
         if (countPlayingPooled(ls) >= maxOverlap)
             return false;
 
-        auto* const it = sf::base::findIf( //
+        auto* const it = zb::findIf( //
             soundsBeingPlayed.begin(),
             soundsBeingPlayed.end(),
-            [](const sf::Sound& sound) { return !sound.isPlaying(); });
+            [](const za::Sound& sound) { return !sound.isPlaying(); });
 
         if (it != soundsBeingPlayed.end())
         {
-            SFML_BASE_ASSERT(&it->getPlaybackDevice() == &playbackDevice);
+            ZB_ASSERT(&it->getPlaybackDevice() == &playbackDevice);
 
             if (&it->getBuffer() == &ls.buffer)
             {

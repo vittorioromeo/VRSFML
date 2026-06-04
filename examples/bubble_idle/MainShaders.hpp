@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Shader.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -14,70 +14,70 @@ struct [[nodiscard]] MainShaders
 {
     ////////////////////////////////////////////////////////////
     // Shader with hue support and bubble effects
-    sf::Shader shader;
+    za::Shader shader;
 
-    sf::Shader::UniformLocation suBackgroundTexture;
-    sf::Shader::UniformLocation suTime;
-    sf::Shader::UniformLocation suResolution;
-    sf::Shader::UniformLocation suBackgroundOrigin;
-    sf::Shader::UniformLocation suBubbleEffect;
+    za::Shader::UniformLocation suBackgroundTexture;
+    za::Shader::UniformLocation suTime;
+    za::Shader::UniformLocation suResolution;
+    za::Shader::UniformLocation suBackgroundOrigin;
+    za::Shader::UniformLocation suBubbleEffect;
 
-    sf::Shader::UniformLocation suIridescenceStrength;
-    sf::Shader::UniformLocation suEdgeFactorMin;
-    sf::Shader::UniformLocation suEdgeFactorMax;
-    sf::Shader::UniformLocation suEdgeFactorStrength;
-    sf::Shader::UniformLocation suDistorsionStrength;
+    za::Shader::UniformLocation suIridescenceStrength;
+    za::Shader::UniformLocation suEdgeFactorMin;
+    za::Shader::UniformLocation suEdgeFactorMax;
+    za::Shader::UniformLocation suEdgeFactorStrength;
+    za::Shader::UniformLocation suDistorsionStrength;
 
-    sf::Shader::UniformLocation suSubTexOrigin;
-    sf::Shader::UniformLocation suSubTexSize;
+    za::Shader::UniformLocation suSubTexOrigin;
+    za::Shader::UniformLocation suSubTexSize;
 
-    sf::Shader::UniformLocation suBubbleLightness;
-    sf::Shader::UniformLocation suLensDistortion;
+    za::Shader::UniformLocation suBubbleLightness;
+    za::Shader::UniformLocation suLensDistortion;
 
-    sf::Shader::UniformLocation suRimShineStrength;
-    sf::Shader::UniformLocation suRimShineFallRate;
-    sf::Shader::UniformLocation suRimShineTimeRate;
-    sf::Shader::UniformLocation suRimShineArc;
+    za::Shader::UniformLocation suRimShineStrength;
+    za::Shader::UniformLocation suRimShineFallRate;
+    za::Shader::UniformLocation suRimShineTimeRate;
+    za::Shader::UniformLocation suRimShineArc;
 
     ////////////////////////////////////////////////////////////
     // Shader with post-processing effects
-    sf::Shader shaderPostProcess;
+    za::Shader shaderPostProcess;
 
-    sf::Shader::UniformLocation suPPVibrance;
-    sf::Shader::UniformLocation suPPSaturation;
-    sf::Shader::UniformLocation suPPLightness;
-    sf::Shader::UniformLocation suPPSharpness;
-    sf::Shader::UniformLocation suPPBlur;
+    za::Shader::UniformLocation suPPVibrance;
+    za::Shader::UniformLocation suPPSaturation;
+    za::Shader::UniformLocation suPPLightness;
+    za::Shader::UniformLocation suPPSharpness;
+    za::Shader::UniformLocation suPPBlur;
 
     ////////////////////////////////////////////////////////////
     // Shader for fluffy cat cloud rendering
-    sf::Shader shaderClouds;
+    za::Shader shaderClouds;
 
-    sf::Shader::UniformLocation suCloudTime;
-    sf::Shader::UniformLocation suCloudResolution;
+    za::Shader::UniformLocation suCloudTime;
+    za::Shader::UniformLocation suCloudResolution;
 
     ////////////////////////////////////////////////////////////
     // Shader for hexed cat phasing/distortion
-    sf::Shader shaderHexed;
+    za::Shader shaderHexed;
 
-    sf::Shader::UniformLocation suHexedTime;
-    sf::Shader::UniformLocation suHexedSeed;
-    sf::Shader::UniformLocation suHexedDistortionStrength;
-    sf::Shader::UniformLocation suHexedShimmerStrength;
+    za::Shader::UniformLocation suHexedTime;
+    za::Shader::UniformLocation suHexedSeed;
+    za::Shader::UniformLocation suHexedDistortionStrength;
+    za::Shader::UniformLocation suHexedShimmerStrength;
 
     ////////////////////////////////////////////////////////////
     // Shader for activated shrine background distortion
-    sf::Shader shaderShrineBackground;
+    za::Shader shaderShrineBackground;
 
-    sf::Shader::UniformLocation suShrineBgTime;
-    sf::Shader::UniformLocation suShrineBgViewOrigin;
-    sf::Shader::UniformLocation suShrineBgCenter;
-    sf::Shader::UniformLocation suShrineBgRange;
-    sf::Shader::UniformLocation suShrineBgTintR;
-    sf::Shader::UniformLocation suShrineBgTintG;
-    sf::Shader::UniformLocation suShrineBgTintB;
-    sf::Shader::UniformLocation suShrineBgTintA;
-    sf::Shader::UniformLocation suShrineBgDistortionStrength;
-    sf::Shader::UniformLocation suShrineBgTintStrength;
-    sf::Shader::UniformLocation suShrineBgEffectStrength;
+    za::Shader::UniformLocation suShrineBgTime;
+    za::Shader::UniformLocation suShrineBgViewOrigin;
+    za::Shader::UniformLocation suShrineBgCenter;
+    za::Shader::UniformLocation suShrineBgRange;
+    za::Shader::UniformLocation suShrineBgTintR;
+    za::Shader::UniformLocation suShrineBgTintG;
+    za::Shader::UniformLocation suShrineBgTintB;
+    za::Shader::UniformLocation suShrineBgTintA;
+    za::Shader::UniformLocation suShrineBgDistortionStrength;
+    za::Shader::UniformLocation suShrineBgTintStrength;
+    za::Shader::UniformLocation suShrineBgEffectStrength;
 };

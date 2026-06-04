@@ -9,7 +9,7 @@
 
 find_path(GLES_INCLUDE_DIR GLES3/gl3.h)
 
-if (SFML_OS_EMSCRIPTEN)
+if (ZA_OS_EMSCRIPTEN)
     set(GLES_LIBRARY GL)
 else()
     find_library(GLES_LIBRARY NAMES GLESv2)
@@ -18,7 +18,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GLES DEFAULT_MSG GLES_LIBRARY GLES_INCLUDE_DIR)
 
-if (SFML_OS_EMSCRIPTEN)
+if (ZA_OS_EMSCRIPTEN)
     add_library(GLES::GLES INTERFACE IMPORTED)
     target_link_libraries(GLES::GLES INTERFACE ${GLES_LIBRARY})
 else()

@@ -38,47 +38,47 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp" // IWYU pragma: keep
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp" // IWYU pragma: keep
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
 
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/FloatMax.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Ceil.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/ThreadPool.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/FloatMax.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Ceil.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/ThreadPool.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -161,21 +161,21 @@ void Main::pushNotification(const char* const title, const char* const format, .
 
     va_end(args);
 
-    notificationState.queue.emplaceBack(title, sf::base::String{fmtBuffer});
+    notificationState.queue.emplaceBack(title, zb::String{fmtBuffer});
 }
 
 
 ////////////////////////////////////////////////////////////
 void Main::refreshWindowAutoBatchModeFromProfile() // TODO P1: check if this solves flickering
 {
-    window.setAutoBatchMode(profile.autobatchMode == 0   ? sf::RenderTarget::AutoBatchMode::Disabled
-                            : profile.autobatchMode == 1 ? sf::RenderTarget::AutoBatchMode::CPUStorage
-                                                         : sf::RenderTarget::AutoBatchMode::GPUStorage);
+    window.setAutoBatchMode(profile.autobatchMode == 0   ? za::RenderTarget::AutoBatchMode::Disabled
+                            : profile.autobatchMode == 1 ? za::RenderTarget::AutoBatchMode::CPUStorage
+                                                         : za::RenderTarget::AutoBatchMode::GPUStorage);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states)
+void Main::drawBatch(const za::CPUDrawableBatch& batch, const za::RenderStates& states)
 {
     rtGame.draw(batch, states);
 
@@ -194,7 +194,7 @@ void Main::saveMainPlaythroughToFile()
     {
         if (ptMain.fullVersion)
         {
-            sf::base::printLn("Cannot save non-demo playthrough in demo version!");
+            zb::printLn("Cannot save non-demo playthrough in demo version!");
             return;
         }
     }
@@ -226,7 +226,7 @@ void Main::log(const char* format, ...) // NOLINT(modernize-avoid-variadic-funct
 #pragma GCC diagnostic pop
     va_end(args);
 
-    sf::base::printLn(*logFile, "{} - {}", static_cast<const char*>(timeBuffer), static_cast<const char*>(messageBuffer));
+    zb::printLn(*logFile, "{} - {}", static_cast<const char*>(timeBuffer), static_cast<const char*>(messageBuffer));
     (void)logFile->flush();
 }
 
@@ -240,9 +240,9 @@ void Main::addMoney(const MoneyType reward)
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Vector<sf::base::Vector<sf::base::StringView>> Main::makeShuffledCatNames(RNGFast& rng)
+zb::Vector<zb::Vector<zb::StringView>> Main::makeShuffledCatNames(RNGFast& rng)
 {
-    sf::base::Vector<sf::base::Vector<sf::base::StringView>> result(nCatTypes);
+    zb::Vector<zb::Vector<zb::StringView>> result(nCatTypes);
 
     for (SizeT i = 0u; i < nCatTypes; ++i)
         result[i] = getShuffledCatNames(static_cast<CatType>(i), rng);
@@ -254,7 +254,7 @@ sf::base::Vector<sf::base::Vector<sf::base::StringView>> Main::makeShuffledCatNa
 ////////////////////////////////////////////////////////////
 unsigned int Main::getTPWorkerCount()
 {
-    const auto numThreads = static_cast<unsigned int>(sf::base::ThreadPool::getHardwareWorkerCount());
+    const auto numThreads = static_cast<unsigned int>(zb::ThreadPool::getHardwareWorkerCount());
     return (numThreads == 0u) ? 3u : numThreads - 1u;
 }
 
@@ -267,7 +267,7 @@ SizeT Main::getNextCatNameIdx(const CatType catType)
 
 
 ////////////////////////////////////////////////////////////
-Particle& Main::implEmplaceParticle(const sf::Vec2f    position,
+Particle& Main::implEmplaceParticle(const za::Vec2f    position,
                                     const ParticleType particleType,
                                     const float        scaleMult,
                                     const float        speedMult,
@@ -282,10 +282,10 @@ Particle& Main::implEmplaceParticle(const sf::Vec2f    position,
             .accelerationY = 0.002f,
             .opacity       = opacity,
             .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-            .rotation      = rngFast.getF(0.f, sf::base::tau),
+            .rotation      = rngFast.getF(0.f, zb::tau),
             .torque        = rngFast.getF(-0.002f, 0.002f),
         },
-        sf::base::U8{0u},
+        zb::U8{0u},
         particleType);
 }
 
@@ -296,7 +296,7 @@ bool Main::spawnSpentCoinParticle(const ParticleData& particleData)
     if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
         return false;
 
-    spentCoinParticles.emplaceBack(particleData, sf::base::U8{0u}, ParticleType::Coin);
+    spentCoinParticles.emplaceBack(particleData, zb::U8{0u}, ParticleType::Coin);
     return true;
 }
 
@@ -322,7 +322,7 @@ void Main::spawnHUDBottomParticle(const ParticleData& particleData, const float 
 
 
 ////////////////////////////////////////////////////////////
-bool Main::spawnEarnedCoinParticle(const sf::Vec2f startPosition)
+bool Main::spawnEarnedCoinParticle(const za::Vec2f startPosition)
 {
     if (!profile.showParticles || !profile.showCoinParticles || !hudCullingBoundaries.isInside(startPosition))
         return false;
@@ -392,18 +392,18 @@ void Main::statSecondsPlayed()
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestStarBubblePopCombo(const sf::base::U64 comboValue)
+void Main::statHighestStarBubblePopCombo(const zb::U64 comboValue)
 {
     withAllStats([&](Stats& stats)
-    { stats.highestStarBubblePopCombo = sf::base::max(stats.highestStarBubblePopCombo, comboValue); });
+    { stats.highestStarBubblePopCombo = zb::max(stats.highestStarBubblePopCombo, comboValue); });
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestNovaBubblePopCombo(const sf::base::U64 comboValue)
+void Main::statHighestNovaBubblePopCombo(const zb::U64 comboValue)
 {
     withAllStats([&](Stats& stats)
-    { stats.highestNovaBubblePopCombo = sf::base::max(stats.highestNovaBubblePopCombo, comboValue); });
+    { stats.highestNovaBubblePopCombo = zb::max(stats.highestNovaBubblePopCombo, comboValue); });
 }
 
 
@@ -450,29 +450,29 @@ void Main::statRitual(const CatType catType)
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestSimultaneousMaintenances(const sf::base::U64 value)
+void Main::statHighestSimultaneousMaintenances(const zb::U64 value)
 {
     withAllStats([&](Stats& stats)
-    { stats.highestSimultaneousMaintenances = sf::base::max(stats.highestSimultaneousMaintenances, value); });
+    { stats.highestSimultaneousMaintenances = zb::max(stats.highestSimultaneousMaintenances, value); });
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestDPS(const sf::base::U64 value)
+void Main::statHighestDPS(const zb::U64 value)
 {
-    withAllStats([&](Stats& stats) { stats.highestDPS = sf::base::max(stats.highestDPS, value); });
+    withAllStats([&](Stats& stats) { stats.highestDPS = zb::max(stats.highestDPS, value); });
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Main::keyDown(const sf::Keyboard::Key key) const
+bool Main::keyDown(const za::Keyboard::Key key) const
 {
     return inputHelper.isKeyDown(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Main::mBtnDown(const sf::Mouse::Button button, const bool penetrateUI) const
+bool Main::mBtnDown(const za::Mouse::Button button, const bool penetrateUI) const
 {
     if (ImGui::GetIO().WantCaptureMouse && !penetrateUI)
         return false;
@@ -482,21 +482,21 @@ bool Main::mBtnDown(const sf::Mouse::Button button, const bool penetrateUI) cons
 
 
 ////////////////////////////////////////////////////////////
-sf::Rect2f Main::addImgResourceToAtlas(const sf::Path& path)
+za::Rect2f Main::addImgResourceToAtlas(const za::Path& path)
 {
-    return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
+    return textureAtlas.add(za::Image::loadFromFile("resources" / path).value()).value();
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Rect2f Main::addImgResourceToUIAtlas(const sf::Path& path)
+za::Rect2f Main::addImgResourceToUIAtlas(const za::Path& path)
 {
-    return uiTextureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
+    return uiTextureAtlas.add(za::Image::loadFromFile("resources" / path).value()).value();
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap)
+void Main::playSound(const LoadedSound& ls, const zb::SizeT maxOverlap)
 {
 #ifndef BUBBLEBYTE_NO_AUDIO
     soundManager.playPooled(playbackDevice, ls, maxOverlap);
@@ -508,7 +508,7 @@ void Main::playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap)
 
 
 ////////////////////////////////////////////////////////////
-Bubble* Main::pickRandomBubbleInRadius(const sf::Vec2f center, const float radius)
+Bubble* Main::pickRandomBubbleInRadius(const za::Vec2f center, const float radius)
 {
     return pickRandomBubbleInRadiusMatching(center, radius, [] [[gnu::always_inline, gnu::flatten]] (const Bubble&) {
         return true;
@@ -517,25 +517,25 @@ Bubble* Main::pickRandomBubbleInRadius(const sf::Vec2f center, const float radiu
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getResolution() const
+za::Vec2f Main::getResolution() const
 {
     return window.getSize().toVec2f();
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getViewCenter() const
+za::Vec2f Main::getViewCenter() const
 {
-    const sf::Vec2f currentViewSize = getCurrentGameViewSize();
+    const za::Vec2f currentViewSize = getCurrentGameViewSize();
     return {clampGameViewCenterX(currentViewSize.x / 2.f + playerInputState.actualScroll * 2.f, currentViewSize.x),
             currentViewSize.y / 2.f};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getViewCenterWithoutScroll() const
+za::Vec2f Main::getViewCenterWithoutScroll() const
 {
-    const sf::Vec2f currentViewSize = getCurrentGameViewSize();
+    const za::Vec2f currentViewSize = getCurrentGameViewSize();
     return {clampGameViewCenterX(currentViewSize.x / 2.f, currentViewSize.x), currentViewSize.y / 2.f};
 }
 
@@ -543,8 +543,8 @@ sf::Vec2f Main::getViewCenterWithoutScroll() const
 ////////////////////////////////////////////////////////////
 Main::CullingBoundaries Main::getViewCullingBoundaries(const float offset) const
 {
-    const sf::Vec2f viewSize{getCurrentGameViewSize()};
-    const sf::Vec2f viewCenter{getViewCenter()};
+    const za::Vec2f viewSize{getCurrentGameViewSize()};
+    const za::Vec2f viewCenter{getViewCenter()};
 
     return {viewCenter.x - viewSize.x / 2.f + offset,
             viewCenter.x + viewSize.x / 2.f - offset,
@@ -554,14 +554,14 @@ Main::CullingBoundaries Main::getViewCullingBoundaries(const float offset) const
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getCatRangeCenter(const Cat& cat)
+za::Vec2f Main::getCatRangeCenter(const Cat& cat)
 {
     return cat.position + CatConstants::rangeOffsets[asIdx(cat.type)];
 }
 
 
 ////////////////////////////////////////////////////////////
-Cat& Main::spawnCat(const sf::Vec2f pos, const CatType catType, const float hue)
+Cat& Main::spawnCat(const za::Vec2f pos, const CatType catType, const float hue)
 {
     const auto meowPitch = [&] -> float
     {
@@ -623,7 +623,7 @@ Cat& Main::spawnCatCentered(const CatType catType, const float hue, const bool p
 
 
 ////////////////////////////////////////////////////////////
-Cat& Main::spawnSpecialCat(const sf::Vec2f pos, const CatType catType)
+Cat& Main::spawnSpecialCat(const za::Vec2f pos, const CatType catType)
 {
     ++pt->psvPerCatType[static_cast<SizeT>(catType)].nPurchases;
     return spawnCat(pos, catType, /* hue */ 0.f);
@@ -645,7 +645,7 @@ void Main::resetTipState()
 
 
 ////////////////////////////////////////////////////////////
-void Main::doTip(const sf::base::String& str, const SizeT maxPrestigeLevel)
+void Main::doTip(const zb::String& str, const SizeT maxPrestigeLevel)
 {
     if (!profile.tipsEnabled || pt->psvBubbleValue.nPurchases > maxPrestigeLevel || inSpeedrunPlaythrough())
         return;
@@ -662,44 +662,44 @@ void Main::doTip(const sf::base::String& str, const SizeT maxPrestigeLevel)
 
 
 ////////////////////////////////////////////////////////////
-float Main::getAspectRatioScalingFactor(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+float Main::getAspectRatioScalingFactor(const za::Vec2f originalSize, const za::Vec2f windowSize) const
 {
     // Calculate the scale factors for both dimensions
     const float scaleX = windowSize.x / originalSize.x;
     const float scaleY = windowSize.y / originalSize.y;
 
     // Use the smaller scale factor to maintain aspect ratio
-    return sf::base::min(scaleX, scaleY);
+    return zb::min(scaleX, scaleY);
 }
 
 
 ////////////////////////////////////////////////////////////
-float Main::getCappedGameViewAspectRatio(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+float Main::getCappedGameViewAspectRatio(const za::Vec2f originalSize, const za::Vec2f windowSize) const
 {
     const float originalAspect = originalSize.x / originalSize.y;
     const float windowAspect   = windowSize.x / windowSize.y;
-    // const float configuredMaxAspect = sf::base::max(maxGameViewAspectRatio, originalAspect);
+    // const float configuredMaxAspect = zb::max(maxGameViewAspectRatio, originalAspect);
     // const float unlockedMapAspect   = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
-    // const float clampedMaxViewAspect = sf::base::min(configuredMaxAspect, unlockedMapAspect);
+    // const float clampedMaxViewAspect = zb::min(configuredMaxAspect, unlockedMapAspect);
 
-    return sf::base::max(windowAspect, originalAspect);
+    return zb::max(windowAspect, originalAspect);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getExpandedGameViewSize(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+za::Vec2f Main::getExpandedGameViewSize(const za::Vec2f originalSize, const za::Vec2f windowSize) const
 {
     return {originalSize.y * getCappedGameViewAspectRatio(originalSize, windowSize), originalSize.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::View Main::createScaledGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+za::View Main::createScaledGameView(const za::Vec2f originalSize, const za::Vec2f windowSize) const
 {
     const float     originalAspect = originalSize.x / originalSize.y;
     const float     windowAspect   = windowSize.x / windowSize.y;
     const float     viewAspect     = getCappedGameViewAspectRatio(originalSize, windowSize);
-    const sf::Vec2f expandedSize   = getExpandedGameViewSize(originalSize, windowSize);
+    const za::Vec2f expandedSize   = getExpandedGameViewSize(originalSize, windowSize);
     const float     viewportWidth  = viewAspect < windowAspect ? viewAspect / windowAspect : 1.f;
     const float     viewportHeight = windowAspect < originalAspect ? windowAspect / originalAspect : 1.f;
 
@@ -710,9 +710,9 @@ sf::View Main::createScaledGameView(const sf::Vec2f originalSize, const sf::Vec2
 
 
 ////////////////////////////////////////////////////////////
-sf::View Main::createScaledTopGameView(const sf::Vec2f originalSize, const sf::Vec2f windowSize) const
+za::View Main::createScaledTopGameView(const za::Vec2f originalSize, const za::Vec2f windowSize) const
 {
-    const sf::View scaledGameView = createScaledGameView(originalSize, windowSize);
+    const za::View scaledGameView = createScaledGameView(originalSize, windowSize);
 
     return {.center   = scaledGameView.center,
             .size     = scaledGameView.size.componentWiseDiv(scaledGameView.viewport.size),
@@ -721,7 +721,7 @@ sf::View Main::createScaledTopGameView(const sf::Vec2f originalSize, const sf::V
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getCurrentGameViewSize() const
+za::Vec2f Main::getCurrentGameViewSize() const
 {
     return getExpandedGameViewSize(gameScreenSize, getResolution());
 }
@@ -734,26 +734,26 @@ float Main::clampGameViewCenterX(const float desiredCenterX, const float viewWid
         return boundaries.x / 2.f;
 
     const float halfWidth = viewWidth / 2.f;
-    return sf::base::clamp(desiredCenterX, halfWidth, boundaries.x - halfWidth);
+    return zb::clamp(desiredCenterX, halfWidth, boundaries.x - halfWidth);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::View Main::makeScaledHUDView(const sf::Vec2f resolution, float scale) const
+za::View Main::makeScaledHUDView(const za::Vec2f resolution, float scale) const
 {
     return {.center = {resolution.x / (2.f * scale), resolution.y / (2.f * scale)}, .size = resolution / scale};
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::getHUDMousePos() const
+za::Vec2f Main::getHUDMousePos() const
 {
-    return nonScaledHUDView.screenToWorld(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f());
+    return nonScaledHUDView.screenToWorld(za::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f());
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::switchToBGM(const sf::base::SizeT index, const bool force)
+void Main::switchToBGM(const zb::SizeT index, const bool force)
 {
 #ifndef BUBBLEBYTE_NO_AUDIO
     if (!force && lastPlayedMusic == bgmPaths[index])
@@ -763,7 +763,7 @@ void Main::switchToBGM(const sf::base::SizeT index, const bool force)
     bgmTransition.time = 1000.f;
 
     auto& optNextMusic = getNextBGMBuffer();
-    optNextMusic.emplace(playbackDevice, sf::MusicReader::openFromFile(bgmPaths[index]).value());
+    optNextMusic.emplace(playbackDevice, za::MusicReader::openFromFile(bgmPaths[index]).value());
 
     optNextMusic->music.setVolume(0.f);
     optNextMusic->music.setLooping(true);
@@ -778,14 +778,14 @@ void Main::switchToBGM(const sf::base::SizeT index, const bool force)
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<BGMBuffer>& Main::getCurrentBGMBuffer()
+zb::Optional<BGMBuffer>& Main::getCurrentBGMBuffer()
 {
     return bgm.bgmBuffers[currentBGMBufferIdx % 2u];
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<BGMBuffer>& Main::getNextBGMBuffer()
+zb::Optional<BGMBuffer>& Main::getNextBGMBuffer()
 {
     return bgm.bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
 }
@@ -829,17 +829,17 @@ void Main::beginPrestigeTransition(const PrestigePointsType ppReward)
     updateSelectedBackgroundSelectorIndex();
     updateSelectedBGMSelectorIndex();
 
-    switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
+    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ true);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<sf::Rect2f> Main::getAoEDragRect(const sf::Vec2f mousePos) const
+zb::Optional<za::Rect2f> Main::getAoEDragRect(const za::Vec2f mousePos) const
 {
     if (!playerInputState.catDragOrigin.hasValue())
-        return sf::base::nullOpt;
+        return zb::nullOpt;
 
-    return sf::base::makeOptional<sf::Rect2f>(*playerInputState.catDragOrigin, mousePos - *playerInputState.catDragOrigin);
+    return zb::makeOptional<za::Rect2f>(*playerInputState.catDragOrigin, mousePos - *playerInputState.catDragOrigin);
 }
 
 
@@ -856,15 +856,15 @@ void Main::resetAllDraggedCats()
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT Main::pickDragPivotCatIndex() const
+zb::SizeT Main::pickDragPivotCatIndex() const
 {
-    SFML_BASE_ASSERT(!playerInputState.draggedCats.empty());
+    ZB_ASSERT(!playerInputState.draggedCats.empty());
 
     if (playerInputState.draggedCats.size() <= 2u)
         return 0u;
 
     // First calculate the centroid
-    sf::Vec2f centroid;
+    za::Vec2f centroid;
 
     for (const Cat* cat : playerInputState.draggedCats)
         centroid += cat->position;
@@ -872,10 +872,10 @@ sf::base::SizeT Main::pickDragPivotCatIndex() const
     centroid /= static_cast<float>(playerInputState.draggedCats.size());
 
     // Find the position closest to the centroid
-    sf::base::SizeT closestIndex       = 0u;
-    float           minDistanceSquared = SFML_BASE_FLOAT_MAX;
+    zb::SizeT closestIndex       = 0u;
+    float           minDistanceSquared = ZB_FLOAT_MAX;
 
-    for (sf::base::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
+    for (zb::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
     {
         // Calculate squared distance (avoiding square root for performance)
         const float distSquared = (playerInputState.draggedCats[i]->position - centroid).lengthSquared();
@@ -905,7 +905,7 @@ bool Main::isCatBeingDragged(const Cat& cat) const
 ////////////////////////////////////////////////////////////
 void Main::stopDraggingCat(const Cat& cat)
 {
-    sf::base::vectorEraseIf(playerInputState.draggedCats, [&](const Cat* c) { return c == &cat; });
+    zb::vectorEraseIf(playerInputState.draggedCats, [&](const Cat* c) { return c == &cat; });
 }
 
 
@@ -993,7 +993,7 @@ void Main::addCombo(int& xCombo, Countdown& xComboCountdown) const
     else
     {
         xCombo += 1;
-        xComboCountdown.time += 150.f - sf::base::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
+        xComboCountdown.time += 150.f - zb::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
     }
 }
 
@@ -1017,7 +1017,7 @@ void Main::turnBubbleInto(Bubble& bubble, const BubbleType newType)
     if (newType == BubbleType::Normal)
     {
         if (bubble.type == BubbleType::Bomb)
-            bombStorage->bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
+            bombStorage->bombIdxToCatIdx.erase(static_cast<zb::SizeT>(&bubble - pt->bubbles.data()));
 
         bubble.rotation = 0.f;
         bubble.torque   = 0.f;
@@ -1146,13 +1146,13 @@ void Main::doWizardSpellStasisField(Cat& wizardCat)
 
 
 ////////////////////////////////////////////////////////////
-void Main::castSpellByIndex(const sf::base::SizeT index, Cat* wizardCat, Cat* copyCat)
+void Main::castSpellByIndex(const zb::SizeT index, Cat* wizardCat, Cat* copyCat)
 {
-    SFML_BASE_ASSERT(index < 4u);
+    ZB_ASSERT(index < 4u);
 
     const bool copyCatMustCast = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard;
 
-    wizardcatSpin.time = sf::base::tau;
+    wizardcatSpin.time = zb::tau;
     statSpellCast(index);
 
     if (index == 0u) // Starpaw Conversion
@@ -1202,7 +1202,7 @@ void Main::castSpellByIndex(const sf::base::SizeT index, Cat* wizardCat, Cat* co
 
 
 ////////////////////////////////////////////////////////////
-bool Main::mustApplyMewltiplierAura(const sf::Vec2f bubblePosition) const
+bool Main::mustApplyMewltiplierAura(const za::Vec2f bubblePosition) const
 {
     if (pt->mewltiplierAuraTimer <= 0.f)
         return false;
@@ -1295,16 +1295,16 @@ MoneyType Main::computeFinalReward(const Bubble& bubble, const float multiplier,
     if (!bubble.attractedCountdown.isDone())
         result *= 2.f;
 
-    return static_cast<MoneyType>(sf::base::ceil(result));
+    return static_cast<MoneyType>(zb::ceil(result));
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2u Main::getReasonableWindowSize(const float scalingFactorMult)
+za::Vec2u Main::getReasonableWindowSize(const float scalingFactorMult)
 {
     constexpr float gameRatio = gameScreenSize.x / gameScreenSize.y;
 
-    const auto fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVec2f();
+    const auto fullscreenSize = za::VideoModeUtils::getDesktopMode().size.toVec2f();
 
     const float aspectRatio = fullscreenSize.x / fullscreenSize.y;
 
@@ -1317,27 +1317,27 @@ sf::Vec2u Main::getReasonableWindowSize(const float scalingFactorMult)
 
     const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
 
-    return sf::Vec2f{windowedWidth + 12.f, windowSize.y}.toVec2u();
+    return za::Vec2f{windowedWidth + 12.f, windowSize.y}.toVec2u();
 }
 
 
 ////////////////////////////////////////////////////////////
-int Main::pickSelectedIndex(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
+int Main::pickSelectedIndex(const zb::Vector<SelectorEntry>& entries, const int selectedIndex)
 {
-    const auto selectedIndexU = static_cast<sf::base::SizeT>(selectedIndex);
+    const auto selectedIndexU = static_cast<zb::SizeT>(selectedIndex);
     return selectedIndexU < entries.size() ? entries[selectedIndexU].index : 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::selectBackground(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
+void Main::selectBackground(const zb::Vector<SelectorEntry>& entries, const int selectedIndex)
 {
     profile.selectedBackground = pickSelectedIndex(entries, selectedIndex);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::selectBGM(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
+void Main::selectBGM(const zb::Vector<SelectorEntry>& entries, const int selectedIndex)
 {
     profile.selectedBGM = pickSelectedIndex(entries, selectedIndex);
 }
@@ -1348,7 +1348,7 @@ void Main::updateSelectedBackgroundSelectorIndex() const
 {
     auto& [entries, selectedIndex] = getBackgroundSelectorData();
 
-    for (sf::base::SizeT i = 0u; i < entries.size(); ++i)
+    for (zb::SizeT i = 0u; i < entries.size(); ++i)
         if (profile.selectedBackground == entries[i].index)
             selectedIndex = static_cast<int>(i);
 }
@@ -1359,7 +1359,7 @@ void Main::updateSelectedBGMSelectorIndex() const
 {
     auto& [entries, selectedIndex] = getBGMSelectorData();
 
-    for (sf::base::SizeT i = 0u; i < entries.size(); ++i)
+    for (zb::SizeT i = 0u; i < entries.size(); ++i)
         if (profile.selectedBGM == entries[i].index)
             selectedIndex = static_cast<int>(i);
 }
@@ -1389,7 +1389,7 @@ Main::SelectorData& Main::getBGMSelectorData() const
     {
         data.selectedIndex = [&]
         {
-            for (sf::base::SizeT i = 0u; i < data.entries.size(); ++i)
+            for (zb::SizeT i = 0u; i < data.entries.size(); ++i)
                 if (profile.selectedBGM == data.entries[i].index)
                     return static_cast<int>(i);
 
@@ -1434,7 +1434,7 @@ Main::SelectorData& Main::getBackgroundSelectorData() const
     {
         data.selectedIndex = [&]
         {
-            for (sf::base::SizeT i = 0u; i < data.entries.size(); ++i)
+            for (zb::SizeT i = 0u; i < data.entries.size(); ++i)
                 if (profile.selectedBackground == data.entries[i].index)
                     return static_cast<int>(i);
 
@@ -1463,7 +1463,7 @@ void Main::forceResetGame(const bool goToShopTab)
 
     delayedActions.clear();
 
-    reseedRNGs(static_cast<RNGSeedType>(sf::Clock::now().asMicroseconds()));
+    reseedRNGs(static_cast<RNGSeedType>(za::Clock::now().asMicroseconds()));
 
     shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
@@ -1518,7 +1518,7 @@ void Main::forceResetGame(const bool goToShopTab)
     updateSelectedBackgroundSelectorIndex();
     updateSelectedBGMSelectorIndex();
 
-    switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
+    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ true);
 }
 
 
@@ -1531,12 +1531,12 @@ void Main::forceResetProfile()
 
 
 ////////////////////////////////////////////////////////////
-TextParticle& Main::makeRewardTextParticle(const sf::Vec2f position)
+TextParticle& Main::makeRewardTextParticle(const za::Vec2f position)
 {
     return textParticles.emplaceBack(TextParticle{
         {.position   = {position.x, position.y - 10.f},
          .velocity   = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-         .scale      = sf::base::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+         .scale      = zb::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
          .scaleDecay = 0.f,
          .accelerationY = 0.0035f,
          .opacity       = 1.f,
@@ -1583,7 +1583,7 @@ void Main::doExplosion(Bubble& bubble)
     sounds.explosion.settings.position = {bubble.position.x, bubble.position.y};
     playSound(sounds.explosion);
 
-    for (sf::base::SizeT iP = 0u; iP < 16u; ++iP)
+    for (zb::SizeT iP = 0u; iP < 16u; ++iP)
     {
         spawnParticle(
             ParticleData{
@@ -1594,28 +1594,28 @@ void Main::doExplosion(Bubble& bubble)
                 .accelerationY = 0.002f,
                 .opacity       = 0.65f,
                 .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                .rotation      = rngFast.getF(0.f, sf::base::tau),
+                .rotation      = rngFast.getF(0.f, zb::tau),
                 .torque        = rngFast.getF(-0.002f, 0.002f) * 5.f,
             },
             0.f,
             ParticleType::Fire);
 
         spawnParticle(ParticleData{.position = bubble.position,
-                                   .velocity = sf::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
-                                                                    sf::radians(sf::base::tau / static_cast<float>(16u) *
+                                   .velocity = za::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
+                                                                    za::radians(zb::tau / static_cast<float>(16u) *
                                                                                 static_cast<float>(iP))),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 2.75f,
                                    .scaleDecay    = -0.0025f,
                                    .accelerationY = 0.000001f,
                                    .opacity       = 0.35f,
                                    .opacityDecay  = rngFast.getF(0.001f, 0.002f) * 0.6f,
-                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .rotation      = rngFast.getF(0.f, zb::tau),
                                    .torque        = rngFast.getF(-0.001f, 0.001f)},
                       0.f,
                       ParticleType::Explosion);
     }
 
-    for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
+    for (zb::SizeT iP = 0u; iP < 8u; ++iP)
         spawnParticle(ParticleData{.position      = bubble.position,
                                    .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(-0.15f, 0.05f)},
                                    .scale         = rngFast.getF(0.65f, 1.f) * 1.25f,
@@ -1623,13 +1623,13 @@ void Main::doExplosion(Bubble& bubble)
                                    .accelerationY = -0.00017f,
                                    .opacity       = rngFast.getF(0.5f, 0.75f) * 0.7f,
                                    .opacityDecay  = rngFast.getF(0.00035f, 0.00055f) * 0.8f,
-                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .rotation      = rngFast.getF(0.f, zb::tau),
                                    .torque        = rngFast.getF(-0.002f, 0.002f)},
                       0.f,
                       ParticleType::Smoke);
 
     // TODO P2: cleanup
-    const auto  bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
+    const auto  bubbleIdx  = static_cast<zb::SizeT>(&bubble - pt->bubbles.data());
     const auto* bombIdxItr = bombStorage->bombIdxToCatIdx.find(bubbleIdx);
 
     Cat* catWhoMadeBomb = bombIdxItr != bombStorage->bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
@@ -1684,10 +1684,10 @@ void Main::doExplosion(Bubble& bubble)
 
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::fromWorldToHud(const sf::Vec2f point) const
+za::Vec2f Main::fromWorldToHud(const za::Vec2f point) const
 {
     // From game coordinates to screen coordinates
-    const sf::Vec2f screenPos = gameView.worldToScreen(point, window.getSize().toVec2f());
+    const za::Vec2f screenPos = gameView.worldToScreen(point, window.getSize().toVec2f());
 
     // From screen coordinates to HUD view coordinates
     return scaledHUDView.screenToWorld(screenPos, window.getSize().toVec2f());
@@ -1736,10 +1736,10 @@ void Main::popWithRewardAndReplaceBubble(const BubblePopData& data)
     statBubblePopped(bubble.type, byPlayerClick, reward);
 
     if (byPlayerClick && bubble.type == BubbleType::Star)
-        statHighestStarBubblePopCombo(static_cast<sf::base::U64>(comboState.combo));
+        statHighestStarBubblePopCombo(static_cast<zb::U64>(comboState.combo));
 
     if (byPlayerClick && bubble.type == BubbleType::Nova)
-        statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(comboState.combo));
+        statHighestNovaBubblePopCombo(static_cast<zb::U64>(comboState.combo));
 
     const Shrine* collectorShrine = nullptr;
     for (Shrine& shrine : pt->shrines)
@@ -1752,7 +1752,7 @@ void Main::popWithRewardAndReplaceBubble(const BubblePopData& data)
     }
 
     const bool      collectedByShrine = collectorShrine != nullptr;
-    const sf::Vec2f tpPosition        = collectedByShrine ? collectorShrine->getDrawPosition() : bubble.position;
+    const za::Vec2f tpPosition        = collectedByShrine ? collectorShrine->getDrawPosition() : bubble.position;
 
     if (profile.showTextParticles)
     {
@@ -1772,24 +1772,24 @@ void Main::popWithRewardAndReplaceBubble(const BubblePopData& data)
     {
         if (!collectedByShrine && profile.showCoinParticles)
             spawnSpentCoinParticle(
-                {.position      = moneyText.getGlobalCenterRight() + sf::Vec2f{32.f, rngFast.getF(-12.f, 12.f)},
+                {.position      = moneyText.getGlobalCenterRight() + za::Vec2f{32.f, rngFast.getF(-12.f, 12.f)},
                  .velocity      = {-0.25f, 0.f},
                  .scale         = 0.25f,
                  .scaleDecay    = 0.f,
                  .accelerationY = 0.f,
                  .opacity       = 0.f,
                  .opacityDecay  = -0.003f,
-                 .rotation      = rngFast.getF(0.f, sf::base::tau),
+                 .rotation      = rngFast.getF(0.f, zb::tau),
                  .torque        = 0.f});
 
 
-        const sf::Vec2f hudPos = fromWorldToHud(bubble.position);
+        const za::Vec2f hudPos = fromWorldToHud(bubble.position);
 
         if ((!profile.accumulatingCombo || !pt->comboPurchased || !byPlayerClick) && !collectedByShrine &&
             spawnEarnedCoinParticle(hudPos))
         {
-            const sf::Vec2f viewSize           = getCurrentGameViewSize();
-            const sf::Vec2f viewCenter         = getViewCenter();
+            const za::Vec2f viewSize           = getCurrentGameViewSize();
+            const za::Vec2f viewCenter         = getViewCenter();
             sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
                                                   viewCenter.y - viewSize.y / 2.f + 25.f};
 
@@ -1846,20 +1846,20 @@ void Main::gameLoopCheats() const
     if (!isDebugModeEnabled())
         return;
 
-    if (keyDown(sf::Keyboard::Key::F4))
+    if (keyDown(za::Keyboard::Key::F4))
     {
         pt->comboPurchased = true;
         pt->mapPurchased   = true;
     }
-    else if (keyDown(sf::Keyboard::Key::F5))
+    else if (keyDown(za::Keyboard::Key::F5))
     {
         pt->money = 1'000'000'000u;
     }
-    else if (keyDown(sf::Keyboard::Key::F6))
+    else if (keyDown(za::Keyboard::Key::F6))
     {
         pt->money += 15u;
     }
-    else if (keyDown(sf::Keyboard::Key::F7))
+    else if (keyDown(za::Keyboard::Key::F7))
     {
         pt->prestigePoints += 15u;
     }
@@ -1867,14 +1867,14 @@ void Main::gameLoopCheats() const
 
 
 ////////////////////////////////////////////////////////////
-sf::Mouse::Button Main::getLMB() const
+za::Mouse::Button Main::getLMB() const
 {
-    return profile.invertMouseButtons ? sf::Mouse::Button::Right : sf::Mouse::Button::Left;
+    return profile.invertMouseButtons ? za::Mouse::Button::Right : za::Mouse::Button::Left;
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Mouse::Button Main::getRMB() const
+za::Mouse::Button Main::getRMB() const
 {
-    return profile.invertMouseButtons ? sf::Mouse::Button::Left : sf::Mouse::Button::Right;
+    return profile.invertMouseButtons ? za::Mouse::Button::Left : za::Mouse::Button::Right;
 }

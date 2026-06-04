@@ -35,23 +35,23 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Builtin/Pragma.hpp"
-#include "SFML/Base/Builtin/Unreachable.hpp"
-#include "SFML/Base/IntTypes.hpp"
+#include "ZancleBase/Builtin/Pragma.hpp"
+#include "ZancleBase/Builtin/Unreachable.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
 #define SFEX_PRIV_CO_CASE_WARNINGS_PUSH    \
-    SFML_BASE_PRAGMA(GCC diagnostic push); \
-    SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wimplicit-fallthrough")
+    ZB_PRAGMA(GCC diagnostic push); \
+    ZB_PRAGMA(GCC diagnostic ignored "-Wimplicit-fallthrough")
 
 #if defined(__clang__)
-    #define SFEX_PRIV_CO_C2Y_PUSH SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wc2y-extensions")
+    #define SFEX_PRIV_CO_C2Y_PUSH ZB_PRAGMA(GCC diagnostic ignored "-Wc2y-extensions")
 #else
     #define SFEX_PRIV_CO_C2Y_PUSH static_assert(true)
 #endif
 
-#define SFEX_PRIV_CO_CASE_WARNINGS_POP SFML_BASE_PRAGMA(GCC diagnostic pop)
+#define SFEX_PRIV_CO_CASE_WARNINGS_POP ZB_PRAGMA(GCC diagnostic pop)
 
 
 namespace sfex
@@ -73,7 +73,7 @@ namespace sfex
 ////////////////////////////////////////////////////////////
 struct Coroutine
 {
-    sf::base::U32 state = 0;
+    zb::U32 state = 0;
 };
 
 
@@ -197,7 +197,7 @@ template <typename Time, typename Ctx, typename... Children>
     SFEX_PRIV_CO_CASE_WARNINGS_PUSH;                           \
     SFEX_PRIV_CO_C2Y_PUSH;                                     \
                                                                \
-    static constexpr ::sf::base::U32 _sfex_base = __COUNTER__; \
+    static constexpr ::zb::U32 _sfex_base = __COUNTER__; \
                                                                \
     switch (state)                                             \
     {                                                          \
@@ -266,7 +266,7 @@ template <typename Time, typename Ctx, typename... Children>
 #define SFEX_CO_END \
     }               \
                     \
-    SFML_BASE_UNREACHABLE();
+    ZB_UNREACHABLE();
 
 
 ////////////////////////////////////////////////////////////

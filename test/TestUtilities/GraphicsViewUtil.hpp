@@ -4,11 +4,11 @@
 
 #include "GraphicsUtil.hpp"
 
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/View.hpp"
 
 
-namespace sf
+namespace za
 {
 // Found by ADL when a `View::ScissorRect` operand needs rendering.
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const View::ScissorRect& scissorRect) noexcept;
-} // namespace sf
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const View::ScissorRect& scissorRect) noexcept;
+} // namespace za

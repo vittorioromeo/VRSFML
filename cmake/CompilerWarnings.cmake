@@ -4,11 +4,11 @@
 
 # Helper function to enable compiler warnings for a specific target
 function(set_target_warnings target)
-    option(SFML_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+    option(ZA_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
-    if(SFML_COMPILER_MSVC)
+    if(ZA_COMPILER_MSVC)
         target_compile_options(${target} PRIVATE
-            $<$<BOOL:${SFML_WARNINGS_AS_ERRORS}>:/WX>
+            $<$<BOOL:${ZA_WARNINGS_AS_ERRORS}>:/WX>
             /W4 # Baseline reasonable warnings
             /w14242 # 'identifier': conversion from 'type1' to 'type1', possible loss of data
             /w14254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
@@ -39,9 +39,9 @@ function(set_target_warnings target)
         )
     endif()
 
-    if(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
+    if(ZA_COMPILER_GCC OR ZA_COMPILER_CLANG)
         target_compile_options(${target} PRIVATE
-            $<$<BOOL:${SFML_WARNINGS_AS_ERRORS}>:-Werror>
+            $<$<BOOL:${ZA_WARNINGS_AS_ERRORS}>:-Werror>
             -Wall
             -Wextra # reasonable and standard
             -Wshadow # warn the user if a variable declaration shadows one from a parent context
@@ -54,7 +54,7 @@ function(set_target_warnings target)
             -Wimplicit-fallthrough # warn when a missing break causes control flow to continue at the next case in a switch statement
             -Wnull-dereference # warn if a null dereference is detected
             -Wpedantic # warn if non-standard C++ is used
-            $<$<BOOL:${SFML_OS_ANDROID}>:-Wno-main> # allow main() to be called
+            $<$<BOOL:${ZA_OS_ANDROID}>:-Wno-main> # allow main() to be called
 
             # C++-only diagnostics -- wrapped so GCC/Clang don't whine when
             # the same target compiles a C source (e.g. `cJSON.c`).
@@ -65,7 +65,7 @@ function(set_target_warnings target)
         )
     endif()
 
-    if(SFML_COMPILER_GCC)
+    if(ZA_COMPILER_GCC)
         target_compile_options(${target} PRIVATE
             -Wmisleading-indentation # warn if indentation implies blocks where blocks do not exist
             -Wduplicated-cond # warn if if / else chain has duplicated conditions
@@ -75,7 +75,7 @@ function(set_target_warnings target)
         )
     endif()
 
-    if(SFML_COMPILER_CLANG OR SFML_COMPILER_CLANG_CL)
+    if(ZA_COMPILER_CLANG OR ZA_COMPILER_CLANG_CL)
         target_compile_options(${target} PRIVATE
             -Wno-unknown-warning-option # do not warn on GCC-specific warning diagnostic pragmas
             -Wno-c2y-extensions # `__COUNTER__` is universally supported across GCC/Clang/MSVC
@@ -83,7 +83,7 @@ function(set_target_warnings target)
     endif()
 
     # Disable certain deprecation warnings
-    if(SFML_OS_WINDOWS)
+    if(ZA_OS_WINDOWS)
         target_compile_definitions(${target} PRIVATE -D_CRT_SECURE_NO_WARNINGS)
         target_compile_definitions(${target} PRIVATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
     endif()

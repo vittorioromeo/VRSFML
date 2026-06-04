@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Builtin/Unreachable.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Builtin/Unreachable.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 namespace tsurv
@@ -16,7 +16,7 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 struct DrillDirection
 {
-    enum [[nodiscard]] Enum : sf::base::U8
+    enum [[nodiscard]] Enum : zb::U8
     {
         Left  = 0u,
         Right = 1u,
@@ -26,11 +26,11 @@ struct DrillDirection
 
 
 /////////////////////////////////////////////////////////////
-inline constexpr sf::base::SizeT drillDirectionCount = 3u;
+inline constexpr zb::SizeT drillDirectionCount = 3u;
 
 
 /////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr sf::Vec2i drillDirectionToVec2i(const DrillDirection::Enum direction)
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr za::Vec2i drillDirectionToVec2i(const DrillDirection::Enum direction)
 {
     switch (direction)
     {
@@ -41,7 +41,7 @@ inline constexpr sf::base::SizeT drillDirectionCount = 3u;
         case DrillDirection::Down:
             return {0, 1};
         default:
-            SFML_BASE_UNREACHABLE();
+            ZB_UNREACHABLE();
     }
 }
 

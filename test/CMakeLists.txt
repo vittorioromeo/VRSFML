@@ -1,5 +1,5 @@
 add_subdirectory(install)
-set_target_warnings(test-sfml-install)
+set_target_warnings(test-zancle-install)
 
 set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
 
@@ -13,42 +13,42 @@ file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS
     "${TEST_SRCROOT}/TestUtilities/Tst/Detail/*.hpp"
 )
 
-add_library(sfml-test-main STATIC ${TEST_UTILITIES_SRC})
-target_include_directories(sfml-test-main PUBLIC TestUtilities)
+add_library(zancle-test-main STATIC ${TEST_UTILITIES_SRC})
+target_include_directories(zancle-test-main PUBLIC TestUtilities)
 
-set_target_warnings(sfml-test-main)
+set_target_warnings(zancle-test-main)
 
-target_link_libraries(sfml-test-main PUBLIC SFML::System)
+target_link_libraries(zancle-test-main PUBLIC Zancle::System)
 
 # enable precompiled headers
-if (SFML_ENABLE_PCH)
-    message(VERBOSE "enabling PCH for sfml-test-main")
+if (ZA_ENABLE_PCH)
+    message(VERBOSE "enabling PCH for zancle-test-main")
 
-    target_precompile_headers(sfml-test-main REUSE_FROM sfml-system)
+    target_precompile_headers(zancle-test-main REUSE_FROM zancle-system)
 
     find_package(Threads REQUIRED)
-    target_link_libraries(sfml-test-main PRIVATE Threads::Threads)
+    target_link_libraries(zancle-test-main PRIVATE Threads::Threads)
 endif()
 
 # set the target flags to use the appropriate C++ standard library
-sfml_set_stdlib(sfml-test-main)
+zancle_set_stdlib(zancle-test-main)
 
-sfml_set_option(SFML_RUN_DISPLAY_TESTS ON BOOL "ON to run tests that require a display, OFF to ignore it")
-if(SFML_RUN_DISPLAY_TESTS)
-    add_definitions(-DSFML_RUN_DISPLAY_TESTS)
-    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_DISPLAY_TESTS)
+zancle_set_option(ZA_RUN_DISPLAY_TESTS ON BOOL "ON to run tests that require a display, OFF to ignore it")
+if(ZA_RUN_DISPLAY_TESTS)
+    add_definitions(-DZA_RUN_DISPLAY_TESTS)
+    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_DISPLAY_TESTS)
 endif()
 
-sfml_set_option(SFML_RUN_AUDIO_DEVICE_TESTS ON BOOL "ON to run tests that require an audio device, OFF to ignore it")
-if(SFML_RUN_AUDIO_DEVICE_TESTS)
-    add_definitions(-DSFML_RUN_AUDIO_DEVICE_TESTS)
-    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
+zancle_set_option(ZA_RUN_AUDIO_DEVICE_TESTS ON BOOL "ON to run tests that require an audio device, OFF to ignore it")
+if(ZA_RUN_AUDIO_DEVICE_TESTS)
+    add_definitions(-DZA_RUN_AUDIO_DEVICE_TESTS)
+    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
-if(NOT SFML_OS_IOS)
-    add_definitions(-DSFML_RUN_CONNECTION_TESTS -DSFML_RUN_LOOPBACK_TESTS)
-    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_CONNECTION_TESTS)
-    target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_LOOPBACK_TESTS)
+if(NOT ZA_OS_IOS)
+    add_definitions(-DZA_RUN_CONNECTION_TESTS -DZA_RUN_LOOPBACK_TESTS)
+    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_CONNECTION_TESTS)
+    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_LOOPBACK_TESTS)
 endif()
 
 add_subdirectory(Audio)
@@ -60,27 +60,27 @@ add_subdirectory(System)
 add_subdirectory(Window)
 
 
-if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
+if(ZA_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     # Because we can only write to the tmp directory on the Android virtual device we will need to build our directory tree under it
-    set(TARGET_DIR "/data/local/tmp/$<TARGET_FILE_DIR:test-sfml-system>")
+    set(TARGET_DIR "/data/local/tmp/$<TARGET_FILE_DIR:test-zancle-system>")
 
     # Generate script that copies necessary files over to the Android virtual device
     file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/prepare-android-files.sh" CONTENT
         "#!/bin/bash\n\
         adb shell \"mkdir -p ${TARGET_DIR}\"\n\
-        adb push $<TARGET_FILE:test-sfml-audio>       ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-base>        ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-graphics>    ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-network>     ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-system>      ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-glutils>     ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-window>      ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Audio>           ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Graphics>        ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::ImGui>           ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Network>         ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::System>          ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Window>          ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-audio>       ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-base>        ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-graphics>    ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-network>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-system>      ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-glutils>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-zancle-window>      ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:Zancle::Audio>           ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:Zancle::Graphics>        ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:Zancle::ImGui>           ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:Zancle::Network>         ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:Zancle::System>          ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:Zancle::Window>          ${TARGET_DIR}\n\
         adb push $ENV{LIBCXX_SHARED_SO}               ${TARGET_DIR}\n\
         adb push ${CMAKE_CURRENT_LIST_DIR}/Audio/.    ${TARGET_DIR}\n\
         adb push ${CMAKE_CURRENT_LIST_DIR}/Graphics/. ${TARGET_DIR}\n\
@@ -99,7 +99,7 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
 endif()
 
-if(SFML_ENABLE_COVERAGE AND SFML_OS_WINDOWS AND NOT SFML_COMPILER_GCC)
+if(ZA_ENABLE_COVERAGE AND ZA_OS_WINDOWS AND NOT ZA_COMPILER_GCC)
     # Try to find and use OpenCppCoverage for coverage reporting when building with MSVC
     find_program(OpenCppCoverage_BINARY "OpenCppCoverage.exe")
 
@@ -119,7 +119,7 @@ if(SFML_ENABLE_COVERAGE AND SFML_OS_WINDOWS AND NOT SFML_COMPILER_GCC)
     )
 endif()
 
-if(SFML_ENABLE_COVERAGE AND OpenCppCoverage_FOUND)
+if(ZA_ENABLE_COVERAGE AND OpenCppCoverage_FOUND)
     # Use OpenCppCoverage
     message(STATUS "Using OpenCppCoverage to generate coverage report")
 
@@ -146,16 +146,16 @@ endif()
 
 # Convenience for building and running tests in a single command
 include(ProcessorCount)
-ProcessorCount(SFML_RUNTESTS_PARALLEL)
-if(SFML_RUNTESTS_PARALLEL EQUAL 0)
-    set(SFML_RUNTESTS_PARALLEL 1)
+ProcessorCount(ZA_RUNTESTS_PARALLEL)
+if(ZA_RUNTESTS_PARALLEL EQUAL 0)
+    set(ZA_RUNTESTS_PARALLEL 1)
 endif()
 
-add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-glutils test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
+add_custom_target(runtests DEPENDS test-zancle-base test-zancle-system test-zancle-glutils test-zancle-window test-zancle-graphics test-zancle-network test-zancle-audio)
 
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD
-                   COMMAND ${COVERAGE_PREFIX} ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${SFML_RUNTESTS_PARALLEL} -C $<CONFIG>
+                   COMMAND ${COVERAGE_PREFIX} ${CMAKE_CTEST_COMMAND} --output-on-failure --parallel ${ZA_RUNTESTS_PARALLEL} -C $<CONFIG>
                    COMMAND ${CMAKE_COMMAND} -P "${PROJECT_BINARY_DIR}/patch_coverage.cmake"
                    VERBATIM)

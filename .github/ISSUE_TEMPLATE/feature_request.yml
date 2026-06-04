@@ -14,9 +14,9 @@ body:
           options:
               - label: "I searched for [existing issues](https://github.com/search?q=repo%3ASFML%2FSFML&type=issues) to prevent duplicates"
                 required: true
-              - label: "I searched for [existing discussions on the forum](https://www.google.com/search?q=site%3Ahttps%3A%2F%2Fen.sfml-dev.org) to prevent duplicates"
+              - label: "I searched for [existing discussions on the forum](https://www.google.com/search?q=site%3Ahttps%3A%2F%2Fen.zancle-dev.org) to prevent duplicates"
                 required: true
-              - label: "I understand [SFML's scope](https://www.sfml-dev.org/contribute.php#general-considerations) and believe the feature fits it"
+              - label: "I understand [SFML's scope](https://www.zancle-dev.org/contribute.php#general-considerations) and believe the feature fits it"
                 required: true
     - type: textarea
       id: description
@@ -45,23 +45,23 @@ body:
           description: Please provide an example how the new API could be used
           value: |
               ```cpp
-              #include "SFML/Graphics/RenderWindow.hpp"
+              #include "Zancle/Graphics/RenderWindow.hpp"
 
-              #include "SFML/Window/Event.hpp"
-              #include "SFML/Window/WindowSettings.hpp"
+              #include "Zancle/Window/Event.hpp"
+              #include "Zancle/Window/WindowSettings.hpp"
 
-              #include "SFML/Base/Optional.hpp"
+              #include "ZancleBase/Optional.hpp"
 
               int main()
               {
-                  sf::RenderWindow window(
+                  za::RenderWindow window(
                       {.size{1280u, 720u}, .title = "Minimal, complete and verifiable example", .framerateLimit = 60});
 
                   while (true)
                   {
-                      while (const sf::base::Optional event = window.pollEvent())
+                      while (const zb::Optional event = window.pollEvent())
                       {
-                          if (event->is<sf::Event::Closed>())
+                          if (event->is<za::Event::Closed>())
                               return 0;
                       }
 

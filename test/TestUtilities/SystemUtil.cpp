@@ -2,90 +2,90 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/AutoWrapAngle.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
-#include "SFML/System/Vec2.hpp"
-#include "SFML/System/Vec3.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/AutoWrapAngle.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/System/Vec2.hpp"
+#include "Zancle/System/Vec3.hpp"
 
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToChars.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToChars.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-sf::base::String sysFloatToString(const float value, const int precision = 6)
+zb::String sysFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
-    char*      end = sf::base::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<sf::base::SizeT>(end - buf);
-    return sf::base::String{buf, len};
+    char*      end = zb::toChars(buf, buf + sizeof(buf), value, precision);
+    const auto len = static_cast<zb::SizeT>(end - buf);
+    return zb::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::base::String sysIntToString(const T value)
+zb::String sysIntToString(const T value)
 {
     char       buf[32];
-    char*      end = sf::base::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<sf::base::SizeT>(end - buf);
-    return sf::base::String{buf, len};
+    char*      end = zb::toChars(buf, buf + sizeof(buf), value);
+    const auto len = static_cast<zb::SizeT>(end - buf);
+    return zb::String{buf, len};
 }
 
 } // namespace
 
 
-namespace sf
+namespace za
 {
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Angle& angle) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Angle& angle) noexcept
 {
-    const sf::base::String s = sysFloatToString(angle.asDegrees()) + sf::base::String{" deg"};
+    const zb::String s = sysFloatToString(angle.asDegrees()) + zb::String{" deg"};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::AutoWrapAngle& angle) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::AutoWrapAngle& angle) noexcept
 {
-    const sf::base::String s = sysFloatToString(angle.asDegrees()) + sf::base::String{" deg"};
+    const zb::String s = sysFloatToString(angle.asDegrees()) + zb::String{" deg"};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Utf8String& string) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Utf8String& string) noexcept
 {
-    const sf::base::String s{string.data(), static_cast<sf::base::SizeT>(string.byteSize())};
+    const zb::String s{string.data(), static_cast<zb::SizeT>(string.byteSize())};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Time& time) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Time& time) noexcept
 {
-    const sf::base::String s = sysIntToString(time.asMicroseconds()) + sf::base::String{"us"};
+    const zb::String s = sysIntToString(time.asMicroseconds()) + zb::String{"us"};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
-} // namespace sf
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
 // `::Approx<T>` renders as `Approx(<value>)`, recursing through the same
 // ADL-enabled dispatch for its nested value. Wrapped types whose
-// `stringifyValue` overload is not visible in this TU (e.g. `sf::Color`)
+// `stringifyValue` overload is not visible in this TU (e.g. `za::Color`)
 // render their value as "<?>" -- matching the prior behavior.
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const ::Approx<T>& approx) noexcept
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const ::Approx<T>& approx) noexcept
 {
-    sf::base::SizeT len = ::tst::detail::copyInto(buf, cap, "Approx(", 7u);
+    zb::SizeT len = ::tst::detail::copyInto(buf, cap, "Approx(", 7u);
     len += ::tst::detail::renderValue(buf + len, cap - len, approx.value);
 
     if (len < cap)
@@ -97,10 +97,10 @@ sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const ::Approx<T>
 
 ////////////////////////////////////////////////////////////
 // Explicit instantiations for the wrapped types actually used by tests.
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<float>&) noexcept;
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Angle>&) noexcept;
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Vec2<float>>&) noexcept;
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Vec3<float>>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<float>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Angle>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Vec2<float>>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Vec3<float>>&) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -108,17 +108,17 @@ template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<s
 // `stringifyValue` overload lives in `GraphicsUtil`), but the `::Approx`
 // instantiations must live in the TU that defines the template body.
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
 struct Color;
 struct Transform;
 template <typename>
 class Rect2;
-} // namespace sf
+} // namespace za
 
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Color>&) noexcept;
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Transform>&) noexcept;
-template sf::base::SizeT stringifyValue(char*, sf::base::SizeT, const ::Approx<sf::Rect2<float>>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Color>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Transform>&) noexcept;
+template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Rect2<float>>&) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -129,28 +129,28 @@ bool operator==(const float& lhs, const Approx<float>& rhs)
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(sf::Vec2f lhs, const Approx<sf::Vec2f>& rhs)
+bool operator==(za::Vec2f lhs, const Approx<za::Vec2f>& rhs)
 {
     return (lhs - rhs.value).length() == Approx(0.f);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const sf::Vec3f& lhs, const Approx<sf::Vec3f>& rhs)
+bool operator==(const za::Vec3f& lhs, const Approx<za::Vec3f>& rhs)
 {
     return (lhs - rhs.value).length() == Approx(0.f);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs)
+bool operator==(const za::Angle& lhs, const Approx<za::Angle>& rhs)
 {
     return lhs.asRadians() == Approx(rhs.value.asRadians());
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const sf::Rect2f& lhs, const Approx<sf::Rect2f>& rhs)
+bool operator==(const za::Rect2f& lhs, const Approx<za::Rect2f>& rhs)
 {
     return lhs.position == Approx(rhs.value.position) && lhs.size == Approx(rhs.value.size);
 }

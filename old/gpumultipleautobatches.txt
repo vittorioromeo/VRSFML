@@ -1,46 +1,46 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/DrawableBatchUtils.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Shape.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/StencilMode.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Transform.hpp"
-#include "SFML/Graphics/Vertex.hpp"
-#include "SFML/Graphics/VertexBuffer.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/DrawableBatchUtils.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Shape.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/StencilMode.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Transform.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/VertexBuffer.hpp"
+#include "Zancle/Graphics/VertexSpan.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLVAOGroup.hpp"
-#include "SFML/GLUtils/Glad.hpp"
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLVAOGroup.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
 
-#include "SFML/System/Err.hpp"
-#include "SFML/System/Rect.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Rect.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/OffsetOf.hpp"
-#include "SFML/Base/FastSinCos.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Lround.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/ScopeGuard.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Algorithm.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Builtins/OffsetOf.hpp"
+#include "ZancleBase/FastSinCos.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Lround.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/ScopeGuard.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 #include <atomic>
 
@@ -68,7 +68,7 @@ constexpr IdType invalidId{0ul};
 
 ////////////////////////////////////////////////////////////
 // Maximum supported number of render targets or contexts
-constexpr sf::base::SizeT maxIdCount{256ul};
+constexpr zb::SizeT maxIdCount{256ul};
 
 
 ////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 // Check if a render target with the given ID is active in the current context
 [[nodiscard]] bool isActive(const IdType contextId, const IdType id)
 {
-    SFML_BASE_ASSERT(contextId < maxIdCount);
+    ZB_ASSERT(contextId < maxIdCount);
 
     const auto renderTargetId = contextRenderTargetMap[contextId].load();
     return (renderTargetId != invalidId) && (renderTargetId == id);
@@ -88,21 +88,21 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                        \
+#define ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                        \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(const sfEnumType sfEnumValue) \
     {                                                                                                                 \
         constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
                                                                                                                       \
-        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));                \
+        ZB_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::zb::getArraySize(glValues));                \
         return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
 
 
 ////////////////////////////////////////////////////////////
-// Convert an sf::BlendMode::Factor constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+// Convert an za::BlendMode::Factor constant to the corresponding OpenGL constant.
+ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
     factorToGlConstant,
-    sf::BlendMode::Factor,
+    za::BlendMode::Factor,
     {GL_ZERO,
      GL_ONE,
      GL_SRC_COLOR,
@@ -116,73 +116,73 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
 
 ////////////////////////////////////////////////////////////
-// Convert an sf::BlendMode::Equation constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(equationToGlConstant,
-                                              sf::BlendMode::Equation,
+// Convert an za::BlendMode::Equation constant to the corresponding OpenGL constant.
+ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(equationToGlConstant,
+                                              za::BlendMode::Equation,
                                               {GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT, GL_MIN, GL_MAX});
 
 
 ////////////////////////////////////////////////////////////
 // Convert an UpdateOperation constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(stencilOperationToGlConstant,
-                                              sf::StencilUpdateOperation,
+ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(stencilOperationToGlConstant,
+                                              za::StencilUpdateOperation,
                                               {GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_DECR, GL_INVERT});
 
 
 ////////////////////////////////////////////////////////////
 // Convert a Comparison constant to the corresponding OpenGL constant.
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
     stencilFunctionToGlConstant,
-    sf::StencilComparison,
+    za::StencilComparison,
     {GL_NEVER, GL_LESS, GL_LEQUAL, GL_GREATER, GL_GEQUAL, GL_EQUAL, GL_NOTEQUAL, GL_ALWAYS});
 
 
 ////////////////////////////////////////////////////////////
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
     primitiveTypeToOpenGLMode,
-    sf::PrimitiveType,
+    za::PrimitiveType,
     {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES, GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN});
 
 
 ////////////////////////////////////////////////////////////
-SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
+ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
     dataTypeToOpenGLDataType,
-    sf::GlDataType,
+    za::GlDataType,
     {GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, GL_UNSIGNED_INT, GL_HALF_FLOAT, GL_FLOAT, GL_DOUBLE});
 
 
 ////////////////////////////////////////////////////////////
-#undef SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
+#undef ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
-    const sf::Vec2u      renderTargetSize,
-    const sf::FloatRect& inputRect)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline za::IntRect getMultipliedBySizeAndRoundedRect(
+    const za::Vec2u      renderTargetSize,
+    const za::FloatRect& inputRect)
 {
     const auto [width, height] = renderTargetSize.toVec2f();
 
-    return sf::Rect<long>({SFML_BASE_MATH_LROUNDF(width * inputRect.position.x),
-                           SFML_BASE_MATH_LROUNDF(height * inputRect.position.y)},
-                          {SFML_BASE_MATH_LROUNDF(width * inputRect.size.x),
-                           SFML_BASE_MATH_LROUNDF(height * inputRect.size.y)})
-        .to<sf::IntRect>();
+    return za::Rect<long>({ZB_MATH_LROUNDF(width * inputRect.position.x),
+                           ZB_MATH_LROUNDF(height * inputRect.position.y)},
+                          {ZB_MATH_LROUNDF(width * inputRect.size.x),
+                           ZB_MATH_LROUNDF(height * inputRect.size.y)})
+        .to<za::IntRect>();
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(const sf::Vertex* vertexData, const sf::base::SizeT vertexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(const za::Vertex* vertexData, const zb::SizeT vertexCount)
 {
     glCheck(
-        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(sf::Vertex) * vertexCount), vertexData, GL_STREAM_DRAW));
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(za::Vertex) * vertexCount), vertexData, GL_STREAM_DRAW));
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU(const sf::IndexType*  indexData,
-                                                                    const sf::base::SizeT indexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU(const za::IndexType*  indexData,
+                                                                    const zb::SizeT indexCount)
 {
     glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                         static_cast<GLsizeiptr>(sizeof(sf::IndexType) * indexCount),
+                         static_cast<GLsizeiptr>(sizeof(za::IndexType) * indexCount),
                          indexData,
                          GL_STREAM_DRAW));
 }
@@ -191,48 +191,48 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 ////////////////////////////////////////////////////////////
 void setupVertexAttribPointers()
 {
-#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(SFML_BASE_OFFSETOF(__VA_ARGS__))
+#define ZA_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(ZB_OFFSETOF(__VA_ARGS__))
 
-    // Hardcoded layout location `0u` for `sf_a_position`
+    // Hardcoded layout location `0u` for `za_a_position`
     glCheck(glEnableVertexAttribArray(0u));
     glCheck(glVertexAttribPointer(/*      index */ 0u,
                                   /*       size */ 2,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
-                                  /*     stride */ sizeof(sf::Vertex),
-                                  /*     offset */ SFML_PRIV_OFFSETOF(sf::Vertex, position)));
+                                  /*     stride */ sizeof(za::Vertex),
+                                  /*     offset */ ZA_PRIV_OFFSETOF(za::Vertex, position)));
 
-    // Hardcoded layout location `1u` for `sf_a_color`
+    // Hardcoded layout location `1u` for `za_a_color`
     glCheck(glEnableVertexAttribArray(1u));
     glCheck(glVertexAttribPointer(/*      index */ 1u,
                                   /*       size */ 4,
                                   /*       type */ GL_UNSIGNED_BYTE,
                                   /* normalized */ GL_TRUE,
-                                  /*     stride */ sizeof(sf::Vertex),
-                                  /*     offset */ SFML_PRIV_OFFSETOF(sf::Vertex, color)));
+                                  /*     stride */ sizeof(za::Vertex),
+                                  /*     offset */ ZA_PRIV_OFFSETOF(za::Vertex, color)));
 
-    // Hardcoded layout location `2u` for `sf_a_texCoord`
+    // Hardcoded layout location `2u` for `za_a_texCoord`
     glCheck(glEnableVertexAttribArray(2u));
     glCheck(glVertexAttribPointer(/*      index */ 2u,
                                   /*       size */ 2,
                                   /*       type */ GL_FLOAT,
                                   /* normalized */ GL_FALSE,
-                                  /*     stride */ sizeof(sf::Vertex),
-                                  /*     offset */ SFML_PRIV_OFFSETOF(sf::Vertex, texCoords)));
+                                  /*     stride */ sizeof(za::Vertex),
+                                  /*     offset */ ZA_PRIV_OFFSETOF(za::Vertex, texCoords)));
 
-#undef SFML_PRIV_OFFSETOF
+#undef ZA_PRIV_OFFSETOF
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr unsigned int precomputedQuadIndices[]{
-#include "SFML/Graphics/PrecomputedQuadIndices.inl"
+#include "Zancle/Graphics/PrecomputedQuadIndices.inl"
 };
 
 
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
 ////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
+enum : zb::SizeT
 {
     maxGPUAutoBatchFramesInFlight = 3u //!< Number of frames in flight for GPU autobatching
 };
@@ -240,27 +240,27 @@ enum : sf::base::SizeT
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] PersistentGPUAutoBatchState
 {
-    sf::PersistentGPUDrawableBatch batch;            //!< Internal GPU autobatch
+    za::PersistentGPUDrawableBatch batch;            //!< Internal GPU autobatch
     GLsync                         fence{};          //!< Fences for GPU autobatching
-    sf::base::SizeT                indexOffset{0u};  //!< Index offset for GPU autobatching
-    sf::base::SizeT                vertexOffset{0u}; //!< Vertex offset for GPU autobatching
+    zb::SizeT                indexOffset{0u};  //!< Index offset for GPU autobatching
+    zb::SizeT                vertexOffset{0u}; //!< Vertex offset for GPU autobatching
 };
 #endif
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr bool isPrimitiveTypeSupportedByBatchStorage(
-    const sf::PrimitiveType type) noexcept
+    const za::PrimitiveType type) noexcept
 {
-    return type == sf::PrimitiveType::Triangles || type == sf::PrimitiveType::TriangleStrip ||
-           type == sf::PrimitiveType::TriangleFan;
+    return type == za::PrimitiveType::Triangles || type == za::PrimitiveType::TriangleStrip ||
+           type == za::PrimitiveType::TriangleFan;
 }
 
 } // namespace RenderTargetImpl
 } // namespace
 
 
-namespace sf
+namespace za
 {
 ////////////////////////////////////////////////////////////
 /// \brief Render states cache
@@ -302,9 +302,9 @@ struct [[nodiscard]] RenderTarget::Impl
     ////////////////////////////////////////////////////////////
     CPUDrawableBatch cpuAutoBatch; //!< Internal CPU autobatch
 
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
     RenderTargetImpl::PersistentGPUAutoBatchState gpuAutoBatchStates[RenderTargetImpl::maxGPUAutoBatchFramesInFlight]{};
-    sf::base::SizeT currentGPUAutoBatchIndex{0u}; //!< Cycles `0`, `1`, ..., `maxGPUAutoBatchFramesInFlight - 1`
+    zb::SizeT currentGPUAutoBatchIndex{0u}; //!< Cycles `0`, `1`, ..., `maxGPUAutoBatchFramesInFlight - 1`
 
     [[gnu::always_inline]] auto& currentGPUAutoBatchState() noexcept
     {
@@ -335,23 +335,23 @@ struct [[nodiscard]] RenderTarget::Impl
 ////////////////////////////////////////////////////////////
 auto RenderTarget::addToAutoBatch(auto&&... xs)
 {
-    SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
+    ZB_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
 
-    const auto addImpl = [&](auto& batch) SFML_BASE_LAMBDA_ALWAYS_INLINE
+    const auto addImpl = [&](auto& batch) ZB_LAMBDA_ALWAYS_INLINE
     {
         const auto prevVertices = batch.getNumVertices();
-        SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices += batch.getNumVertices() - prevVertices; });
+        ZB_SCOPE_GUARD({ m_numAutoBatchVertices += batch.getNumVertices() - prevVertices; });
 
-        return batch.add(SFML_BASE_FORWARD(xs)...);
+        return batch.add(ZB_FORWARD(xs)...);
     };
 
-#ifdef SFML_OPENGL_ES
+#ifdef ZA_OPENGL_ES
     return addImpl(m_impl->cpuAutoBatch);
 #else
     if (m_autoBatchMode == AutoBatchMode::CPUStorage)
         return addImpl(m_impl->cpuAutoBatch);
 
-    SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+    ZB_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
     return addImpl(m_impl->currentGPUAutoBatchState().batch);
 #endif
 }
@@ -383,7 +383,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     m_currentDrawStats = {};
 
     // Unbind texture to fix RenderTexture preventing clear
-    unapplyTexture(); // See https://en.sfml-dev.org/forums/index.php?topic=9350
+    unapplyTexture(); // See https://en.zancle-dev.org/forums/index.php?topic=9350
 
     // Apply the view (scissor testing can affect clearing)
     if (!m_impl->cache.enable || m_impl->cache.viewChanged)
@@ -533,7 +533,7 @@ Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point, const View& view) const
 
     // Then convert to viewport coordinates
     const auto viewport = getViewport(view).to<FloatRect>();
-    return ((normalized.componentWiseMul({1.f, -1.f}) + sf::Vec2f{1.f, 1.f})
+    return ((normalized.componentWiseMul({1.f, -1.f}) + za::Vec2f{1.f, 1.f})
                 .componentWiseMul({0.5f, 0.5f})
                 .componentWiseMul(viewport.size) +
             viewport.position)
@@ -605,7 +605,7 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
-    SFML_BASE_ASSERT(states.texture != nullptr);
+    ZB_ASSERT(states.texture != nullptr);
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
@@ -728,7 +728,7 @@ void RenderTarget::immediateDrawIndexedVertices(const DrawIndexedVerticesSetting
 void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     [[maybe_unused]] const DrawPersistentMappedIndexedVerticesSettings& settings)
 {
-#ifdef SFML_OPENGL_ES
+#ifdef ZA_OPENGL_ES
     priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
     base::abort();
 #else
@@ -748,7 +748,7 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
-    SFML_BASE_ASSERT(drawableBatch.m_storage.indices.size() % 3u == 0u);
+    ZB_ASSERT(drawableBatch.m_storage.indices.size() % 3u == 0u);
 
     states.transform *= drawableBatch.getTransform();
 
@@ -960,7 +960,7 @@ VertexSpan RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, cons
 
     m_impl->cpuAutoBatch.clear();
 
-    SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
+    ZB_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
     return m_impl->cpuAutoBatch.add(shapeData);
 }
 
@@ -991,7 +991,7 @@ VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, Render
 
     m_impl->cpuAutoBatch.clear();
 
-    SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
+    ZB_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
     return m_impl->cpuAutoBatch.add(font, textData);
 }
 
@@ -1031,8 +1031,8 @@ void RenderTarget::drawIndexedVertices(const DrawIndexedVerticesSettings& settin
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawQuads(const DrawQuadsSettings& settings)
 {
-    SFML_BASE_ASSERT(settings.vertexCount % 4u == 0u);
-    SFML_BASE_ASSERT(settings.vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
+    ZB_ASSERT(settings.vertexCount % 4u == 0u);
+    ZB_ASSERT(settings.vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
 
     drawIndexedVertices({
         .vertexData    = settings.vertexData,
@@ -1090,7 +1090,7 @@ bool RenderTarget::setActive(const bool active)
         (active && isAlreadyActive) || (!active && !isAlreadyActive))
         return true;
 
-    SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
+    ZB_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
     const auto loadedRenderTargetId = renderTargetId.load();
@@ -1098,7 +1098,7 @@ bool RenderTarget::setActive(const bool active)
     // Deactivation
     if (!active)
     {
-        SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+        ZB_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
         renderTargetId.store(RenderTargetImpl::invalidId);
 
         m_impl->cache.enable = false;
@@ -1118,8 +1118,8 @@ bool RenderTarget::setActive(const bool active)
     }
 
     // Activation on a different context
-    SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
-    SFML_BASE_ASSERT(loadedRenderTargetId != m_impl->id);
+    ZB_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+    ZB_ASSERT(loadedRenderTargetId != m_impl->id);
     renderTargetId.store(m_impl->id);
 
     m_impl->cache.enable = false;
@@ -1140,7 +1140,7 @@ void RenderTarget::resetGLStatesImpl()
 {
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
-#if defined(SFML_SYSTEM_MACOS)
+#if defined(ZA_SYSTEM_MACOS)
     if (!setActive(false))
         priv::err() << "Failed to set render target inactive";
 #endif
@@ -1148,7 +1148,7 @@ void RenderTarget::resetGLStatesImpl()
     if (!setActive(true))
         return;
 
-#ifdef SFML_DEBUG
+#ifdef ZA_DEBUG
     // Make sure that the user didn't leave an unchecked OpenGL error
     if (const GLenum error = glGetError(); error != GL_NO_ERROR)
         priv::err() << "OpenGL error (" << error << ") detected in user code, you should check for errors with glGetError()";
@@ -1193,12 +1193,12 @@ void RenderTarget::resetGLStatesImpl()
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices = 0u; });
+    ZB_SCOPE_GUARD({ m_numAutoBatchVertices = 0u; });
 
     if (m_autoBatchMode == AutoBatchMode::Disabled)
         return m_currentDrawStats;
 
-#ifdef SFML_OPENGL_ES
+#ifdef ZA_OPENGL_ES
 
     immediateDrawDrawableBatch(m_impl->cpuAutoBatch, m_lastRenderStates);
     m_impl->cpuAutoBatch.clear();
@@ -1212,7 +1212,7 @@ RenderTarget::DrawStatistics RenderTarget::flush()
     }
     else
     {
-        SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+        ZB_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
 
         auto& [batch, fence, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
 
@@ -1247,7 +1247,7 @@ RenderTarget::DrawStatistics RenderTarget::flush()
 ////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUStartFrame()
 {
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
     auto& [batch, fenceToWaitOn, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
 
     if (!fenceToWaitOn) // No need to wait
@@ -1284,9 +1284,9 @@ void RenderTarget::syncGPUStartFrame()
 ////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUEndFrame()
 {
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
     auto& fenceToCreate = m_impl->currentGPUAutoBatchState().fence;
-    SFML_BASE_ASSERT(fenceToCreate == nullptr);
+    ZB_ASSERT(fenceToCreate == nullptr);
 
     fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
     if (fenceToCreate == nullptr) [[unlikely]]
@@ -1406,7 +1406,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 {
     // GL_FRAMEBUFFER_SRGB is not available on OpenGL ES
     // If a framebuffer supports sRGB, it will always be enabled on OpenGL ES
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
     // Enable or disable sRGB encoding
     // This is needed for drivers that do not check the format of the surface drawn to before applying sRGB conversion
     if (!m_impl->cache.enable)
@@ -1502,7 +1502,7 @@ void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform,
                                         trsfm.a02, trsfm.a12, 0.f, 1.f};
     // clang-format on
 
-    // Upload uniform data to GPU (hardcoded layout location `0u` for `sf_u_mvpMatrix`)
+    // Upload uniform data to GPU (hardcoded layout location `0u` for `za_u_mvpMatrix`)
     glCheck(glUniformMatrix4fv(/* location */ 0u, /* count */ 1, /* transpose */ GL_FALSE, transformMatrixBuffer));
 }
 
@@ -1587,7 +1587,7 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
     [[maybe_unused]] const base::SizeT   indexOffset,
     [[maybe_unused]] const base::SizeT   vertexOffset)
 {
-#ifdef SFML_OPENGL_ES
+#ifdef ZA_OPENGL_ES
     priv::err() << "FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)";
     base::abort();
 #else
@@ -1636,7 +1636,7 @@ void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
                                     /* number of instances */ static_cast<GLsizei>(instanceCount)));
 }
 
-} // namespace sf
+} // namespace za
 
 ////////////////////////////////////////////////////////////
 // Render states caching strategies
@@ -1653,7 +1653,7 @@ void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
 //
 // * Texture
 //   Storing the pointer or OpenGL ID of the last used texture
-//   is not enough; if the sf::Texture instance is destroyed,
+//   is not enough; if the za::Texture instance is destroyed,
 //   both the pointer and the OpenGL ID might be recycled in
 //   a new texture instance. We need to use our own unique
 //   identifier system to ensure consistent caching.

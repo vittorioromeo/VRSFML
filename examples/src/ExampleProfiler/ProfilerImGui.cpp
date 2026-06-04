@@ -3,29 +3,29 @@
 
 #include "ExampleUtils/Sampler.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Base/Algorithm/Sort.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Span.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Sort.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Span.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-using ChildrenMap = sf::base::Vector<sf::base::Vector<sfex::NodeId>>;
+using ChildrenMap = zb::Vector<zb::Vector<sfex::NodeId>>;
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SamplerVec = sf::base::Vector<Sampler<T>>;
+using SamplerVec = zb::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const, gnu::always_inline]] inline double calcPercentage(const sf::base::I64 part, const sf::base::I64 total)
+[[nodiscard, gnu::const, gnu::always_inline]] inline double calcPercentage(const zb::I64 part, const zb::I64 total)
 {
     return total == 0 ? 0.0 : (static_cast<double>(part) * 100.0) / static_cast<double>(total);
 }
@@ -39,7 +39,7 @@ using SamplerVec = sf::base::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] int calcDelta(const SamplerVec<sf::base::U64>& timeSamplers,
+[[nodiscard]] int calcDelta(const SamplerVec<zb::U64>& timeSamplers,
                             const SamplerVec<double>&        percentSamplers,
                             const sfex::ScopeInfo&           infoA,
                             const sfex::ScopeInfo&           infoB,
@@ -76,10 +76,10 @@ using SamplerVec = sf::base::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
-void renderNode(const SamplerVec<sf::base::U64>&             timeSamplers,
+void renderNode(const SamplerVec<zb::U64>&             timeSamplers,
                 const SamplerVec<double>&                    percentSamplers,
                 const sfex::NodeId                           nodeId,
-                const sf::base::Span<const sfex::ScopeInfo>& allNodes,
+                const zb::Span<const sfex::ScopeInfo>& allNodes,
                 const ChildrenMap&                           childrenMap)
 {
     const auto& info     = allNodes[nodeId];
@@ -100,7 +100,7 @@ void renderNode(const SamplerVec<sf::base::U64>&             timeSamplers,
 
     constexpr const char spaces[33] = "                                ";
 
-    SFML_BASE_ASSERT(info.depth < 32); // We have 32 spaces, and we indent by 1 space per level, so max depth is 31 (0-based)
+    ZB_ASSERT(info.depth < 32); // We have 32 spaces, and we indent by 1 space per level, so max depth is 31 (0-based)
     const char* const spacesPtr = spaces + sizeof(spaces) - 1u - (info.depth * 2); // points to the null terminator
 
     // We use the node's ID as a unique identifier for ImGui
@@ -165,8 +165,8 @@ void showImguiProfiler()
 
     // Pre-process the flat list into a tree structure
     static thread_local ChildrenMap                    childrenMap(sfex::maxNodes);
-    static thread_local sf::base::Vector<sfex::NodeId> rootNodes;
-    static thread_local SamplerVec<sf::base::U64> nodeTimeSamplers(sfex::maxNodes, Sampler<sf::base::U64>{/* capacity */ 64u});
+    static thread_local zb::Vector<sfex::NodeId> rootNodes;
+    static thread_local SamplerVec<zb::U64> nodeTimeSamplers(sfex::maxNodes, Sampler<zb::U64>{/* capacity */ 64u});
     static thread_local SamplerVec<double> nodePercentSamplers(sfex::maxNodes, Sampler<double>{/* capacity */ 64u});
 
     sfex::populateNodes(scopeInfos, childrenMap, rootNodes); // Clears as the first step
@@ -176,7 +176,7 @@ void showImguiProfiler()
         if (scopeInfos[i].timeUs < 0)
             continue;
 
-        nodeTimeSamplers[i].record(static_cast<sf::base::U64>(scopeInfos[i].timeUs));
+        nodeTimeSamplers[i].record(static_cast<zb::U64>(scopeInfos[i].timeUs));
         nodePercentSamplers[i].record(calcNodePercentage(scopeInfos, scopeInfos[i]));
     }
 
@@ -217,9 +217,9 @@ void showImguiProfiler()
         };
 
         for (auto& vec : childrenMap)
-            sf::base::quickSort(vec.begin(), vec.end(), nodeComparer);
+            zb::quickSort(vec.begin(), vec.end(), nodeComparer);
 
-        sf::base::quickSort(rootNodes.begin(), rootNodes.end(), nodeComparer);
+        zb::quickSort(rootNodes.begin(), rootNodes.end(), nodeComparer);
     }
 
     // Kick off rendering for each root node

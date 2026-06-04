@@ -3,20 +3,20 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/StencilMode.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RectangleShape.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/StencilMode.hpp"
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
-#include "SFML/Window/EventUtils.hpp"
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -26,10 +26,10 @@
 int main()
 {
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Create the window of the application with a stencil buffer
-    constexpr sf::Vec2f windowSize{600.f, 600.f};
+    constexpr za::Vec2f windowSize{600.f, 600.f};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -43,33 +43,33 @@ int main()
 
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
-    const sf::RectangleShape red({
+    const za::RectangleShape red({
         .position{270.f, 70.f},
-        .rotation  = sf::degrees(60.f),
-        .fillColor = sf::Color::Red,
+        .rotation  = za::degrees(60.f),
+        .fillColor = za::Color::Red,
         .size      = {500.f, 50.f},
     });
 
-    const sf::RectangleShape green({
+    const za::RectangleShape green({
         .position{370.f, 100.f},
-        .rotation  = sf::degrees(120.f),
-        .fillColor = sf::Color::Green,
+        .rotation  = za::degrees(120.f),
+        .fillColor = za::Color::Green,
         .size      = {500.f, 50.f},
     });
 
-    const sf::RectangleShape blue({
+    const za::RectangleShape blue({
         .position{550.f, 470.f},
-        .rotation  = sf::degrees(180.f),
-        .fillColor = sf::Color::Blue,
+        .rotation  = za::degrees(180.f),
+        .fillColor = za::Color::Blue,
         .size      = {500.f, 50.f},
     });
 
     while (true)
     {
         // Handle events
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, windowView))
@@ -93,7 +93,7 @@ int main()
         // values are compared against each other, the value already in the screen stencil buffer corresponding to
         // the pixel in question and the new value of the incoming pixel to perform the test for. The value of the
         // incoming pixel is known as the reference value and can be set per draw operation when using the
-        // sfml-graphics drawing API. All mathematical operations comparing 2 integers are supported: Less,
+        // zancle-graphics drawing API. All mathematical operations comparing 2 integers are supported: Less,
         // LessEqual, Greater, GreaterEqual, Equal, NotEqual. Additionally, 2 special comparisons are provided:
         // Always and Never. Always will make sure the stencil test will always pass, whereas Never will make sure
         // the stencil test never passes. The incoming reference value is compared to the stencil buffer value in
@@ -134,21 +134,21 @@ int main()
         // when we use Greater we make sure the reference value of 2 is greater than 0.
 
         // Clear the window color to black and the initial stencil buffer values to 0
-        window.clear(sf::Color::Black, sf::StencilValue{0u});
+        window.clear(za::Color::Black, za::StencilValue{0u});
 
         // Draw rectangles
 
         // We draw the first rectangle with comparison set to always so that it will definitely draw and update
         // (Replace) the stencil buffer values of its pixels to the specified reference value.
         window.draw(red,
-                    sf::RenderStates{
+                    za::RenderStates{
                         .stencilMode =
                             {
-                                .stencilComparison      = sf::StencilComparison::Always,
-                                .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                .stencilComparison      = za::StencilComparison::Always,
+                                .stencilUpdateOperation = za::StencilUpdateOperation::Replace,
                                 .stencilOnly            = false,
-                                .stencilReference       = sf::StencilValue{3u},
-                                .stencilMask            = sf::StencilValue{~0u},
+                                .stencilReference       = za::StencilValue{3u},
+                                .stencilMask            = za::StencilValue{~0u},
                             },
                         .view = windowView,
                     });
@@ -158,14 +158,14 @@ int main()
         // In the case of pixels overlapping the first rectangle, because we specify Always as the comparison, it is
         // as if we are drawing using the painter's algorithm, i.e. newer pixels overwrite older pixels.
         window.draw(green,
-                    sf::RenderStates{
+                    za::RenderStates{
                         .stencilMode =
                             {
-                                .stencilComparison      = sf::StencilComparison::Always,
-                                .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                .stencilComparison      = za::StencilComparison::Always,
+                                .stencilUpdateOperation = za::StencilUpdateOperation::Replace,
                                 .stencilOnly            = false,
-                                .stencilReference       = sf::StencilValue{1u},
-                                .stencilMask            = sf::StencilValue{~0u},
+                                .stencilReference       = za::StencilValue{1u},
+                                .stencilMask            = za::StencilValue{~0u},
                             },
                         .view = windowView,
                     });
@@ -178,14 +178,14 @@ int main()
         // of this rectangle will overwrite pixels of the second rectangle. The stencil update operation for this
         // draw operation is not significant in any way since this is the last draw call in the frame.
         window.draw(blue,
-                    sf::RenderStates{
+                    za::RenderStates{
                         .stencilMode =
                             {
-                                .stencilComparison      = sf::StencilComparison::Greater,
-                                .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                .stencilComparison      = za::StencilComparison::Greater,
+                                .stencilUpdateOperation = za::StencilUpdateOperation::Replace,
                                 .stencilOnly            = false,
-                                .stencilReference       = sf::StencilValue{2u},
-                                .stencilMask            = sf::StencilValue{~0u},
+                                .stencilReference       = za::StencilValue{2u},
+                                .stencilMask            = za::StencilValue{~0u},
                             },
                         .view = windowView,
                     });

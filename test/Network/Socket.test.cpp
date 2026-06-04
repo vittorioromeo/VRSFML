@@ -1,41 +1,41 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Network/Socket.hpp"
+#include "Zancle/Network/Socket.hpp"
 
-#include "SFML/Network/UdpSocket.hpp"
+#include "Zancle/Network/UdpSocket.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsConstructible.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Network] sf::Socket")
+TEST_CASE("[Network] za::Socket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Socket));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Socket));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Socket));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Socket));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Socket));
-        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Socket));
+        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Socket));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Socket));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Socket));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Socket));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Socket));
+        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::Socket));
     }
 
     SECTION("Constants")
     {
-        STATIC_CHECK(sf::Socket::AnyPort == 0);
+        STATIC_CHECK(za::Socket::AnyPort == 0);
     }
 
-    // `sf::Socket` is abstract (protected ctor); use `sf::UdpSocket` to exercise
+    // `za::Socket` is abstract (protected ctor); use `za::UdpSocket` to exercise
     // the move/blocking behaviour inherited from the base.
     SECTION("Factory produces a valid socket")
     {
-        auto socketOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        auto socketOpt = za::UdpSocket::create(/* isBlocking */ true);
         REQUIRE(socketOpt.hasValue());
 
         CHECK(socketOpt->isBlocking());
@@ -46,7 +46,7 @@ TEST_CASE("[Network] sf::Socket")
 
     SECTION("Set/get blocking")
     {
-        auto socketOpt = sf::UdpSocket::create(/* isBlocking */ true);
+        auto socketOpt = za::UdpSocket::create(/* isBlocking */ true);
         REQUIRE(socketOpt.hasValue());
 
         socketOpt->setBlocking(false);
@@ -57,27 +57,27 @@ TEST_CASE("[Network] sf::Socket")
     {
         SECTION("Construction")
         {
-            auto movedOpt = sf::UdpSocket::create(/* isBlocking */ true);
+            auto movedOpt = za::UdpSocket::create(/* isBlocking */ true);
             REQUIRE(movedOpt.hasValue());
 
             movedOpt->setBlocking(false);
 
 
-            const sf::UdpSocket socket(SFML_BASE_MOVE(*movedOpt));
+            const za::UdpSocket socket(ZB_MOVE(*movedOpt));
             CHECK(!socket.isBlocking());
         }
 
         SECTION("Assignment")
         {
-            auto movedOpt = sf::UdpSocket::create(/* isBlocking */ true);
+            auto movedOpt = za::UdpSocket::create(/* isBlocking */ true);
             REQUIRE(movedOpt.hasValue());
 
             movedOpt->setBlocking(false);
 
-            auto targetOpt = sf::UdpSocket::create(/* isBlocking */ true);
+            auto targetOpt = za::UdpSocket::create(/* isBlocking */ true);
             REQUIRE(targetOpt.hasValue());
 
-            *targetOpt = SFML_BASE_MOVE(*movedOpt);
+            *targetOpt = ZB_MOVE(*movedOpt);
             CHECK(!targetOpt->isBlocking());
         }
     }

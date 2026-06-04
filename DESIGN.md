@@ -7,33 +7,33 @@
 - ➡️ **Built-in Emscripten support:**
     - This fork now works out-of-the-box with [Emscripten](https://emscripten.org/).
     - All existing examples and tests run flawlessly in the browser.
-    - No explicit `#ifdef SFML_SYSTEM_EMSCRIPTEN` is required anywhere in user code.
+    - No explicit `#ifdef ZA_SYSTEM_EMSCRIPTEN` is required anywhere in user code.
 
 <br>
 
 - ➡️ **Built-in ImGui support:**
-    - Adds a new `SFML::ImGui` module that depends on `SFML::Graphics`.
-    - Can be controlled via the CMake option `SFML_BUILD_IMGUI`.
+    - Adds a new `Zancle::ImGui` module that depends on `Zancle::Graphics`.
+    - Can be controlled via the CMake option `ZA_BUILD_IMGUI`.
 
     <details>
 
     <summary>📜 Code example</summary>
 
     ```cpp
-    auto graphicsContext = sf::GraphicsContext::create().value(); // Holds all "global" OpenGL state
-    sf::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
+    auto graphicsContext = za::GraphicsContext::create().value(); // Holds all "global" OpenGL state
+    za::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
 
-    sf::RenderWindow window({.size{640u, 480u}, .title = "ImGui + SFML = <3"});
-    sf::Clock deltaClock;
+    za::RenderWindow window({.size{640u, 480u}, .title = "ImGui + SFML = <3"});
+    za::Clock deltaClock;
 
     while (true)
     {
-        // `sf::base::Optional` is a drop-in replacement for `std::optional`
-        while (const sf::base::Optional event = window.pollEvent())
+        // `zb::Optional` is a drop-in replacement for `std::optional`
+        while (const zb::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
 
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
         }
 
@@ -61,15 +61,15 @@
     - OpenGL ES 3.1 is now supported on all platforms, including Windows via ANGLE.
     - This fork provides built-in shaders that use the following API:
         ```glsl
-        layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-        layout(location = 1) uniform sampler2D sf_u_texture;
+        layout(location = 0) uniform mat4 za_u_mvpMatrix;
+        layout(location = 1) uniform sampler2D za_u_texture;
 
-        layout(location = 0) in vec2 sf_a_position;
-        layout(location = 1) in vec4 sf_a_color;
-        layout(location = 2) in vec2 sf_a_texCoord; // non-normalized
+        layout(location = 0) in vec2 za_a_position;
+        layout(location = 1) in vec4 za_a_color;
+        layout(location = 2) in vec2 za_a_texCoord; // non-normalized
 
-        out vec4 sf_v_color;
-        out vec2 sf_v_texCoord; // normalized
+        out vec4 za_v_color;
+        out vec2 za_v_texCoord; // normalized
         ```
 
 <br>
@@ -86,20 +86,20 @@ TODO P0: update
 
     ```cpp
     // Create sound sources
-    auto music0 = sf::Music::openFromFile("resources/doodle_pop.ogg").value();
-    auto music1 = sf::Music::openFromFile("resources/ding.flac").value();
-    auto music2 = sf::Music::openFromFile("resources/ding.mp3").value();
+    auto music0 = za::Music::openFromFile("resources/doodle_pop.ogg").value();
+    auto music1 = za::Music::openFromFile("resources/ding.flac").value();
+    auto music2 = za::Music::openFromFile("resources/ding.mp3").value();
 
     // Store all source sources together for convenience
-    sf::SoundSource* const sources[]{&music0, &music1, &music2};
+    za::SoundSource* const sources[]{&music0, &music1, &music2};
 
     // Create the audio context
-    auto audioContext = sf::AudioContext::create().value();
+    auto audioContext = za::AudioContext::create().value();
 
     // For each hardware playback device, create a SFML playback device
-    std::vector<sf::PlaybackDevice> playbackDevices;
-    for (const sf::PlaybackDeviceHandle& deviceHandle :
-         sf::AudioContext::getAvailablePlaybackDeviceHandles())
+    std::vector<za::PlaybackDevice> playbackDevices;
+    for (const za::PlaybackDeviceHandle& deviceHandle :
+         za::AudioContext::getAvailablePlaybackDeviceHandles())
         playbackDevices.emplace_back(deviceHandle);
 
     // Play multiple sources simultaneously on separate playback devices
@@ -122,13 +122,13 @@ TODO P0: update
 
     ```cpp
     // ERROR, does not compile -- SFML resources do not have a default "empty state".
-    /* sf::SoundBuffer soundBuffer; */
+    /* za::SoundBuffer soundBuffer; */
 
     // OK, user explicitly chose to throw if the file loading fails
-    const auto soundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
+    const auto soundBuffer = za::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
 
     // OK, user explicitly chose return if loading fails
-    const auto optSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav");
+    const auto optSoundBuffer = za::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav");
     if (!optSoundBuffer.hasValue()) { return EXIT_FAILURE; }
     ```
 
@@ -137,8 +137,8 @@ TODO P0: update
 <br>
 
 - ➡️ **Debug lifetime tracking for all SFML resources:**
-    - Catches common lifetime mistakes between dependee types (e.g. `sf::Font`) and dependant types (e.g. `sf::Text`) at run-time, providing the user with a readable error message.
-    - Enabled for debug builds by default, can be controlled via the CMake option `SFML_ENABLE_LIFETIME_TRACKING`.
+    - Catches common lifetime mistakes between dependee types (e.g. `za::Font`) and dependant types (e.g. `za::Text`) at run-time, providing the user with a readable error message.
+    - Enabled for debug builds by default, can be controlled via the CMake option `ZA_ENABLE_LIFETIME_TRACKING`.
     - Rejected for upstream inclusion in <https://github.com/SFML/SFML/pull/3097>.
     - When enabled: zero compilation time impact, negligible runtime performance impact.
 
@@ -158,10 +158,10 @@ TODO P0: update
     local texture object will be destroyed, and the sprite object associated with it will now be
     referring to invalid memory. Example:
 
-        sf::Sprite createSprite()
+        za::Sprite createSprite()
         {
-            sf::Texture texture(/* ... */);
-            sf::Sprite sprite(texture, /* ... */);
+            za::Texture texture(/* ... */);
+            za::Sprite sprite(texture, /* ... */);
 
             return sprite;
             //     ^~~~~~
@@ -184,8 +184,8 @@ TODO P0: update
 
 <br>
 
-- ➡️ **Compile-time--enforced lifetime correctness for `sf::Texture` and its dependants (`sf::Sprite` and `sf::Shape`):**
-    - Rather than `sf::Sprite` and `sf::Shape` storing a `sf::Texture*` internally, which can easily become invalidated, the `sf::Texture*` is now passed at the point where it is required: the `sf::RenderTarget::draw` call.
+- ➡️ **Compile-time--enforced lifetime correctness for `za::Texture` and its dependants (`za::Sprite` and `za::Shape`):**
+    - Rather than `za::Sprite` and `za::Shape` storing a `za::Texture*` internally, which can easily become invalidated, the `za::Texture*` is now passed at the point where it is required: the `za::RenderTarget::draw` call.
     - This prevents common lifetime issues that SFML users have frequently encountered (i.e. "the white square problem") at compile-time, without any extra overhead.
     - This also promotes better code organization and a more linear lifetime hierarchy tree for our users.
     - This was proposed for upstream SFML in two different forms (https://github.com/SFML/SFML/pull/3072 and https://github.com/SFML/SFML/pull/3080), but rejected.
@@ -195,14 +195,14 @@ TODO P0: update
     <summary>📜 Code example</summary>
 
     ```cpp
-    auto graphicsContext = sf::GraphicsContext::create().value();
-    const auto texture = sf::Texture::loadFromFile("image.png").value();
+    auto graphicsContext = za::GraphicsContext::create().value();
+    const auto texture = za::Texture::loadFromFile("image.png").value();
 
     // ERROR, does not compile -- sprites do not store a texture pointer anymore.
-    /* sf::Sprite sprite(texture); */
+    /* za::Sprite sprite(texture); */
 
     // OK, prepare the sprite to eventually display the entire texture
-    sf::Sprite sprite{.textureRect = texture.getRect()};
+    za::Sprite sprite{.textureRect = texture.getRect()};
 
     // ERROR, does not compile -- a texture (or the lack thereof) has to be provided during the draw call.
     /* window.draw(sprite); */
@@ -214,7 +214,7 @@ TODO P0: update
     window.draw(texture);
 
     // ...or with some parameters:
-    window.draw(texture, {.position = {25.f, 25.f}, .rotation = sf::degrees(180.f)});
+    window.draw(texture, {.position = {25.f, 25.f}, .rotation = za::degrees(180.f)});
     ```
 
     </details>
@@ -222,32 +222,32 @@ TODO P0: update
 <br>
 
 - ➡️ **Removal of polymorphic inheritance trees:**
-    - `sf::Drawable`, `sf::Shape`, and `sf::Transformable` have either been removed or made non-polymorphic.
+    - `za::Drawable`, `za::Shape`, and `za::Transformable` have either been removed or made non-polymorphic.
     - These inheritance trees promote overuse of OOP and dynamic allocation, and move users away from data-oriented design.
-        - In practice, it's not useful to have something like `std::vector<std::unique_ptr<sf::Drawable>>`, and it actually leads newcomers to poor software engineering practices.
+        - In practice, it's not useful to have something like `std::vector<std::unique_ptr<za::Drawable>>`, and it actually leads newcomers to poor software engineering practices.
         - If that sort of polymorphism is required in rare cases, it can always be obtained via `std::function` or other basic type erasure techniques.
 
 <br>
 
-- ➡️ **Removal of `sf::VertexArray` in lieu of `std::vector<sf::Vertex>`:**
-    - `sf::VertexArray` was just a wrapper over `std::vector<sf::Vertex>` that exposes a subset of `std::vector`'s API.
-    - `std::vector<sf::Vertex>` should be used instead, and users should be encouraged to do the same.
+- ➡️ **Removal of `za::VertexArray` in lieu of `std::vector<za::Vertex>`:**
+    - `za::VertexArray` was just a wrapper over `std::vector<za::Vertex>` that exposes a subset of `std::vector`'s API.
+    - `std::vector<za::Vertex>` should be used instead, and users should be encouraged to do the same.
     - This was proposed for upstream SFML in <https://github.com/SFML/SFML/pull/3118>, but rejected.
 
 <br>
 
 - ➡️ **Removal of global state whenever possible:**
     - Upstream SFML is full of hidden global state: for example, any graphical resource or audio resource ends up interacting with a global registry (via `std::shared_ptr` and other expensive operations) on construction/destruction.
-    - This fork removes any such hidden global state, and requires the user to decide where these registries live via `sf::AudioContext` and `sf::GraphicsContext`.
+    - This fork removes any such hidden global state, and requires the user to decide where these registries live via `za::AudioContext` and `za::GraphicsContext`.
         - Generally, these context objects can be created at the beginning of `main` and passed downwards to the rest of the application.
     - Not only this change increases run-time performance and decreases compilation time overhead, but it also simplifies the internal implementation of SFML reducing the risk of subtle global initializiation fiasco issues and promoting users to write simpler software with a clear hierarchical lifetime structure.
 
 <br>
 
-- ➡️ **New `SFML::Base` module:**
+- ➡️ **New `Zancle::Base` module:**
     - New module containing abstractions and utilities generally useful in any C++ project.
     - Significantly decreases reliance on the Standard Library, providing drop-in replacements that are much faster to compile and much more performant at run-time even with optimizations disabled.
-    - All components of `SFML::Base` have been carefully crafted to maximize compile-time thoughput, debug performance, and ease of use.
+    - All components of `Zancle::Base` have been carefully crafted to maximize compile-time thoughput, debug performance, and ease of use.
 
     <details>
 
@@ -255,19 +255,19 @@ TODO P0: update
 
     ```cpp
     // Drop-in replacement for `std::unique_ptr`:
-    sf::base::UniquePtr<T> uPtr = sf::base::makeUnique<T>(/* ...`T` constructor args... */);
+    zb::UniquePtr<T> uPtr = zb::makeUnique<T>(/* ...`T` constructor args... */);
 
     // Fast PImpl idiom (zero allocation):
-    sf::base::InPlacePImpl<T, 128 /* buffer size */> pImpl(/* ...`T` constructor args... */);
+    zb::InPlacePImpl<T, 128 /* buffer size */> pImpl(/* ...`T` constructor args... */);
 
     // Fast traits (zero instantiation via compiler built-ins, does not virally include expensive `<type_traits>`)
-    static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(T));
+    static_assert(ZB_IS_TRIVIALLY_COPYABLE(T));
 
     // Fast math (uses compiler built-in if available)
-    constexpr auto result = sf::base::cos(3.14f);
+    constexpr auto result = zb::cos(3.14f);
 
     // Fast index sequences (uses compiler built-in if available)
-    constexpr auto indexSequence = SFML_BASE_MAKE_INDEX_SEQUENCE(32);
+    constexpr auto indexSequence = ZB_MAKE_INDEX_SEQUENCE(32);
 
     // ...and much more...
     ```
@@ -276,7 +276,7 @@ TODO P0: update
 
 <br>
 
-- ➡️ **`sf::Window` closed state has been removed:**
+- ➡️ **`za::Window` closed state has been removed:**
     - Windows are now considered always "open".
     - If a window needs to be closed/re-opened multiple times, it can be wrapped into an optional.
     - As shown by the examples, this makes code simpler and removes another unnecessary "empty state".
@@ -288,25 +288,25 @@ TODO P0: update
     ```cpp
     int main()
     {
-        auto graphicsContext = sf::GraphicsContext::create().value();
-        sf::RenderWindow window(screen, "Example window");
+        auto graphicsContext = za::GraphicsContext::create().value();
+        za::RenderWindow window(screen, "Example window");
 
         while (true) // `window.isOpen()` does not exist anymore
         {
-            while (const sf::base::Optional event = window.pollEvent())
-                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            while (const zb::Optional event = window.pollEvent())
+                if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0; // `window.close()` does not exist anymore, just return
         }
     }
 
-    // Need an empty state? Use `sf::base::Optional<sf::RenderWindow>`.
+    // Need an empty state? Use `zb::Optional<za::RenderWindow>`.
     ```
 
     </details>
 
 <br>
 
-- ➡️ **`sf::Socket` constructor now takes a `isBlocking` parameter:**
+- ➡️ **`za::Socket` constructor now takes a `isBlocking` parameter:**
     - Following the principle of being more explicit, users now have to explicitly decide whether they want their socket to be blocking or not on construction, rather than relying on the possibly wrong default of blocking mode.
 
     <details>
@@ -315,10 +315,10 @@ TODO P0: update
 
     ```cpp
     // ERROR, does not compile -- blocking behavior not specified
-    /* sf::UdpSocket socket; */
+    /* za::UdpSocket socket; */
 
     // OK, blocking behavior explicitly provided
-    sf::UdpSocket socket(/* isBlocking */ true);
+    za::UdpSocket socket(/* isBlocking */ true);
     ```
 
     </details>
@@ -346,9 +346,9 @@ TODO P0: update
 <br>
 
 - ➡️ **Stack trace generation for errors and assertions:**
-    - Human-readable stack traces are generated on any `sf::priv::err()` error message, assertion failure, or lifetime tracking error.
+    - Human-readable stack traces are generated on any `za::priv::err()` error message, assertion failure, or lifetime tracking error.
     - Internally uses a vendored copy of `libbacktrace` (Ian Lance Taylor): <https://github.com/ianlancetaylor/libbacktrace>.
-    - Can be controlled via the CMake option `SFML_ENABLE_STACK_TRACES`.
+    - Can be controlled via the CMake option `ZA_ENABLE_STACK_TRACES`.
 
 <br>
 
@@ -361,11 +361,11 @@ TODO P0: update
 <br>
 
 - ➡️ **Massive compilation time speedup:**
-    - Thanks to copious use of PImpl and zero-allocation fast PImpl idioms, header hygiene, use of `SFML::Base` instead of the Standard Library, `extern template`, and many other techniques, this fork now compiles blazingly-fast compared to upstream SFML.
+    - Thanks to copious use of PImpl and zero-allocation fast PImpl idioms, header hygiene, use of `Zancle::Base` instead of the Standard Library, `extern template`, and many other techniques, this fork now compiles blazingly-fast compared to upstream SFML.
 
 <br>
 
-- ➡️ **`sf::priv::err()` enhancements:**
+- ➡️ **`za::priv::err()` enhancements:**
     - Including `Err.h` does not expose any expensive `ios` or `iostream` Standard Library header.
     - The end of a chain of streams is detected automatically, and a flush + newline is added at the end -- no need for `std::endl`!
     - Stack trace support, see above.
@@ -373,10 +373,10 @@ TODO P0: update
 <br>
 
 - ➡️ **Other various improvements:**
-    - Optimize `sf::Shader` source loading performance by reading into thread-local vector.
-    - Optimize rendering of `sf::Text` with outlines: now takes a single draw call compared to upstream SFML's two draw calls.
-    - `sf::priv::Err` is now thread-safe.
+    - Optimize `za::Shader` source loading performance by reading into thread-local vector.
+    - Optimize rendering of `za::Text` with outlines: now takes a single draw call compared to upstream SFML's two draw calls.
+    - `za::priv::Err` is now thread-safe.
     - All factory functions have been improved to support RVO or NRVO, checked via GCC's `-Wnrvo` flag.
     - Added `Vec2<T>::movedTowards(T r, Angle phi)` function.
-    - `sf::Vec2`, `sf::Vec3`, and `sf::Rect2` are now aggregates.
+    - `za::Vec2`, `za::Vec3`, and `za::Rect2` are now aggregates.
     - Removed catch-all headers such as `SFML/Audio.hpp` to promote good header hygiene in user projects.

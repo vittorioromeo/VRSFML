@@ -3,7 +3,7 @@
 #include "Achievements.hpp"
 #include "Stats.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ struct [[nodiscard]] Profile
 
     Stats statsLifetime;
 
-    sf::Vec2u resWidth = {};
+    za::Vec2u resWidth = {};
 
     bool windowed = true;
     bool vsync    = true;

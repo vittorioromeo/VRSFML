@@ -2,17 +2,17 @@
 
 #include "Tst/Detail/StringifyValue.hpp"
 
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
 
 
-namespace sf::base
+namespace zb
 {
-// Found by ADL when an `sf::base::String` operand needs rendering for a
+// Found by ADL when an `zb::String` operand needs rendering for a
 // failed assertion.
-[[gnu::always_inline]] inline sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const String& s) noexcept
+[[gnu::always_inline]] inline zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const String& s) noexcept
 {
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
-} // namespace sf::base
+} // namespace zb

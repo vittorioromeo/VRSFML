@@ -8,39 +8,39 @@
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
-// Include graphics because we use sf::Image for loading images
-#include "SFML/Graphics/Image.hpp"
+// Include graphics because we use za::Image for loading images
+#include "Zancle/Graphics/Image.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Vulkan.hpp"
-#include "SFML/Window/WindowBase.hpp"
-#include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowSettings.hpp" // IWYU pragma: keep
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Vulkan.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/FileInputStream.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
-#include "SFML/System/Vec3.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/FileInputStream.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
+#include "Zancle/System/Vec3.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Builtin/Memcpy.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Math/Tan.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/SourceLocation.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Builtin/Memcpy.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Math/Tan.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/SourceLocation.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <limits> // TODO P1: rewrite in sfml base
 
@@ -63,19 +63,19 @@ void matrixMultiply(Matrix& result, const Matrix& lhs, const Matrix& rhs)
             temp[i][j] = lhs[0][j] * rhs[i][0] + lhs[1][j] * rhs[i][1] + lhs[2][j] * rhs[i][2] + lhs[3][j] * rhs[i][3];
     }
 
-    SFML_BASE_MEMCPY(result, temp, sizeof(Matrix));
+    ZB_MEMCPY(result, temp, sizeof(Matrix));
 }
 
 // Rotate a matrix around the x-axis
-void matrixRotateX(Matrix& result, sf::Angle angle)
+void matrixRotateX(Matrix& result, za::Angle angle)
 {
     const float rad = angle.asRadians();
 
     // clang-format off
     const Matrix matrix = {
         {1.f,   0.f,           0.f,           0.f},
-        {0.f,   sf::base::cos(rad), sf::base::sin(rad), 0.f},
-        {0.f,  -sf::base::sin(rad), sf::base::cos(rad), 0.f},
+        {0.f,   zb::cos(rad), zb::sin(rad), 0.f},
+        {0.f,  -zb::sin(rad), zb::cos(rad), 0.f},
         {0.f,   0.f,           0.f,           1.f}
     };
     // clang-format on
@@ -84,15 +84,15 @@ void matrixRotateX(Matrix& result, sf::Angle angle)
 }
 
 // Rotate a matrix around the y-axis
-void matrixRotateY(Matrix& result, sf::Angle angle)
+void matrixRotateY(Matrix& result, za::Angle angle)
 {
     const float rad = angle.asRadians();
 
     // clang-format off
     const Matrix matrix = {
-        { sf::base::cos(rad), 0.f, sf::base::sin(rad), 0.f},
+        { zb::cos(rad), 0.f, zb::sin(rad), 0.f},
         { 0.f,           1.f, 0.f,           0.f},
-        {-sf::base::sin(rad), 0.f, sf::base::cos(rad), 0.f},
+        {-zb::sin(rad), 0.f, zb::cos(rad), 0.f},
         { 0.f,           0.f, 0.f,           1.f}
     };
     // clang-format on
@@ -101,14 +101,14 @@ void matrixRotateY(Matrix& result, sf::Angle angle)
 }
 
 // Rotate a matrix around the z-axis
-void matrixRotateZ(Matrix& result, sf::Angle angle)
+void matrixRotateZ(Matrix& result, za::Angle angle)
 {
     const float rad = angle.asRadians();
 
     // clang-format off
     const Matrix matrix = {
-        { sf::base::cos(rad), sf::base::sin(rad), 0.f, 0.f},
-        {-sf::base::sin(rad), sf::base::cos(rad), 0.f, 0.f},
+        { zb::cos(rad), zb::sin(rad), 0.f, 0.f},
+        {-zb::sin(rad), zb::cos(rad), 0.f, 0.f},
         { 0.f,           0.f,           1.f, 0.f},
         { 0.f,           0.f,           0.f, 1.f}
     };
@@ -118,13 +118,13 @@ void matrixRotateZ(Matrix& result, sf::Angle angle)
 }
 
 // Construct a lookat view matrix
-void matrixLookAt(Matrix& result, const sf::Vec3f& eye, const sf::Vec3f& center, const sf::Vec3f& up)
+void matrixLookAt(Matrix& result, const za::Vec3f& eye, const za::Vec3f& center, const za::Vec3f& up)
 {
     // Forward-looking vector
-    const sf::Vec3f forward = (center - eye).normalized();
+    const za::Vec3f forward = (center - eye).normalized();
 
     // Side vector (Forward cross product Up)
-    const sf::Vec3f side = forward.cross(up).normalized();
+    const za::Vec3f side = forward.cross(up).normalized();
 
     result[0][0] = side.x;
     result[0][1] = side.y * forward.z - side.z * forward.y;
@@ -148,9 +148,9 @@ void matrixLookAt(Matrix& result, const sf::Vec3f& eye, const sf::Vec3f& center,
 }
 
 // Construct a perspective projection matrix
-void matrixPerspective(Matrix& result, sf::Angle fov, float aspect, float nearPlane, float farPlane)
+void matrixPerspective(Matrix& result, za::Angle fov, float aspect, float nearPlane, float farPlane)
 {
-    const float a = 1.f / sf::base::tan(fov.asRadians() / 2.f);
+    const float a = 1.f / zb::tan(fov.asRadians() / 2.f);
 
     result[0][0] = a / aspect;
     result[0][1] = 0.f;
@@ -179,7 +179,7 @@ VkInstance currVulkanInstance = VK_NULL_HANDLE;
 // Helper function we pass to GLAD to load Vulkan functions via SFML
 GLADapiproc getVulkanFunction(const char* name)
 {
-    return sf::Vulkan::getFunction(name, currVulkanInstance);
+    return za::Vulkan::getFunction(name, currVulkanInstance);
 }
 
 // Debug we pass to Vulkan to call when it detects warnings or errors
@@ -187,13 +187,13 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugReportFlagsEXT,
     VkDebugReportObjectTypeEXT,
     std::uint64_t, // cannot use base here due to mismatch on unix
-    sf::base::SizeT,
+    zb::SizeT,
     std::int32_t, // cannot use base here due to mismatch on unix
     const char*,
     const char* pMessage,
     void*)
 {
-    sf::base::printErrLn("{}", pMessage);
+    zb::printErrLn("{}", pMessage);
 
     return VK_FALSE;
 }
@@ -206,15 +206,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 class VulkanExample
 {
 private:
-    void failStep(sf::base::SourceLocation sl = sf::base::SourceLocation::current())
+    void failStep(zb::SourceLocation sl = zb::SourceLocation::current())
     {
         vulkanAvailable = false;
-        sf::base::printErrLn("Vulkan setup failed at step '{}', line {}", sl.functionName(), sl.line());
+        zb::printErrLn("Vulkan setup failed at step '{}', line {}", sl.functionName(), sl.line());
     }
 
 public:
     // Constructor
-    VulkanExample() : window{sf::WindowBase::create({.size{800u, 600u}, .title = "SFML window with Vulkan"}).value()}
+    VulkanExample() : window{za::WindowBase::create({.size{800u, 600u}, .title = "SFML window with Vulkan"}).value()}
     {
         const auto tryStep = [&](const char* fName, auto&& f)
         {
@@ -224,7 +224,7 @@ public:
             f(); // sets `vulkanAvailable` to false if it fails
 
             if (!vulkanAvailable)
-                sf::base::printErrLn("Vulkan setup failed at step '{}'", fName);
+                zb::printErrLn("Vulkan setup failed at step '{}'", fName);
         };
 
 #define TRY_STEP(...) tryStep(#__VA_ARGS__, [&] { __VA_ARGS__; })
@@ -350,10 +350,10 @@ public:
     {
         // Swapchain teardown procedure
         for (VkFence fence : fences)
-            vkWaitForFences(device, 1, &fence, VK_TRUE, std::numeric_limits<sf::base::U64>::max());
+            vkWaitForFences(device, 1, &fence, VK_TRUE, std::numeric_limits<zb::U64>::max());
 
         if (!commandBuffers.empty())
-            vkFreeCommandBuffers(device, commandPool, static_cast<sf::base::U32>(commandBuffers.size()), commandBuffers.data());
+            vkFreeCommandBuffers(device, commandPool, static_cast<zb::U32>(commandBuffers.size()), commandBuffers.data());
 
         commandBuffers.clear();
 
@@ -432,9 +432,9 @@ public:
             return failStep();
 
         // Retrieve the available instance layers
-        sf::base::U32 objectCount = 0;
+        zb::U32 objectCount = 0;
 
-        sf::base::Vector<VkLayerProperties> layers;
+        zb::Vector<VkLayerProperties> layers;
 
         if (vkEnumerateInstanceLayerProperties(&objectCount, nullptr) != VK_SUCCESS)
             return failStep();
@@ -445,7 +445,7 @@ public:
             return failStep();
 
         // Activate the layers we are interested in
-        sf::base::Vector<const char*> validationLayers;
+        zb::Vector<const char*> validationLayers;
 
         for (VkLayerProperties& layer : layers)
         {
@@ -460,20 +460,20 @@ public:
             // -- VK_LAYER_GOOGLE_unique_objects
             // These layers perform error checking and warn about bad or sub-optimal Vulkan API usage
             // VK_LAYER_LUNARG_monitor appends an FPS counter to the window title
-            if (sf::base::StringView(layer.layerName) == "VK_LAYER_LUNARG_standard_validation")
+            if (zb::StringView(layer.layerName) == "VK_LAYER_LUNARG_standard_validation")
             {
                 validationLayers.pushBack("VK_LAYER_LUNARG_standard_validation");
             }
-            else if (sf::base::StringView(layer.layerName) == "VK_LAYER_LUNARG_monitor")
+            else if (zb::StringView(layer.layerName) == "VK_LAYER_LUNARG_monitor")
             {
                 validationLayers.pushBack("VK_LAYER_LUNARG_monitor");
             }
         }
 
         // Retrieve the extensions we need to enable in order to use Vulkan with SFML
-        sf::base::Vector<const char*> requiredExtensions;
+        zb::Vector<const char*> requiredExtensions;
 
-        for (const char* e : sf::Vulkan::getGraphicsRequiredInstanceExtensions())
+        for (const char* e : za::Vulkan::getGraphicsRequiredInstanceExtensions())
             requiredExtensions.pushBack(e);
 
         requiredExtensions.pushBack(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
@@ -490,9 +490,9 @@ public:
         VkInstanceCreateInfo instanceCreateInfo    = VkInstanceCreateInfo();
         instanceCreateInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo        = &applicationInfo;
-        instanceCreateInfo.enabledLayerCount       = static_cast<sf::base::U32>(validationLayers.size());
+        instanceCreateInfo.enabledLayerCount       = static_cast<zb::U32>(validationLayers.size());
         instanceCreateInfo.ppEnabledLayerNames     = validationLayers.data();
-        instanceCreateInfo.enabledExtensionCount   = static_cast<sf::base::U32>(requiredExtensions.size());
+        instanceCreateInfo.enabledExtensionCount   = static_cast<zb::U32>(requiredExtensions.size());
         instanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
         // Try to create a Vulkan instance with debug report enabled
@@ -503,7 +503,7 @@ public:
         {
             requiredExtensions.popBack();
 
-            instanceCreateInfo.enabledExtensionCount   = static_cast<sf::base::U32>(requiredExtensions.size());
+            instanceCreateInfo.enabledExtensionCount   = static_cast<zb::U32>(requiredExtensions.size());
             instanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
             result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
@@ -541,7 +541,7 @@ public:
     // Setup the SFML window Vulkan rendering surface
     void setupSurface()
     {
-        if (!window.createVulkanSurface(sf::Vulkan::VulkanSurfaceData{instance, surface}))
+        if (!window.createVulkanSurface(za::Vulkan::VulkanSurfaceData{instance, surface}))
             return failStep();
     }
 
@@ -553,9 +553,9 @@ public:
             return failStep();
 
         // Retrieve list of GPUs
-        sf::base::U32 objectCount = 0;
+        zb::U32 objectCount = 0;
 
-        sf::base::Vector<VkPhysicalDevice> devices;
+        zb::Vector<VkPhysicalDevice> devices;
 
         if (vkEnumeratePhysicalDevices(instance, &objectCount, nullptr) != VK_SUCCESS)
             return failStep();
@@ -573,7 +573,7 @@ public:
             VkPhysicalDeviceProperties deviceProperties;
             vkGetPhysicalDeviceProperties(dev, &deviceProperties);
 
-            sf::base::Vector<VkExtensionProperties> extensions;
+            zb::Vector<VkExtensionProperties> extensions;
 
             if (vkEnumerateDeviceExtensionProperties(dev, nullptr, &objectCount, nullptr) != VK_SUCCESS)
                 return failStep();
@@ -587,7 +587,7 @@ public:
 
             for (VkExtensionProperties& extension : extensions)
             {
-                if (sf::base::StringView(extension.extensionName) == VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+                if (zb::StringView(extension.extensionName) == VK_KHR_SWAPCHAIN_EXTENSION_NAME)
                 {
                     supportsSwapchain = true;
                     break;
@@ -657,9 +657,9 @@ public:
     void setupLogicalDevice()
     {
         // Select a queue family that supports graphics operations and surface presentation
-        sf::base::U32 objectCount = 0;
+        zb::U32 objectCount = 0;
 
-        sf::base::Vector<VkQueueFamilyProperties> queueFamilyProperties;
+        zb::Vector<VkQueueFamilyProperties> queueFamilyProperties;
 
         vkGetPhysicalDeviceQueueFamilyProperties(gpu, &objectCount, nullptr);
 
@@ -667,15 +667,15 @@ public:
 
         vkGetPhysicalDeviceQueueFamilyProperties(gpu, &objectCount, queueFamilyProperties.data());
 
-        for (sf::base::SizeT i = 0; i < queueFamilyProperties.size(); ++i)
+        for (zb::SizeT i = 0; i < queueFamilyProperties.size(); ++i)
         {
             VkBool32 surfaceSupported = VK_FALSE;
 
-            vkGetPhysicalDeviceSurfaceSupportKHR(gpu, static_cast<sf::base::U32>(i), surface, &surfaceSupported);
+            vkGetPhysicalDeviceSurfaceSupportKHR(gpu, static_cast<zb::U32>(i), surface, &surfaceSupported);
 
             if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && (surfaceSupported == VK_TRUE))
             {
-                queueFamilyIndex.emplace(static_cast<sf::base::U32>(i));
+                queueFamilyIndex.emplace(static_cast<zb::U32>(i));
                 break;
             }
         }
@@ -718,9 +718,9 @@ public:
     void setupSwapchain()
     {
         // Select a surface format that supports RGBA color format
-        sf::base::U32 objectCount = 0;
+        zb::U32 objectCount = 0;
 
-        sf::base::Vector<VkSurfaceFormatKHR> surfaceFormats;
+        zb::Vector<VkSurfaceFormatKHR> surfaceFormats;
 
         if (vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &objectCount, nullptr) != VK_SUCCESS)
             return failStep();
@@ -756,7 +756,7 @@ public:
             return failStep();
 
         // Select a swapchain present mode
-        sf::base::Vector<VkPresentModeKHR> presentModes;
+        zb::Vector<VkPresentModeKHR> presentModes;
 
         if (vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &objectCount, nullptr) != VK_SUCCESS)
             return failStep();
@@ -784,15 +784,15 @@ public:
         if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface, &surfaceCapabilities) != VK_SUCCESS)
             return failStep();
 
-        swapchainExtent.width = sf::base::clamp(window.getSize().x,
+        swapchainExtent.width = zb::clamp(window.getSize().x,
                                                 surfaceCapabilities.minImageExtent.width,
                                                 surfaceCapabilities.maxImageExtent.width);
 
-        swapchainExtent.height = sf::base::clamp(window.getSize().y,
+        swapchainExtent.height = zb::clamp(window.getSize().y,
                                                  surfaceCapabilities.minImageExtent.height,
                                                  surfaceCapabilities.maxImageExtent.height);
 
-        const auto imageCount = sf::base::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+        const auto imageCount = zb::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
         VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR();
         swapchainCreateInfo.sType                    = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -819,7 +819,7 @@ public:
     void setupSwapchainImages()
     {
         // Retrieve swapchain images
-        sf::base::U32 objectCount = 0;
+        zb::U32 objectCount = 0;
 
         if (vkGetSwapchainImagesKHR(device, swapchain, &objectCount, nullptr) != VK_SUCCESS)
             return failStep();
@@ -845,7 +845,7 @@ public:
         imageViewCreateInfo.subresourceRange.layerCount     = 1;
 
         // Create an image view for each swapchain image
-        for (sf::base::SizeT i = 0; i < swapchainImages.size(); ++i)
+        for (zb::SizeT i = 0; i < swapchainImages.size(); ++i)
         {
             imageViewCreateInfo.image = swapchainImages[i];
 
@@ -862,17 +862,17 @@ public:
 
         // Use the vertex shader SPIR-V code to create a vertex shader module
         {
-            auto file = sf::FileInputStream::open("resources/shader.vert.spv");
+            auto file = za::FileInputStream::open("resources/shader.vert.spv");
             if (!file.hasValue())
                 return failStep();
 
             const auto                      fileSize = file->getSize().value();
-            sf::base::Vector<sf::base::U32> buffer(fileSize / sizeof(sf::base::U32));
+            zb::Vector<zb::U32> buffer(fileSize / sizeof(zb::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
                 return failStep();
 
-            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(sf::base::U32);
+            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(zb::U32);
             shaderModuleCreateInfo.pCode    = buffer.data();
 
             if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &vertexShaderModule) != VK_SUCCESS)
@@ -881,17 +881,17 @@ public:
 
         // Use the fragment shader SPIR-V code to create a fragment shader module
         {
-            auto file = sf::FileInputStream::open("resources/shader.frag.spv");
+            auto file = za::FileInputStream::open("resources/shader.frag.spv");
             if (!file.hasValue())
                 return failStep();
 
             const auto                      fileSize = file->getSize().value();
-            sf::base::Vector<sf::base::U32> buffer(fileSize / sizeof(sf::base::U32));
+            zb::Vector<zb::U32> buffer(fileSize / sizeof(zb::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
                 return failStep();
 
-            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(sf::base::U32);
+            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(zb::U32);
             shaderModuleCreateInfo.pCode    = buffer.data();
 
             if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS)
@@ -1164,7 +1164,7 @@ public:
         framebufferCreateInfo.height                  = swapchainExtent.height;
         framebufferCreateInfo.layers                  = 1;
 
-        for (sf::base::SizeT i = 0; i < swapchainFramebuffers.size(); ++i)
+        for (zb::SizeT i = 0; i < swapchainFramebuffers.size(); ++i)
         {
             // Each framebuffer consists of a corresponding swapchain image and the shared depth image
             VkImageView attachments[] = {swapchainImageViews[i], depthImageView};
@@ -1217,7 +1217,7 @@ public:
         VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties();
         vkGetPhysicalDeviceMemoryProperties(gpu, &memoryProperties);
 
-        sf::base::U32 memoryType = 0;
+        zb::U32 memoryType = 0;
 
         for (; memoryType < memoryProperties.memoryTypeCount; ++memoryType)
         {
@@ -1313,7 +1313,7 @@ public:
     void setupVertexBuffer()
     {
         // clang-format off
-        constexpr sf::base::Array vertexData = {
+        constexpr zb::Array vertexData = {
             // X      Y      Z     R     G     B     A     U     V
             -0.5f, -0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f,
              0.5f, -0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f,
@@ -1370,7 +1370,7 @@ public:
         }
 
         // Copy the vertex data into the buffer
-        SFML_BASE_MEMCPY(ptr, vertexData.data(), sizeof(vertexData));
+        ZB_MEMCPY(ptr, vertexData.data(), sizeof(vertexData));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -1400,7 +1400,7 @@ public:
     void setupIndexBuffer()
     {
         // clang-format off
-        constexpr sf::base::Array<sf::base::U16, 36> indexData = {
+        constexpr zb::Array<zb::U16, 36> indexData = {
             0,  1,  2,
             2,  3,  0,
 
@@ -1444,7 +1444,7 @@ public:
         }
 
         // Copy the index data into the buffer
-        SFML_BASE_MEMCPY(ptr, indexData.data(), sizeof(indexData));
+        ZB_MEMCPY(ptr, indexData.data(), sizeof(indexData));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -1474,7 +1474,7 @@ public:
     void setupUniformBuffers()
     {
         // Create a uniform buffer for every frame that might be in flight to prevent clobbering
-        for (sf::base::SizeT i = 0; i < swapchainImages.size(); ++i)
+        for (zb::SizeT i = 0; i < swapchainImages.size(); ++i)
         {
             uniformBuffers.pushBack({});
             uniformBuffersMemory.pushBack({});
@@ -1490,8 +1490,8 @@ public:
     }
 
     // Helper to create a generic image with the specified size, format, usage and memory flags
-    bool createImage(sf::base::U32         width,
-                     sf::base::U32         height,
+    bool createImage(zb::U32         width,
+                     zb::U32         height,
                      VkFormat              format,
                      VkImageTiling         tiling,
                      VkImageUsageFlags     usage,
@@ -1527,7 +1527,7 @@ public:
         VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties();
         vkGetPhysicalDeviceMemoryProperties(gpu, &memoryProperties);
 
-        sf::base::U32 memoryType = 0;
+        zb::U32 memoryType = 0;
 
         for (; memoryType < memoryProperties.memoryTypeCount; ++memoryType)
         {
@@ -1678,7 +1678,7 @@ public:
     void setupTextureImage()
     {
         // Load the image data
-        const auto maybeImageData = sf::Image::loadFromFile("resources/logo.png");
+        const auto maybeImageData = za::Image::loadFromFile("resources/logo.png");
 
         if (!maybeImageData.hasValue())
             return failStep();
@@ -1708,7 +1708,7 @@ public:
         }
 
         // Copy the image data into the buffer
-        SFML_BASE_MEMCPY(ptr, imageData.getPixelsPtr(), static_cast<sf::base::SizeT>(imageSize));
+        ZB_MEMCPY(ptr, imageData.getPixelsPtr(), static_cast<zb::SizeT>(imageSize));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -2006,17 +2006,17 @@ public:
 
         descriptorPoolSizes[0]                 = VkDescriptorPoolSize();
         descriptorPoolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorPoolSizes[0].descriptorCount = static_cast<sf::base::U32>(swapchainImages.size());
+        descriptorPoolSizes[0].descriptorCount = static_cast<zb::U32>(swapchainImages.size());
 
         descriptorPoolSizes[1]                 = VkDescriptorPoolSize();
         descriptorPoolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorPoolSizes[1].descriptorCount = static_cast<sf::base::U32>(swapchainImages.size());
+        descriptorPoolSizes[1].descriptorCount = static_cast<zb::U32>(swapchainImages.size());
 
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = VkDescriptorPoolCreateInfo();
         descriptorPoolCreateInfo.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptorPoolCreateInfo.poolSizeCount              = 2;
         descriptorPoolCreateInfo.pPoolSizes                 = descriptorPoolSizes;
-        descriptorPoolCreateInfo.maxSets                    = static_cast<sf::base::U32>(swapchainImages.size());
+        descriptorPoolCreateInfo.maxSets                    = static_cast<zb::U32>(swapchainImages.size());
 
         // Create the descriptor pool
         if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS)
@@ -2027,12 +2027,12 @@ public:
     void setupDescriptorSets()
     {
         // Allocate a descriptor set for each frame in flight
-        sf::base::Vector<VkDescriptorSetLayout> descriptorSetLayouts(swapchainImages.size(), descriptorSetLayout);
+        zb::Vector<VkDescriptorSetLayout> descriptorSetLayouts(swapchainImages.size(), descriptorSetLayout);
 
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = VkDescriptorSetAllocateInfo();
         descriptorSetAllocateInfo.sType                       = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         descriptorSetAllocateInfo.descriptorPool              = descriptorPool;
-        descriptorSetAllocateInfo.descriptorSetCount          = static_cast<sf::base::U32>(swapchainImages.size());
+        descriptorSetAllocateInfo.descriptorSetCount          = static_cast<zb::U32>(swapchainImages.size());
         descriptorSetAllocateInfo.pSetLayouts                 = descriptorSetLayouts.data();
 
         descriptorSets.resize(swapchainImages.size());
@@ -2045,7 +2045,7 @@ public:
         }
 
         // For every descriptor set, set up the bindings to our uniform buffer and texture sampler
-        for (sf::base::SizeT i = 0; i < descriptorSets.size(); ++i)
+        for (zb::SizeT i = 0; i < descriptorSets.size(); ++i)
         {
             VkWriteDescriptorSet writeDescriptorSets[2];
 
@@ -2095,7 +2095,7 @@ public:
         commandBufferAllocateInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         commandBufferAllocateInfo.commandPool                 = commandPool;
         commandBufferAllocateInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        commandBufferAllocateInfo.commandBufferCount          = static_cast<sf::base::U32>(commandBuffers.size());
+        commandBufferAllocateInfo.commandBufferCount          = static_cast<zb::U32>(commandBuffers.size());
 
         // Allocate the command buffers from our command pool
         if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
@@ -2138,7 +2138,7 @@ public:
         commandBufferBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
         // Set up the command buffers for each frame in flight
-        for (sf::base::SizeT i = 0; i < commandBuffers.size(); ++i)
+        for (zb::SizeT i = 0; i < commandBuffers.size(); ++i)
         {
             // Begin the command buffer
             if (vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
@@ -2189,7 +2189,7 @@ public:
         semaphoreCreateInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         // Create a semaphore to track when an swapchain image is available for each frame in flight
-        for (sf::base::SizeT i = 0; i < maxFramesInFlight; ++i)
+        for (zb::SizeT i = 0; i < maxFramesInFlight; ++i)
         {
             imageAvailableSemaphores.pushBack({});
 
@@ -2201,7 +2201,7 @@ public:
         }
 
         // Create a semaphore to track when rendering is complete for each frame in flight
-        for (sf::base::SizeT i = 0; i < maxFramesInFlight; ++i)
+        for (zb::SizeT i = 0; i < maxFramesInFlight; ++i)
         {
             renderFinishedSemaphores.pushBack({});
 
@@ -2222,7 +2222,7 @@ public:
         fenceCreateInfo.flags             = VK_FENCE_CREATE_SIGNALED_BIT;
 
         // Create a fence to track when queue submission is complete for each frame in flight
-        for (sf::base::SizeT i = 0; i < maxFramesInFlight; ++i)
+        for (zb::SizeT i = 0; i < maxFramesInFlight; ++i)
         {
             fences.pushBack({});
 
@@ -2240,29 +2240,29 @@ public:
         // Construct the model matrix
         Matrix model = {{1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f}, {0.f, 0.f, 1.f, 0.f}, {0.f, 0.f, 0.f, 1.f}};
 
-        matrixRotateX(model, sf::degrees(elapsed * 59.f));
-        matrixRotateY(model, sf::degrees(elapsed * 83.f));
-        matrixRotateZ(model, sf::degrees(elapsed * 109.f));
+        matrixRotateX(model, za::degrees(elapsed * 59.f));
+        matrixRotateY(model, za::degrees(elapsed * 83.f));
+        matrixRotateZ(model, za::degrees(elapsed * 109.f));
 
         // Translate the model based on the mouse position
-        const auto  mousePosition = sf::Mouse::getPosition(window).toVec2f();
+        const auto  mousePosition = za::Mouse::getPosition(window).toVec2f();
         const auto  windowSize    = window.getSize().toVec2f();
-        const float x             = sf::base::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.f, 1.f) * 2.f;
-        const float y             = sf::base::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.f, 1.f) * 1.5f;
+        const float x             = zb::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.f, 1.f) * 2.f;
+        const float y             = zb::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.f, 1.f) * 1.5f;
 
         model[3][0] -= x;
         model[3][2] += y;
 
         // Construct the view matrix
-        const sf::Vec3f eye(0.f, 4.f, 0.f);
-        const sf::Vec3f center(0.f, 0.f, 0.f);
-        const sf::Vec3f up(0.f, 0.f, 1.f);
+        const za::Vec3f eye(0.f, 4.f, 0.f);
+        const za::Vec3f center(0.f, 0.f, 0.f);
+        const za::Vec3f up(0.f, 0.f, 1.f);
 
         Matrix view;
         matrixLookAt(view, eye, center, up);
 
         // Construct the projection matrix
-        const sf::Angle fov    = sf::degrees(45);
+        const za::Angle fov    = za::degrees(45);
         const float     aspect = static_cast<float>(swapchainExtent.width) / static_cast<float>(swapchainExtent.height);
         const float     nearPlane = 0.1f;
         const float     farPlane  = 10.f;
@@ -2279,9 +2279,9 @@ public:
             return failStep();
 
         // Copy the matrix data into the current frame's uniform buffer
-        SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 0, model, sizeof(Matrix));
-        SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 1, view, sizeof(Matrix));
-        SFML_BASE_MEMCPY(ptr + sizeof(Matrix) * 2, projection, sizeof(Matrix));
+        ZB_MEMCPY(ptr + sizeof(Matrix) * 0, model, sizeof(Matrix));
+        ZB_MEMCPY(ptr + sizeof(Matrix) * 1, view, sizeof(Matrix));
+        ZB_MEMCPY(ptr + sizeof(Matrix) * 2, projection, sizeof(Matrix));
 
         // Unmap the buffer
         vkUnmapMemory(device, uniformBuffersMemory[currentFrame]);
@@ -2289,16 +2289,16 @@ public:
 
     void draw()
     {
-        sf::base::U32 imageIndex = 0;
+        zb::U32 imageIndex = 0;
 
         // If the objects we need to submit this frame are still pending, wait here
-        vkWaitForFences(device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<sf::base::U64>::max());
+        vkWaitForFences(device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<zb::U64>::max());
 
         {
             // Get the next image in the swapchain
             const VkResult result = vkAcquireNextImageKHR(device,
                                                           swapchain,
-                                                          std::numeric_limits<sf::base::U64>::max(),
+                                                          std::numeric_limits<zb::U64>::max(),
                                                           imageAvailableSemaphores[currentFrame],
                                                           VK_NULL_HANDLE,
                                                           &imageIndex);
@@ -2364,19 +2364,19 @@ public:
 
     void run()
     {
-        const sf::Clock clock;
+        const za::Clock clock;
 
         // Start game loop
         while (true)
         {
             // Process events
-            while (const sf::base::Optional event = window.pollEvent())
+            while (const zb::Optional event = window.pollEvent())
             {
-                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return;
 
                 // Re-create the swapchain when the window is resized
-                if (event->is<sf::Event::Resized>())
+                if (event->is<za::Event::Resized>())
                     swapchainOutOfDate = true;
             }
 
@@ -2393,9 +2393,9 @@ public:
 
 private:
     // NOLINTBEGIN(readability-identifier-naming)
-    sf::WindowBase window;
+    za::WindowBase window;
 
-    bool vulkanAvailable{sf::Vulkan::isAvailable()};
+    bool vulkanAvailable{za::Vulkan::isAvailable()};
 
     const unsigned int maxFramesInFlight{2};
     unsigned int       currentFrame{};
@@ -2405,14 +2405,14 @@ private:
     VkDebugReportCallbackEXT          debugReportCallback{};
     VkSurfaceKHR                      surface{};
     VkPhysicalDevice                  gpu{};
-    sf::base::Optional<sf::base::U32> queueFamilyIndex;
+    zb::Optional<zb::U32> queueFamilyIndex;
     VkDevice                          device{};
     VkQueue                           queue{};
     VkSurfaceFormatKHR                swapchainFormat{};
     VkExtent2D                        swapchainExtent{};
     VkSwapchainKHR                    swapchain{};
-    sf::base::Vector<VkImage>         swapchainImages;
-    sf::base::Vector<VkImageView>     swapchainImageViews;
+    zb::Vector<VkImage>         swapchainImages;
+    zb::Vector<VkImageView>     swapchainImageViews;
     VkFormat                          depthFormat{VK_FORMAT_UNDEFINED};
     VkImage                           depthImage{};
     VkDeviceMemory                    depthImageMemory{};
@@ -2424,24 +2424,24 @@ private:
     VkPipelineLayout                  pipelineLayout{};
     VkRenderPass                      renderPass{};
     VkPipeline                        graphicsPipeline{};
-    sf::base::Vector<VkFramebuffer>   swapchainFramebuffers;
+    zb::Vector<VkFramebuffer>   swapchainFramebuffers;
     VkCommandPool                     commandPool{};
     VkBuffer                          vertexBuffer{};
     VkDeviceMemory                    vertexBufferMemory{};
     VkBuffer                          indexBuffer{};
     VkDeviceMemory                    indexBufferMemory{};
-    sf::base::Vector<VkBuffer>        uniformBuffers;
-    sf::base::Vector<VkDeviceMemory>  uniformBuffersMemory;
+    zb::Vector<VkBuffer>        uniformBuffers;
+    zb::Vector<VkDeviceMemory>  uniformBuffersMemory;
     VkImage                           textureImage{};
     VkDeviceMemory                    textureImageMemory{};
     VkImageView                       textureImageView{};
     VkSampler                         textureSampler{};
     VkDescriptorPool                  descriptorPool{};
-    sf::base::Vector<VkDescriptorSet> descriptorSets;
-    sf::base::Vector<VkCommandBuffer> commandBuffers;
-    sf::base::Vector<VkSemaphore>     imageAvailableSemaphores;
-    sf::base::Vector<VkSemaphore>     renderFinishedSemaphores;
-    sf::base::Vector<VkFence>         fences;
+    zb::Vector<VkDescriptorSet> descriptorSets;
+    zb::Vector<VkCommandBuffer> commandBuffers;
+    zb::Vector<VkSemaphore>     imageAvailableSemaphores;
+    zb::Vector<VkSemaphore>     renderFinishedSemaphores;
+    zb::Vector<VkFence>         fences;
     // NOLINTEND(readability-identifier-naming)
 };
 
@@ -2452,7 +2452,7 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto windowContext = sf::WindowContext::create().value();
+    auto windowContext = za::WindowContext::create().value();
     VulkanExample{}.run();
 }
 

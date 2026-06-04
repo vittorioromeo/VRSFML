@@ -1,25 +1,25 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/SmallVector.hpp"
+#include "ZancleBase/SmallVector.hpp"
 
-#include "SFML/Base/Builtin/Memcpy.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/PlacementNew.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Swap.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Builtin/Memcpy.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/PlacementNew.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Swap.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
@@ -101,33 +101,33 @@ struct Obj
 
     friend void swap(Obj& lhs, Obj& rhs) noexcept // used (found via ADL)
     {
-        sf::base::genericSwap(lhs.value, rhs.value);
+        zb::genericSwap(lhs.value, rhs.value);
     }
 };
 
 
-constexpr sf::base::SizeT inlineCapacity = 5;
+constexpr zb::SizeT inlineCapacity = 5;
 
 TEST_CASE("[Base] Base/SmallVector.hpp")
 {
     SECTION("Type traits")
     {
-        using T = sf::base::SmallVector<Obj, inlineCapacity>;
+        using T = zb::SmallVector<Obj, inlineCapacity>;
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(T));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(T));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(T));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(T));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(T));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(T));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(T));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(T));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(T));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(T));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(T));
 
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(T));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(T));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(T));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(T));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(T));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(T));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(T));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(T));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(T));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(T));
     }
 
     SECTION("Inline Behavior (Size <= N)")
@@ -135,7 +135,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         resetCounters();
 
         {
-            sf::base::SmallVector<Obj, inlineCapacity> vec;
+            zb::SmallVector<Obj, inlineCapacity> vec;
 
             CHECK(vec.empty());
             CHECK(vec.size() == 0);
@@ -164,7 +164,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         resetCounters();
 
         {
-            sf::base::SmallVector<Obj, inlineCapacity> vec;
+            zb::SmallVector<Obj, inlineCapacity> vec;
 
             // Fill inline capacity
             for (int i = 0; i < 5; ++i)
@@ -183,7 +183,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
             CHECK(vec.capacity() > inlineCapacity);
 
             // Verify data preservation
-            for (sf::base::SizeT i = 0u; i < 6; ++i)
+            for (zb::SizeT i = 0u; i < 6; ++i)
                 CHECK(vec[i].value == i);
 
             // Check movement cost
@@ -198,7 +198,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Reserve")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> vec;
+        zb::SmallVector<Obj, inlineCapacity> vec;
 
         // Reserve within inline capacity should do nothing
         vec.reserve(3);
@@ -211,7 +211,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("ShrinkToFit (Heap -> Inline)")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> vec;
+        zb::SmallVector<Obj, inlineCapacity> vec;
         vec.reserve(20); // Force heap
         vec.emplaceBack(1);
         vec.emplaceBack(2);
@@ -237,11 +237,11 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
     {
         SECTION("Inline <-> Inline")
         {
-            sf::base::SmallVector<Obj, inlineCapacity> v1;
+            zb::SmallVector<Obj, inlineCapacity> v1;
             v1.emplaceBack(1);
             v1.emplaceBack(2);
 
-            sf::base::SmallVector<Obj, inlineCapacity> v2;
+            zb::SmallVector<Obj, inlineCapacity> v2;
             v2.emplaceBack(10);
 
             resetCounters();
@@ -260,11 +260,11 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
         SECTION("Heap <-> Heap")
         {
-            sf::base::SmallVector<Obj, inlineCapacity> v1;
+            zb::SmallVector<Obj, inlineCapacity> v1;
             v1.reserve(20);
             v1.emplaceBack(1);
 
-            sf::base::SmallVector<Obj, inlineCapacity> v2;
+            zb::SmallVector<Obj, inlineCapacity> v2;
             v2.reserve(20);
             v2.emplaceBack(10);
 
@@ -280,11 +280,11 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
         SECTION("Heap <-> Inline")
         {
-            sf::base::SmallVector<Obj, inlineCapacity> vHeap;
+            zb::SmallVector<Obj, inlineCapacity> vHeap;
             vHeap.reserve(20);
             vHeap.emplaceBack(100);
 
-            sf::base::SmallVector<Obj, inlineCapacity> vInline;
+            zb::SmallVector<Obj, inlineCapacity> vInline;
             vInline.emplaceBack(1);
             vInline.emplaceBack(2);
 
@@ -312,12 +312,12 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
     {
         SECTION("Move Constructor (From Heap)")
         {
-            sf::base::SmallVector<Obj, inlineCapacity> src;
+            zb::SmallVector<Obj, inlineCapacity> src;
             src.reserve(20);
             src.emplaceBack(1);
 
             resetCounters();
-            sf::base::SmallVector<Obj, inlineCapacity> dst(SFML_BASE_MOVE(src));
+            zb::SmallVector<Obj, inlineCapacity> dst(ZB_MOVE(src));
 
             // Should steal pointers
             CHECK(dst.size() == 1);
@@ -328,11 +328,11 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
         SECTION("Move Constructor (From Inline)")
         {
-            sf::base::SmallVector<Obj, inlineCapacity> src;
+            zb::SmallVector<Obj, inlineCapacity> src;
             src.emplaceBack(1);
 
             resetCounters();
-            sf::base::SmallVector<Obj, inlineCapacity> dst(SFML_BASE_MOVE(src));
+            zb::SmallVector<Obj, inlineCapacity> dst(ZB_MOVE(src));
 
             CHECK(dst.size() == 1);
             CHECK(dst.capacity() == inlineCapacity);
@@ -342,7 +342,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Emplace/Insert Operations")
     {
-        sf::base::SmallVector<int, 5> vec;
+        zb::SmallVector<int, 5> vec;
         vec.emplaceBack(1);
         vec.emplaceBack(3);
 
@@ -357,12 +357,12 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Initializer List")
     {
-        sf::base::SmallVector<int, 5> vec = {1, 2, 3};
+        zb::SmallVector<int, 5> vec = {1, 2, 3};
         CHECK(vec.size() == 3);
         CHECK(vec.capacity() == 5);
         CHECK(vec[2] == 3);
 
-        sf::base::SmallVector<int, 2> vec2 = {1, 2, 3};
+        zb::SmallVector<int, 2> vec2 = {1, 2, 3};
         CHECK(vec2.size() == 3);
         CHECK(vec2.capacity() >= 3); // Forced heap allocation
     }
@@ -372,7 +372,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         resetCounters();
 
         {
-            sf::base::SmallVector<Obj, inlineCapacity> vec(3);
+            zb::SmallVector<Obj, inlineCapacity> vec(3);
 
             CHECK(vec.size() == 3);
             CHECK(vec.capacity() == inlineCapacity);
@@ -390,8 +390,8 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         resetCounters();
 
         {
-            sf::base::SmallVector<Obj, inlineCapacity> v1(3);
-            sf::base::SmallVector<Obj, inlineCapacity> v2(2);
+            zb::SmallVector<Obj, inlineCapacity> v1(3);
+            zb::SmallVector<Obj, inlineCapacity> v2(2);
 
             CHECK(defaultCtorCount == 5);
             CHECK(dtorCount == 0);
@@ -412,14 +412,14 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
     {
         // Simulate what happens when an outer Vector<SmallVector> grows and
         // trivially relocates (memcpy) a SmallVector that is using inline storage.
-        using SV = sf::base::SmallVector<int, 4>;
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(SV));
+        using SV = zb::SmallVector<int, 4>;
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(SV));
 
         alignas(SV) unsigned char srcBuf[sizeof(SV)];
         alignas(SV) unsigned char dstBuf[sizeof(SV)];
 
         // Construct a SmallVector in srcBuf using inline storage
-        SV* src = SFML_BASE_PLACEMENT_NEW(&srcBuf) SV();
+        SV* src = ZB_PLACEMENT_NEW(&srcBuf) SV();
         src->emplaceBack(10);
         src->emplaceBack(20);
         src->emplaceBack(30);
@@ -429,7 +429,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         CHECK(!src->isHeap());
 
         // Trivially relocate: memcpy to dstBuf, skip destructor on src
-        SFML_BASE_MEMCPY(dstBuf, srcBuf, sizeof(SV));
+        ZB_MEMCPY(dstBuf, srcBuf, sizeof(SV));
         // Do NOT call src->~SV() -- that's the point of trivial relocation
 
         // The relocated SmallVector should work correctly from dstBuf
@@ -452,13 +452,13 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Trivial relocation (memcpy) - heap mode")
     {
-        using SV = sf::base::SmallVector<int, 2>;
+        using SV = zb::SmallVector<int, 2>;
 
         alignas(SV) unsigned char srcBuf[sizeof(SV)];
         alignas(SV) unsigned char dstBuf[sizeof(SV)];
 
         // Construct a SmallVector that spills to heap
-        SV* src = SFML_BASE_PLACEMENT_NEW(&srcBuf) SV();
+        SV* src = ZB_PLACEMENT_NEW(&srcBuf) SV();
         src->emplaceBack(1);
         src->emplaceBack(2);
         src->emplaceBack(3); // triggers heap allocation
@@ -467,7 +467,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         CHECK(src->isHeap());
 
         // Trivially relocate
-        SFML_BASE_MEMCPY(dstBuf, srcBuf, sizeof(SV));
+        ZB_MEMCPY(dstBuf, srcBuf, sizeof(SV));
 
         SV* dst = reinterpret_cast<SV*>(dstBuf);
 
@@ -484,23 +484,23 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
     {
         // End-to-end test: a Vector of SmallVectors will use trivial
         // relocation when it grows, exercising the real code path.
-        using SV = sf::base::SmallVector<int, 4>;
+        using SV = zb::SmallVector<int, 4>;
 
-        sf::base::Vector<SV> outer;
+        zb::Vector<SV> outer;
 
         // Add enough SmallVectors to trigger multiple reallocations
-        for (sf::base::SizeT i = 0u; i < 20u; ++i)
+        for (zb::SizeT i = 0u; i < 20u; ++i)
         {
             SV sv;
             sv.emplaceBack(static_cast<int>(i * 10u));
             sv.emplaceBack(static_cast<int>(i * 10u + 1u));
             sv.emplaceBack(static_cast<int>(i * 10u + 2u));
 
-            outer.emplaceBack(SFML_BASE_MOVE(sv));
+            outer.emplaceBack(ZB_MOVE(sv));
         }
 
         // Verify all data survived the relocations
-        for (sf::base::SizeT i = 0u; i < 20u; ++i)
+        for (zb::SizeT i = 0u; i < 20u; ++i)
         {
             CHECK(outer[i].size() == 3);
             CHECK(outer[i][0] == static_cast<int>(i * 10u));
@@ -511,7 +511,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element (inline, no reallocation)")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> v;
+        zb::SmallVector<Obj, inlineCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -528,8 +528,8 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element (triggers heap allocation)")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> v;
-        for (sf::base::SizeT i = 0; i < inlineCapacity; ++i)
+        zb::SmallVector<Obj, inlineCapacity> v;
+        for (zb::SizeT i = 0; i < inlineCapacity; ++i)
             v.emplaceBack(static_cast<int>(i * 10));
         REQUIRE(v.size() == v.capacity()); // full inline buffer
 
@@ -542,7 +542,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Self-aliasing: insert at begin from last element")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> v;
+        zb::SmallVector<Obj, inlineCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -559,7 +559,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Self-aliasing: insert at middle from element that gets shifted")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> v;
+        zb::SmallVector<Obj, inlineCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -576,7 +576,7 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Self-aliasing: emplace at begin from back()")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> v;
+        zb::SmallVector<Obj, inlineCapacity> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -594,8 +594,8 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
 
     SECTION("Self-aliasing: emplaceBack from own element (triggers heap allocation)")
     {
-        sf::base::SmallVector<Obj, inlineCapacity> v;
-        for (sf::base::SizeT i = 0; i < inlineCapacity; ++i)
+        zb::SmallVector<Obj, inlineCapacity> v;
+        for (zb::SizeT i = 0; i < inlineCapacity; ++i)
             v.emplaceBack(static_cast<int>((i + 1) * 10));
         REQUIRE(v.size() == v.capacity());
 

@@ -2,27 +2,27 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Graphics/GlyphMapping.hpp"
+#include "Zancle/Graphics/GlyphMapping.hpp"
 
-#include "SFML/Graphics/FontFace.hpp"
-#include "SFML/Graphics/GlyphMappedText.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/FontFace.hpp"
+#include "Zancle/Graphics/GlyphMappedText.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "SFML/System/LifetimeDependee.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
-TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
+TEST_CASE("[Graphics] za::GlyphMapping" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
-    auto fontFace        = sf::FontFace::openFromFile("tuffy.ttf").value();
-    auto atlas           = sf::TextureAtlas(sf::Texture::create({1024u, 1024u}, {.smooth = true}).value());
+    auto graphicsContext = za::GraphicsContext::create().value();
+    auto fontFace        = za::FontFace::openFromFile("tuffy.ttf").value();
+    auto atlas           = za::TextureAtlas(za::Texture::create({1024u, 1024u}, {.smooth = true}).value());
 
     static constexpr char32_t testCodePoints[] = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-    static constexpr sf::base::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;
+    static constexpr zb::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;
 
     SECTION("loadGlyphs basic")
     {
@@ -146,7 +146,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
                                        })
                            .value();
 
-        const sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Outlined"});
+        const za::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Outlined"});
         CHECK(text.getLocalBounds().size.x > 0.f);
         CHECK(text.getLocalBounds().size.y > 0.f);
 
@@ -193,7 +193,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
                                        })
                            .value();
 
-        const sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "AV"});
+        const za::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "AV"});
 
         const float kerning     = text.getKerning(U'A', U'V', 24, false);
         const float faceKerning = fontFace.getKerning(U'A', U'V', 24, false);
@@ -214,7 +214,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
                                        })
                            .value();
 
-        const sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Hello World"});
+        const za::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Hello World"});
         CHECK(text.getString() == "Hello World");
         CHECK(&text.getGlyphMapping() == &mapping);
         CHECK(&text.getTexture() == &atlas.getTexture());
@@ -226,7 +226,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
 
     SECTION("atlas full returns nullOpt")
     {
-        auto tinyAtlas = sf::TextureAtlas(sf::Texture::create({8u, 8u}, {.smooth = true}).value());
+        auto tinyAtlas = za::TextureAtlas(za::Texture::create({8u, 8u}, {.smooth = true}).value());
 
         auto result = fontFace.loadGlyphs(tinyAtlas,
                                           {
@@ -240,7 +240,7 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
         CHECK(!result.hasValue());
     }
 
-#if defined(SFML_ENABLE_LIFETIME_TRACKING)
+#if defined(ZA_ENABLE_LIFETIME_TRACKING)
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")
@@ -258,10 +258,10 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
                                                     })
                                         .value();
 
-                return sf::GlyphMappedText(fontFace, atlas.getTexture(), localMapping, {.string = "Test"});
+                return za::GlyphMappedText(fontFace, atlas.getTexture(), localMapping, {.string = "Test"});
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"GlyphMapping"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"GlyphMapping"};
             CHECK(!guard.fatalErrorTriggered("GlyphMapping"));
 
             badFunction();
@@ -293,10 +293,10 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
                                             })
                                 .value();
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"GlyphMapping"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"GlyphMapping"};
             CHECK(!guard.fatalErrorTriggered("GlyphMapping"));
 
-            sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping1, {.string = "Test"});
+            za::GlyphMappedText text(fontFace, atlas.getTexture(), mapping1, {.string = "Test"});
             CHECK(!guard.fatalErrorTriggered("GlyphMapping"));
 
             text.setGlyphMapping(fontFace, atlas.getTexture(), mapping2);
@@ -318,11 +318,11 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
 
             const auto badFunction = [&]
             {
-                auto localFontFace = sf::FontFace::openFromFile("tuffy.ttf").value();
-                return sf::GlyphMappedText(localFontFace, atlas.getTexture(), mapping, {.string = "Test"});
+                auto localFontFace = za::FontFace::openFromFile("tuffy.ttf").value();
+                return za::GlyphMappedText(localFontFace, atlas.getTexture(), mapping, {.string = "Test"});
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"FontFace"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"FontFace"};
             CHECK(!guard.fatalErrorTriggered("FontFace"));
 
             badFunction();
@@ -345,11 +345,11 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
 
             const auto badFunction = [&]
             {
-                auto localTexture = sf::Texture::create({64u, 64u}).value();
-                return sf::GlyphMappedText(fontFace, localTexture, mapping, {.string = "Test"});
+                auto localTexture = za::Texture::create({64u, 64u}).value();
+                return za::GlyphMappedText(fontFace, localTexture, mapping, {.string = "Test"});
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Texture"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"Texture"};
             CHECK(!guard.fatalErrorTriggered("Texture"));
 
             badFunction();
@@ -370,16 +370,16 @@ TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
                                            })
                                .value();
 
-            const sf::priv::LifetimeDependee::TestingModeGuard fontFaceGuard{"FontFace"};
-            const sf::priv::LifetimeDependee::TestingModeGuard textureGuard{"Texture"};
-            const sf::priv::LifetimeDependee::TestingModeGuard mappingGuard{"GlyphMapping"};
+            const za::priv::LifetimeDependee::TestingModeGuard fontFaceGuard{"FontFace"};
+            const za::priv::LifetimeDependee::TestingModeGuard textureGuard{"Texture"};
+            const za::priv::LifetimeDependee::TestingModeGuard mappingGuard{"GlyphMapping"};
 
             CHECK(!fontFaceGuard.fatalErrorTriggered("FontFace"));
             CHECK(!textureGuard.fatalErrorTriggered("Texture"));
             CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));
 
             {
-                sf::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Test"});
+                za::GlyphMappedText text(fontFace, atlas.getTexture(), mapping, {.string = "Test"});
                 CHECK(!fontFaceGuard.fatalErrorTriggered("FontFace"));
                 CHECK(!textureGuard.fatalErrorTriggered("Texture"));
                 CHECK(!mappingGuard.fatalErrorTriggered("GlyphMapping"));

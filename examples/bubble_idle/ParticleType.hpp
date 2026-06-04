@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] ParticleType : sf::base::U8
+enum class [[nodiscard]] ParticleType : zb::U8
 {
     Bubble    = 0u,
     Star      = 1u,
@@ -28,11 +28,11 @@ enum class [[nodiscard]] ParticleType : sf::base::U8
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto asIdx(const ParticleType type) noexcept
 {
-    return static_cast<sf::base::SizeT>(type);
+    return static_cast<zb::SizeT>(type);
 }
 
 ////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
+enum : zb::SizeT
 {
     nParticleTypes = asIdx(ParticleType::Count)
 };

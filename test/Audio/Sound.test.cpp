@@ -1,101 +1,101 @@
-#include "SFML/Audio/Sound.hpp"
+#include "Zancle/Audio/Sound.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
 #include "AudioUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/System/LifetimeDependee.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsConstructible.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
-TEST_CASE("[Audio] sf::Sound" * tst::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
 {
-    auto               audioContext = sf::AudioContext::create().value();
-    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    auto               audioContext = za::AudioContext::create().value();
+    za::PlaybackDevice playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Sound, sf::SoundBuffer&&));
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Sound, const sf::SoundBuffer&&));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Sound));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Sound));
-        STATIC_CHECK(!SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Sound));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Sound));
-        STATIC_CHECK(!SFML_BASE_IS_MOVE_ASSIGNABLE(sf::Sound));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Sound));
-        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Sound));
+        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Sound, za::SoundBuffer&&));
+        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Sound, const za::SoundBuffer&&));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Sound));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Sound));
+        STATIC_CHECK(!ZB_IS_MOVE_CONSTRUCTIBLE(za::Sound));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Sound));
+        STATIC_CHECK(!ZB_IS_MOVE_ASSIGNABLE(za::Sound));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Sound));
+        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(za::Sound));
     }
 
-    const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
+    const auto soundBuffer = za::SoundBuffer::loadFromFile("ding.flac").value();
 
     SECTION("Construction")
     {
-        const sf::Sound sound(playbackDevice, soundBuffer);
+        const za::Sound sound(playbackDevice, soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
         CHECK(!sound.isLooping());
-        CHECK(sound.getPlayingOffset() == sf::Time{});
+        CHECK(sound.getPlayingOffset() == za::Time{});
         CHECK(!sound.isPlaying());
     }
 
     SECTION("Get buffer")
     {
-        sf::Sound sound(playbackDevice, soundBuffer);
+        za::Sound sound(playbackDevice, soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
     }
 
     SECTION("Set/get loop")
     {
-        sf::Sound sound(playbackDevice, soundBuffer);
+        za::Sound sound(playbackDevice, soundBuffer);
         sound.setLooping(true);
         CHECK(sound.isLooping());
     }
 
     SECTION("Set/get playing offset")
     {
-        sf::Sound sound(playbackDevice, soundBuffer);
-        sound.setPlayingOffset(sf::seconds(10));
-        CHECK(sound.getPlayingOffset() == sf::seconds(10));
+        za::Sound sound(playbackDevice, soundBuffer);
+        sound.setPlayingOffset(za::seconds(10));
+        CHECK(sound.getPlayingOffset() == za::seconds(10));
     }
 
     SECTION("Sound buffer move")
     {
-        auto soundBufferA = sf::SoundBuffer::loadFromFile("ding.flac").value();
-        auto soundBufferB = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferA = za::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferB = za::SoundBuffer::loadFromFile("ding.flac").value();
 
-        const sf::Sound sound(playbackDevice, soundBufferA);
+        const za::Sound sound(playbackDevice, soundBufferA);
         CHECK(&sound.getBuffer() == &soundBufferA);
         CHECK(!sound.isLooping());
-        CHECK(sound.getPlayingOffset() == sf::Time{});
+        CHECK(sound.getPlayingOffset() == za::Time{});
         CHECK(!sound.isPlaying());
 
-        soundBufferB = SFML_BASE_MOVE(soundBufferA);
+        soundBufferB = ZB_MOVE(soundBufferA);
         CHECK(&sound.getBuffer() == &soundBufferA);
     }
 
     SECTION("Multiple sounds and buffers -- copy")
     {
-        auto soundBufferA = sf::SoundBuffer::loadFromFile("ding.flac").value();
-        auto soundBufferB = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferA = za::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferB = za::SoundBuffer::loadFromFile("ding.flac").value();
 
-        const sf::Sound soundA(playbackDevice, soundBufferA);
-        const sf::Sound soundB(playbackDevice, soundBufferB);
+        const za::Sound soundA(playbackDevice, soundBufferA);
+        const za::Sound soundB(playbackDevice, soundBufferB);
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
@@ -108,33 +108,33 @@ TEST_CASE("[Audio] sf::Sound" * tst::skip(skipAudioDeviceTests))
 
     SECTION("Multiple sounds and buffers")
     {
-        auto soundBufferA = sf::SoundBuffer::loadFromFile("ding.flac").value();
-        auto soundBufferB = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferA = za::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferB = za::SoundBuffer::loadFromFile("ding.flac").value();
 
-        const sf::Sound soundA(playbackDevice, soundBufferA);
-        const sf::Sound soundB(playbackDevice, soundBufferB);
+        const za::Sound soundA(playbackDevice, soundBufferA);
+        const za::Sound soundB(playbackDevice, soundBufferB);
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
 
-        soundBufferB = SFML_BASE_MOVE(soundBufferA);
+        soundBufferB = ZB_MOVE(soundBufferA);
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
     }
 
-#if defined(SFML_ENABLE_LIFETIME_TRACKING)
+#if defined(ZA_ENABLE_LIFETIME_TRACKING)
     SECTION("Lifetime tracking")
     {
         SECTION("Return local from function")
         {
             const auto badFunction = [&playbackDevice]
             {
-                const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
-                return sf::Sound(playbackDevice, localSoundBuffer);
+                const auto localSoundBuffer = za::SoundBuffer::loadFromFile("ding.flac").value();
+                return za::Sound(playbackDevice, localSoundBuffer);
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
             badFunction();
@@ -146,20 +146,20 @@ TEST_CASE("[Audio] sf::Sound" * tst::skip(skipAudioDeviceTests))
         {
             struct BadStruct
             {
-                explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
-                    memberSoundBuffer{sf::SoundBuffer::loadFromFile("ding.flac").value()},
+                explicit BadStruct(za::PlaybackDevice& thePlaybackDevice) :
+                    memberSoundBuffer{za::SoundBuffer::loadFromFile("ding.flac").value()},
                     memberSound{thePlaybackDevice, memberSoundBuffer}
                 {
                 }
 
-                sf::SoundBuffer memberSoundBuffer;
-                sf::Sound       memberSound;
+                za::SoundBuffer memberSoundBuffer;
+                za::Sound       memberSound;
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sf::base::Optional<BadStruct> badStruct0;
+            zb::Optional<BadStruct> badStruct0;
             badStruct0.emplace(playbackDevice);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
@@ -169,29 +169,29 @@ TEST_CASE("[Audio] sf::Sound" * tst::skip(skipAudioDeviceTests))
 
         SECTION("Dependee move assignment")
         {
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            auto sb0 = sf::SoundBuffer::loadFromFile("ding.flac").value();
+            auto sb0 = za::SoundBuffer::loadFromFile("ding.flac").value();
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sf::Sound s0(playbackDevice, sb0);
+            za::Sound s0(playbackDevice, sb0);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sb0 = sf::SoundBuffer::loadFromFile("ding.flac").value();
+            sb0 = za::SoundBuffer::loadFromFile("ding.flac").value();
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
         }
 
         SECTION("Dependee destroyed before dependant")
         {
-            const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
+            const za::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            auto optDependee = sf::SoundBuffer::loadFromFile("ding.flac");
+            auto optDependee = za::SoundBuffer::loadFromFile("ding.flac");
             CHECK(optDependee.hasValue());
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sf::Sound s0(playbackDevice, *optDependee);
+            za::Sound s0(playbackDevice, *optDependee);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
             optDependee.reset();

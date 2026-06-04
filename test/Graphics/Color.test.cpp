@@ -2,44 +2,44 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
-TEST_CASE("[Graphics] sf::Color")
+TEST_CASE("[Graphics] za::Color")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Color));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Color)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Color));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Color, sf::Color));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Color)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Color));
+        STATIC_CHECK(ZB_IS_AGGREGATE(za::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Color));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Color, za::Color));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Color color{};
+            constexpr za::Color color{};
             STATIC_CHECK(color.r == 0);
             STATIC_CHECK(color.g == 0);
             STATIC_CHECK(color.b == 0);
@@ -48,7 +48,7 @@ TEST_CASE("[Graphics] sf::Color")
 
         SECTION("(r, g, b) constructor")
         {
-            constexpr sf::Color color(1, 2, 3);
+            constexpr za::Color color(1, 2, 3);
             STATIC_CHECK(color.r == 1);
             STATIC_CHECK(color.g == 2);
             STATIC_CHECK(color.b == 3);
@@ -57,129 +57,129 @@ TEST_CASE("[Graphics] sf::Color")
 
         SECTION("(r, g, b, a) constructor")
         {
-            constexpr sf::Color color(1, 2, 3, 4);
+            constexpr za::Color color(1, 2, 3, 4);
             STATIC_CHECK(color.r == 1);
             STATIC_CHECK(color.g == 2);
             STATIC_CHECK(color.b == 3);
             STATIC_CHECK(color.a == 4);
         }
 
-        SECTION("sf::base::I32 constructor")
+        SECTION("zb::I32 constructor")
         {
-            STATIC_CHECK(sf::Color::fromRGBA(0x00'00'00'00) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color::fromRGBA(0x01'02'03'04) == sf::Color(1, 2, 3, 4));
-            STATIC_CHECK(sf::Color::fromRGBA(0xFF'FF'FF'FF) == sf::Color(255, 255, 255, 255));
+            STATIC_CHECK(za::Color::fromRGBA(0x00'00'00'00) == za::Color(0, 0, 0, 0));
+            STATIC_CHECK(za::Color::fromRGBA(0x01'02'03'04) == za::Color(1, 2, 3, 4));
+            STATIC_CHECK(za::Color::fromRGBA(0xFF'FF'FF'FF) == za::Color(255, 255, 255, 255));
         }
     }
 
     SECTION("toInteger()")
     {
-        STATIC_CHECK(sf::Color(0, 0, 0, 0).toInteger() == 0x00'00'00'00);
-        STATIC_CHECK(sf::Color(1, 2, 3, 4).toInteger() == 0x01'02'03'04);
-        STATIC_CHECK(sf::Color(255, 255, 255, 255).toInteger() == 0xFF'FF'FF'FF);
+        STATIC_CHECK(za::Color(0, 0, 0, 0).toInteger() == 0x00'00'00'00);
+        STATIC_CHECK(za::Color(1, 2, 3, 4).toInteger() == 0x01'02'03'04);
+        STATIC_CHECK(za::Color(255, 255, 255, 255).toInteger() == 0xFF'FF'FF'FF);
     }
 
     SECTION("Operations")
     {
         SECTION("operator==")
         {
-            STATIC_CHECK(sf::Color() == sf::Color());
-            STATIC_CHECK(sf::Color(1, 2, 3, 4) == sf::Color(1, 2, 3, 4));
+            STATIC_CHECK(za::Color() == za::Color());
+            STATIC_CHECK(za::Color(1, 2, 3, 4) == za::Color(1, 2, 3, 4));
 
-            STATIC_CHECK_FALSE(sf::Color(1, 0, 0, 0) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK_FALSE(sf::Color(0, 1, 0, 0) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK_FALSE(sf::Color(0, 0, 1, 0) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK_FALSE(sf::Color(0, 0, 0, 1) == sf::Color(0, 0, 0, 0));
+            STATIC_CHECK_FALSE(za::Color(1, 0, 0, 0) == za::Color(0, 0, 0, 0));
+            STATIC_CHECK_FALSE(za::Color(0, 1, 0, 0) == za::Color(0, 0, 0, 0));
+            STATIC_CHECK_FALSE(za::Color(0, 0, 1, 0) == za::Color(0, 0, 0, 0));
+            STATIC_CHECK_FALSE(za::Color(0, 0, 0, 1) == za::Color(0, 0, 0, 0));
         }
 
         SECTION("operator!=")
         {
-            STATIC_CHECK(sf::Color(1, 0, 0, 0) != sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color(0, 1, 0, 0) != sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color(0, 0, 1, 0) != sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color(0, 0, 0, 1) != sf::Color(0, 0, 0, 0));
+            STATIC_CHECK(za::Color(1, 0, 0, 0) != za::Color(0, 0, 0, 0));
+            STATIC_CHECK(za::Color(0, 1, 0, 0) != za::Color(0, 0, 0, 0));
+            STATIC_CHECK(za::Color(0, 0, 1, 0) != za::Color(0, 0, 0, 0));
+            STATIC_CHECK(za::Color(0, 0, 0, 1) != za::Color(0, 0, 0, 0));
 
-            STATIC_CHECK_FALSE(sf::Color() != sf::Color());
-            STATIC_CHECK_FALSE(sf::Color(1, 2, 3, 4) != sf::Color(1, 2, 3, 4));
+            STATIC_CHECK_FALSE(za::Color() != za::Color());
+            STATIC_CHECK_FALSE(za::Color(1, 2, 3, 4) != za::Color(1, 2, 3, 4));
         }
 
         SECTION("operator+")
         {
-            STATIC_CHECK(sf::Color(0, 0, 0, 0) + sf::Color(0, 0, 0, 0) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color(50, 50, 50, 50) + sf::Color(50, 50, 50, 50) == sf::Color(100, 100, 100, 100));
-            STATIC_CHECK(sf::Color(100, 100, 100, 100) + sf::Color(100, 100, 100, 100) == sf::Color(200, 200, 200, 200));
-            STATIC_CHECK(sf::Color(150, 150, 150, 150) + sf::Color(150, 150, 150, 150) == sf::Color(255, 255, 255, 255));
-            STATIC_CHECK(sf::Color(255, 255, 255, 255) + sf::Color(255, 255, 255, 255) == sf::Color(255, 255, 255, 255));
+            STATIC_CHECK(za::Color(0, 0, 0, 0) + za::Color(0, 0, 0, 0) == za::Color(0, 0, 0, 0));
+            STATIC_CHECK(za::Color(50, 50, 50, 50) + za::Color(50, 50, 50, 50) == za::Color(100, 100, 100, 100));
+            STATIC_CHECK(za::Color(100, 100, 100, 100) + za::Color(100, 100, 100, 100) == za::Color(200, 200, 200, 200));
+            STATIC_CHECK(za::Color(150, 150, 150, 150) + za::Color(150, 150, 150, 150) == za::Color(255, 255, 255, 255));
+            STATIC_CHECK(za::Color(255, 255, 255, 255) + za::Color(255, 255, 255, 255) == za::Color(255, 255, 255, 255));
         }
 
         SECTION("operator-")
         {
-            constexpr sf::Color c(50, 50, 50, 50);
-            constexpr sf::Color c2(150, 150, 150, 150);
-            STATIC_CHECK(c2 - c == sf::Color(100, 100, 100, 100));
-            STATIC_CHECK(c - c2 == sf::Color(0, 0, 0, 0));
+            constexpr za::Color c(50, 50, 50, 50);
+            constexpr za::Color c2(150, 150, 150, 150);
+            STATIC_CHECK(c2 - c == za::Color(100, 100, 100, 100));
+            STATIC_CHECK(c - c2 == za::Color(0, 0, 0, 0));
         }
 
         SECTION("operator*")
         {
-            constexpr sf::Color c(255, 255, 255, 255);
-            constexpr sf::Color c2(2, 2, 2, 2);
-            STATIC_CHECK(c * c2 == sf::Color(2, 2, 2, 2));
-            STATIC_CHECK(c2 * c == sf::Color(2, 2, 2, 2));
+            constexpr za::Color c(255, 255, 255, 255);
+            constexpr za::Color c2(2, 2, 2, 2);
+            STATIC_CHECK(c * c2 == za::Color(2, 2, 2, 2));
+            STATIC_CHECK(c2 * c == za::Color(2, 2, 2, 2));
         }
 
         SECTION("operator+=")
         {
-            sf::Color color(42, 42, 42, 42);
-            color += sf::Color(1, 1, 1, 1);
-            CHECK(color == sf::Color(43, 43, 43, 43));
-            color += sf::Color(250, 250, 250, 250);
-            CHECK(color == sf::Color(255, 255, 255, 255));
+            za::Color color(42, 42, 42, 42);
+            color += za::Color(1, 1, 1, 1);
+            CHECK(color == za::Color(43, 43, 43, 43));
+            color += za::Color(250, 250, 250, 250);
+            CHECK(color == za::Color(255, 255, 255, 255));
         }
 
         SECTION("operator-=")
         {
-            sf::Color color(248, 248, 248, 248);
-            color -= sf::Color(1, 1, 1, 1);
-            CHECK(color == sf::Color(247, 247, 247, 247));
-            color -= sf::Color(250, 250, 250, 250);
-            CHECK(color == sf::Color(0, 0, 0, 0));
+            za::Color color(248, 248, 248, 248);
+            color -= za::Color(1, 1, 1, 1);
+            CHECK(color == za::Color(247, 247, 247, 247));
+            color -= za::Color(250, 250, 250, 250);
+            CHECK(color == za::Color(0, 0, 0, 0));
         }
 
         SECTION("operator*=")
         {
-            sf::Color color(50, 50, 50, 50);
-            color *= sf::Color(20, 20, 20, 20);
-            CHECK(color == sf::Color(3, 3, 3, 3));
-            color *= sf::Color(120, 120, 120, 120);
-            CHECK(color == sf::Color(1, 1, 1, 1));
+            za::Color color(50, 50, 50, 50);
+            color *= za::Color(20, 20, 20, 20);
+            CHECK(color == za::Color(3, 3, 3, 3));
+            color *= za::Color(120, 120, 120, 120);
+            CHECK(color == za::Color(1, 1, 1, 1));
         }
     }
 
     SECTION("Constants")
     {
-        STATIC_CHECK(sf::Color::Black == sf::Color(0, 0, 0));
-        STATIC_CHECK(sf::Color::White == sf::Color(255, 255, 255));
-        STATIC_CHECK(sf::Color::Red == sf::Color(255, 0, 0));
-        STATIC_CHECK(sf::Color::Green == sf::Color(0, 255, 0));
-        STATIC_CHECK(sf::Color::Blue == sf::Color(0, 0, 255));
-        STATIC_CHECK(sf::Color::Yellow == sf::Color(255, 255, 0));
-        STATIC_CHECK(sf::Color::Magenta == sf::Color(255, 0, 255));
-        STATIC_CHECK(sf::Color::Cyan == sf::Color(0, 255, 255));
-        STATIC_CHECK(sf::Color::Transparent == sf::Color(0, 0, 0, 0));
+        STATIC_CHECK(za::Color::Black == za::Color(0, 0, 0));
+        STATIC_CHECK(za::Color::White == za::Color(255, 255, 255));
+        STATIC_CHECK(za::Color::Red == za::Color(255, 0, 0));
+        STATIC_CHECK(za::Color::Green == za::Color(0, 255, 0));
+        STATIC_CHECK(za::Color::Blue == za::Color(0, 0, 255));
+        STATIC_CHECK(za::Color::Yellow == za::Color(255, 255, 0));
+        STATIC_CHECK(za::Color::Magenta == za::Color(255, 0, 255));
+        STATIC_CHECK(za::Color::Cyan == za::Color(0, 255, 255));
+        STATIC_CHECK(za::Color::Transparent == za::Color(0, 0, 0, 0));
     }
 
-    SECTION("Reinterpret as sf::base::U8*")
+    SECTION("Reinterpret as zb::U8*")
     {
-        STATIC_CHECK(sizeof(sf::Color) == 4);
-        STATIC_CHECK(alignof(sf::Color) == 1);
+        STATIC_CHECK(sizeof(za::Color) == 4);
+        STATIC_CHECK(alignof(za::Color) == 1);
 
-        sf::base::Vector<sf::Color> pixels(3);
+        zb::Vector<za::Color> pixels(3);
         pixels[0] = {10, 11, 12, 13};
         pixels[1] = {14, 15, 16, 17};
         pixels[2] = {18, 19, 20, 21};
 
-        const auto* begin = reinterpret_cast<const sf::base::U8*>(pixels.data());
+        const auto* begin = reinterpret_cast<const zb::U8*>(pixels.data());
         CHECK(begin[0] == pixels[0].r);
         CHECK(begin[1] == pixels[0].g);
         CHECK(begin[2] == pixels[0].b);
@@ -202,25 +202,25 @@ TEST_CASE("[Graphics] sf::Color")
         SECTION("Primary colors")
         {
             // Red (Hue = 0)
-            CHECK(sf::Color::fromHSLA({0.f, 1.f, 0.5f}) == sf::Color(255, 0, 0));
+            CHECK(za::Color::fromHSLA({0.f, 1.f, 0.5f}) == za::Color(255, 0, 0));
 
             // Green (Hue = 120)
-            CHECK(sf::Color::fromHSLA({120.f, 1.f, 0.5f}) == sf::Color(0, 255, 0));
+            CHECK(za::Color::fromHSLA({120.f, 1.f, 0.5f}) == za::Color(0, 255, 0));
 
             // Blue (Hue = 240)
-            CHECK(sf::Color::fromHSLA({240.f, 1.f, 0.5f}) == sf::Color(0, 0, 255));
+            CHECK(za::Color::fromHSLA({240.f, 1.f, 0.5f}) == za::Color(0, 0, 255));
         }
 
         SECTION("Secondary colors")
         {
             // Yellow (Hue = 60)
-            CHECK(sf::Color::fromHSLA({60.f, 1.f, 0.5f}) == sf::Color(255, 255, 0));
+            CHECK(za::Color::fromHSLA({60.f, 1.f, 0.5f}) == za::Color(255, 255, 0));
 
             // Cyan (Hue = 180)
-            CHECK(sf::Color::fromHSLA({180.f, 1.f, 0.5f}) == sf::Color(0, 255, 255));
+            CHECK(za::Color::fromHSLA({180.f, 1.f, 0.5f}) == za::Color(0, 255, 255));
 
             // Magenta (Hue = 300)
-            CHECK(sf::Color::fromHSLA({300.f, 1.f, 0.5f}) == sf::Color(255, 0, 255));
+            CHECK(za::Color::fromHSLA({300.f, 1.f, 0.5f}) == za::Color(255, 0, 255));
         }
     }
 
@@ -229,14 +229,14 @@ TEST_CASE("[Graphics] sf::Color")
         SECTION("Grayscale (Saturation = 0)")
         {
             // Black
-            CHECK(sf::Color::fromHSLA({0.f, 0.f, 0.f}) == sf::Color(0, 0, 0));
+            CHECK(za::Color::fromHSLA({0.f, 0.f, 0.f}) == za::Color(0, 0, 0));
 
             // White
-            CHECK(sf::Color::fromHSLA({0.f, 0.f, 1.f}) == sf::Color(255, 255, 255));
+            CHECK(za::Color::fromHSLA({0.f, 0.f, 1.f}) == za::Color(255, 255, 255));
 
             // 50% Gray (any hue)
-            CHECK(sf::Color::fromHSLA({0.f, 0.f, 0.5f}) == sf::Color(128, 128, 128));
-            CHECK(sf::Color::fromHSLA({180.f, 0.f, 0.5f}) == sf::Color(128, 128, 128));
+            CHECK(za::Color::fromHSLA({0.f, 0.f, 0.5f}) == za::Color(128, 128, 128));
+            CHECK(za::Color::fromHSLA({180.f, 0.f, 0.5f}) == za::Color(128, 128, 128));
         }
     }
 
@@ -244,7 +244,7 @@ TEST_CASE("[Graphics] sf::Color")
     {
         SECTION("Pastels (High lightness, medium saturation)")
         {
-            sf::Color pastelPink = sf::Color::fromHSLA({350.f, 0.5f, 0.8f});
+            za::Color pastelPink = za::Color::fromHSLA({350.f, 0.5f, 0.8f});
             CHECK(pastelPink.r > 200);
             CHECK(pastelPink.g > 150);
             CHECK(pastelPink.b > 150);
@@ -252,7 +252,7 @@ TEST_CASE("[Graphics] sf::Color")
 
         SECTION("Deep colors (Low lightness, high saturation)")
         {
-            sf::Color deepBlue = sf::Color::fromHSLA({240.f, 1.f, 0.2f});
+            za::Color deepBlue = za::Color::fromHSLA({240.f, 1.f, 0.2f});
             CHECK(deepBlue.r < 50);
             CHECK(deepBlue.g < 50);
             CHECK(deepBlue.b > 100);
@@ -262,25 +262,25 @@ TEST_CASE("[Graphics] sf::Color")
     SECTION("Hue wrapping")
     {
         // Negative hue should wrap to positive
-        CHECK(sf::Color::fromHSLA({-120.f, 1.f, 0.5f}) == sf::Color::fromHSLA({240.f, 1.f, 0.5f}));
+        CHECK(za::Color::fromHSLA({-120.f, 1.f, 0.5f}) == za::Color::fromHSLA({240.f, 1.f, 0.5f}));
 
         // Hue > 360 should wrap
-        CHECK(sf::Color::fromHSLA({480.f, 1.f, 0.5f}) == sf::Color::fromHSLA({120.f, 1.f, 0.5f}));
+        CHECK(za::Color::fromHSLA({480.f, 1.f, 0.5f}) == za::Color::fromHSLA({120.f, 1.f, 0.5f}));
     }
 
     SECTION("Saturation and lightness clamping")
     {
         // Oversaturated should clamp to 1
-        CHECK(sf::Color::fromHSLA({0.f, 1.5f, 0.5f}) == sf::Color::fromHSLA({0.f, 1.f, 0.5f}));
+        CHECK(za::Color::fromHSLA({0.f, 1.5f, 0.5f}) == za::Color::fromHSLA({0.f, 1.f, 0.5f}));
 
         // Negative saturation should clamp to 0
-        CHECK(sf::Color::fromHSLA({0.f, -0.5f, 0.5f}) == sf::Color::fromHSLA({0.f, 0.f, 0.5f}));
+        CHECK(za::Color::fromHSLA({0.f, -0.5f, 0.5f}) == za::Color::fromHSLA({0.f, 0.f, 0.5f}));
 
         // Overlight should clamp to 1
-        CHECK(sf::Color::fromHSLA({0.f, 1.f, 1.5f}) == sf::Color::fromHSLA({0.f, 1.f, 1.f}));
+        CHECK(za::Color::fromHSLA({0.f, 1.f, 1.5f}) == za::Color::fromHSLA({0.f, 1.f, 1.f}));
 
         // Negative lightness should clamp to 0
-        CHECK(sf::Color::fromHSLA({0.f, 1.f, -0.5f}) == sf::Color::fromHSLA({0.f, 1.f, 0.f}));
+        CHECK(za::Color::fromHSLA({0.f, 1.f, -0.5f}) == za::Color::fromHSLA({0.f, 1.f, 0.f}));
     }
 
     SECTION("withRotatedHue modifier")
@@ -288,57 +288,57 @@ TEST_CASE("[Graphics] sf::Color")
         SECTION("Basic hue shifts")
         {
             // Red (0°) + 120° → Green (120°)
-            sf::Color red   = sf::Color::Red;
-            sf::Color green = red.withRotatedHue(120.f);
-            CHECK(green == sf::Color::Green);
+            za::Color red   = za::Color::Red;
+            za::Color green = red.withRotatedHue(120.f);
+            CHECK(green == za::Color::Green);
 
             // Green (120°) - 120° → Red (0°)
-            sf::Color greenColor = sf::Color::Green;
-            sf::Color redColor   = greenColor.withRotatedHue(-120.f);
-            CHECK(redColor == sf::Color::Red);
+            za::Color greenColor = za::Color::Green;
+            za::Color redColor   = greenColor.withRotatedHue(-120.f);
+            CHECK(redColor == za::Color::Red);
 
             // Blue (240°) + 60° → 300° (Magenta)
-            sf::Color blue    = sf::Color::Blue;
-            sf::Color magenta = blue.withRotatedHue(60.f);
-            CHECK(magenta == sf::Color::Magenta);
+            za::Color blue    = za::Color::Blue;
+            za::Color magenta = blue.withRotatedHue(60.f);
+            CHECK(magenta == za::Color::Magenta);
         }
 
         SECTION("Hue wrapping")
         {
             // 350° + 20° → 10° (wrapped within [0, 360))
-            sf::Color color        = sf::Color::fromHSLA({350.f, 1.f, 0.5f});
-            sf::Color shiftedColor = color.withRotatedHue(20.f);
-            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({10.f, 1.f, 0.5f})));
+            za::Color color        = za::Color::fromHSLA({350.f, 1.f, 0.5f});
+            za::Color shiftedColor = color.withRotatedHue(20.f);
+            CHECK(shiftedColor == Approx(za::Color::fromHSLA({10.f, 1.f, 0.5f})));
 
             // 30° - 50° → 340°
-            color        = sf::Color::fromHSLA({30.f, 1.f, 0.5f});
+            color        = za::Color::fromHSLA({30.f, 1.f, 0.5f});
             shiftedColor = color.withRotatedHue(-50.f);
-            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({340.f, 1.f, 0.5f})));
+            CHECK(shiftedColor == Approx(za::Color::fromHSLA({340.f, 1.f, 0.5f})));
 
             // 300° + 120° → 60° (Yellow)
-            color        = sf::Color::fromHSLA({300.f, 1.f, 0.5f});
+            color        = za::Color::fromHSLA({300.f, 1.f, 0.5f});
             shiftedColor = color.withRotatedHue(120.f);
-            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({60.f, 1.f, 0.5f})));
+            CHECK(shiftedColor == Approx(za::Color::fromHSLA({60.f, 1.f, 0.5f})));
 
             // 300° + 480° → (300 + 480) % 360 = 60°
             shiftedColor = color.withRotatedHue(480.f);
-            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({60.f, 1.f, 0.5f})));
+            CHECK(shiftedColor == Approx(za::Color::fromHSLA({60.f, 1.f, 0.5f})));
         }
 
         SECTION("Alpha preservation")
         {
             // Original alpha should remain unchanged
-            sf::Color color{255, 0, 0, 128};
-            sf::Color shiftedColor = color.withRotatedHue(120.f);
+            za::Color color{255, 0, 0, 128};
+            za::Color shiftedColor = color.withRotatedHue(120.f);
             CHECK(shiftedColor.a == 128);
         }
 
         SECTION("Saturation and lightness unchanged")
         {
             // After hue shift, saturation and lightness should match original
-            sf::Color      color        = sf::Color::fromHSLA({180.f, 0.8f, 0.6f}, 255);
-            sf::Color      shiftedColor = color.withRotatedHue(90.f);
-            sf::Color::HSL hsla         = shiftedColor.toHSL();
+            za::Color      color        = za::Color::fromHSLA({180.f, 0.8f, 0.6f}, 255);
+            za::Color      shiftedColor = color.withRotatedHue(90.f);
+            za::Color::HSL hsla         = shiftedColor.toHSL();
             CHECK(hsla.saturation == Approx(0.8039f));
             CHECK(hsla.lightness == Approx(0.6f));
             CHECK(hsla.hue == Approx(270.f)); // 180° + 90°
@@ -347,8 +347,8 @@ TEST_CASE("[Graphics] sf::Color")
         SECTION("Edge cases")
         {
             // Shift by 0° (no change)
-            sf::Color color     = sf::Color::Red;
-            sf::Color sameColor = color.withRotatedHue(0.f);
+            za::Color color     = za::Color::Red;
+            za::Color sameColor = color.withRotatedHue(0.f);
             CHECK(sameColor == color);
 
             // Shift by 360° (no change)
@@ -360,9 +360,9 @@ TEST_CASE("[Graphics] sf::Color")
             CHECK(sameColor == color);
 
             // Negative shift wrapping (50° - 400° = -350° ≡ 10°)
-            color                  = sf::Color::fromHSLA({50.f, 1.f, 0.5f});
-            sf::Color shiftedColor = color.withRotatedHue(-400.f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({10.f, 1.f, 0.5f}));
+            color                  = za::Color::fromHSLA({50.f, 1.f, 0.5f});
+            za::Color shiftedColor = color.withRotatedHue(-400.f);
+            CHECK(shiftedColor == za::Color::fromHSLA({10.f, 1.f, 0.5f}));
         }
     }
 }

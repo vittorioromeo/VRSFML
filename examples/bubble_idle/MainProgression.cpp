@@ -13,25 +13,25 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Algorithm/Count.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Algorithm/Count.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateMilestones()
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    const auto updateMilestone = [&](const char* name, sf::base::U64& milestone)
+    const auto updateMilestone = [&](const char* name, zb::U64& milestone)
     {
         const auto oldMilestone = milestone;
 
-        milestone = sf::base::min(milestone, pt->statsTotal.secondsPlayed);
+        milestone = zb::min(milestone, pt->statsTotal.secondsPlayed);
 
         if (milestone != oldMilestone)
         {
@@ -139,19 +139,19 @@ void Main::gameLoopUpdateSplits()
     if (!inSpeedrunPlaythrough() || !pt->speedrunStartTime.hasValue())
         return;
 
-    const auto updateSplit = [&](const char* name, sf::base::U64& split)
+    const auto updateSplit = [&](const char* name, zb::U64& split)
     {
         if (split == 0u)
             return;
 
         const auto oldSplit    = split;
-        const auto splitTimeUs = (sf::Clock::now() - pt->speedrunStartTime.value()).asMicroseconds();
+        const auto splitTimeUs = (za::Clock::now() - pt->speedrunStartTime.value()).asMicroseconds();
 
-        split = sf::base::min(split, static_cast<sf::base::U64>(splitTimeUs));
+        split = zb::min(split, static_cast<zb::U64>(splitTimeUs));
 
         if (split != oldSplit)
         {
-            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::microseconds(splitTimeUs));
+            const auto [hours, mins, secs, millis] = formatSpeedrunTime(za::microseconds(splitTimeUs));
             pushNotification("Split reached!", "'%s' at %02llu:%02llu:%02llu:%03llu", name, hours, mins, secs, millis);
         }
     };
@@ -221,13 +221,13 @@ void Main::gameLoopUpdateAchievements()
 
     const auto unlockIfGtEq = [&](const auto& value, const auto& threshold)
     {
-        SFML_BASE_ASSERT(value >= 0);
-        SFML_BASE_ASSERT(threshold >= 0);
+        ZB_ASSERT(value >= 0);
+        ZB_ASSERT(threshold >= 0);
 
-        unlockIf(static_cast<sf::base::SizeT>(value) >= static_cast<sf::base::SizeT>(threshold));
+        unlockIf(static_cast<zb::SizeT>(value) >= static_cast<zb::SizeT>(threshold));
 
-        achievementProgress[nextId - 1u].emplace(static_cast<sf::base::SizeT>(value),
-                                                 static_cast<sf::base::SizeT>(threshold));
+        achievementProgress[nextId - 1u].emplace(static_cast<zb::SizeT>(value),
+                                                 static_cast<zb::SizeT>(threshold));
     };
 
     const auto unlockIfGtEqPrestige = [&](const auto& value, const auto& threshold)
@@ -546,7 +546,7 @@ void Main::gameLoopUpdateAchievements()
     unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 18);
     unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 24);
 
-    const auto nActiveBuffs = sf::base::countIf(pt->buffCountdownsPerType,
+    const auto nActiveBuffs = zb::countIf(pt->buffCountdownsPerType,
                                                 pt->buffCountdownsPerType + nCatTypes,
                                                 [](const Countdown& c) { return c.time > 0.f; });
 
@@ -727,7 +727,7 @@ void Main::gameLoopUpdateAchievements()
     unlockIf(pt->geniusCatIgnoreBubbles.normal && pt->geniusCatIgnoreBubbles.star && pt->geniusCatIgnoreBubbles.bomb); // Secret
     unlockIf(wastedEffort);
 
-    const auto minutesToMicroseconds = [](const sf::base::I64 nMinutes) -> sf::base::I64
+    const auto minutesToMicroseconds = [](const zb::I64 nMinutes) -> zb::I64
     { return nMinutes * 60 * 1'000'000; };
 
     const bool inSpeedrunMode = inSpeedrunPlaythrough();

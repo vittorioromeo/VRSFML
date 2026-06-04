@@ -4,63 +4,63 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Remainder.hpp"
+#include "ZancleBase/AssertAndAssume.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float wrapHue(const float hue) noexcept
 {
-    return sf::base::positiveRemainder(hue, 360.f);
+    return zb::positiveRemainder(hue, 360.f);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::base::U8 hueToByte(const float hue) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr zb::U8 hueToByte(const float hue) noexcept
 {
-    SFML_BASE_ASSERT_AND_ASSUME(hue >= 0.f && hue <= 360.f);
-    return static_cast<sf::base::U8>(hue / 360.f * 255.f);
+    ZB_ASSERT_AND_ASSUME(hue >= 0.f && hue <= 360.f);
+    return static_cast<zb::U8>(hue / 360.f * 255.f);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float byteToHue(const sf::base::U8 byte) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float byteToHue(const zb::U8 byte) noexcept
 {
     return static_cast<float>(byte) / 255.f * 360.f;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr bool isHueColor(const sf::Color color) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr bool isHueColor(const za::Color color) noexcept
 {
     return color.r == 1 && color.g == 1;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Color hueColor(const float hue,
-                                                                                                const sf::base::U8 alpha) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr za::Color hueColor(const float hue,
+                                                                                                const zb::U8 alpha) noexcept
 {
     // R=1 and G=1 is used in the shader as a signal to make the color hue-based
-    return sf::Color{1, 1, hueToByte(wrapHue(hue)), alpha};
+    return za::Color{1, 1, hueToByte(wrapHue(hue)), alpha};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Color hueByteColor(
-    const sf::base::U8 hueByte,
-    const sf::base::U8 alpha) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr za::Color hueByteColor(
+    const zb::U8 hueByte,
+    const zb::U8 alpha) noexcept
 {
     // R=1 and G=1 is used in the shader as a signal to make the color hue-based
-    return sf::Color{1, 1, hueByte, alpha};
+    return za::Color{1, 1, hueByte, alpha};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float extractHue(const sf::Color hueColor) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float extractHue(const za::Color hueColor) noexcept
 {
     return byteToHue(hueColor.g);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Base/FwdStdString.hpp"
+#include "ZancleBase/FwdStdString.hpp"
 
 // `std::basic_string<T>`, `char8_t`, and `char16_t` render as "<?>" via the
 // catch-all in `Tst/Detail/StringifyValue.hpp`. (Previously `std::string`

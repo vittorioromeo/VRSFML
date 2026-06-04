@@ -3,12 +3,12 @@
 #include "ParticleData.hpp"
 #include "ParticleType.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Particle : ParticleData
 {
-    sf::base::U8 hueByte = 0u;
+    zb::U8 hueByte = 0u;
     ParticleType type;
 };

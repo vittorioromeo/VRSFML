@@ -1,24 +1,24 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/Sound.hpp"
+#include "Zancle/Audio/Sound.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/PlaybackDeviceHandle.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/PlaybackDeviceHandle.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/System/Fmt/FmtPath.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Thread.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Fmt/FmtPath.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Scn/ScnStdin.hpp"
 
 
 namespace
@@ -27,13 +27,13 @@ namespace
 /// Play a sound
 ///
 ////////////////////////////////////////////////////////////
-void playSound(sf::PlaybackDevice& playbackDevice)
+void playSound(za::PlaybackDevice& playbackDevice)
 {
     // Load a sound buffer from a wav file
-    const auto buffer = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
+    const auto buffer = za::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
 
     // Display sound information
-    sf::base::printLn("killdeer.wav:{} {} seconds{} {} samples / sec{} {} channels",
+    zb::printLn("killdeer.wav:{} {} seconds{} {} samples / sec{} {} channels",
                       '\n',
                       buffer.getDuration().asSeconds(),
                       '\n',
@@ -42,20 +42,20 @@ void playSound(sf::PlaybackDevice& playbackDevice)
                       buffer.getChannelCount());
 
     // Create a sound instance and play it
-    sf::Sound sound(playbackDevice, buffer);
+    za::Sound sound(playbackDevice, buffer);
     sound.play();
 
     // Loop while the sound is playing
     while (sound.isPlaying())
     {
         // Leave some CPU time for other processes
-        sf::ThisThread::sleepFor(sf::milliseconds(100));
+        za::ThisThread::sleepFor(za::milliseconds(100));
 
         // Display the playing position
-        sf::base::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
+        zb::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
     }
 
-    sf::base::printLn("");
+    zb::printLn("");
 }
 
 
@@ -63,13 +63,13 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 /// Play a music
 ///
 ////////////////////////////////////////////////////////////
-void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
+void playMusic(za::PlaybackDevice& playbackDevice, const za::Path& filename)
 {
     // Load an ogg music file
-    auto musicReader = sf::MusicReader::openFromFile("resources" / filename).value();
+    auto musicReader = za::MusicReader::openFromFile("resources" / filename).value();
 
     // Display music information
-    sf::base::printLn("{}:{} {} seconds{} {} samples / sec{} {} channels",
+    zb::printLn("{}:{} {} seconds{} {} samples / sec{} {} channels",
                       filename,
                       '\n',
                       musicReader.getDuration().asSeconds(),
@@ -79,20 +79,20 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
                       musicReader.getChannelCount());
 
     // Play it
-    sf::Music music(playbackDevice, musicReader);
+    za::Music music(playbackDevice, musicReader);
     music.play();
 
     // Loop while the music is playing
     while (music.isPlaying())
     {
         // Leave some CPU time for other processes
-        sf::ThisThread::sleepFor(sf::milliseconds(100));
+        za::ThisThread::sleepFor(za::milliseconds(100));
 
         // Display the playing position
-        sf::base::print("\rPlaying... {} sec        ", music.getPlayingOffset().asSeconds());
+        zb::print("\rPlaying... {} sec        ", music.getPlayingOffset().asSeconds());
     }
 
-    sf::base::printLn("");
+    zb::printLn("");
 }
 
 } // namespace
@@ -105,8 +105,8 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 int main()
 {
     // Create an audio context and get the default playback device
-    auto               audioContext = sf::AudioContext::create().value();
-    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    auto               audioContext = za::AudioContext::create().value();
+    za::PlaybackDevice playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Play a sound
     playSound(playbackDevice);
@@ -121,6 +121,6 @@ int main()
     playMusic(playbackDevice, "ding.mp3");
 
     // Wait until the user presses 'enter' key
-    sf::base::printLn("Press enter to exit...");
-    sf::base::scnStdinIgnoreLine();
+    zb::printLn("Press enter to exit...");
+    zb::scnStdinIgnoreLine();
 }

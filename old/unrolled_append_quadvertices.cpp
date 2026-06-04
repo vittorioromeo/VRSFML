@@ -1,16 +1,16 @@
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedQuadVertices(
-    sf::Vertex*&         vertexPtr,
-    const sf::Transform& t,
-    const sf::Vertex&    a,
-    const sf::Vertex&    b,
-    const sf::Vertex&    c,
-    const sf::Vertex&    d) noexcept
+    za::Vertex*&         vertexPtr,
+    const za::Transform& t,
+    const za::Vertex&    a,
+    const za::Vertex&    b,
+    const za::Vertex&    c,
+    const za::Vertex&    d) noexcept
 {
-    const sf::Vector2f ap = a.position;
-    const sf::Vector2f bp = b.position;
-    const sf::Vector2f cp = c.position;
-    const sf::Vector2f dp = d.position;
+    const za::Vector2f ap = a.position;
+    const za::Vector2f bp = b.position;
+    const za::Vector2f cp = c.position;
+    const za::Vector2f dp = d.position;
 
     __builtin_assume(ap.x == cp.x);
     __builtin_assume(bp.x == dp.x);

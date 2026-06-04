@@ -2,7 +2,7 @@
 
 
 ////////////////////////////////////////////////////////////
-void InputHelper::applyEvent(const sf::Event& event)
+void InputHelper::applyEvent(const za::Event& event)
 {
     m_currentInputState.apply(event);
 }

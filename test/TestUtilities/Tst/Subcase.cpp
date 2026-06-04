@@ -9,8 +9,8 @@
 #include "Tst/Detail/Subcase.hpp"
 #include "Tst/TstFwd.hpp"
 
-#include "SFML/Base/Builtin/Strcmp.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Builtin/Strcmp.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ bool sameCStr(const char* a, const char* b) noexcept
     if (a == nullptr || b == nullptr)
         return false;
 
-    return SFML_BASE_STRCMP(a, b) == 0;
+    return ZB_STRCMP(a, b) == 0;
 }
 
 } // namespace
@@ -83,12 +83,12 @@ void TraversalState::resetForRun() noexcept
 ////////////////////////////////////////////////////////////
 bool TraversalState::advance() noexcept
 {
-    const sf::base::SizeT maxDepth = decisionPath.size() < discoveredDecisionPath.size() ? decisionPath.size()
+    const zb::SizeT maxDepth = decisionPath.size() < discoveredDecisionPath.size() ? decisionPath.size()
                                                                                          : discoveredDecisionPath.size();
 
-    for (sf::base::SizeT depth = maxDepth; depth > 0u; --depth)
+    for (zb::SizeT depth = maxDepth; depth > 0u; --depth)
     {
-        const sf::base::SizeT index = depth - 1u;
+        const zb::SizeT index = depth - 1u;
         const auto&           dp    = discoveredDecisionPath.data()[index];
 
         if (decisionPath.data()[index] + 1u < dp.branchCount)
@@ -113,14 +113,14 @@ namespace
 ////////////////////////////////////////////////////////////
 DecisionPoint& ensureDecisionPoint(TraversalState& s)
 {
-    const sf::base::SizeT depth = s.decisionDepth;
+    const zb::SizeT depth = s.decisionDepth;
 
     if (s.discoveredDecisionPath.size() == depth)
     {
         s.discoveredDecisionPath.emplaceBack();
 
         if (s.decisionPath.size() == depth)
-            s.decisionPath.pushBack(static_cast<sf::base::SizeT>(0u));
+            s.decisionPath.pushBack(static_cast<zb::SizeT>(0u));
     }
 
     return s.discoveredDecisionPath.data()[depth];
@@ -135,8 +135,8 @@ bool TraversalState::tryEnterSubcase(const SubcaseSignature& sig)
     DecisionPoint& point = ensureDecisionPoint(*this);
 
     auto&                 subcases     = point.subcases;
-    sf::base::SizeT       siblingIndex = 0u;
-    const sf::base::SizeT subcasesSize = subcases.size();
+    zb::SizeT       siblingIndex = 0u;
+    const zb::SizeT subcasesSize = subcases.size();
 
     for (; siblingIndex < subcasesSize; ++siblingIndex)
     {

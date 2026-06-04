@@ -7,47 +7,47 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include "Zancle/Graphics/CircleShape.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RectangleShape.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/String.hpp"
 
-#ifdef SFML_SYSTEM_IOS
-    #include "SFML/Main.hpp"
+#ifdef ZA_SYSTEM_IOS
+    #include "Zancle/Main.hpp"
 #endif
 
 namespace
 {
-sf::Path resourcesDir()
+za::Path resourcesDir()
 {
-#ifdef SFML_SYSTEM_IOS
+#ifdef ZA_SYSTEM_IOS
     return "";
 #else
     return "resources";
@@ -65,12 +65,12 @@ int main()
     RNGFast rng(/* seed */ 1234);
 
     // Define some constants
-    constexpr sf::Vec2f gameSize{800.f, 600.f};
-    constexpr sf::Vec2f paddleSize{25.f, 100.f};
+    constexpr za::Vec2f gameSize{800.f, 600.f};
+    constexpr za::Vec2f paddleSize{25.f, 100.f};
     constexpr float     ballRadius = 10.f;
 
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Create the window of the application
     auto window = makeDPIScaledRenderWindow(
@@ -86,52 +86,52 @@ int main()
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), gameSize);
 
     // Create an audio context and get the default playback device
-    auto               audioContext = sf::AudioContext::create().value();
-    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    auto               audioContext = za::AudioContext::create().value();
+    za::PlaybackDevice playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Load the sounds used in the game
-    const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::Sound  ballSound(playbackDevice, ballSoundBuffer);
+    const auto ballSoundBuffer = za::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
+    za::Sound  ballSound(playbackDevice, ballSoundBuffer);
 
     // Create the SFML logo texture:
-    const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
+    const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
 
     // Create the left paddle
-    sf::RectangleShape leftPaddle{
+    za::RectangleShape leftPaddle{
         {.origin           = paddleSize / 2.f,
          .fillColor        = {100u, 100u, 200u},
-         .outlineColor     = sf::Color::Black,
+         .outlineColor     = za::Color::Black,
          .outlineThickness = 3.f,
-         .size             = paddleSize - sf::Vec2f{3.f, 3.f}}};
+         .size             = paddleSize - za::Vec2f{3.f, 3.f}}};
 
     // Create the right paddle
-    sf::RectangleShape rightPaddle = leftPaddle;
+    za::RectangleShape rightPaddle = leftPaddle;
     rightPaddle.setFillColor({200u, 100u, 100u});
 
     // Create the ball
-    sf::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
-                          .fillColor        = sf::Color::White,
-                          .outlineColor     = sf::Color::Black,
+    za::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
+                          .fillColor        = za::Color::White,
+                          .outlineColor     = za::Color::Black,
                           .outlineThickness = 2.f,
                           .radius           = ballRadius - 3.f}};
 
     // Open the text font
-    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
+    const auto font = za::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
     // Initialize the pause message
     TextEffectWiggle wiggleTextEffect(10.f, 1.75f);
-    sf::Text         pauseMessage(font,
+    za::Text         pauseMessage(font,
                                   {
                                       .position = {170.f, 200.f},
-#ifdef SFML_SYSTEM_IOS
+#ifdef ZA_SYSTEM_IOS
                               .string = "Welcome to SFML Tennis!\nTouch the screen to start the game.",
 #else
                               .string = "Welcome to SFML Tennis!\n\nPress space to start the game.",
 #endif
                               .characterSize = 40u,
 
-                              .fillColor        = sf::Color::White,
-                              .outlineColor     = sf::Color::Black,
+                              .fillColor        = za::Color::White,
+                              .outlineColor     = za::Color::Black,
                               .outlineThickness = 2.f,
                           });
 
@@ -140,29 +140,29 @@ int main()
     constexpr float ballSpeed   = 400.f;
 
     // Define the paddles properties
-    sf::Clock      aiTimer;
-    const sf::Time aiTime           = sf::seconds(0.1f);
+    za::Clock      aiTimer;
+    const za::Time aiTime           = za::seconds(0.1f);
     float          rightPaddleSpeed = 0.f;
-    sf::Angle      ballAngle        = sf::degrees(0); // to be changed later
+    za::Angle      ballAngle        = za::degrees(0); // to be changed later
 
-    sf::Clock clock;
+    za::Clock clock;
     bool      isPlaying = false;
 
     while (true)
     {
         // Handle events
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, gameSize, windowView))
                 continue;
 
             // Space key pressed: play
-            if ((event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Space) ||
-                event->is<sf::Event::TouchBegan>())
+            if ((event->is<za::Event::KeyPressed>() &&
+                 event->getIf<za::Event::KeyPressed>()->code == za::Keyboard::Key::Space) ||
+                event->is<za::Event::TouchBegan>())
             {
                 if (!isPlaying)
                 {
@@ -179,8 +179,8 @@ int main()
                     do
                     {
                         // Make sure the ball initial angle is not too much vertical
-                        ballAngle = sf::degrees(rng.getF(0.f, 360.f));
-                    } while (sf::base::fabs(sf::base::cos(ballAngle.asRadians())) < 0.7f);
+                        ballAngle = za::degrees(rng.getF(0.f, 360.f));
+                    } while (zb::fabs(zb::cos(ballAngle.asRadians())) < 0.7f);
                 }
             }
         }
@@ -190,11 +190,11 @@ int main()
         if (isPlaying)
         {
             // Move the player's paddle
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) && (leftPaddle.position.y - paddleSize.y / 2 > 5.f))
+            if (za::Keyboard::isKeyPressed(za::Keyboard::Key::Up) && (leftPaddle.position.y - paddleSize.y / 2 > 5.f))
             {
                 leftPaddle.position.y += -paddleSpeed * deltaTime;
             }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) &&
+            else if (za::Keyboard::isKeyPressed(za::Keyboard::Key::Down) &&
                      (leftPaddle.position.y + paddleSize.y / 2 < gameSize.y - 5.f))
             {
                 leftPaddle.position.y += paddleSpeed * deltaTime;
@@ -220,12 +220,12 @@ int main()
             }
 
             // Move the ball
-            ball.position += sf::Vec2f::fromAngle(ballSpeed * deltaTime, ballAngle);
+            ball.position += za::Vec2f::fromAngle(ballSpeed * deltaTime, ballAngle);
 
-#ifdef SFML_SYSTEM_IOS
-            const sf::base::String inputString = "Touch the screen to restart.";
+#ifdef ZA_SYSTEM_IOS
+            const zb::String inputString = "Touch the screen to restart.";
 #else
-            const sf::base::String inputString = "Press space to restart or\nescape to exit.";
+            const zb::String inputString = "Press space to restart or\nescape to exit.";
 #endif
 
             // Check collisions between the ball and the screen
@@ -261,9 +261,9 @@ int main()
                 ball.position.y - ballRadius <= leftPaddle.position.y + paddleSize.y / 2)
             {
                 if (ball.position.y > leftPaddle.position.y)
-                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(rng.getF(0.f, 20.f));
+                    ballAngle = za::degrees(180) - ballAngle + za::degrees(rng.getF(0.f, 20.f));
                 else
-                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(rng.getF(0.f, 20.f));
+                    ballAngle = za::degrees(180) - ballAngle - za::degrees(rng.getF(0.f, 20.f));
 
                 ballSound.play();
                 ball.position.x = leftPaddle.position.x + ballRadius + paddleSize.x / 2 + 0.1f;
@@ -276,9 +276,9 @@ int main()
                 ball.position.y - ballRadius <= rightPaddle.position.y + paddleSize.y / 2)
             {
                 if (ball.position.y > rightPaddle.position.y)
-                    ballAngle = sf::degrees(180) - ballAngle + sf::degrees(rng.getF(0.f, 20.f));
+                    ballAngle = za::degrees(180) - ballAngle + za::degrees(rng.getF(0.f, 20.f));
                 else
-                    ballAngle = sf::degrees(180) - ballAngle - sf::degrees(rng.getF(0.f, 20.f));
+                    ballAngle = za::degrees(180) - ballAngle - za::degrees(rng.getF(0.f, 20.f));
 
                 ballSound.play();
                 ball.position.x = rightPaddle.position.x - ballRadius - paddleSize.x / 2 - 0.1f;
@@ -302,7 +302,7 @@ int main()
             drawCtx.draw(pauseMessage);
             wiggleTextEffect.unapply(pauseMessage);
 
-            drawCtx.draw(sfmlLogoTexture, {.position = {170.f, 50.f}});
+            drawCtx.draw(zancleLogoTexture, {.position = {170.f, 50.f}});
         }
 
         // Display things on screen

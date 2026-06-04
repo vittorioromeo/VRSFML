@@ -1,22 +1,22 @@
 #pragma once
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowImpl.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
+#include "Zancle/Window/WindowImpl.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "Zancle/System/Vector2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
+#include "ZancleBase/IntTypes.hpp"
 
 #include <SDL3/SDL_video.h>
 
 
-namespace sf
+namespace za
 {
 class String;
 struct WindowSettings;
@@ -231,4 +231,4 @@ private:
 };
 
 } // namespace priv
-} // namespace sf
+} // namespace za

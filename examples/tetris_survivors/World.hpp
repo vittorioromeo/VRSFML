@@ -14,12 +14,12 @@
 #include "Tetramino.hpp"
 #include "TetraminoShapes.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Pow.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace tsurv
@@ -33,46 +33,46 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::U64 getXPNeededForLevelUp(const sf::base::U32 level)
+[[nodiscard]] inline zb::U64 getXPNeededForLevelUp(const zb::U32 level)
 {
     constexpr double baseXP   = 30.0;
     constexpr double exponent = 1.035;
 
-    return static_cast<sf::base::U64>(baseXP * sf::base::pow(static_cast<double>(level), exponent));
+    return static_cast<zb::U64>(baseXP * zb::pow(static_cast<double>(level), exponent));
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::U64 getElapsedSeconds(const sf::base::U64 ticks)
+[[nodiscard]] inline zb::U64 getElapsedSeconds(const zb::U64 ticks)
 {
-    return static_cast<sf::base::U64>(static_cast<float>(ticks) / ticksPerSecond);
+    return static_cast<zb::U64>(static_cast<float>(ticks) / ticksPerSecond);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::U64 getDifficultyFactor(const sf::base::U64 ticks)
+[[nodiscard]] inline zb::U64 getDifficultyFactor(const zb::U64 ticks)
 {
-    constexpr sf::base::U64 baseDifficulty = 800u;
+    constexpr zb::U64 baseDifficulty = 800u;
     return baseDifficulty + getElapsedSeconds(ticks) * 5u;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Array<sf::base::U64, 4> generateTetraminoHealthDistribution(sf::base::U64 difficultyFactor, auto&& rng)
+[[nodiscard]] zb::Array<zb::U64, 4> generateTetraminoHealthDistribution(zb::U64 difficultyFactor, auto&& rng)
 {
     const auto minHealth = 1;
     const auto maxHealth = 4;
 
     // 1. Start with all blocks at minimum health.
-    sf::base::Array<sf::base::U64, 4> healths{minHealth, minHealth, minHealth, minHealth};
+    zb::Array<zb::U64, 4> healths{minHealth, minHealth, minHealth, minHealth};
 
     // 2. Iterate through each of the 4 block "slots" and attempt to upgrade them.
-    for (sf::base::SizeT i = 0u; i < healths.size(); ++i)
+    for (zb::SizeT i = 0u; i < healths.size(); ++i)
     {
         // A block can try to upgrade multiple times in a row.
         while (healths[i] < maxHealth)
         {
-            const sf::base::U64 targetHealth = healths[i] + 1;
+            const zb::U64 targetHealth = healths[i] + 1;
 
             // --- Calculate the chance to upgrade to the targetHealth ---
 
@@ -104,7 +104,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
             // c) Intra-tetramino penalty makes multiple high-HP blocks on one piece rare.
             //    Each existing block with >= targetHealth reduces the chance by 30%.
             int highHpBlocksCount = 0;
-            for (sf::base::SizeT j = 0u; j < healths.size(); ++j)
+            for (zb::SizeT j = 0u; j < healths.size(); ++j)
             {
                 if (i == j)
                     continue; // Don't count the block we are currently upgrading
@@ -146,31 +146,31 @@ struct [[nodiscard]] World
 
     BlockGrid blockGrid{10u, 20u + gridGraceY};
 
-    sf::base::Vector<TaggedBlockMatrix> blockMatrixBag;
+    zb::Vector<TaggedBlockMatrix> blockMatrixBag;
 
-    sf::base::Optional<Tetramino> currentTetramino;
-    sf::base::Optional<Tetramino> heldTetramino;
+    zb::Optional<Tetramino> currentTetramino;
+    zb::Optional<Tetramino> heldTetramino;
 
     bool holdUsedThisTurn = false;
 
-    sf::base::SizeT rerollsPerLevel      = 3u;
-    sf::base::SizeT nPerkChoicesPerLevel = 3u;
+    zb::SizeT rerollsPerLevel      = 3u;
+    zb::SizeT nPerkChoicesPerLevel = 3u;
 
-    sf::base::U64 tick = 0u;
+    zb::U64 tick = 0u;
 
-    sf::base::U64 dropTickAccumulator = 0u;
-    sf::base::U64 dropTickTarget      = 60u;
+    zb::U64 dropTickAccumulator = 0u;
+    zb::U64 dropTickTarget      = 60u;
 
-    sf::base::U64 graceDropMoves      = 0u;
-    sf::base::U64 maxGraceDropMoves   = 2u;
+    zb::U64 graceDropMoves      = 0u;
+    zb::U64 maxGraceDropMoves   = 2u;
     bool          lastMoveWasRotation = false;
 
-    sf::base::U32 playerLevel          = 1u;
-    sf::base::U32 committedPlayerLevel = 1u;
-    sf::base::U64 currentXP            = 0u;
+    zb::U32 playerLevel          = 1u;
+    zb::U32 committedPlayerLevel = 1u;
+    zb::U64 currentXP            = 0u;
 
-    sf::base::U64 linesCleared    = 0u;
-    sf::base::U64 tetaminosPlaced = 0u;
+    zb::U64 linesCleared    = 0u;
+    zb::U64 tetaminosPlaced = 0u;
 
     int perkRndHitOnClear = 0;
 
@@ -184,7 +184,7 @@ struct [[nodiscard]] World
         int tetraminosPlacedCount = 0;
     };
 
-    sf::base::Optional<DeleteFloorPerNTetraminos> perkDeleteFloorPerNTetraminos;
+    zb::Optional<DeleteFloorPerNTetraminos> perkDeleteFloorPerNTetraminos;
 
     int perkExtraLinePiecesInPool = 0;
 
@@ -194,10 +194,10 @@ struct [[nodiscard]] World
         int maxPenetration = 1;
     };
 
-    sf::base::Optional<DrillData> perkDrill[drillDirectionCount]{
-        // sf::base::Optional<DrillData>{DrillData{}},
-        // sf::base::Optional<DrillData>{DrillData{}},
-        // sf::base::Optional<DrillData>{DrillData{}},
+    zb::Optional<DrillData> perkDrill[drillDirectionCount]{
+        // zb::Optional<DrillData>{DrillData{}},
+        // zb::Optional<DrillData>{DrillData{}},
+        // zb::Optional<DrillData>{DrillData{}},
     };
 
     int perkNPeek = 1;
@@ -208,7 +208,7 @@ struct [[nodiscard]] World
         int tetraminosPlacedCount = 0;
     };
 
-    sf::base::Optional<RndHitPerNTetraminos> perkRndHitPerNTetraminos;
+    zb::Optional<RndHitPerNTetraminos> perkRndHitPerNTetraminos;
 
     int perkChainLightning = 0;
 
@@ -218,9 +218,9 @@ struct [[nodiscard]] World
         bool bounce         = false;
     };
 
-    sf::base::Optional<LaserData> perkLaser[laserDirectionCount]{
-        // sf::base::Optional<LaserData>{LaserData{}},
-        // sf::base::Optional<LaserData>{LaserData{}},
+    zb::Optional<LaserData> perkLaser[laserDirectionCount]{
+        // zb::Optional<LaserData>{LaserData{}},
+        // zb::Optional<LaserData>{LaserData{}},
     };
 };
 

@@ -2,6 +2,6 @@
 set(SRC Batching.cpp)
 
 # define the batching target
-sfml_add_example(batching GUI_APP
+zancle_add_example(batching GUI_APP
                  SOURCES ${SRC}
-                 DEPENDS SFML::Graphics SFML::ImGui ImGui::ImGui)
+                 DEPENDS Zancle::Graphics Zancle::ImGui ImGui::ImGui)

@@ -19,35 +19,35 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
-#include "SFML/Window/EventUtils.hpp"
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f resolution{320.f, 240.f};
+constexpr za::Vec2f resolution{320.f, 240.f};
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Image makeSmileyImage()
+[[nodiscard]] za::Image makeSmileyImage()
 {
     static constexpr char pattern[16][17] = {
         "....KKKKKKKK....",
@@ -67,7 +67,7 @@ constexpr sf::Vec2f resolution{320.f, 240.f};
         "....KKKKKKKK....",
     };
 
-    auto image = sf::Image::create({16u, 16u}, sf::Color::Transparent).value();
+    auto image = za::Image::create({16u, 16u}, za::Color::Transparent).value();
 
     for (unsigned int y = 0u; y < 16u; ++y)
         for (unsigned int x = 0u; x < 16u; ++x)
@@ -90,7 +90,7 @@ constexpr sf::Vec2f resolution{320.f, 240.f};
 
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -103,24 +103,24 @@ int main()
                       .value();
 
     auto windowView = computePixelPerfectView(window.getSize().toVec2f(), resolution);
-    auto worldView  = sf::View::fromScreenSize(resolution);
+    auto worldView  = za::View::fromScreenSize(resolution);
 
-    auto rtGame = sf::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .smooth = false}).value();
+    auto rtGame = za::RenderTexture::create(resolution.toVec2u(), {.antiAliasingLevel = 0u, .smooth = false}).value();
 
     const auto smileyImage   = makeSmileyImage();
-    const auto smileyTexture = sf::Texture::loadFromImage(smileyImage, {.smooth = false}).value();
+    const auto smileyTexture = za::Texture::loadFromImage(smileyImage, {.smooth = false}).value();
 
-    sf::Vec2f spritePos{160.f, 120.f};
-    sf::Vec2f spriteVel{47.f, 31.f}; // px/s, deliberately not axis-aligned
+    za::Vec2f spritePos{160.f, 120.f};
+    za::Vec2f spriteVel{47.f, 31.f}; // px/s, deliberately not axis-aligned
 
-    sf::Clock clock;
+    za::Clock clock;
     float     lastT = 0.f;
 
     while (true)
     {
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handlePixelPerfectResize(*event, resolution, windowView))
@@ -159,7 +159,7 @@ int main()
         rtGame.clear({15u, 15u, 25u, 255u});
 
         rtGame.draw(
-            sf::RectangleShapeData{
+            za::RectangleShapeData{
                 .position         = {40.f, 50.f},
                 .fillColor        = {30u, 60u, 90u, 255u},
                 .outlineColor     = {180u, 200u, 220u, 255u},
@@ -168,11 +168,11 @@ int main()
             },
             {.view = worldView});
 
-        for (const sf::Vec2f cornerPos :
-             {sf::Vec2f{40.f, 50.f}, sf::Vec2f{277.f, 50.f}, sf::Vec2f{40.f, 187.f}, sf::Vec2f{277.f, 187.f}})
+        for (const za::Vec2f cornerPos :
+             {za::Vec2f{40.f, 50.f}, za::Vec2f{277.f, 50.f}, za::Vec2f{40.f, 187.f}, za::Vec2f{277.f, 187.f}})
         {
             rtGame.draw(
-                sf::RectangleShapeData{
+                za::RectangleShapeData{
                     .position  = cornerPos.componentWiseFloor(),
                     .fillColor = {180u, 200u, 220u, 255u},
                     .size      = {3.f, 3.f},
@@ -181,10 +181,10 @@ int main()
         }
 
         rtGame.draw(
-            sf::CircleShapeData{
-                .position   = sf::Vec2f{160.f, 120.f}.movedTowards(70.f, sf::radians(t)).componentWiseFloor(),
+            za::CircleShapeData{
+                .position   = za::Vec2f{160.f, 120.f}.movedTowards(70.f, za::radians(t)).componentWiseFloor(),
                 .origin     = {6.f, 6.f},
-                .rotation   = sf::radians(t),
+                .rotation   = za::radians(t),
                 .fillColor  = {220u, 60u, 60u, 255u},
                 .radius     = 6.f,
                 .pointCount = 3u,
@@ -201,7 +201,7 @@ int main()
         rtGame.display();
 
         // Present the render texture through the pixel-perfect view:
-        window.clear(sf::Color::Black);
+        window.clear(za::Color::Black);
         window.draw(rtGame.getTexture(), {.view = windowView});
         window.display();
     }

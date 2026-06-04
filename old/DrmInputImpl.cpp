@@ -1,18 +1,18 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/InputImpl.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/InputImpl.hpp"
 
-#include "SFML/System/Err.hpp"
+#include "Zancle/System/Err.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
-#include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/EnumArray.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Algorithm.hpp"
+#include "ZancleBase/Builtins/Memcpy.hpp"
+#include "ZancleBase/EnumArray.hpp"
+#include "ZancleBase/Optional.hpp"
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -35,43 +35,43 @@ struct TouchSlot
 {
     base::Optional<unsigned int> oldId;
     base::Optional<unsigned int> id;
-    sf::Vector2i                 pos;
+    za::Vector2i                 pos;
 };
 
 std::recursive_mutex inputMutex; // threadsafe? maybe...
-sf::Vector2i         mousePos;   // current mouse position
+za::Vector2i         mousePos;   // current mouse position
 
 std::vector<int> fileDescriptors; // list of open file descriptors for /dev/input
-sf::base::EnumArray<sf::Mouse::Button, bool, sf::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
-sf::base::EnumArray<sf::Keyboard::Key, bool, sf::Keyboard::KeyCount> keyMap{};   // track whether keys are down
+zb::EnumArray<za::Mouse::Button, bool, za::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
+zb::EnumArray<za::Keyboard::Key, bool, za::Keyboard::KeyCount> keyMap{};   // track whether keys are down
 
 int                    touchFd = -1;    // file descriptor we have seen MT events on; assumes only 1
 std::vector<TouchSlot> touchSlots;      // track the state of each touch "slot"
 int                    currentSlot = 0; // which slot are we currently updating?
 
-std::queue<sf::Event> eventQueue;    // events received and waiting to be consumed
+std::queue<za::Event> eventQueue;    // events received and waiting to be consumed
 constexpr int         maxQueue = 64; // The maximum size we let eventQueue grow to
 
 termios newTerminalConfig, oldTerminalConfig; // Terminal configurations
 
 bool altDown()
 {
-    return keyMap[sf::Keyboard::Key::LAlt] || keyMap[sf::Keyboard::Key::RAlt];
+    return keyMap[za::Keyboard::Key::LAlt] || keyMap[za::Keyboard::Key::RAlt];
 }
 
 bool controlDown()
 {
-    return keyMap[sf::Keyboard::Key::LControl] || keyMap[sf::Keyboard::Key::RControl];
+    return keyMap[za::Keyboard::Key::LControl] || keyMap[za::Keyboard::Key::RControl];
 }
 
 bool shiftDown()
 {
-    return keyMap[sf::Keyboard::Key::LShift] || keyMap[sf::Keyboard::Key::RShift];
+    return keyMap[za::Keyboard::Key::LShift] || keyMap[za::Keyboard::Key::RShift];
 }
 
 bool systemDown()
 {
-    return keyMap[sf::Keyboard::Key::LSystem] || keyMap[sf::Keyboard::Key::RSystem];
+    return keyMap[za::Keyboard::Key::LSystem] || keyMap[za::Keyboard::Key::RSystem];
 }
 
 void uninitFileDescriptors()
@@ -136,7 +136,7 @@ void initFileDescriptors()
         if (tempFD < 0)
         {
             if (errno != ENOENT)
-                sf::priv::err() << "Error opening " << name << ": " << std::strerror(errno);
+                za::priv::err() << "Error opening " << name << ": " << std::strerror(errno);
 
             continue;
         }
@@ -150,133 +150,133 @@ void initFileDescriptors()
     std::atexit(uninitFileDescriptors);
 }
 
-base::Optional<sf::Mouse::Button> toMouseButton(int code)
+base::Optional<za::Mouse::Button> toMouseButton(int code)
 {
     switch (code)
     {
         case BTN_LEFT:
-            return sf::Mouse::Button::Left;
+            return za::Mouse::Button::Left;
         case BTN_RIGHT:
-            return sf::Mouse::Button::Right;
+            return za::Mouse::Button::Right;
         case BTN_MIDDLE:
-            return sf::Mouse::Button::Middle;
+            return za::Mouse::Button::Middle;
         case BTN_SIDE:
-            return sf::Mouse::Button::Extra1;
+            return za::Mouse::Button::Extra1;
         case BTN_EXTRA:
-            return sf::Mouse::Button::Extra2;
+            return za::Mouse::Button::Extra2;
 
         default:
             return base::nullOpt;
     }
 }
 
-sf::Keyboard::Key toKey(int code)
+za::Keyboard::Key toKey(int code)
 {
     switch (code)
     {
             // clang-format off
-        case KEY_ESC:           return sf::Keyboard::Key::Escape;
-        case KEY_1:             return sf::Keyboard::Key::Num1;
-        case KEY_2:             return sf::Keyboard::Key::Num2;
-        case KEY_3:             return sf::Keyboard::Key::Num3;
-        case KEY_4:             return sf::Keyboard::Key::Num4;
-        case KEY_5:             return sf::Keyboard::Key::Num5;
-        case KEY_6:             return sf::Keyboard::Key::Num6;
-        case KEY_7:             return sf::Keyboard::Key::Num7;
-        case KEY_8:             return sf::Keyboard::Key::Num8;
-        case KEY_9:             return sf::Keyboard::Key::Num9;
-        case KEY_0:             return sf::Keyboard::Key::Num0;
-        case KEY_MINUS:         return sf::Keyboard::Key::Hyphen;
-        case KEY_EQUAL:         return sf::Keyboard::Key::Equal;
-        case KEY_BACKSPACE:     return sf::Keyboard::Key::Backspace;
-        case KEY_TAB:           return sf::Keyboard::Key::Tab;
-        case KEY_Q:             return sf::Keyboard::Key::Q;
-        case KEY_W:             return sf::Keyboard::Key::W;
-        case KEY_E:             return sf::Keyboard::Key::E;
-        case KEY_R:             return sf::Keyboard::Key::R;
-        case KEY_T:             return sf::Keyboard::Key::T;
-        case KEY_Y:             return sf::Keyboard::Key::Y;
-        case KEY_U:             return sf::Keyboard::Key::U;
-        case KEY_I:             return sf::Keyboard::Key::I;
-        case KEY_O:             return sf::Keyboard::Key::O;
-        case KEY_P:             return sf::Keyboard::Key::P;
-        case KEY_LEFTBRACE:     return sf::Keyboard::Key::LBracket;
-        case KEY_RIGHTBRACE:    return sf::Keyboard::Key::RBracket;
+        case KEY_ESC:           return za::Keyboard::Key::Escape;
+        case KEY_1:             return za::Keyboard::Key::Num1;
+        case KEY_2:             return za::Keyboard::Key::Num2;
+        case KEY_3:             return za::Keyboard::Key::Num3;
+        case KEY_4:             return za::Keyboard::Key::Num4;
+        case KEY_5:             return za::Keyboard::Key::Num5;
+        case KEY_6:             return za::Keyboard::Key::Num6;
+        case KEY_7:             return za::Keyboard::Key::Num7;
+        case KEY_8:             return za::Keyboard::Key::Num8;
+        case KEY_9:             return za::Keyboard::Key::Num9;
+        case KEY_0:             return za::Keyboard::Key::Num0;
+        case KEY_MINUS:         return za::Keyboard::Key::Hyphen;
+        case KEY_EQUAL:         return za::Keyboard::Key::Equal;
+        case KEY_BACKSPACE:     return za::Keyboard::Key::Backspace;
+        case KEY_TAB:           return za::Keyboard::Key::Tab;
+        case KEY_Q:             return za::Keyboard::Key::Q;
+        case KEY_W:             return za::Keyboard::Key::W;
+        case KEY_E:             return za::Keyboard::Key::E;
+        case KEY_R:             return za::Keyboard::Key::R;
+        case KEY_T:             return za::Keyboard::Key::T;
+        case KEY_Y:             return za::Keyboard::Key::Y;
+        case KEY_U:             return za::Keyboard::Key::U;
+        case KEY_I:             return za::Keyboard::Key::I;
+        case KEY_O:             return za::Keyboard::Key::O;
+        case KEY_P:             return za::Keyboard::Key::P;
+        case KEY_LEFTBRACE:     return za::Keyboard::Key::LBracket;
+        case KEY_RIGHTBRACE:    return za::Keyboard::Key::RBracket;
         case KEY_KPENTER:
-        case KEY_ENTER:         return sf::Keyboard::Key::Enter;
-        case KEY_LEFTCTRL:      return sf::Keyboard::Key::LControl;
-        case KEY_A:             return sf::Keyboard::Key::A;
-        case KEY_S:             return sf::Keyboard::Key::S;
-        case KEY_D:             return sf::Keyboard::Key::D;
-        case KEY_F:             return sf::Keyboard::Key::F;
-        case KEY_G:             return sf::Keyboard::Key::G;
-        case KEY_H:             return sf::Keyboard::Key::H;
-        case KEY_J:             return sf::Keyboard::Key::J;
-        case KEY_K:             return sf::Keyboard::Key::K;
-        case KEY_L:             return sf::Keyboard::Key::L;
-        case KEY_SEMICOLON:     return sf::Keyboard::Key::Semicolon;
-        case KEY_APOSTROPHE:    return sf::Keyboard::Key::Apostrophe;
-        case KEY_GRAVE:         return sf::Keyboard::Key::Grave;
-        case KEY_LEFTSHIFT:     return sf::Keyboard::Key::LShift;
-        case KEY_BACKSLASH:     return sf::Keyboard::Key::Backslash;
-        case KEY_Z:             return sf::Keyboard::Key::Z;
-        case KEY_X:             return sf::Keyboard::Key::X;
-        case KEY_C:             return sf::Keyboard::Key::C;
-        case KEY_V:             return sf::Keyboard::Key::V;
-        case KEY_B:             return sf::Keyboard::Key::B;
-        case KEY_N:             return sf::Keyboard::Key::N;
-        case KEY_M:             return sf::Keyboard::Key::M;
-        case KEY_COMMA:         return sf::Keyboard::Key::Comma;
-        case KEY_DOT:           return sf::Keyboard::Key::Period;
-        case KEY_SLASH:         return sf::Keyboard::Key::Slash;
-        case KEY_RIGHTSHIFT:    return sf::Keyboard::Key::RShift;
-        case KEY_KPASTERISK:    return sf::Keyboard::Key::Multiply;
-        case KEY_LEFTALT:       return sf::Keyboard::Key::LAlt;
-        case KEY_SPACE:         return sf::Keyboard::Key::Space;
-        case KEY_F1:            return sf::Keyboard::Key::F1;
-        case KEY_F2:            return sf::Keyboard::Key::F2;
-        case KEY_F3:            return sf::Keyboard::Key::F3;
-        case KEY_F4:            return sf::Keyboard::Key::F4;
-        case KEY_F5:            return sf::Keyboard::Key::F5;
-        case KEY_F6:            return sf::Keyboard::Key::F6;
-        case KEY_F7:            return sf::Keyboard::Key::F7;
-        case KEY_F8:            return sf::Keyboard::Key::F8;
-        case KEY_F9:            return sf::Keyboard::Key::F9;
-        case KEY_F10:           return sf::Keyboard::Key::F10;
-        case KEY_F11:           return sf::Keyboard::Key::F11;
-        case KEY_F12:           return sf::Keyboard::Key::F12;
-        case KEY_F13:           return sf::Keyboard::Key::F13;
-        case KEY_F14:           return sf::Keyboard::Key::F14;
-        case KEY_F15:           return sf::Keyboard::Key::F15;
-        case KEY_KP7:           return sf::Keyboard::Key::Numpad7;
-        case KEY_KP8:           return sf::Keyboard::Key::Numpad8;
-        case KEY_KP9:           return sf::Keyboard::Key::Numpad9;
-        case KEY_KPMINUS:       return sf::Keyboard::Key::Subtract;
-        case KEY_KP4:           return sf::Keyboard::Key::Numpad4;
-        case KEY_KP5:           return sf::Keyboard::Key::Numpad5;
-        case KEY_KP6:           return sf::Keyboard::Key::Numpad6;
-        case KEY_KPPLUS:        return sf::Keyboard::Key::Add;
-        case KEY_KP1:           return sf::Keyboard::Key::Numpad1;
-        case KEY_KP2:           return sf::Keyboard::Key::Numpad2;
-        case KEY_KP3:           return sf::Keyboard::Key::Numpad3;
-        case KEY_KP0:           return sf::Keyboard::Key::Numpad0;
-        case KEY_KPDOT:         return sf::Keyboard::Key::Delete;
-        case KEY_RIGHTCTRL:     return sf::Keyboard::Key::RControl;
-        case KEY_KPSLASH:       return sf::Keyboard::Key::Divide;
-        case KEY_RIGHTALT:      return sf::Keyboard::Key::RAlt;
-        case KEY_HOME:          return sf::Keyboard::Key::Home;
-        case KEY_UP:            return sf::Keyboard::Key::Up;
-        case KEY_PAGEUP:        return sf::Keyboard::Key::PageUp;
-        case KEY_LEFT:          return sf::Keyboard::Key::Left;
-        case KEY_RIGHT:         return sf::Keyboard::Key::Right;
-        case KEY_END:           return sf::Keyboard::Key::End;
-        case KEY_DOWN:          return sf::Keyboard::Key::Down;
-        case KEY_PAGEDOWN:      return sf::Keyboard::Key::PageDown;
-        case KEY_INSERT:        return sf::Keyboard::Key::Insert;
-        case KEY_DELETE:        return sf::Keyboard::Key::Delete;
-        case KEY_PAUSE:         return sf::Keyboard::Key::Pause;
-        case KEY_LEFTMETA:      return sf::Keyboard::Key::LSystem;
-        case KEY_RIGHTMETA:     return sf::Keyboard::Key::RSystem;
+        case KEY_ENTER:         return za::Keyboard::Key::Enter;
+        case KEY_LEFTCTRL:      return za::Keyboard::Key::LControl;
+        case KEY_A:             return za::Keyboard::Key::A;
+        case KEY_S:             return za::Keyboard::Key::S;
+        case KEY_D:             return za::Keyboard::Key::D;
+        case KEY_F:             return za::Keyboard::Key::F;
+        case KEY_G:             return za::Keyboard::Key::G;
+        case KEY_H:             return za::Keyboard::Key::H;
+        case KEY_J:             return za::Keyboard::Key::J;
+        case KEY_K:             return za::Keyboard::Key::K;
+        case KEY_L:             return za::Keyboard::Key::L;
+        case KEY_SEMICOLON:     return za::Keyboard::Key::Semicolon;
+        case KEY_APOSTROPHE:    return za::Keyboard::Key::Apostrophe;
+        case KEY_GRAVE:         return za::Keyboard::Key::Grave;
+        case KEY_LEFTSHIFT:     return za::Keyboard::Key::LShift;
+        case KEY_BACKSLASH:     return za::Keyboard::Key::Backslash;
+        case KEY_Z:             return za::Keyboard::Key::Z;
+        case KEY_X:             return za::Keyboard::Key::X;
+        case KEY_C:             return za::Keyboard::Key::C;
+        case KEY_V:             return za::Keyboard::Key::V;
+        case KEY_B:             return za::Keyboard::Key::B;
+        case KEY_N:             return za::Keyboard::Key::N;
+        case KEY_M:             return za::Keyboard::Key::M;
+        case KEY_COMMA:         return za::Keyboard::Key::Comma;
+        case KEY_DOT:           return za::Keyboard::Key::Period;
+        case KEY_SLASH:         return za::Keyboard::Key::Slash;
+        case KEY_RIGHTSHIFT:    return za::Keyboard::Key::RShift;
+        case KEY_KPASTERISK:    return za::Keyboard::Key::Multiply;
+        case KEY_LEFTALT:       return za::Keyboard::Key::LAlt;
+        case KEY_SPACE:         return za::Keyboard::Key::Space;
+        case KEY_F1:            return za::Keyboard::Key::F1;
+        case KEY_F2:            return za::Keyboard::Key::F2;
+        case KEY_F3:            return za::Keyboard::Key::F3;
+        case KEY_F4:            return za::Keyboard::Key::F4;
+        case KEY_F5:            return za::Keyboard::Key::F5;
+        case KEY_F6:            return za::Keyboard::Key::F6;
+        case KEY_F7:            return za::Keyboard::Key::F7;
+        case KEY_F8:            return za::Keyboard::Key::F8;
+        case KEY_F9:            return za::Keyboard::Key::F9;
+        case KEY_F10:           return za::Keyboard::Key::F10;
+        case KEY_F11:           return za::Keyboard::Key::F11;
+        case KEY_F12:           return za::Keyboard::Key::F12;
+        case KEY_F13:           return za::Keyboard::Key::F13;
+        case KEY_F14:           return za::Keyboard::Key::F14;
+        case KEY_F15:           return za::Keyboard::Key::F15;
+        case KEY_KP7:           return za::Keyboard::Key::Numpad7;
+        case KEY_KP8:           return za::Keyboard::Key::Numpad8;
+        case KEY_KP9:           return za::Keyboard::Key::Numpad9;
+        case KEY_KPMINUS:       return za::Keyboard::Key::Subtract;
+        case KEY_KP4:           return za::Keyboard::Key::Numpad4;
+        case KEY_KP5:           return za::Keyboard::Key::Numpad5;
+        case KEY_KP6:           return za::Keyboard::Key::Numpad6;
+        case KEY_KPPLUS:        return za::Keyboard::Key::Add;
+        case KEY_KP1:           return za::Keyboard::Key::Numpad1;
+        case KEY_KP2:           return za::Keyboard::Key::Numpad2;
+        case KEY_KP3:           return za::Keyboard::Key::Numpad3;
+        case KEY_KP0:           return za::Keyboard::Key::Numpad0;
+        case KEY_KPDOT:         return za::Keyboard::Key::Delete;
+        case KEY_RIGHTCTRL:     return za::Keyboard::Key::RControl;
+        case KEY_KPSLASH:       return za::Keyboard::Key::Divide;
+        case KEY_RIGHTALT:      return za::Keyboard::Key::RAlt;
+        case KEY_HOME:          return za::Keyboard::Key::Home;
+        case KEY_UP:            return za::Keyboard::Key::Up;
+        case KEY_PAGEUP:        return za::Keyboard::Key::PageUp;
+        case KEY_LEFT:          return za::Keyboard::Key::Left;
+        case KEY_RIGHT:         return za::Keyboard::Key::Right;
+        case KEY_END:           return za::Keyboard::Key::End;
+        case KEY_DOWN:          return za::Keyboard::Key::Down;
+        case KEY_PAGEDOWN:      return za::Keyboard::Key::PageDown;
+        case KEY_INSERT:        return za::Keyboard::Key::Insert;
+        case KEY_DELETE:        return za::Keyboard::Key::Delete;
+        case KEY_PAUSE:         return za::Keyboard::Key::Pause;
+        case KEY_LEFTMETA:      return za::Keyboard::Key::LSystem;
+        case KEY_RIGHTMETA:     return za::Keyboard::Key::RSystem;
 
         case KEY_RESERVED:
         case KEY_SYSRQ:
@@ -284,12 +284,12 @@ sf::Keyboard::Key toKey(int code)
         case KEY_NUMLOCK:
         case KEY_SCROLLLOCK:
         default:
-            return sf::Keyboard::Key::Unknown;
+            return za::Keyboard::Key::Unknown;
             // clang-format on
     }
 }
 
-void pushEvent(const sf::Event& event)
+void pushEvent(const za::Event& event)
 {
     if (eventQueue.size() >= maxQueue)
         eventQueue.pop();
@@ -310,21 +310,21 @@ void processSlots()
     {
         if (slot.oldId == slot.id)
         {
-            pushEvent(sf::Event::TouchMoved{*slot.id, slot.pos});
+            pushEvent(za::Event::TouchMoved{*slot.id, slot.pos});
         }
         else
         {
             if (slot.oldId.hasValue())
-                pushEvent(sf::Event::TouchEnded{*slot.oldId, slot.pos});
+                pushEvent(za::Event::TouchEnded{*slot.oldId, slot.pos});
             if (slot.id.hasValue())
-                pushEvent(sf::Event::TouchBegan{*slot.id, slot.pos});
+                pushEvent(za::Event::TouchBegan{*slot.id, slot.pos});
 
             slot.oldId = slot.id;
         }
     }
 }
 
-sf::base::Optional<sf::Event> eventProcess()
+zb::Optional<za::Event> eventProcess()
 {
     const std::lock_guard lock(inputMutex);
 
@@ -336,7 +336,7 @@ sf::base::Optional<sf::Event> eventProcess()
     static unsigned int doDeferredText = 0;
     if (doDeferredText)
     {
-        const auto event = sf::Event::TextEntered{doDeferredText};
+        const auto event = za::Event::TextEntered{doDeferredText};
 
         doDeferredText = 0;
         return event;
@@ -354,21 +354,21 @@ sf::base::Optional<sf::Event> eventProcess()
         {
             if (inputEvent.type == EV_KEY)
             {
-                if (const sf::base::Optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
+                if (const zb::Optional<za::Mouse::Button> mb = toMouseButton(inputEvent.code))
                 {
                     mouseMap[*mb] = inputEvent.value;
 
                     if (inputEvent.value)
-                        return sf::Event::MouseButtonPressed{*mb, mousePos};
+                        return za::Event::MouseButtonPressed{*mb, mousePos};
 
-                    return sf::Event::MouseButtonReleased{*mb, mousePos};
+                    return za::Event::MouseButtonReleased{*mb, mousePos};
                 }
 
-                const sf::Keyboard::Key kb = toKey(inputEvent.code);
+                const za::Keyboard::Key kb = toKey(inputEvent.code);
 
                 unsigned int special = 0;
-                if ((kb == sf::Keyboard::Key::Delete) || (kb == sf::Keyboard::Key::Backspace))
-                    special = (kb == sf::Keyboard::Key::Delete) ? 127 : 8;
+                if ((kb == za::Keyboard::Key::Delete) || (kb == za::Keyboard::Key::Backspace))
+                    special = (kb == za::Keyboard::Key::Delete) ? 127 : 8;
 
                 if (inputEvent.value == 2)
                 {
@@ -376,10 +376,10 @@ sf::base::Optional<sf::Event> eventProcess()
                     //
                     if (special)
                     {
-                        return sf::Event::TextEntered{special};
+                        return za::Event::TextEntered{special};
                     }
                 }
-                else if (kb != sf::Keyboard::Key::Unknown)
+                else if (kb != za::Keyboard::Key::Unknown)
                 {
                     // key down and key up events
                     //
@@ -391,7 +391,7 @@ sf::base::Optional<sf::Event> eventProcess()
                     const auto makeKeyEvent = [&](auto keyEvent)
                     {
                         keyEvent.code     = kb;
-                        keyEvent.scancode = sf::Keyboard::Scan::Unknown; // TODO P2: not implemented
+                        keyEvent.scancode = za::Keyboard::Scan::Unknown; // TODO P2: not implemented
                         keyEvent.alt      = altDown();
                         keyEvent.control  = controlDown();
                         keyEvent.shift    = shiftDown();
@@ -400,9 +400,9 @@ sf::base::Optional<sf::Event> eventProcess()
                     };
 
                     if (inputEvent.value)
-                        return makeKeyEvent(sf::Event::KeyPressed{});
+                        return makeKeyEvent(za::Event::KeyPressed{});
 
-                    return makeKeyEvent(sf::Event::KeyReleased{});
+                    return makeKeyEvent(za::Event::KeyReleased{});
                 }
             }
             else if (inputEvent.type == EV_REL)
@@ -421,14 +421,14 @@ sf::base::Optional<sf::Event> eventProcess()
                         break;
 
                     case REL_WHEEL:
-                        sf::Event::MouseWheelScrolled mouseWheelScrolled;
+                        za::Event::MouseWheelScrolled mouseWheelScrolled;
                         mouseWheelScrolled.delta    = static_cast<float>(inputEvent.value);
                         mouseWheelScrolled.position = mousePos;
                         return mouseWheelScrolled;
                 }
                 if (posChange)
                 {
-                    return sf::Event::MouseMoved{mousePos};
+                    return za::Event::MouseMoved{mousePos};
                 }
             }
             else if (inputEvent.type == EV_ABS)
@@ -464,7 +464,7 @@ sf::base::Optional<sf::Event> eventProcess()
         }
 
         if ((bytesRead < 0) && (errno != EAGAIN))
-            sf::priv::err() << " Error: " << std::strerror(errno);
+            za::priv::err() << " Error: " << std::strerror(errno);
     }
     // Finally check if there is a Text event on stdin
     //
@@ -511,7 +511,7 @@ sf::base::Optional<sf::Event> eventProcess()
     if (code > 0)
     {
         // TODO P2: Proper unicode handling
-        return sf::Event::TextEntered{code};
+        return za::Event::TextEntered{code};
     }
 
     // No events available
@@ -527,7 +527,7 @@ void update()
 } // namespace
 
 
-namespace sf::priv::InputImpl
+namespace za::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
 bool isKeyPressed(Keyboard::Key key)
@@ -545,7 +545,7 @@ bool isKeyPressed(Keyboard::Key key)
 bool isKeyPressed(Keyboard::Scancode /* code */)
 {
     // TODO P2: not implemented
-    priv::err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM.";
+    priv::err() << "za::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM.";
     return false;
 }
 
@@ -554,7 +554,7 @@ bool isKeyPressed(Keyboard::Scancode /* code */)
 Keyboard::Key localize(Keyboard::Scancode /* code */)
 {
     // TODO P2: not implemented
-    priv::err() << "sf::Keyboard::localize is not implemented for DRM.";
+    priv::err() << "za::Keyboard::localize is not implemented for DRM.";
     return Keyboard::Key::Unknown;
 }
 
@@ -563,7 +563,7 @@ Keyboard::Key localize(Keyboard::Scancode /* code */)
 Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 {
     // TODO P2: not implemented
-    priv::err() << "sf::Keyboard::delocalize is not implemented for DRM.";
+    priv::err() << "za::Keyboard::delocalize is not implemented for DRM.";
     return Keyboard::Scan::Unknown;
 }
 
@@ -572,7 +572,7 @@ Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 String getDescription(Keyboard::Scancode /* code */)
 {
     // TODO P2: not implemented
-    priv::err() << "sf::Keyboard::getDescription is not implemented for DRM.";
+    priv::err() << "za::Keyboard::getDescription is not implemented for DRM.";
     return "";
 }
 
@@ -715,4 +715,4 @@ void restoreTerminalConfig()
     tcflush(STDIN_FILENO, TCIFLUSH);                      // flush the buffer
 }
 
-} // namespace sf::priv::InputImpl
+} // namespace za::priv::InputImpl

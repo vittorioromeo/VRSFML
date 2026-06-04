@@ -1,18 +1,18 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/Window.hpp"
-#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
-#include "SFML/Window/macOS/HIDInputManager.hpp"
-#import <SFML/Window/macOS/SFOpenGLView.h>
+#include "Zancle/Window/InputImpl.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Window.hpp"
+#include "Zancle/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "Zancle/Window/macOS/HIDInputManager.hpp"
+#import <Zancle/Window/macOS/SFOpenGLView.h>
 
-#include "SFML/System/Err.hpp"
+#include "Zancle/System/Err.hpp"
 
 #import <AppKit/AppKit.h>
 
@@ -32,7 +32,7 @@ namespace
 /// \return nil if something went wrong or a SFOpenGLView*.
 ///
 ////////////////////////////////////////////////////////////
-SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
+SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const za::WindowBase& window)
 {
     const id nsHandle = static_cast<id>(window.getNativeHandle());
 
@@ -61,7 +61,7 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
             }
             else
             {
-                sf::priv::err() << "The content view is not a valid SFOpenGLView";
+                za::priv::err() << "The content view is not a valid SFOpenGLView";
 
                 view = nil;
             }
@@ -82,12 +82,12 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
 
         // No matching subview ?
         if (view == nil)
-            sf::priv::err() << "Cannot find a valid SFOpenGLView subview.";
+            za::priv::err() << "Cannot find a valid SFOpenGLView subview.";
     }
     else
     {
         if (nsHandle != nil)
-            sf::priv::err() << "The system handle is neither a <NSWindow*> nor <NSView*>"
+            za::priv::err() << "The system handle is neither a <NSWindow*> nor <NSView*>"
                             << "object. This shouldn't happen.";
         // Else: this probably means the SFML window was previously closed.
     }
@@ -97,7 +97,7 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
 } // namespace
 
 
-namespace sf::priv::InputImpl
+namespace za::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
 bool isKeyPressed(Keyboard::Key key)
@@ -158,7 +158,7 @@ Vector2i getMousePosition()
     const AutoreleasePool pool;
     // Reverse Y axis to match SFML coord.
     NSPoint pos = [NSEvent mouseLocation];
-    pos.y       = sf::VideoModeUtils::getDesktopMode().size.y - pos.y;
+    pos.y       = za::VideoModeUtils::getDesktopMode().size.y - pos.y;
 
     const int scale = static_cast<int>([[NSScreen mainScreen] backingScaleFactor]);
     return Vector2i(static_cast<int>(pos.x), static_cast<int>(pos.y)) * scale;
@@ -166,7 +166,7 @@ Vector2i getMousePosition()
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getMousePosition(const sf::WindowBase& relativeTo)
+Vector2i getMousePosition(const za::WindowBase& relativeTo)
 {
     const AutoreleasePool pool;
     SFOpenGLView* const   view = getSFOpenGLViewFromSFMLWindow(relativeTo);
@@ -216,7 +216,7 @@ void setMousePosition(Vector2i position, const WindowBase& relativeTo)
     const int scale = static_cast<int>([view displayScaleFactor]);
     NSPoint   p     = NSMakePoint(position.x / scale, position.y / scale);
     p               = [view computeGlobalPositionOfRelativePoint:p];
-    setMousePosition(sf::Vector2i(static_cast<int>(p.x), static_cast<int>(p.y)) * scale);
+    setMousePosition(za::Vector2i(static_cast<int>(p.x), static_cast<int>(p.y)) * scale);
 }
 
 
@@ -243,4 +243,4 @@ Vector2i getTouchPosition(unsigned int /* finger */, const WindowBase& /* relati
     return {};
 }
 
-} // namespace sf::priv::InputImpl
+} // namespace za::priv::InputImpl

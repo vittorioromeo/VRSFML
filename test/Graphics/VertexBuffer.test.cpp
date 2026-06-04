@@ -1,113 +1,113 @@
-#include "SFML/Graphics/VertexBuffer.hpp"
+#include "Zancle/Graphics/VertexBuffer.hpp"
 
-#include "SFML/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowSwappable.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowSwappable.hpp"
 
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
-TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
+TEST_CASE("[Graphics] za::VertexBuffer", "[.display]")
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::VertexBuffer));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::VertexBuffer));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::VertexBuffer));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::VertexBuffer));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::VertexBuffer));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::VertexBuffer));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_SWAPPABLE(sf::VertexBuffer));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::VertexBuffer));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::VertexBuffer));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::VertexBuffer));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::VertexBuffer));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(za::VertexBuffer));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::VertexBuffer));
+        STATIC_CHECK(ZB_IS_NOTHROW_SWAPPABLE(za::VertexBuffer));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            const sf::VertexBuffer vertexBuffer;
+            const za::VertexBuffer vertexBuffer;
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
-            CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::Points);
-            CHECK(vertexBuffer.getUsage() == sf::VertexBuffer::Usage::Stream);
+            CHECK(vertexBuffer.getPrimitiveType() == za::PrimitiveType::Points);
+            CHECK(vertexBuffer.getUsage() == za::VertexBuffer::Usage::Stream);
         }
 
         SECTION("Primitive type constructor")
         {
-            const sf::VertexBuffer vertexBuffer(sf::PrimitiveType::Triangles);
+            const za::VertexBuffer vertexBuffer(za::PrimitiveType::Triangles);
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
-            CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::Triangles);
-            CHECK(vertexBuffer.getUsage() == sf::VertexBuffer::Usage::Stream);
+            CHECK(vertexBuffer.getPrimitiveType() == za::PrimitiveType::Triangles);
+            CHECK(vertexBuffer.getUsage() == za::VertexBuffer::Usage::Stream);
         }
 
         SECTION("Usage constructor")
         {
-            const sf::VertexBuffer vertexBuffer(sf::VertexBuffer::Usage::Static);
+            const za::VertexBuffer vertexBuffer(za::VertexBuffer::Usage::Static);
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
-            CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::Points);
-            CHECK(vertexBuffer.getUsage() == sf::VertexBuffer::Usage::Static);
+            CHECK(vertexBuffer.getPrimitiveType() == za::PrimitiveType::Points);
+            CHECK(vertexBuffer.getUsage() == za::VertexBuffer::Usage::Static);
         }
 
         SECTION("Primitive type and usage constructor")
         {
-            const sf::VertexBuffer vertexBuffer(sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
+            const za::VertexBuffer vertexBuffer(za::PrimitiveType::LineStrip, za::VertexBuffer::Usage::Dynamic);
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
-            CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::LineStrip);
-            CHECK(vertexBuffer.getUsage() == sf::VertexBuffer::Usage::Dynamic);
+            CHECK(vertexBuffer.getPrimitiveType() == za::PrimitiveType::LineStrip);
+            CHECK(vertexBuffer.getUsage() == za::VertexBuffer::Usage::Dynamic);
         }
     }
 
     SECTION("Copy semantics")
     {
-        const sf::VertexBuffer vertexBuffer(sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
+        const za::VertexBuffer vertexBuffer(za::PrimitiveType::LineStrip, za::VertexBuffer::Usage::Dynamic);
 
         SECTION("Construction")
         {
-            const sf::VertexBuffer vertexBufferCopy(vertexBuffer); // NOLINT(performance-unnecessary-copy-initialization)
+            const za::VertexBuffer vertexBufferCopy(vertexBuffer); // NOLINT(performance-unnecessary-copy-initialization)
             CHECK(vertexBufferCopy.getVertexCount() == 0);
             CHECK(vertexBufferCopy.getNativeHandle() == 0);
-            CHECK(vertexBufferCopy.getPrimitiveType() == sf::PrimitiveType::LineStrip);
-            CHECK(vertexBufferCopy.getUsage() == sf::VertexBuffer::Usage::Dynamic);
+            CHECK(vertexBufferCopy.getPrimitiveType() == za::PrimitiveType::LineStrip);
+            CHECK(vertexBufferCopy.getUsage() == za::VertexBuffer::Usage::Dynamic);
         }
 
         SECTION("Assignment")
         {
-            sf::VertexBuffer vertexBufferCopy;
+            za::VertexBuffer vertexBufferCopy;
             vertexBufferCopy = vertexBuffer;
             CHECK(vertexBufferCopy.getVertexCount() == 0);
             CHECK(vertexBufferCopy.getNativeHandle() == 0);
-            CHECK(vertexBufferCopy.getPrimitiveType() == sf::PrimitiveType::LineStrip);
-            CHECK(vertexBufferCopy.getUsage() == sf::VertexBuffer::Usage::Dynamic);
+            CHECK(vertexBufferCopy.getPrimitiveType() == za::PrimitiveType::LineStrip);
+            CHECK(vertexBufferCopy.getUsage() == za::VertexBuffer::Usage::Dynamic);
         }
     }
 
     SECTION("create()")
     {
-        sf::VertexBuffer vertexBuffer;
+        za::VertexBuffer vertexBuffer;
         CHECK(vertexBuffer.create(100));
         CHECK(vertexBuffer.getVertexCount() == 100);
     }
 
     SECTION("update()")
     {
-        sf::VertexBuffer vertexBuffer;
-        sf::Vertex       vertices[128]{};
+        za::VertexBuffer vertexBuffer;
+        za::Vertex       vertices[128]{};
 
         SECTION("Vertices")
         {
@@ -143,7 +143,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
         SECTION("Another buffer")
         {
-            sf::VertexBuffer otherVertexBuffer;
+            za::VertexBuffer otherVertexBuffer;
 
             CHECK(!vertexBuffer.update(otherVertexBuffer));
             CHECK(otherVertexBuffer.create(42));
@@ -153,36 +153,36 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("swap()")
     {
-        sf::VertexBuffer vertexBuffer1(sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
+        za::VertexBuffer vertexBuffer1(za::PrimitiveType::LineStrip, za::VertexBuffer::Usage::Dynamic);
         CHECK(vertexBuffer1.create(50));
 
-        sf::VertexBuffer vertexBuffer2(sf::PrimitiveType::TriangleStrip, sf::VertexBuffer::Usage::Stream);
+        za::VertexBuffer vertexBuffer2(za::PrimitiveType::TriangleStrip, za::VertexBuffer::Usage::Stream);
         CHECK(vertexBuffer2.create(60));
 
-        sf::swap(vertexBuffer1, vertexBuffer2);
+        za::swap(vertexBuffer1, vertexBuffer2);
 
         CHECK(vertexBuffer1.getVertexCount() == 60);
         CHECK(vertexBuffer1.getNativeHandle() != 0);
-        CHECK(vertexBuffer1.getPrimitiveType() == sf::PrimitiveType::TriangleStrip);
-        CHECK(vertexBuffer1.getUsage() == sf::VertexBuffer::Usage::Stream);
+        CHECK(vertexBuffer1.getPrimitiveType() == za::PrimitiveType::TriangleStrip);
+        CHECK(vertexBuffer1.getUsage() == za::VertexBuffer::Usage::Stream);
 
         CHECK(vertexBuffer2.getVertexCount() == 50);
         CHECK(vertexBuffer2.getNativeHandle() != 0);
-        CHECK(vertexBuffer2.getPrimitiveType() == sf::PrimitiveType::LineStrip);
-        CHECK(vertexBuffer2.getUsage() == sf::VertexBuffer::Usage::Dynamic);
+        CHECK(vertexBuffer2.getPrimitiveType() == za::PrimitiveType::LineStrip);
+        CHECK(vertexBuffer2.getUsage() == za::VertexBuffer::Usage::Dynamic);
     }
 
     SECTION("Set/get primitive type")
     {
-        sf::VertexBuffer vertexBuffer;
-        vertexBuffer.setPrimitiveType(sf::PrimitiveType::TriangleFan);
-        CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::TriangleFan);
+        za::VertexBuffer vertexBuffer;
+        vertexBuffer.setPrimitiveType(za::PrimitiveType::TriangleFan);
+        CHECK(vertexBuffer.getPrimitiveType() == za::PrimitiveType::TriangleFan);
     }
 
     SECTION("Set/get usage")
     {
-        sf::VertexBuffer vertexBuffer;
-        vertexBuffer.setUsage(sf::VertexBuffer::Usage::Dynamic);
-        CHECK(vertexBuffer.getUsage() == sf::VertexBuffer::Usage::Dynamic);
+        za::VertexBuffer vertexBuffer;
+        vertexBuffer.setUsage(za::VertexBuffer::Usage::Dynamic);
+        CHECK(vertexBuffer.getUsage() == za::VertexBuffer::Usage::Dynamic);
     }
 }

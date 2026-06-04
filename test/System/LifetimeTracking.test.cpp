@@ -1,12 +1,12 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/LifetimeDependant.hpp"
-#include "SFML/System/LifetimeDependee.hpp"
+#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/System/LifetimeDependee.hpp"
 
-#include "SFML/Base/Macros.hpp"
+#include "ZancleBase/Macros.hpp"
 
-#if defined(SFML_ENABLE_LIFETIME_TRACKING)
+#if defined(ZA_ENABLE_LIFETIME_TRACKING)
 
 namespace
 {
@@ -21,7 +21,7 @@ struct DummyDependee
 {
     int value{};
 
-    SFML_DEFINE_LIFETIME_DEPENDEE(DummyDependee, DummyDependant);
+    ZA_DEFINE_LIFETIME_DEPENDEE(DummyDependee, DummyDependant);
 };
 
 
@@ -29,21 +29,21 @@ struct DummyDependant
 {
     const DummyDependee* dependee{};
 
-    SFML_DEFINE_LIFETIME_DEPENDANT(DummyDependee);
+    ZA_DEFINE_LIFETIME_DEPENDANT(DummyDependee);
 
     explicit DummyDependant(const DummyDependee& dep) : dependee(&dep)
     {
-        SFML_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
+        ZA_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
     }
 
     ~DummyDependant()
     {
-        SFML_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(DummyDependee);
+        ZA_LIFETIME_DEPENDANT_RETURN_IF_TESTING_ERROR(DummyDependee);
     }
 
     DummyDependant(const DummyDependant& rhs) : dependee(rhs.dependee)
     {
-        SFML_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
+        ZA_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
     }
 
     DummyDependant& operator=(const DummyDependant& rhs)
@@ -52,19 +52,19 @@ struct DummyDependant
             return *this;
 
         dependee = rhs.dependee;
-        SFML_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
+        ZA_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
         return *this;
     }
 
     DummyDependant(DummyDependant&& rhs) noexcept : dependee(rhs.dependee)
     {
-        SFML_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
+        ZA_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
     }
 
     DummyDependant& operator=(DummyDependant&& rhs) noexcept
     {
         dependee = rhs.dependee;
-        SFML_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
+        ZA_UPDATE_LIFETIME_DEPENDANT(DummyDependee, DummyDependant, this, dependee);
         return *this;
     }
 };
@@ -160,7 +160,7 @@ TEST_CASE("[System] Lifetime tracking")
         DummyDependee dep;
         {
             DummyDependant a(dep);
-            DummyDependant b(SFML_BASE_MOVE(a));
+            DummyDependant b(ZB_MOVE(a));
             (void)b;
         }
     }
@@ -171,7 +171,7 @@ TEST_CASE("[System] Lifetime tracking")
         {
             DummyDependant a(dep);
             DummyDependant b(dep);
-            a = SFML_BASE_MOVE(b);
+            a = ZB_MOVE(b);
         }
     }
 
@@ -182,14 +182,14 @@ TEST_CASE("[System] Lifetime tracking")
         {
             DummyDependant a(dep1);
             DummyDependant b(dep2);
-            a = SFML_BASE_MOVE(b);
+            a = ZB_MOVE(b);
             CHECK(a.dependee == &dep2);
         }
     }
 
     SECTION("Dependee destroyed before dependant triggers error")
     {
-        const sf::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
+        const za::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
 
         auto*          dep = new DummyDependee;
@@ -201,7 +201,7 @@ TEST_CASE("[System] Lifetime tracking")
 
     SECTION("Dependee destroyed with no dependants is fine")
     {
-        const sf::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
+        const za::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
 
         {
@@ -217,7 +217,7 @@ TEST_CASE("[System] Lifetime tracking")
 
     SECTION("Copy of dependant keeps dependee alive requirement")
     {
-        const sf::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
+        const za::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
 
         auto*          dep = new DummyDependee;
@@ -230,7 +230,7 @@ TEST_CASE("[System] Lifetime tracking")
 
     SECTION("Switching dependee via copy assignment")
     {
-        const sf::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
+        const za::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
 
         DummyDependee dep1;
@@ -250,7 +250,7 @@ TEST_CASE("[System] Lifetime tracking")
 
     SECTION("Switching dependee via move assignment")
     {
-        const sf::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
+        const za::priv::LifetimeDependee::TestingModeGuard guard{"DummyDependee"};
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
 
         DummyDependee dep1;
@@ -259,10 +259,10 @@ TEST_CASE("[System] Lifetime tracking")
             DummyDependant a(dep1);
             DummyDependant b(dep2);
 
-            a = SFML_BASE_MOVE(b);
+            a = ZB_MOVE(b);
         }
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
     }
 }
 
-#endif // SFML_ENABLE_LIFETIME_TRACKING
+#endif // ZA_ENABLE_LIFETIME_TRACKING

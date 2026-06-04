@@ -8,65 +8,65 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/CurvedArrowShapeData.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/Glsl.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/CurvedArrowShapeData.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/Window/Cursor.hpp"
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Cursor.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Algorithm/Sort.hpp"
-#include "SFML/Base/Algorithm/Unique.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Ceil.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Variant.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Abort.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Algorithm/Sort.hpp"
+#include "ZancleBase/Algorithm/Unique.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Math/Ceil.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Fmod.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Variant.hpp"
+#include "ZancleBase/Vector.hpp"
 
 // TODO P2:
 // - keys should have different colors compared to blocks
@@ -77,24 +77,24 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f baseResolution{1024.f, 768.f};
+constexpr za::Vec2f baseResolution{1024.f, 768.f};
 
 
 ////////////////////////////////////////////////////////////
 constexpr float     zoomFactor        = 2.f;
-constexpr sf::Vec2f logicalResolution = baseResolution * zoomFactor;
+constexpr za::Vec2f logicalResolution = baseResolution * zoomFactor;
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr float bounce(const float value) noexcept
 {
     // return 4.f * value * (1.f - value);
-    return 1.f - sf::base::fabs(value - 0.5f) * 2.f;
+    return 1.f - zb::fabs(value - 0.5f) * 2.f;
 }
 
 
 ////////////////////////////////////////////////////////////
-enum class BlockKind : sf::base::U8
+enum class BlockKind : zb::U8
 {
     A,
     B,
@@ -103,16 +103,16 @@ enum class BlockKind : sf::base::U8
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr sf::Color kindToColor(const BlockKind kind) noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr za::Color kindToColor(const BlockKind kind) noexcept
 {
     if (kind == BlockKind::A)
-        return sf::Color::Red;
+        return za::Color::Red;
 
     if (kind == BlockKind::B)
-        return sf::Color::Green;
+        return za::Color::Green;
 
-    SFML_BASE_ASSERT(kind == BlockKind::C);
-    return sf::Color::Blue;
+    ZB_ASSERT(kind == BlockKind::C);
+    return za::Color::Blue;
 }
 
 
@@ -143,11 +143,11 @@ struct BPadlock
 
 
 ////////////////////////////////////////////////////////////
-using BlockType = sf::base::Variant<BWall, BColored, BKey, BPadlock>;
+using BlockType = zb::Variant<BWall, BColored, BKey, BPadlock>;
 
 
 ////////////////////////////////////////////////////////////
-enum class GravityType : sf::base::U8
+enum class GravityType : zb::U8
 {
     None,
     Down,
@@ -160,16 +160,16 @@ enum class GravityType : sf::base::U8
 ////////////////////////////////////////////////////////////
 struct Block
 {
-    sf::Vec2i                     position;
+    za::Vec2i                     position;
     BlockType                     type;
-    sf::Vec2i                     gravityDir = {0, 0};
+    za::Vec2i                     gravityDir = {0, 0};
     bool                          fixed      = false;
-    sf::base::Optional<BlockKind> locked     = {};
+    zb::Optional<BlockKind> locked     = {};
 };
 
 
 ////////////////////////////////////////////////////////////
-using ObjectId = sf::base::SizeT;
+using ObjectId = zb::SizeT;
 
 
 ////////////////////////////////////////////////////////////
@@ -186,32 +186,32 @@ struct TLava
 
 
 ////////////////////////////////////////////////////////////
-using TileType = sf::base::Variant<TGravityRotator, TLava>;
+using TileType = zb::Variant<TGravityRotator, TLava>;
 
 
 ////////////////////////////////////////////////////////////
 struct Tile
 {
-    sf::Vec2i position;
+    za::Vec2i position;
     TileType  type;
 };
 
 
 ////////////////////////////////////////////////////////////
-using Object = sf::base::Variant<Block, Tile>;
+using Object = zb::Variant<Block, Tile>;
 
 
 ////////////////////////////////////////////////////////////
 struct World
 {
 private:
-    sf::base::Vector<sf::base::Optional<Object>> m_objects;
+    zb::Vector<zb::Optional<Object>> m_objects;
 
 public:
     ////////////////////////////////////////////////////////////
-    Object& addWall(const sf::Vec2i position)
+    Object& addWall(const za::Vec2i position)
     {
-        return *m_objects.emplaceBack(sf::base::inPlace,
+        return *m_objects.emplaceBack(zb::inPlace,
                                       Block{
                                           .position = position,
                                           .type     = BlockType{BWall{}},
@@ -219,9 +219,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    Object& addColored(const sf::Vec2i position, const BlockKind kind, const sf::Vec2i gravityDir = {0, 0})
+    Object& addColored(const za::Vec2i position, const BlockKind kind, const za::Vec2i gravityDir = {0, 0})
     {
-        return *m_objects.emplaceBack(sf::base::inPlace,
+        return *m_objects.emplaceBack(zb::inPlace,
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BColored{.kind = kind}},
@@ -230,9 +230,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    Object& addKey(const sf::Vec2i position, const BlockKind kind, const sf::Vec2i gravityDir = {0, 0})
+    Object& addKey(const za::Vec2i position, const BlockKind kind, const za::Vec2i gravityDir = {0, 0})
     {
-        return *m_objects.emplaceBack(sf::base::inPlace,
+        return *m_objects.emplaceBack(zb::inPlace,
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BKey{.kind = kind}},
@@ -241,9 +241,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    Object& addPadlock(const sf::Vec2i position, const sf::Vec2i gravityDir = {0, 0})
+    Object& addPadlock(const za::Vec2i position, const za::Vec2i gravityDir = {0, 0})
     {
-        return *m_objects.emplaceBack(sf::base::inPlace,
+        return *m_objects.emplaceBack(zb::inPlace,
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BPadlock{}},
@@ -252,9 +252,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    Object& addGravityRotator(const sf::Vec2i position, const bool clockwise)
+    Object& addGravityRotator(const za::Vec2i position, const bool clockwise)
     {
-        return *m_objects.emplaceBack(sf::base::inPlace,
+        return *m_objects.emplaceBack(zb::inPlace,
                                       Tile{
                                           .position = position,
                                           .type     = TileType{TGravityRotator{.clockwise = clockwise}},
@@ -262,9 +262,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    Object& addLava(const sf::Vec2i position)
+    Object& addLava(const za::Vec2i position)
     {
-        return *m_objects.emplaceBack(sf::base::inPlace,
+        return *m_objects.emplaceBack(zb::inPlace,
                                       Tile{
                                           .position = position,
                                           .type     = TileType{TLava{}},
@@ -292,9 +292,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Block& getBlockById(const ObjectId objectId)
     {
-        SFML_BASE_ASSERT(objectId < m_objects.size());
-        SFML_BASE_ASSERT(m_objects[objectId].hasValue());
-        SFML_BASE_ASSERT(m_objects[objectId]->is<Block>());
+        ZB_ASSERT(objectId < m_objects.size());
+        ZB_ASSERT(m_objects[objectId].hasValue());
+        ZB_ASSERT(m_objects[objectId]->is<Block>());
 
         return m_objects[objectId]->as<Block>();
     }
@@ -302,23 +302,23 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Tile& getTileById(const ObjectId objectId)
     {
-        SFML_BASE_ASSERT(objectId < m_objects.size());
-        SFML_BASE_ASSERT(m_objects[objectId].hasValue());
-        SFML_BASE_ASSERT(m_objects[objectId]->is<Tile>());
+        ZB_ASSERT(objectId < m_objects.size());
+        ZB_ASSERT(m_objects[objectId].hasValue());
+        ZB_ASSERT(m_objects[objectId]->is<Tile>());
 
         return m_objects[objectId]->as<Tile>();
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isOOB(const sf::Vec2i position) const
+    [[nodiscard]] bool isOOB(const za::Vec2i position) const
     {
         return position.x < 0 || position.x >= 12 || position.y < 0 || position.y >= 12;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isLava(const sf::Vec2i position) const
+    [[nodiscard]] bool isLava(const za::Vec2i position) const
     {
-        for (const sf::base::Optional<Object>& object : m_objects)
+        for (const zb::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Tile>() || !object->as<Tile>().type.is<TLava>())
                 continue;
@@ -331,9 +331,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isWall(const sf::Vec2i position) const
+    [[nodiscard]] bool isWall(const za::Vec2i position) const
     {
-        for (const sf::base::Optional<Object>& object : m_objects)
+        for (const zb::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Block>() || !object->as<Block>().type.is<BWall>())
                 continue;
@@ -346,12 +346,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isBlocked(const sf::Vec2i position) const
+    [[nodiscard]] bool isBlocked(const za::Vec2i position) const
     {
         if (isOOB(position))
             return true;
 
-        for (const sf::base::Optional<Object>& object : m_objects)
+        for (const zb::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Block>())
                 continue;
@@ -364,9 +364,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TGravityRotator* tryGetGravityRotator(const sf::Vec2i position)
+    [[nodiscard]] TGravityRotator* tryGetGravityRotator(const za::Vec2i position)
     {
-        for (sf::base::Optional<Object>& object : m_objects)
+        for (zb::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Tile>())
                 continue;
@@ -379,37 +379,37 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<ObjectId> getBlockByPosition(const sf::Vec2i position) const
+    [[nodiscard]] zb::Optional<ObjectId> getBlockByPosition(const za::Vec2i position) const
     {
         for (ObjectId i = 0u; i < m_objects.size(); ++i)
         {
             const auto& object = m_objects[i];
 
             if (object.hasValue() && object->is<Block>() && object->as<Block>().position == position)
-                return sf::base::makeOptional<ObjectId>(i);
+                return zb::makeOptional<ObjectId>(i);
         }
 
-        return sf::base::nullOpt;
+        return zb::nullOpt;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<ObjectId> getTileByPosition(const sf::Vec2i position) const
+    [[nodiscard]] zb::Optional<ObjectId> getTileByPosition(const za::Vec2i position) const
     {
         for (ObjectId i = 0u; i < m_objects.size(); ++i)
         {
             const auto& object = m_objects[i];
 
             if (object.hasValue() && object->is<Tile>() && object->as<Tile>().position == position)
-                return sf::base::makeOptional<ObjectId>(i);
+                return zb::makeOptional<ObjectId>(i);
         }
 
-        return sf::base::nullOpt;
+        return zb::nullOpt;
     }
 
     ////////////////////////////////////////////////////////////
     void forOrthogonalNeighbors(const ObjectId objectId, auto&& f) const
     {
-        const sf::base::Optional<Object>& object = m_objects[objectId];
+        const zb::Optional<Object>& object = m_objects[objectId];
 
         if (!object.hasValue() || !object->is<Block>())
             return;
@@ -434,8 +434,8 @@ public:
     ////////////////////////////////////////////////////////////
     void killObject(const ObjectId objectId)
     {
-        SFML_BASE_ASSERT(objectId < m_objects.size());
-        SFML_BASE_ASSERT(m_objects[objectId].hasValue());
+        ZB_ASSERT(objectId < m_objects.size());
+        ZB_ASSERT(m_objects[objectId].hasValue());
         m_objects[objectId].reset();
     }
 };
@@ -445,7 +445,7 @@ public:
 struct TEMoveBlock
 {
     ObjectId  objectId;
-    sf::Vec2i newPosition;
+    za::Vec2i newPosition;
     float     progress{0.f};
 };
 
@@ -454,8 +454,8 @@ struct TEMoveBlock
 struct TEFallBlock
 {
     ObjectId  objectId;
-    sf::Vec2i dir;
-    sf::Vec2i newPosition;
+    za::Vec2i dir;
+    za::Vec2i newPosition;
     bool      squish;
     float     progress{0.f};
 };
@@ -465,7 +465,7 @@ struct TEFallBlock
 struct TESquishBlock
 {
     ObjectId  objectId;
-    sf::Vec2i dir;
+    za::Vec2i dir;
     float     progress{0.f};
 };
 
@@ -504,14 +504,14 @@ struct TEBurn
 
 
 ////////////////////////////////////////////////////////////
-using TurnEvent = sf::base::Variant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
+using TurnEvent = zb::Variant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ParticleData
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
+    za::Vec2f position;
+    za::Vec2f velocity;
 
     float scale;
     float scaleDecay;
@@ -527,17 +527,17 @@ struct [[nodiscard]] ParticleData
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline sf::Sprite particleToSprite(const ParticleData& particle,
-                                                                     const sf::Rect2f&   textureRect,
-                                                                     const sf::Color     color)
+[[nodiscard, gnu::always_inline]] inline za::Sprite particleToSprite(const ParticleData& particle,
+                                                                     const za::Rect2f&   textureRect,
+                                                                     const za::Color     color)
 {
-    const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+    const auto opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
 
     return {
         .position    = particle.position,
         .scale       = {particle.scale, particle.scale},
         .origin      = textureRect.size / 2.f,
-        .rotation    = sf::radians(particle.rotation),
+        .rotation    = za::radians(particle.rotation),
         .textureRect = textureRect,
         .color       = color.withAlpha(opacityAsAlpha),
     };
@@ -549,10 +549,10 @@ class Game
 {
 private:
     //////////////////////////////////////////////////////////////
-    const unsigned int m_aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
+    const unsigned int m_aaLevel = zb::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel());
 
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+    za::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
                                         .size           = baseResolution.toVec2u(),
                                         .title          = "Block Puzzle",
@@ -564,70 +564,70 @@ private:
 
     ////////////////////////////////////////////////////////////
     // For rendering logical game entities into the 2x render textures
-    sf::View m_worldView = sf::View::fromScreenSize(logicalResolution);
+    za::View m_worldView = za::View::fromScreenSize(logicalResolution);
 
     // For rendering the final texture to the window (this one gets aspect-ratio resized)
-    sf::View m_windowView = computeAspectRatioAwareView(m_window.getSize().toVec2f(), logicalResolution);
+    za::View m_windowView = computeAspectRatioAwareView(m_window.getSize().toVec2f(), logicalResolution);
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shader{[]
+    za::Shader m_shader{[]
     {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/shader.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto result = za::Shader::loadFromFile({.fragmentPath = "resources/shader.frag"}).value();
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
-    sf::Shader::UniformLocation m_ulTime        = m_shader.getUniformLocation("u_time").value();
-    sf::Shader::UniformLocation m_ulWaveEnabled = m_shader.getUniformLocation("u_waveEnabled").value();
+    za::Shader::UniformLocation m_ulTime        = m_shader.getUniformLocation("u_time").value();
+    za::Shader::UniformLocation m_ulWaveEnabled = m_shader.getUniformLocation("u_waveEnabled").value();
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shaderSpriteAlpha{[]
+    za::Shader m_shaderSpriteAlpha{[]
     {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/spritealpha.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto result = za::Shader::loadFromFile({.fragmentPath = "resources/spritealpha.frag"}).value();
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shaderBlurQuad{[]
+    za::Shader m_shaderBlurQuad{[]
     {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/blurquad.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto result = za::Shader::loadFromFile({.fragmentPath = "resources/blurquad.frag"}).value();
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
-    sf::Shader::UniformLocation m_ulBlurQuadBlurDirection = m_shaderBlurQuad.getUniformLocation("u_blurDirection").value();
-    sf::Shader::UniformLocation m_ulBlurQuadRadiusPixels = m_shaderBlurQuad.getUniformLocation("u_blurRadiusPixels").value();
+    za::Shader::UniformLocation m_ulBlurQuadBlurDirection = m_shaderBlurQuad.getUniformLocation("u_blurDirection").value();
+    za::Shader::UniformLocation m_ulBlurQuadRadiusPixels = m_shaderBlurQuad.getUniformLocation("u_blurRadiusPixels").value();
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shaderShadow{[]
+    za::Shader m_shaderShadow{[]
     {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/shadow.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto result = za::Shader::loadFromFile({.fragmentPath = "resources/shadow.frag"}).value();
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
-    sf::Shader::UniformLocation m_ulShadowTexture = m_shaderShadow.getUniformLocation("sf_u_texture").value();
-    sf::Shader::UniformLocation m_ulShadowColor   = m_shaderShadow.getUniformLocation("u_shadowColor").value();
+    za::Shader::UniformLocation m_ulShadowTexture = m_shaderShadow.getUniformLocation("za_u_texture").value();
+    za::Shader::UniformLocation m_ulShadowColor   = m_shaderShadow.getUniformLocation("u_shadowColor").value();
 
     ////////////////////////////////////////////////////////////
-    const sf::Font m_font = sf::Font::openFromFile("resources/Born2bSportyFS.ttf").value();
+    const za::Font m_font = za::Font::openFromFile("resources/Born2bSportyFS.ttf").value();
 
     ////////////////////////////////////////////////////////////
-    sf::ImGuiContext m_imGuiContext;
+    za::ImGuiContext m_imGuiContext;
 
     ////////////////////////////////////////////////////////////
-    sf::Clock m_fpsClock;
+    za::Clock m_fpsClock;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<World>             m_prevWorlds;
+    zb::Vector<World>             m_prevWorlds;
     World                               m_world;
-    sf::base::Optional<sf::base::SizeT> m_grabbedObjectId;
-    sf::base::Vector<TurnEvent>         m_turnEvents;
+    zb::Optional<zb::SizeT> m_grabbedObjectId;
+    zb::Vector<TurnEvent>         m_turnEvents;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<ParticleData> m_lavaParticlesTop;
-    sf::base::Vector<ParticleData> m_lavaParticles;
+    zb::Vector<ParticleData> m_lavaParticlesTop;
+    zb::Vector<ParticleData> m_lavaParticles;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rngFast; // very fast, low-quality, but good enough for VFXs
@@ -636,97 +636,97 @@ private:
     float m_time = 0.f;
 
     /////////////////////////////////////////////////////////////
-    const sf::Cursor m_cursorArrow      = sf::Cursor::loadFromSystem(sf::Cursor::Type::Arrow).value();
-    const sf::Cursor m_cursorHand       = sf::Cursor::loadFromSystem(sf::Cursor::Type::Hand).value();
-    const sf::Cursor m_cursorNotAllowed = sf::Cursor::loadFromSystem(sf::Cursor::Type::NotAllowed).value();
+    const za::Cursor m_cursorArrow      = za::Cursor::loadFromSystem(za::Cursor::Type::Arrow).value();
+    const za::Cursor m_cursorHand       = za::Cursor::loadFromSystem(za::Cursor::Type::Hand).value();
+    const za::Cursor m_cursorNotAllowed = za::Cursor::loadFromSystem(za::Cursor::Type::NotAllowed).value();
 
     //////////////////////////////////////////////////////////////
     int       m_editorSelectedObjectIdx      = 0;
     int       m_editorSelectedColorIdx       = 0;
     int       m_editorSelectedLockedColorIdx = 0;
-    sf::Vec2i m_editorGravity;
+    za::Vec2i m_editorGravity;
     bool      m_editorObjectFixed     = false;
     bool      m_editorObjectLocked    = false;
     bool      m_editorObjectClockwise = false;
 
     //////////////////////////////////////////////////////////////
-    sf::TextureAtlas m_textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = false}).value()};
+    za::TextureAtlas m_textureAtlas{za::Texture::create({4096u, 4096u}, {.smooth = false}).value()};
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f m_txrWhiteDotTrue = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
-    const sf::Rect2f m_txrWhiteDot     = {{0.f, 0.f}, {1.f, 1.f}};
-    const sf::Rect2f m_txrGrid         = addImgResourceToAtlas("grid.png");
-    const sf::Rect2f m_txrGrid0        = addImgResourceToAtlas("grid0.png");
-    const sf::Rect2f m_txrGrid1        = addImgResourceToAtlas("grid1.png");
-    const sf::Rect2f m_txrFixed        = addImgResourceToAtlas("fixed.png");
-    const sf::Rect2f m_txrLocked       = addImgResourceToAtlas("locked.png");
-    const sf::Rect2f m_txrGravArrow    = addImgResourceToAtlas("gravarrow.png");
-    const sf::Rect2f m_txrKey0         = addImgResourceToAtlas("key0.png");
-    const sf::Rect2f m_txrKey1         = addImgResourceToAtlas("key1.png");
-    const sf::Rect2f m_txrKey2         = addImgResourceToAtlas("key2.png");
-    const sf::Rect2f m_txrKeyBg        = addImgResourceToAtlas("keybg.png");
-    const sf::Rect2f m_txrBlock0       = addImgResourceToAtlas("block0.png");
-    const sf::Rect2f m_txrBlock1       = addImgResourceToAtlas("block1.png");
-    const sf::Rect2f m_txrBlock2       = addImgResourceToAtlas("block2.png");
-    const sf::Rect2f m_txrBlockBg      = addImgResourceToAtlas("blockbg.png");
-    const sf::Rect2f m_txrWall         = addImgResourceToAtlas("wall.png");
-    const sf::Rect2f m_txrWallCorner   = addImgResourceToAtlas("wallcorner.png");
-    const sf::Rect2f m_txrWallH        = addImgResourceToAtlas("wallh.png");
-    const sf::Rect2f m_txrWallV        = addImgResourceToAtlas("wallv.png");
-    const sf::Rect2f m_txrWallBg       = addImgResourceToAtlas("wallbg.png");
-    const sf::Rect2f m_txrWallSet      = addImgResourceToAtlas("wallset.png");
-    const sf::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallBits.png");
-    const sf::Rect2f m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
-    const sf::Rect2f m_txrLock0        = addImgResourceToAtlas("lock0.png");
-    const sf::Rect2f m_txrPinned       = addImgResourceToAtlas("pinned.png");
+    const za::Rect2f m_txrWhiteDotTrue = m_textureAtlas.add(za::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+    const za::Rect2f m_txrWhiteDot     = {{0.f, 0.f}, {1.f, 1.f}};
+    const za::Rect2f m_txrGrid         = addImgResourceToAtlas("grid.png");
+    const za::Rect2f m_txrGrid0        = addImgResourceToAtlas("grid0.png");
+    const za::Rect2f m_txrGrid1        = addImgResourceToAtlas("grid1.png");
+    const za::Rect2f m_txrFixed        = addImgResourceToAtlas("fixed.png");
+    const za::Rect2f m_txrLocked       = addImgResourceToAtlas("locked.png");
+    const za::Rect2f m_txrGravArrow    = addImgResourceToAtlas("gravarrow.png");
+    const za::Rect2f m_txrKey0         = addImgResourceToAtlas("key0.png");
+    const za::Rect2f m_txrKey1         = addImgResourceToAtlas("key1.png");
+    const za::Rect2f m_txrKey2         = addImgResourceToAtlas("key2.png");
+    const za::Rect2f m_txrKeyBg        = addImgResourceToAtlas("keybg.png");
+    const za::Rect2f m_txrBlock0       = addImgResourceToAtlas("block0.png");
+    const za::Rect2f m_txrBlock1       = addImgResourceToAtlas("block1.png");
+    const za::Rect2f m_txrBlock2       = addImgResourceToAtlas("block2.png");
+    const za::Rect2f m_txrBlockBg      = addImgResourceToAtlas("blockbg.png");
+    const za::Rect2f m_txrWall         = addImgResourceToAtlas("wall.png");
+    const za::Rect2f m_txrWallCorner   = addImgResourceToAtlas("wallcorner.png");
+    const za::Rect2f m_txrWallH        = addImgResourceToAtlas("wallh.png");
+    const za::Rect2f m_txrWallV        = addImgResourceToAtlas("wallv.png");
+    const za::Rect2f m_txrWallBg       = addImgResourceToAtlas("wallbg.png");
+    const za::Rect2f m_txrWallSet      = addImgResourceToAtlas("wallset.png");
+    const za::Rect2f m_txrWallBits     = addImgResourceToAtlas("wallBits.png");
+    const za::Rect2f m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
+    const za::Rect2f m_txrLock0        = addImgResourceToAtlas("lock0.png");
+    const za::Rect2f m_txrPinned       = addImgResourceToAtlas("pinned.png");
 
     //////////////////////////////////////////////////////////////
-    sf::Texture m_txLava = sf::Texture::loadFromFile("resources/lava.png", {.smooth = true}).value();
+    za::Texture m_txLava = za::Texture::loadFromFile("resources/lava.png", {.smooth = true}).value();
 
     //////////////////////////////////////////////////////////////
-    sf::CPUDrawableBatch m_dbBackground;
-    sf::CPUDrawableBatch m_dbLavaParticles;
-    sf::CPUDrawableBatch m_dbLavaParticlesTop;
-    sf::CPUDrawableBatch m_dbTile;
-    sf::CPUDrawableBatch m_dbWall;
-    sf::CPUDrawableBatch m_dbObjectBg;
-    sf::CPUDrawableBatch m_dbObject;
-    sf::CPUDrawableBatch m_dbObjectAttributes;
+    za::CPUDrawableBatch m_dbBackground;
+    za::CPUDrawableBatch m_dbLavaParticles;
+    za::CPUDrawableBatch m_dbLavaParticlesTop;
+    za::CPUDrawableBatch m_dbTile;
+    za::CPUDrawableBatch m_dbWall;
+    za::CPUDrawableBatch m_dbObjectBg;
+    za::CPUDrawableBatch m_dbObject;
+    za::CPUDrawableBatch m_dbObjectAttributes;
 
     //////////////////////////////////////////////////////////////
     static inline constexpr float shadowTextureResMult = 0.25f;
 
     //////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtSpriteBg{
-        sf::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
+    za::RenderTexture m_rtSpriteBg{
+        za::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
                                   {.antiAliasingLevel = m_aaLevel, .smooth = true})
             .value()};
 
-    sf::RenderTexture m_rtSpriteBgTemp{
-        sf::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
+    za::RenderTexture m_rtSpriteBgTemp{
+        za::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
                                   {.antiAliasingLevel = m_aaLevel, .smooth = true})
             .value()};
 
-    sf::RenderTexture m_rtGame{
-        sf::RenderTexture::create(logicalResolution.toVec2u(), {.antiAliasingLevel = m_aaLevel, .smooth = true}).value()};
+    za::RenderTexture m_rtGame{
+        za::RenderTexture::create(logicalResolution.toVec2u(), {.antiAliasingLevel = m_aaLevel, .smooth = true}).value()};
 
     //////////////////////////////////////////////////////////////
-    sf::Texture m_txUndo        = sf::Texture::create(logicalResolution.toVec2u(), {.smooth = true}).value();
+    za::Texture m_txUndo        = za::Texture::create(logicalResolution.toVec2u(), {.smooth = true}).value();
     float       m_undoCountdown = 0.f;
 
     ////////////////////////////////////////////////////////////
     int m_moves = 0;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
+    [[nodiscard]] za::Rect2f addImgResourceToAtlas(const za::Path& path)
     {
-        return m_textureAtlas.add(sf::Image::loadFromFile("resources" / path).value(), /* padding */ {2u, 2u}).value();
+        return m_textureAtlas.add(za::Image::loadFromFile("resources" / path).value(), /* padding */ {2u, 2u}).value();
     }
 
     ////////////////////////////////////////////////////////////
     void checkForKill()
     {
-        sf::base::Vector<ObjectId> blocksToKill;
+        zb::Vector<ObjectId> blocksToKill;
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
@@ -758,8 +758,8 @@ private:
             return ControlFlow::Continue;
         });
 
-        sf::base::quickSort(blocksToKill.begin(), blocksToKill.end());
-        blocksToKill.erase(sf::base::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
+        zb::quickSort(blocksToKill.begin(), blocksToKill.end());
+        blocksToKill.erase(zb::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
         for (const ObjectId objectId : blocksToKill)
             m_turnEvents.pushBack(TEKill{.objectId = objectId});
@@ -768,7 +768,7 @@ private:
     ////////////////////////////////////////////////////////////
     void checkForBurn()
     {
-        sf::base::Vector<ObjectId> blocksToBurn;
+        zb::Vector<ObjectId> blocksToBurn;
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
@@ -788,8 +788,8 @@ private:
             return ControlFlow::Continue;
         });
 
-        sf::base::quickSort(blocksToBurn.begin(), blocksToBurn.end());
-        blocksToBurn.erase(sf::base::unique(blocksToBurn.begin(), blocksToBurn.end()), blocksToBurn.end());
+        zb::quickSort(blocksToBurn.begin(), blocksToBurn.end());
+        blocksToBurn.erase(zb::unique(blocksToBurn.begin(), blocksToBurn.end()), blocksToBurn.end());
 
         for (const ObjectId objectId : blocksToBurn)
             m_turnEvents.pushBack(TEBurn{.objectId = objectId});
@@ -798,7 +798,7 @@ private:
     ////////////////////////////////////////////////////////////
     void checkForUnlock()
     {
-        sf::base::Vector<ObjectId> blocksToKill;
+        zb::Vector<ObjectId> blocksToKill;
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
@@ -831,8 +831,8 @@ private:
             return ControlFlow::Continue;
         });
 
-        sf::base::quickSort(blocksToKill.begin(), blocksToKill.end());
-        blocksToKill.erase(sf::base::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
+        zb::quickSort(blocksToKill.begin(), blocksToKill.end());
+        blocksToKill.erase(zb::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
         for (const ObjectId objectId : blocksToKill)
             m_turnEvents.pushBack(TEKill{.objectId = objectId});
@@ -849,10 +849,10 @@ private:
 
         m_world.forBlocks([&](const ObjectId objectId, Block& block)
         {
-            if (block.gravityDir == sf::Vec2i{0, 0} || isLocked(block))
+            if (block.gravityDir == za::Vec2i{0, 0} || isLocked(block))
                 return ControlFlow::Continue;
 
-            sf::Vec2i targetPosition = block.position;
+            za::Vec2i targetPosition = block.position;
             bool      mustFall       = false;
 
             while (true)
@@ -1007,11 +1007,11 @@ private:
             return;
 
         if (!m_txUndo.update(m_rtGame.getTexture()))
-            sf::base::abort();
+            zb::abort();
 
         m_undoCountdown = 1.f;
 
-        m_world = SFML_BASE_MOVE(m_prevWorlds.back());
+        m_world = ZB_MOVE(m_prevWorlds.back());
         m_prevWorlds.popBack();
 
         m_turnEvents.clear();
@@ -1072,7 +1072,7 @@ private:
             const int mult = rotateGravityDir->clockwise ? 1 : -1;
 
             m_world.getBlockById(rotateGravityDir->objectId)
-                .gravityDir = sf::Vec2i{m_world.getBlockById(rotateGravityDir->objectId).gravityDir.y * -mult,
+                .gravityDir = za::Vec2i{m_world.getBlockById(rotateGravityDir->objectId).gravityDir.y * -mult,
                                         m_world.getBlockById(rotateGravityDir->objectId).gravityDir.x * mult};
 
             return true;
@@ -1092,12 +1092,12 @@ private:
             if (!makeProgress(burn, deltaTimeMs * 0.00025f))
             {
                 const auto blockPos       = m_world.getBlockById(burn->objectId).position.toVec2f();
-                const auto blockRenderPos = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + sf::Vec2f{64.f, 64.f};
+                const auto blockRenderPos = za::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + za::Vec2f{64.f, 64.f};
 
-                const float     offset = sf::base::max(4.f, 64.f * (1.f - burn->progress));
-                const sf::Vec2f offsetVec{offset, offset};
+                const float     offset = zb::max(4.f, 64.f * (1.f - burn->progress));
+                const za::Vec2f offsetVec{offset, offset};
 
-                const auto nParticles = static_cast<int>(sf::base::ceil((1.f - burn->progress) * 5.f));
+                const auto nParticles = static_cast<int>(zb::ceil((1.f - burn->progress) * 5.f));
 
                 for (int i = 0; i < nParticles; ++i)
                 {
@@ -1149,7 +1149,7 @@ private:
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
             const auto      blockPos     = block.position.toVec2f();
-            const sf::Vec2f drawPosition = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + sf::Vec2f{64.f, 64.f};
+            const za::Vec2f drawPosition = za::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + za::Vec2f{64.f, 64.f};
 
             const bool hoveredByMouse = getAdjustedMousePos().x > drawPosition.x &&
                                         getAdjustedMousePos().x < drawPosition.x + 128.f &&
@@ -1171,11 +1171,11 @@ private:
             Block& grabbedBlock = m_world.getBlockById(*m_grabbedObjectId);
 
             auto            diff = getWorldMousePos() - grabbedBlock.position;
-            const sf::Vec2i dir  = {diff.x < 0 ? -1 : (diff.x > 0 ? 1 : 0), diff.y < 0 ? -1 : (diff.y > 0 ? 1 : 0)};
+            const za::Vec2i dir  = {diff.x < 0 ? -1 : (diff.x > 0 ? 1 : 0), diff.y < 0 ? -1 : (diff.y > 0 ? 1 : 0)};
 
             const auto newPos = grabbedBlock.position + dir;
 
-            const bool movingAgainstGravity = grabbedBlock.gravityDir != sf::Vec2i{0, 0} && grabbedBlock.gravityDir == -dir;
+            const bool movingAgainstGravity = grabbedBlock.gravityDir != za::Vec2i{0, 0} && grabbedBlock.gravityDir == -dir;
 
             const bool movingDiagonally = dir.x != 0 && dir.y != 0;
             if (!movingDiagonally)
@@ -1186,7 +1186,7 @@ private:
                         m_turnEvents.pushBack(
                             TEMoveBlock{.objectId = *m_grabbedObjectId, .newPosition = grabbedBlock.position + dir});
                 }
-                else if (diff != sf::Vec2i{0, 0})
+                else if (diff != za::Vec2i{0, 0})
                     m_turnEvents.pushBack(TESquishBlock{.objectId = *m_grabbedObjectId, .dir = dir});
             }
         }
@@ -1195,23 +1195,23 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool isLMBPressed() const noexcept
     {
-        return sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+        return za::Mouse::isButtonPressed(za::Mouse::Button::Left);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] sf::Vec2f getMousePos() const noexcept
+    [[nodiscard, gnu::always_inline]] za::Vec2f getMousePos() const noexcept
     {
-        return m_windowView.screenToWorld(sf::Mouse::getPosition(m_window).toVec2f(), m_window.getSize().toVec2f());
+        return m_windowView.screenToWorld(za::Mouse::getPosition(m_window).toVec2f(), m_window.getSize().toVec2f());
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] sf::Vec2f getAdjustedMousePos() const noexcept
+    [[nodiscard, gnu::always_inline]] za::Vec2f getAdjustedMousePos() const noexcept
     {
-        return getMousePos() + sf::Vec2f{64.f, 64.f};
+        return getMousePos() + za::Vec2f{64.f, 64.f};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] sf::Vec2i getWorldMousePos() const noexcept
+    [[nodiscard, gnu::always_inline]] za::Vec2i getWorldMousePos() const noexcept
     {
         return (getMousePos() / 128.f).toVec2i();
     }
@@ -1223,19 +1223,19 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] sf::Color getHueColor(const float hue, const sf::base::U8 alpha = 255u) const noexcept
+    [[nodiscard, gnu::always_inline]] za::Color getHueColor(const float hue, const zb::U8 alpha = 255u) const noexcept
     {
-        return hueColor(sf::base::fmod(m_time * 0.06f + hue, 360.f), alpha);
+        return hueColor(zb::fmod(m_time * 0.06f + hue, 360.f), alpha);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] sf::Color getLavaColor() const noexcept
+    [[nodiscard, gnu::always_inline]] za::Color getLavaColor() const noexcept
     {
         return hueColor(-5.f, 215u);
     }
 
     ////////////////////////////////////////////////////////////
-    void makeLavaParticle(const sf::Vec2f position)
+    void makeLavaParticle(const za::Vec2f position)
     {
         m_lavaParticles.emplaceBack(
             ParticleData{.position      = position,
@@ -1245,12 +1245,12 @@ private:
                          .accelerationY = 0.f,
                          .opacity       = 0.35f,
                          .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
-                         .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                         .rotation      = m_rngFast.getF(0.f, zb::tau),
                          .torque        = m_rngFast.getF(-0.001f, 0.001f)});
     }
 
     ////////////////////////////////////////////////////////////
-    void makeLavaParticleTop(const sf::Vec2f position)
+    void makeLavaParticleTop(const za::Vec2f position)
     {
         m_lavaParticlesTop.emplaceBack(
             ParticleData{.position      = position,
@@ -1260,7 +1260,7 @@ private:
                          .accelerationY = 0.f,
                          .opacity       = 0.35f,
                          .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
-                         .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                         .rotation      = m_rngFast.getF(0.f, zb::tau),
                          .torque        = m_rngFast.getF(-0.001f, 0.001f)});
     }
 
@@ -1276,31 +1276,31 @@ public:
             // Event handling
             ////////////////////////////////////////////////////////////
             // ---
-            while (sf::base::Optional event = m_window.pollEvent())
+            while (zb::Optional event = m_window.pollEvent())
             {
                 m_imGuiContext.processEvent(m_window, *event);
 
-                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return true;
 
                 if (handleAspectRatioAwareResize(*event, logicalResolution, m_windowView))
                     continue;
 
-                if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
+                if (auto* eKeyPressed = event->getIf<za::Event::KeyPressed>())
                 {
-                    if (eKeyPressed->code == sf::Keyboard::Key::Backspace && m_turnEvents.empty() && m_undoCountdown == 0.f)
+                    if (eKeyPressed->code == za::Keyboard::Key::Backspace && m_turnEvents.empty() && m_undoCountdown == 0.f)
                     {
                         undoTurn();
                         continue;
                     }
 
-                    if (eKeyPressed->code == sf::Keyboard::Key::R)
+                    if (eKeyPressed->code == za::Keyboard::Key::R)
                     {
                         resetLevel();
                         continue;
                     }
 
-                    if (eKeyPressed->code == sf::Keyboard::Key::D)
+                    if (eKeyPressed->code == za::Keyboard::Key::D)
                     {
                         {
                             auto optObjectId = m_world.getBlockByPosition(getWorldMousePos());
@@ -1317,7 +1317,7 @@ public:
                         continue;
                     }
 
-                    if (eKeyPressed->code == sf::Keyboard::Key::E)
+                    if (eKeyPressed->code == za::Keyboard::Key::E)
                     {
                         {
                             auto optObjectId = m_world.getBlockByPosition(getWorldMousePos());
@@ -1401,10 +1401,10 @@ public:
                     tile.type.linearMatch([&](const TGravityRotator&) {},
                                           [&](const TLava&)
                     {
-                        const auto getParticlePos = [&](const sf::Vec2f offset)
-                        { return tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset; };
+                        const auto getParticlePos = [&](const za::Vec2f offset)
+                        { return tile.position.toVec2f() * 128.f + za::Vec2f{64.f, 64.f} + offset; };
 
-                        const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
+                        const auto makeLavaParticlePerDirection = [&](const za::Vec2i dir)
                         {
                             if (m_rngFast.getI(0, 100) > 30)
                                 return;
@@ -1454,11 +1454,11 @@ public:
 
                         p.rotation += p.torque * deltaTimeMs;
 
-                        p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-                        p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
+                        p.opacity = zb::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+                        p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
                     }
 
-                    sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) {
+                    zb::vectorEraseIf(particleLikeVec, [](const auto& particleLike) {
                         return particleLike.opacity <= 0.f;
                     });
                 };
@@ -1466,7 +1466,7 @@ public:
                 updateParticleLike(m_lavaParticles);
                 updateParticleLike(m_lavaParticlesTop);
 
-                m_undoCountdown = sf::base::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
+                m_undoCountdown = zb::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
             }
             // ---
             ////////////////////////////////////////////////////////////
@@ -1494,13 +1494,13 @@ public:
             };
 
             ImGui::SetNextItemWidth(160.f);
-            ImGui::Combo("Object", &m_editorSelectedObjectIdx, objectNames, sf::base::getArraySize(objectNames));
+            ImGui::Combo("Object", &m_editorSelectedObjectIdx, objectNames, zb::getArraySize(objectNames));
 
             ImGui::SetNextItemWidth(160.f);
-            ImGui::Combo("Color", &m_editorSelectedColorIdx, colorNames, sf::base::getArraySize(colorNames));
+            ImGui::Combo("Color", &m_editorSelectedColorIdx, colorNames, zb::getArraySize(colorNames));
 
             ImGui::SetNextItemWidth(160.f);
-            ImGui::Combo("Lock Color", &m_editorSelectedLockedColorIdx, colorNames, sf::base::getArraySize(colorNames));
+            ImGui::Combo("Lock Color", &m_editorSelectedLockedColorIdx, colorNames, zb::getArraySize(colorNames));
 
             ImGui::InputInt("Gravity X", &m_editorGravity.x, 1);
             ImGui::InputInt("Gravity Y", &m_editorGravity.y, 1);
@@ -1541,26 +1541,26 @@ public:
                     m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
                     {
                         const auto      tilePos      = tile.position.toVec2f();
-                        const sf::Vec2f drawPosition = sf::Vec2f{tilePos.x * 128.f, tilePos.y * 128.f} +
-                                                       sf::Vec2f{64.f, 64.f};
+                        const za::Vec2f drawPosition = za::Vec2f{tilePos.x * 128.f, tilePos.y * 128.f} +
+                                                       za::Vec2f{64.f, 64.f};
 
                         tile.type.linearMatch(
                             [&](const TGravityRotator& gravityRotator)
                         {
-                            m_dbTile.add(sf::CurvedArrowShapeData{
+                            m_dbTile.add(za::CurvedArrowShapeData{
                                 .position = drawPosition,
                                 .scale    = {gravityRotator.clockwise ? 0.6f : -0.6f, 0.6f},
                                 .origin   = {32.f, 32.f},
-                                .rotation = sf::radians(gravityRotator.clockwise ? m_time * 0.002f : -m_time * 0.002f)
+                                .rotation = za::radians(gravityRotator.clockwise ? m_time * 0.002f : -m_time * 0.002f)
                                                 .wrapUnsigned(),
                                 .textureRect      = m_txrWhiteDot,
-                                .fillColor        = sf::Color::LightYellow,
-                                .outlineColor     = sf::Color::White,
+                                .fillColor        = za::Color::LightYellow,
+                                .outlineColor     = za::Color::White,
                                 .outlineThickness = gravityRotator.clockwise ? 2.f : -2.f,
                                 .outerRadius      = 32.f,
                                 .innerRadius      = 24.f,
-                                .startAngle       = sf::degrees(0.f),
-                                .sweepAngle       = sf::degrees(270.f),
+                                .startAngle       = za::degrees(0.f),
+                                .sweepAngle       = za::degrees(270.f),
                                 .headLength       = 16.f,
                                 .headWidth        = 24.f,
                             });
@@ -1571,15 +1571,15 @@ public:
                     });
                 }
 
-                const sf::Cursor* cursorToUse = &m_cursorArrow;
+                const za::Cursor* cursorToUse = &m_cursorArrow;
 
                 {
                     SFEX_PROFILE_SCOPE("blocks");
 
                     m_world.forBlocks([&](const ObjectId objectId, const Block& block)
                     {
-                        sf::Vec2f drawPositionOffset   = {0.f, 0.f};
-                        sf::Vec2f scaleMultiplier      = {1.f, 1.f};
+                        za::Vec2f drawPositionOffset   = {0.f, 0.f};
+                        za::Vec2f scaleMultiplier      = {1.f, 1.f};
                         float     rotationRadians      = 0.f;
                         float     arrowRotationRadians = 0.f;
                         float     lockRotationRadians  = 0.f;
@@ -1622,13 +1622,13 @@ public:
                                 if (squishBlock->objectId != objectId)
                                     return false;
 
-                                const auto absDir = sf::Vec2f{sf::base::fabs(static_cast<float>(squishBlock->dir.x)),
-                                                              sf::base::fabs(static_cast<float>(squishBlock->dir.y))};
+                                const auto absDir = za::Vec2f{zb::fabs(static_cast<float>(squishBlock->dir.x)),
+                                                              zb::fabs(static_cast<float>(squishBlock->dir.y))};
 
                                 const float progress = easeInOutBack(bounce(squishBlock->progress));
 
                                 scaleMultiplier += (progress * absDir * -0.35f);
-                                scaleMultiplier += (progress * sf::Vec2f{absDir.y, absDir.x} * 0.35f);
+                                scaleMultiplier += (progress * za::Vec2f{absDir.y, absDir.x} * 0.35f);
 
                                 drawPositionOffset = progress * squishBlock->dir.toVec2f() * 32.f;
 
@@ -1641,7 +1641,7 @@ public:
                                     return false;
 
                                 scaleMultiplier *= 1.f - easeInOutBack(kill->progress);
-                                rotationRadians = easeInOutSine(kill->progress) * sf::base::tau;
+                                rotationRadians = easeInOutSine(kill->progress) * zb::tau;
 
                                 return false;
                             }
@@ -1652,7 +1652,7 @@ public:
                                     return false;
 
                                 const float mult = rotateGravityDir->clockwise ? 1.f : -1.f;
-                                arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * sf::base::halfPi * mult;
+                                arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * zb::halfPi * mult;
 
                                 scaleMultiplier.x += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
                                 scaleMultiplier.y += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
@@ -1665,7 +1665,7 @@ public:
                                 if (unlock->objectId != objectId)
                                     return false;
 
-                                lockRotationRadians = easeInOutSine(unlock->progress) * sf::base::tau;
+                                lockRotationRadians = easeInOutSine(unlock->progress) * zb::tau;
 
                                 scaleMultiplier.x += 0.35f * easeInOutSine(bounce(unlock->progress));
                                 scaleMultiplier.y += 0.35f * easeInOutSine(bounce(unlock->progress));
@@ -1679,15 +1679,15 @@ public:
                                     return false;
 
                                 scaleMultiplier *= 1.f - easeInOutSine(burn->progress);
-                                rotationRadians = easeInOutSine(burn->progress) * -sf::base::tau * 2.f;
+                                rotationRadians = easeInOutSine(burn->progress) * -zb::tau * 2.f;
                             }
 
                             return false;
                         });
 
                         const auto      blockPos     = block.position.toVec2f();
-                        const sf::Vec2f drawPosition = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} +
-                                                       drawPositionOffset + sf::Vec2f{64.f, 64.f};
+                        const za::Vec2f drawPosition = za::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} +
+                                                       drawPositionOffset + za::Vec2f{64.f, 64.f};
 
                         const bool hoveredByMouse = getAdjustedMousePos().x > drawPosition.x &&
                                                     getAdjustedMousePos().x < drawPosition.x + 128.f &&
@@ -1704,21 +1704,21 @@ public:
                         const auto drawAttributes = [&](const auto& blockImpl)
                         {
                             if (block.fixed)
-                                m_dbObjectAttributes.add(sf::Sprite{
+                                m_dbObjectAttributes.add(za::Sprite{
                                     .position    = drawPosition,
                                     .scale       = scaleMultiplier,
                                     .origin      = {64.f, 64.f},
-                                    .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                    .rotation    = za::radians(rotationRadians).wrapUnsigned(),
                                     .textureRect = m_txrPinned,
                                     .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
                                 });
 
-                            if (block.gravityDir != sf::Vec2i{0, 0})
-                                m_dbObjectAttributes.add(sf::Sprite{
+                            if (block.gravityDir != za::Vec2i{0, 0})
+                                m_dbObjectAttributes.add(za::Sprite{
                                     .position = drawPosition,
                                     .scale = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
                                     .origin      = {64.f, 64.f},
-                                    .rotation    = sf::radians(
+                                    .rotation    = za::radians(
                                                        block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
                                                        rotationRadians + arrowRotationRadians)
                                                        .wrapUnsigned(),
@@ -1727,11 +1727,11 @@ public:
                                 });
 
                             if (isLocked(block))
-                                m_dbObjectAttributes.add(sf::Sprite{
-                                    .position = drawPosition + sf::Vec2f{40.f, 30.f},
+                                m_dbObjectAttributes.add(za::Sprite{
+                                    .position = drawPosition + za::Vec2f{40.f, 30.f},
                                     .scale    = scaleMultiplier * 0.5f,
                                     .origin   = {64.f, 64.f},
-                                    .rotation = sf::radians(rotationRadians + lockRotationRadians + 0.2f).wrapUnsigned(),
+                                    .rotation = za::radians(rotationRadians + lockRotationRadians + 0.2f).wrapUnsigned(),
                                     .textureRect = m_txrLock0,
                                     .color       = getHueColor(kindToColor(block.locked.value()).toHSL().hue),
                                 });
@@ -1757,59 +1757,59 @@ public:
                             const auto tileX = static_cast<float>(neighbors % 4u);
                             const auto tileY = static_cast<float>(neighbors / 4u);
 
-                            const sf::Rect2f txr{
-                                .position = m_txrWallSet.position + sf::Vec2f{tileX * 128.f, tileY * 128.f},
+                            const za::Rect2f txr{
+                                .position = m_txrWallSet.position + za::Vec2f{tileX * 128.f, tileY * 128.f},
                                 .size     = {128.f, 128.f},
                             };
 
-                            m_dbWall.add(sf::Sprite{
+                            m_dbWall.add(za::Sprite{
                                 .position    = drawPosition,
                                 .scale       = scaleMultiplier,
                                 .origin      = {64.f, 64.f},
-                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .rotation    = za::radians(rotationRadians).wrapUnsigned(),
                                 .textureRect = txr,
                                 .color       = getHueColor(0.f),
                             });
 
                             const auto patchCorner = [&](const float index)
                             {
-                                m_dbWall.add(sf::Sprite{
+                                m_dbWall.add(za::Sprite{
                                     .position = drawPosition,
                                     .scale    = scaleMultiplier,
                                     .origin   = {64.f, 64.f},
-                                    .rotation = sf::radians(rotationRadians).wrapUnsigned(),
-                                    .textureRect = {m_txrWallBits.position + sf::Vec2f{128.f * index, 0.f}, {128.f, 128.f}},
+                                    .rotation = za::radians(rotationRadians).wrapUnsigned(),
+                                    .textureRect = {m_txrWallBits.position + za::Vec2f{128.f * index, 0.f}, {128.f, 128.f}},
                                     .color = getHueColor(0.f),
                                 });
                             };
 
-                            if (!m_world.isWall(block.position + sf::Vec2i{-1, -1}) && (neighbors & 1u << 1) &&
+                            if (!m_world.isWall(block.position + za::Vec2i{-1, -1}) && (neighbors & 1u << 1) &&
                                 (neighbors & 1u << 0))
                                 patchCorner(0.f);
 
-                            if (!m_world.isWall(block.position + sf::Vec2i{1, -1}) && (neighbors & 1u << 2) &&
+                            if (!m_world.isWall(block.position + za::Vec2i{1, -1}) && (neighbors & 1u << 2) &&
                                 (neighbors & 1u << 0))
                                 patchCorner(1.f);
 
-                            if (!m_world.isWall(block.position + sf::Vec2i{1, 1}) && (neighbors & 1u << 2) &&
+                            if (!m_world.isWall(block.position + za::Vec2i{1, 1}) && (neighbors & 1u << 2) &&
                                 (neighbors & 1u << 3))
                                 patchCorner(2.f);
 
-                            if (!m_world.isWall(block.position + sf::Vec2i{-1, 1}) && (neighbors & 1u << 1) &&
+                            if (!m_world.isWall(block.position + za::Vec2i{-1, 1}) && (neighbors & 1u << 1) &&
                                 (neighbors & 1u << 3))
                                 patchCorner(3.f);
                         },
                             [&](const BColored& bColored)
                         {
-                            const sf::Rect2f* txr = bColored.kind == BlockKind::A
+                            const za::Rect2f* txr = bColored.kind == BlockKind::A
                                                         ? &m_txrBlock0
                                                         : (bColored.kind == BlockKind::B ? &m_txrBlock1 : &m_txrBlock2);
 
-                            m_dbObject.add(sf::Sprite{
+                            m_dbObject.add(za::Sprite{
                                 .position    = drawPosition,
                                 .scale       = scaleMultiplier,
                                 .origin      = {64.f, 64.f},
-                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .rotation    = za::radians(rotationRadians).wrapUnsigned(),
                                 .textureRect = *txr,
                                 .color       = getHueColor(kindToColor(bColored.kind).toHSL().hue),
                             });
@@ -1818,15 +1818,15 @@ public:
                         },
                             [&](const BKey& bKey)
                         {
-                            const sf::Rect2f* txr = bKey.kind == BlockKind::A
+                            const za::Rect2f* txr = bKey.kind == BlockKind::A
                                                         ? &m_txrKey0
                                                         : (bKey.kind == BlockKind::B ? &m_txrKey1 : &m_txrKey2);
 
-                            m_dbObject.add(sf::Sprite{
+                            m_dbObject.add(za::Sprite{
                                 .position    = drawPosition,
                                 .scale       = scaleMultiplier,
                                 .origin      = {64.f, 64.f},
-                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .rotation    = za::radians(rotationRadians).wrapUnsigned(),
                                 .textureRect = *txr,
                                 .color       = getHueColor(kindToColor(bKey.kind).toHSL().hue),
                             });
@@ -1835,13 +1835,13 @@ public:
                         },
                             [&](const BPadlock& /* bPadlock */)
                         {
-                            const sf::Rect2f* txr = &m_txrLock0;
+                            const za::Rect2f* txr = &m_txrLock0;
 
-                            m_dbObject.add(sf::Sprite{
+                            m_dbObject.add(za::Sprite{
                                 .position    = drawPosition,
                                 .scale       = scaleMultiplier,
                                 .origin      = {64.f, 64.f},
-                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .rotation    = za::radians(rotationRadians).wrapUnsigned(),
                                 .textureRect = *txr,
                                 .color       = getHueColor(kindToColor(BlockKind::A).toHSL().hue),
                             });
@@ -1861,9 +1861,9 @@ public:
                         if (m_world.isLava({iX, iY}))
                             continue;
 
-                        const sf::Rect2f* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
+                        const za::Rect2f* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
 
-                        m_dbBackground.add(sf::Sprite{
+                        m_dbBackground.add(za::Sprite{
                             .position    = {static_cast<float>(iX) * 128.f, static_cast<float>(iY) * 128.f},
                             .textureRect = *txr,
                             .color       = getHueColor(0.f),
@@ -1873,22 +1873,22 @@ public:
                 {
                     SFEX_PROFILE_SCOPE("particles");
 
-                    for (sf::base::SizeT i = 0; i < m_lavaParticles.size(); ++i)
+                    for (zb::SizeT i = 0; i < m_lavaParticles.size(); ++i)
                         m_dbLavaParticles.add(particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1],
                                                                m_txrLavaParticle,
                                                                getLavaColor()));
 
-                    for (sf::base::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
+                    for (zb::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
                         m_dbLavaParticlesTop.add(particleToSprite(m_lavaParticlesTop[m_lavaParticlesTop.size() - i - 1],
                                                                   m_txrLavaParticle,
                                                                   getLavaColor()));
                 }
 
-                const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
+                const auto updateShadowTexture = [&](const float blurRadius, const zb::U8 alpha, auto&&... toDraw)
                 {
                     const float invScale = 1.f / shadowTextureResMult;
 
-                    m_rtSpriteBg.clear(sf::Color::Transparent);
+                    m_rtSpriteBg.clear(za::Color::Transparent);
 
                     (...,
                      m_rtSpriteBg.draw(toDraw,
@@ -1900,25 +1900,25 @@ public:
 
                     m_rtSpriteBg.display();
 
-                    m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
+                    m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, za::Vec2f{1.f, 0.f});
                     m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius * shadowTextureResMult);
 
-                    m_rtSpriteBgTemp.clear(sf::Color::Transparent);
+                    m_rtSpriteBgTemp.clear(za::Color::Transparent);
                     m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(),
                                           {.scale = {invScale, invScale}},
                                           {.view = m_worldView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBgTemp.display();
 
 
-                    m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
+                    m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, za::Vec2f{0.f, 1.f});
 
-                    m_rtSpriteBg.clear(sf::Color::Transparent);
+                    m_rtSpriteBg.clear(za::Color::Transparent);
                     m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(),
                                       {.scale = {invScale, invScale}},
                                       {.view = m_worldView, .shader = &m_shaderBlurQuad});
                     m_rtSpriteBg.display();
 
-                    m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackWithAlpha(alpha).toVec4<sf::Glsl::Vec4>());
+                    m_shaderShadow.setUniform(m_ulShadowColor, za::Color::blackWithAlpha(alpha).toVec4<za::Glsl::Vec4>());
                 };
 
                 {
@@ -1926,7 +1926,7 @@ public:
 
                     const float invScale = 1.f / shadowTextureResMult;
 
-                    const sf::RenderStates states{
+                    const za::RenderStates states{
                         .view    = m_worldView,
                         .texture = &m_textureAtlas.getTexture(),
                         .shader  = &m_shader,
@@ -1948,7 +1948,7 @@ public:
                     m_rtGame.draw(m_dbBackground, states);
                     m_rtGame.draw(m_dbLavaParticles,
                                   {
-                                      .blendMode = sf::BlendAdd,
+                                      .blendMode = za::BlendAdd,
                                       .view      = m_worldView,
                                       .texture   = &m_textureAtlas.getTexture(),
                                       .shader    = &m_shader,
@@ -1969,7 +1969,7 @@ public:
 
                     m_rtGame.draw(m_dbLavaParticlesTop,
                                   {
-                                      .blendMode = sf::BlendAdd,
+                                      .blendMode = za::BlendAdd,
                                       .view      = m_worldView,
                                       .texture   = &m_textureAtlas.getTexture(),
                                       .shader    = &m_shader,
@@ -1991,10 +1991,10 @@ public:
                 }
 
                 m_rtGame.draw(
-                    sf::RectangleShapeData{
+                    za::RectangleShapeData{
                         .position  = getMousePos(),
                         .origin    = {10.f, 10.f},
-                        .fillColor = sf::Color::Black,
+                        .fillColor = za::Color::Black,
                         .size      = {20.f, 20.f},
                     },
                     {.view = m_worldView});
@@ -2009,7 +2009,7 @@ public:
                 if (m_undoCountdown > 0.f)
                     m_window.draw(m_txUndo,
                                   {
-                                      .color = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(
+                                      .color = za::Color::whiteWithAlpha(static_cast<zb::U8>(
                                           remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
                                   },
                                   {.view = m_windowView, .shader = &m_shader});
@@ -2030,8 +2030,8 @@ public:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto audioContext    = sf::AudioContext::create().value();
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto audioContext    = za::AudioContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     Game game;
 

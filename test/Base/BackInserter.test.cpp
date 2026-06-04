@@ -1,10 +1,10 @@
 
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/BackInserter.hpp"
+#include "ZancleBase/BackInserter.hpp"
 
-#include "SFML/Base/Algorithm/Copy.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Copy.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 TEST_CASE("[Base] Base/BackInserter.hpp")
@@ -12,9 +12,9 @@ TEST_CASE("[Base] Base/BackInserter.hpp")
     SECTION("Back Inserter")
     {
         const int             values[]{0, 1, 2, 3};
-        sf::base::Vector<int> target{-1};
+        zb::Vector<int> target{-1};
 
-        sf::base::copy(values, values + 4, sf::base::BackInserter{target});
+        zb::copy(values, values + 4, zb::BackInserter{target});
 
         CHECK(target[0] == -1);
         CHECK(target[1] == 0);

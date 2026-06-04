@@ -5,13 +5,13 @@
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Builtin/Memcpy.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/ToChars.hpp"
+#include "ZancleBase/Builtin/Memcpy.hpp"
+#include "ZancleBase/Builtin/Strlen.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/ToChars.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,18 +24,18 @@
 namespace tst::detail
 {
 ////////////////////////////////////////////////////////////
-void MessageBuilder::appendRaw(const char* data, sf::base::SizeT n) noexcept
+void MessageBuilder::appendRaw(const char* data, zb::SizeT n) noexcept
 {
     if (n == 0u)
         return;
 
-    const sf::base::SizeT room     = capacity - len;
-    const sf::base::SizeT toAppend = n < room ? n : room;
+    const zb::SizeT room     = capacity - len;
+    const zb::SizeT toAppend = n < room ? n : room;
 
     if (toAppend == 0u)
         return;
 
-    SFML_BASE_MEMCPY(buf + len, data, toAppend);
+    ZB_MEMCPY(buf + len, data, toAppend);
     len += toAppend;
 }
 
@@ -48,12 +48,12 @@ void appendCString(MessageBuilder& mb, const char* v) noexcept
     if (v == nullptr)
         return;
 
-    mb.appendRaw(v, SFML_BASE_STRLEN(v));
+    mb.appendRaw(v, ZB_STRLEN(v));
 }
 
 
 ////////////////////////////////////////////////////////////
-void appendStringView(MessageBuilder& mb, sf::base::StringView v) noexcept
+void appendStringView(MessageBuilder& mb, zb::StringView v) noexcept
 {
     mb.appendRaw(v.data(), v.size());
 }
@@ -64,10 +64,10 @@ template <typename T>
 void appendNumeric(MessageBuilder& mb, T v) noexcept
 {
     char        tmp[64];
-    char* const end = sf::base::toChars(tmp, tmp + sizeof(tmp), v);
+    char* const end = zb::toChars(tmp, tmp + sizeof(tmp), v);
     if (end == nullptr)
         return;
-    mb.appendRaw(tmp, static_cast<sf::base::SizeT>(end - tmp));
+    mb.appendRaw(tmp, static_cast<zb::SizeT>(end - tmp));
 }
 
 
@@ -96,7 +96,7 @@ void appendChar(MessageBuilder& mb, char c) noexcept
 // of declarations.
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define SFML_TST_MSGB_DEF_PAIR(T, body)                          \
+#define ZA_TST_MSGB_DEF_PAIR(T, body)                          \
                                                                  \
     MessageBuilder& MessageBuilder::operator*(T v) & noexcept    \
     {                                                            \
@@ -122,22 +122,22 @@ void appendChar(MessageBuilder& mb, char c) noexcept
         return static_cast<MessageBuilder&&>(*this);             \
     }
 
-SFML_TST_MSGB_DEF_PAIR(const char*, appendCString(*this, v))
-SFML_TST_MSGB_DEF_PAIR(sf::base::StringView, appendStringView(*this, v))
-SFML_TST_MSGB_DEF_PAIR(bool, appendBool(*this, v))
-SFML_TST_MSGB_DEF_PAIR(char, appendChar(*this, v))
-SFML_TST_MSGB_DEF_PAIR(short, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(unsigned short, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(int, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(unsigned int, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(long, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(unsigned long, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(long long, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(unsigned long long, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(float, appendNumeric(*this, v))
-SFML_TST_MSGB_DEF_PAIR(double, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(const char*, appendCString(*this, v))
+ZA_TST_MSGB_DEF_PAIR(zb::StringView, appendStringView(*this, v))
+ZA_TST_MSGB_DEF_PAIR(bool, appendBool(*this, v))
+ZA_TST_MSGB_DEF_PAIR(char, appendChar(*this, v))
+ZA_TST_MSGB_DEF_PAIR(short, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(unsigned short, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(int, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(unsigned int, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(long, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(unsigned long, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(long long, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(unsigned long long, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(float, appendNumeric(*this, v))
+ZA_TST_MSGB_DEF_PAIR(double, appendNumeric(*this, v))
 
-#undef SFML_TST_MSGB_DEF_PAIR
+#undef ZA_TST_MSGB_DEF_PAIR
 // NOLINTEND(bugprone-macro-parentheses)
 
 
@@ -145,34 +145,34 @@ SFML_TST_MSGB_DEF_PAIR(double, appendNumeric(*this, v))
 // Operator-comma overloads for the `MESSAGE("a", b)` form.
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses, misc-unconventional-assign-operator)
-#define SFML_TST_MSGB_COMMA_DEF(T, body)                          \
+#define ZA_TST_MSGB_COMMA_DEF(T, body)                          \
     MessageBuilder&& operator,(MessageBuilder&& mb, T v) noexcept \
     {                                                             \
         body;                                                     \
         return static_cast<MessageBuilder&&>(mb);                 \
     }
 
-SFML_TST_MSGB_COMMA_DEF(const char*, appendCString(mb, v))
-SFML_TST_MSGB_COMMA_DEF(sf::base::StringView, appendStringView(mb, v))
-SFML_TST_MSGB_COMMA_DEF(bool, appendBool(mb, v))
-SFML_TST_MSGB_COMMA_DEF(char, appendChar(mb, v))
-SFML_TST_MSGB_COMMA_DEF(short, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(unsigned short, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(int, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(unsigned int, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(long, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(unsigned long, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(long long, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(unsigned long long, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(float, appendNumeric(mb, v))
-SFML_TST_MSGB_COMMA_DEF(double, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(const char*, appendCString(mb, v))
+ZA_TST_MSGB_COMMA_DEF(zb::StringView, appendStringView(mb, v))
+ZA_TST_MSGB_COMMA_DEF(bool, appendBool(mb, v))
+ZA_TST_MSGB_COMMA_DEF(char, appendChar(mb, v))
+ZA_TST_MSGB_COMMA_DEF(short, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(unsigned short, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(int, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(unsigned int, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(long, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(unsigned long, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(long long, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(unsigned long long, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(float, appendNumeric(mb, v))
+ZA_TST_MSGB_COMMA_DEF(double, appendNumeric(mb, v))
 
-#undef SFML_TST_MSGB_COMMA_DEF
+#undef ZA_TST_MSGB_COMMA_DEF
 // NOLINTEND(bugprone-macro-parentheses, misc-unconventional-assign-operator)
 
 
 ////////////////////////////////////////////////////////////
-void emitInfoPushRaw(const char* /*file*/, int /*line*/, const char* data, sf::base::SizeT size) noexcept
+void emitInfoPushRaw(const char* /*file*/, int /*line*/, const char* data, zb::SizeT size) noexcept
 {
     contextState().infoStack.emplaceBack(data, size);
 }
@@ -188,31 +188,31 @@ void emitInfoPop() noexcept
 
 
 ////////////////////////////////////////////////////////////
-void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, sf::base::SizeT size)
+void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, zb::SizeT size)
 {
     auto& ctx = contextState();
 
-    const sf::base::StringView text{data, size};
+    const zb::StringView text{data, size};
 
     switch (kind)
     {
         case AssertKind::Warn:
-            (void)sf::base::printErrLn("{}:{}: MESSAGE: {}", file, line, text);
+            (void)zb::printErrLn("{}:{}: MESSAGE: {}", file, line, text);
             break;
         case AssertKind::Check:
             ++ctx.totalAssertions;
             ++ctx.failedAssertions;
             ctx.currentTestFailed = true;
-            (void)sf::base::printErrLn("{}:{}: FAIL_CHECK: {}", file, line, text);
+            (void)zb::printErrLn("{}:{}: FAIL_CHECK: {}", file, line, text);
             break;
         case AssertKind::Require:
             ++ctx.totalAssertions;
             ++ctx.failedAssertions;
             ctx.currentTestFailed = true;
-            (void)sf::base::printErrLn("{}:{}: FAIL: {}", file, line, text);
+            (void)zb::printErrLn("{}:{}: FAIL: {}", file, line, text);
             throw ContextState::RequireFailedException{};
         default:
-            (void)sf::base::printErrLn("{}:{}: {}", file, line, text);
+            (void)zb::printErrLn("{}:{}: {}", file, line, text);
             break;
     }
 }
@@ -226,7 +226,7 @@ bool checkNothrowImpl(const char* file, int line, const char* exprStr) noexcept
     ++ctx.failedAssertions;
     ctx.currentTestFailed = true;
 
-    (void)sf::base::printErrLn("{}:{}: FAILED: CHECK_NOTHROW({}) -- exception thrown", file, line, exprStr);
+    (void)zb::printErrLn("{}:{}: FAILED: CHECK_NOTHROW({}) -- exception thrown", file, line, exprStr);
     return false;
 }
 

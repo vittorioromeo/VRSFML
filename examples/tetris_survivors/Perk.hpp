@@ -10,10 +10,10 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace sf::base
+namespace zb
 {
 class String;
-} // namespace sf::base
+} // namespace zb
 
 
 namespace tsurv
@@ -25,10 +25,10 @@ struct [[nodiscard]] Perk
     virtual ~Perk() = default;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual sf::base::String getName() const                             = 0;
-    [[nodiscard]] virtual sf::base::String getDescription(const World& world) const    = 0;
-    [[nodiscard]] virtual sf::base::String getProgressionStr(const World& world) const = 0;
-    [[nodiscard]] virtual sf::base::String getInventoryStr(const World& world) const   = 0;
+    [[nodiscard]] virtual zb::String getName() const                             = 0;
+    [[nodiscard]] virtual zb::String getDescription(const World& world) const    = 0;
+    [[nodiscard]] virtual zb::String getProgressionStr(const World& world) const = 0;
+    [[nodiscard]] virtual zb::String getInventoryStr(const World& world) const   = 0;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual bool isActive(const World& world) const           = 0;

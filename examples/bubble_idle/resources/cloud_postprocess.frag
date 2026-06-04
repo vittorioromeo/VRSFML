@@ -1,19 +1,19 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 uniform vec2 u_resolution;
 uniform float u_blur;
 uniform float u_opacity;
 
 void main() {
-    vec4 center = texture(sf_u_texture, sf_v_texCoord);
+    vec4 center = texture(za_u_texture, za_v_texCoord);
 
     if(center.a<=0.001&&u_blur<=0.001) {
-        sf_fragColor = vec4(0.0);
+        za_fragColor = vec4(0.0);
         return;
     }
 
@@ -42,7 +42,7 @@ void main() {
         float theta = float(i)*GOLDEN_ANGLE;
 
         vec2 offset = vec2(cos(theta), sin(theta))*r*texel;
-        blurFull += texture(sf_u_texture, sf_v_texCoord+offset);
+        blurFull += texture(za_u_texture, za_v_texCoord+offset);
     }
 
     // Normalize and preserve your original brightness scale (Original weights summed to 1.171)
@@ -60,9 +60,9 @@ void main() {
     result *= u_opacity;
 
     if(result.a<=0.001) {
-        sf_fragColor = vec4(0.0);
+        za_fragColor = vec4(0.0);
         return;
     }
 
-    sf_fragColor = result;
+    za_fragColor = result;
 }

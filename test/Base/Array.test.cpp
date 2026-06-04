@@ -1,18 +1,18 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Array.hpp"
+#include "ZancleBase/Array.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
@@ -69,49 +69,49 @@ TEST_CASE("[Base] Base/Array.hpp")
     {
         using namespace ArrayTest;
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Array<int, 5>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIAL(sf::base::Array<int, 5>)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Array<int, 5>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Array<int, 5>, sf::base::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIAL(zb::Array<int, 5>)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_AGGREGATE(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Array<int, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Array<int, 5>, zb::Array<int, 5>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Array<int, 5>));
-
-
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Array<NonTrivial, 5>));
-
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Array<NonTrivial, 5>)); // because of member initializers
-        STATIC_CHECK(!SFML_BASE_IS_STANDARD_LAYOUT(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Array<NonTrivial, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Array<NonTrivial, 5>, sf::base::Array<NonTrivial, 5>));
-
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Array<NonTrivial, 5>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Array<int, 5>));
 
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Array<NonTrivial, 5>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Array<NonTrivialButRelocatable, 5>)); // because of member initializers
-        STATIC_CHECK(!SFML_BASE_IS_STANDARD_LAYOUT(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Array<NonTrivialButRelocatable, 5>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::Array<NonTrivialButRelocatable, 5>,
-                                                        sf::base::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Array<NonTrivial, 5>)); // because of member initializers
+        STATIC_CHECK(!ZB_IS_STANDARD_LAYOUT(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(ZB_IS_AGGREGATE(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Array<NonTrivial, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Array<NonTrivial, 5>, zb::Array<NonTrivial, 5>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::Array<NonTrivial, 5>));
+
+
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Array<NonTrivialButRelocatable, 5>));
+
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Array<NonTrivialButRelocatable, 5>)); // because of member initializers
+        STATIC_CHECK(!ZB_IS_STANDARD_LAYOUT(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(ZB_IS_AGGREGATE(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Array<NonTrivialButRelocatable, 5>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Array<NonTrivialButRelocatable, 5>,
+                                                        zb::Array<NonTrivialButRelocatable, 5>));
+
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Array<NonTrivialButRelocatable, 5>));
     }
 }

@@ -3,24 +3,24 @@
 #include "CatType.hpp"
 #include "ExactArray.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 namespace CatConstants
 {
 ////////////////////////////////////////////////////////////
 inline constexpr EXACT_ARRAY(
-    sf::Color,
+    za::Color,
     colors,
     nCatTypes,
     {
         {192u, 147u, 109u},  // Normal
         {129u, 251u, 191u},  // Uni
         {191u, 61u, 61u},    // Devil
-        sf::Color::White,    // Astro
-        sf::Color::DarkBlue, // Warden
+        za::Color::White,    // Astro
+        za::Color::DarkBlue, // Warden
 
         {90u, 155u, 48u},   // Witch
         {123u, 108u, 191u}, // Wizard
@@ -101,7 +101,7 @@ inline constexpr EXACT_ARRAY(
 
 ////////////////////////////////////////////////////////////
 inline constexpr EXACT_ARRAY(
-    sf::Vec2f,
+    za::Vec2f,
     rangeOffsets,
     nCatTypes,
     {

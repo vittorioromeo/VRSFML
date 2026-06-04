@@ -1,0 +1,54 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+#if __has_builtin(__is_integral)
+
+    ////////////////////////////////////////////////////////////
+    #define ZB_IS_INTEGRAL(...) __is_integral(__VA_ARGS__)
+
+#else
+
+namespace zb::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isIntegralImpl = false;
+
+
+// clang-format off
+////////////////////////////////////////////////////////////
+template <> inline constexpr bool isIntegralImpl<bool>               = true;
+template <> inline constexpr bool isIntegralImpl<char>               = true;
+template <> inline constexpr bool isIntegralImpl<signed char>        = true;
+template <> inline constexpr bool isIntegralImpl<unsigned char>      = true;
+template <> inline constexpr bool isIntegralImpl<wchar_t>            = true;
+template <> inline constexpr bool isIntegralImpl<char8_t>            = true;
+template <> inline constexpr bool isIntegralImpl<char16_t>           = true;
+template <> inline constexpr bool isIntegralImpl<char32_t>           = true;
+template <> inline constexpr bool isIntegralImpl<short>              = true;
+template <> inline constexpr bool isIntegralImpl<unsigned short>     = true;
+template <> inline constexpr bool isIntegralImpl<int>                = true;
+template <> inline constexpr bool isIntegralImpl<unsigned int>       = true;
+template <> inline constexpr bool isIntegralImpl<long>               = true;
+template <> inline constexpr bool isIntegralImpl<unsigned long>      = true;
+template <> inline constexpr bool isIntegralImpl<long long>          = true;
+template <> inline constexpr bool isIntegralImpl<unsigned long long> = true;
+// clang-format on
+
+} // namespace zb::priv
+
+    ////////////////////////////////////////////////////////////
+    #define ZB_IS_INTEGRAL(...) ::zb::priv::isIntegralImpl<__VA_ARGS__>
+
+#endif
+
+
+namespace zb
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isIntegral = ZB_IS_INTEGRAL(T);
+
+} // namespace zb

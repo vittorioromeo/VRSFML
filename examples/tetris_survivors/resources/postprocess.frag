@@ -1,10 +1,10 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
 ////////////////////////////////////////////////////////////
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 ////////////////////////////////////////////////////////////
 uniform float u_vibrance;   // e.g., 0.0 (none) to 1.0 (max boost)
@@ -39,7 +39,7 @@ vec3 adjustLightness(vec3 color, float light)
 ////////////////////////////////////////////////////////////
 vec3 getAdjustedColor(vec2 coord)
 {
-    vec3 c = texture(sf_u_texture, coord).rgb;
+    vec3 c = texture(za_u_texture, coord).rgb;
 
     c = adjustVibrance(c, u_vibrance);
     c = adjustSaturation(c, u_saturation);
@@ -52,7 +52,7 @@ vec3 getAdjustedColor(vec2 coord)
 void main()
 {
     // Compute the adjusted color for the center pixel.
-    vec3 center = getAdjustedColor(sf_v_texCoord);
+    vec3 center = getAdjustedColor(za_v_texCoord);
 
     // Initialize sharpened color as the adjusted center.
     vec3 result = center;
@@ -61,18 +61,18 @@ void main()
     if (u_sharpness > 0.0)
     {
         // Determine texel size.
-        vec2 tex_offset = 1.0 / vec2(textureSize(sf_u_texture, 0));
+        vec2 tex_offset = 1.0 / vec2(textureSize(za_u_texture, 0));
 
         // Compute a simple blurred version using a 3x3 kernel with weights approximating a Gaussian.
-        vec3 blur = getAdjustedColor(sf_v_texCoord) * 4.0;
-        blur += getAdjustedColor(sf_v_texCoord + vec2(-tex_offset.x, 0.0)) * 2.0;
-        blur += getAdjustedColor(sf_v_texCoord + vec2(tex_offset.x, 0.0)) * 2.0;
-        blur += getAdjustedColor(sf_v_texCoord + vec2(0.0, -tex_offset.y)) * 2.0;
-        blur += getAdjustedColor(sf_v_texCoord + vec2(0.0, tex_offset.y)) * 2.0;
-        blur += getAdjustedColor(sf_v_texCoord + vec2(-tex_offset.x, -tex_offset.y));
-        blur += getAdjustedColor(sf_v_texCoord + vec2(tex_offset.x, -tex_offset.y));
-        blur += getAdjustedColor(sf_v_texCoord + vec2(-tex_offset.x, tex_offset.y));
-        blur += getAdjustedColor(sf_v_texCoord + vec2(tex_offset.x, tex_offset.y));
+        vec3 blur = getAdjustedColor(za_v_texCoord) * 4.0;
+        blur += getAdjustedColor(za_v_texCoord + vec2(-tex_offset.x, 0.0)) * 2.0;
+        blur += getAdjustedColor(za_v_texCoord + vec2(tex_offset.x, 0.0)) * 2.0;
+        blur += getAdjustedColor(za_v_texCoord + vec2(0.0, -tex_offset.y)) * 2.0;
+        blur += getAdjustedColor(za_v_texCoord + vec2(0.0, tex_offset.y)) * 2.0;
+        blur += getAdjustedColor(za_v_texCoord + vec2(-tex_offset.x, -tex_offset.y));
+        blur += getAdjustedColor(za_v_texCoord + vec2(tex_offset.x, -tex_offset.y));
+        blur += getAdjustedColor(za_v_texCoord + vec2(-tex_offset.x, tex_offset.y));
+        blur += getAdjustedColor(za_v_texCoord + vec2(tex_offset.x, tex_offset.y));
         blur /= 16.0;
 
         // Unsharp mask: add back the difference between the original and blurred version.
@@ -80,5 +80,5 @@ void main()
         result = clamp(result, 0.0, 1.0);
     }
 
-    sf_fragColor = vec4(result, sf_v_color.a);
+    za_fragColor = vec4(result, za_v_color.a);
 }

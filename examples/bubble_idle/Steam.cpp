@@ -12,17 +12,17 @@
 #include "steam/steamencryptedappticket.h"
 //
 
-#include "SFML/System/Fmt/FmtPath.hpp"
-#include "SFML/System/IO.hpp"
+#include "Zancle/System/Fmt/FmtPath.hpp"
+#include "Zancle/System/IO.hpp"
 
-#include "SFML/Base/AnkerlUnorderedDense.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "ZancleBase/AnkerlUnorderedDense.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/UniquePtr.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -33,7 +33,7 @@ namespace hg::Steam
 
 namespace
 {
-[[nodiscard]] sf::base::Optional<CSteamID> getUserSteamId()
+[[nodiscard]] zb::Optional<CSteamID> getUserSteamId()
 {
     // Using C API here because C++ one doesn't work with MinGW.
 
@@ -41,34 +41,34 @@ namespace
 
     if (!SteamAPI_ISteamUser_BLoggedOn(steamUser))
     {
-        sf::base::printLn("[Steam]: Attempted to retrieve Steam ID when not logged in");
+        zb::printLn("[Steam]: Attempted to retrieve Steam ID when not logged in");
 
-        return sf::base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return sf::base::makeOptional(CSteamID{SteamAPI_ISteamUser_GetSteamID(steamUser)});
+    return zb::makeOptional(CSteamID{SteamAPI_ISteamUser_GetSteamID(steamUser)});
 }
 
 [[nodiscard]] bool initializeSteamworks()
 {
-    sf::base::printLn("[Steam]: Initializing Steam API");
+    zb::printLn("[Steam]: Initializing Steam API");
 
     SteamErrMsg errMsg;
     if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
     {
-        sf::base::printLn("[Steam]: Failed to initialize Steam API: {}", errMsg);
+        zb::printLn("[Steam]: Failed to initialize Steam API: {}", errMsg);
         return false;
     }
 
-    sf::base::printLn("[Steam]: Steam API successfully initialized");
+    zb::printLn("[Steam]: Steam API successfully initialized");
 
-    if (const sf::base::Optional<CSteamID> userSteamId = getUserSteamId(); userSteamId.hasValue())
+    if (const zb::Optional<CSteamID> userSteamId = getUserSteamId(); userSteamId.hasValue())
     {
-        sf::base::printLn("[Steam]: User Steam ID: '{}'", userSteamId->ConvertToUint64());
+        zb::printLn("[Steam]: User Steam ID: '{}'", userSteamId->ConvertToUint64());
     }
     else
     {
-        sf::base::printLn("[Steam]: Could not retrieve user Steam ID");
+        zb::printLn("[Steam]: Could not retrieve user Steam ID");
     }
 
     return true;
@@ -76,9 +76,9 @@ namespace
 
 void shutdownSteamworks()
 {
-    sf::base::printLn("[Steam]: Shutting down Steam API");
+    zb::printLn("[Steam]: Shutting down Steam API");
     SteamAPI_Shutdown();
-    sf::base::printLn("[Steam]: Shut down Steam API");
+    zb::printLn("[Steam]: Shut down Steam API");
 }
 
 } // namespace
@@ -89,7 +89,7 @@ public:
     bool m_initialized;
     bool m_gotStats;
 
-    ankerl::unordered_dense::set<sf::base::SizeT> m_unlockedAchievements;
+    ankerl::unordered_dense::set<zb::SizeT> m_unlockedAchievements;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -125,15 +125,15 @@ public:
     bool runCallbacks();
 
     bool storeStats();
-    bool unlockAchievement(sf::base::SizeT idx);
-    bool isAchievementUnlocked(sf::base::SizeT idx);
+    bool unlockAchievement(zb::SizeT idx);
+    bool isAchievementUnlocked(zb::SizeT idx);
 
-    bool setRichPresenceInGame(sf::base::StringView levelNameFormat);
+    bool setRichPresenceInGame(zb::StringView levelNameFormat);
 
-    bool                                   setAndStoreStat(sf::base::StringView name, int data);
-    [[nodiscard]] bool                     getAchievement(bool* out, sf::base::StringView name);
-    [[nodiscard]] bool                     getStat(int* out, sf::base::StringView name);
-    [[nodiscard]] sf::base::Optional<bool> isAchievementUnlocked(const char* name);
+    bool                                   setAndStoreStat(zb::StringView name, int data);
+    [[nodiscard]] bool                     getAchievement(bool* out, zb::StringView name);
+    [[nodiscard]] bool                     getStat(int* out, zb::StringView name);
+    [[nodiscard]] zb::Optional<bool> isAchievementUnlocked(const char* name);
 
     bool updateHardcodedAchievements();
 };
@@ -142,7 +142,7 @@ void SteamManager::SteamManagerImpl::onUserStatsReceived(UserStatsReceived_t* da
 {
     (void)data;
 
-    sf::base::printLn("[Steam]: Received user stats (rc: {})", data->m_eResult);
+    zb::printLn("[Steam]: Received user stats (rc: {})", data->m_eResult);
 
     m_gotStats = true;
 }
@@ -151,14 +151,14 @@ void SteamManager::SteamManagerImpl::onUserStatsStored(UserStatsStored_t* data)
 {
     (void)data;
 
-    sf::base::printLn("[Steam]: Stored user stats");
+    zb::printLn("[Steam]: Stored user stats");
 }
 
 void SteamManager::SteamManagerImpl::onUserAchievementStored(UserAchievementStored_t* data)
 {
     (void)data;
 
-    sf::base::printLn("[Steam]: Stored user achievement");
+    zb::printLn("[Steam]: Stored user achievement");
 }
 
 SteamManager::SteamManagerImpl::SteamManagerImpl() : m_initialized{initializeSteamworks()}, m_gotStats{false}
@@ -186,11 +186,11 @@ bool SteamManager::SteamManagerImpl::requestStatsAndAchievements()
 {
     if (!m_initialized)
     {
-        sf::base::printLn("[Steam]: Attempted to request stats when uninitialized");
+        zb::printLn("[Steam]: Attempted to request stats when uninitialized");
         return false;
     }
 
-    static thread_local sf::base::Optional<CSteamID> cachedUserSteamId;
+    static thread_local zb::Optional<CSteamID> cachedUserSteamId;
 
     if (!cachedUserSteamId.hasValue())
     {
@@ -199,17 +199,17 @@ bool SteamManager::SteamManagerImpl::requestStatsAndAchievements()
         if (!cachedUserSteamId.hasValue())
             return false;
 
-        sf::base::printLn("[Steam]: Cached User Steam ID: '{}'", cachedUserSteamId->ConvertToUint64());
+        zb::printLn("[Steam]: Cached User Steam ID: '{}'", cachedUserSteamId->ConvertToUint64());
     }
 
     if (!SteamUserStats()->RequestUserStats(cachedUserSteamId.value()))
     {
-        sf::base::printLn("[Steam]: Failed to get stats and achievements");
+        zb::printLn("[Steam]: Failed to get stats and achievements");
         m_gotStats = false;
         return false;
     }
 
-    sf::base::printLn("[Steam]: Successfully requested stats and achievements");
+    zb::printLn("[Steam]: Successfully requested stats and achievements");
     return true;
 }
 
@@ -228,36 +228,36 @@ bool SteamManager::SteamManagerImpl::storeStats()
 {
     if (!m_initialized)
     {
-        sf::base::printLn("[Steam]: Attempted to store stats when uninitialized");
+        zb::printLn("[Steam]: Attempted to store stats when uninitialized");
         return false;
     }
 
     if (!m_gotStats)
     {
-        sf::base::printLn("[Steam]: Attempted to store stat without stats");
+        zb::printLn("[Steam]: Attempted to store stat without stats");
         return false;
     }
 
     if (!SteamUserStats()->StoreStats())
     {
-        sf::base::printLn("[Steam]: Failed to store stats");
+        zb::printLn("[Steam]: Failed to store stats");
         return false;
     }
 
     return true;
 }
 
-bool SteamManager::SteamManagerImpl::unlockAchievement(sf::base::SizeT idx)
+bool SteamManager::SteamManagerImpl::unlockAchievement(zb::SizeT idx)
 {
     if (!m_initialized)
     {
-        sf::base::printLn("[Steam]: Attempted to unlock achievement when uninitialized");
+        zb::printLn("[Steam]: Attempted to unlock achievement when uninitialized");
         return false;
     }
 
     if (!m_gotStats)
     {
-        sf::base::printLn("[Steam]: Attempted to unlock achievement without stats");
+        zb::printLn("[Steam]: Attempted to unlock achievement without stats");
         return false;
     }
 
@@ -271,7 +271,7 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(sf::base::SizeT idx)
 
     if (!SteamUserStats()->SetAchievement(buf))
     {
-        sf::base::printLn("[Steam]: Failed to unlock achievement {}", buf);
+        zb::printLn("[Steam]: Failed to unlock achievement {}", buf);
         return false;
     }
 
@@ -279,17 +279,17 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(sf::base::SizeT idx)
     return storeStats();
 }
 
-bool SteamManager::SteamManagerImpl::isAchievementUnlocked(sf::base::SizeT idx)
+bool SteamManager::SteamManagerImpl::isAchievementUnlocked(zb::SizeT idx)
 {
     if (!m_initialized)
     {
-        sf::base::printLn("[Steam]: Attempted to check achievement when uninitialized");
+        zb::printLn("[Steam]: Attempted to check achievement when uninitialized");
         return false;
     }
 
     if (!m_gotStats)
     {
-        sf::base::printLn("[Steam]: Attempted to check achievement without stats");
+        zb::printLn("[Steam]: Attempted to check achievement without stats");
         return false;
     }
 
@@ -305,7 +305,7 @@ bool SteamManager::SteamManagerImpl::isAchievementUnlocked(sf::base::SizeT idx)
     return unlocked;
 }
 
-bool SteamManager::SteamManagerImpl::setRichPresenceInGame(sf::base::StringView levelNameFormat)
+bool SteamManager::SteamManagerImpl::setRichPresenceInGame(zb::StringView levelNameFormat)
 {
     if (!m_initialized)
     {
@@ -316,7 +316,7 @@ bool SteamManager::SteamManagerImpl::setRichPresenceInGame(sf::base::StringView 
            SteamFriends()->SetRichPresence("steam_display", "#InGame");
 }
 
-bool SteamManager::SteamManagerImpl::setAndStoreStat(sf::base::StringView name, int data)
+bool SteamManager::SteamManagerImpl::setAndStoreStat(zb::StringView name, int data)
 {
     if (!m_initialized)
     {
@@ -329,7 +329,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(sf::base::StringView name, 
     if (!SteamUserStats()->SetStat(name.data(), asFloat) && // Try with float.
         !SteamUserStats()->SetStat(name.data(), data))      // Try with integer.
     {
-        sf::base::printLn("[Steam]: Error setting stat '{}' to '{}'", name, asFloat);
+        zb::printLn("[Steam]: Error setting stat '{}' to '{}'", name, asFloat);
 
         return false;
     }
@@ -337,7 +337,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(sf::base::StringView name, 
     return storeStats();
 }
 
-[[nodiscard]] bool SteamManager::SteamManagerImpl::getAchievement(bool* out, sf::base::StringView name)
+[[nodiscard]] bool SteamManager::SteamManagerImpl::getAchievement(bool* out, zb::StringView name)
 {
     if (!m_initialized || !m_gotStats)
     {
@@ -346,14 +346,14 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(sf::base::StringView name, 
 
     if (!SteamUserStats()->GetAchievement(name.data(), out))
     {
-        sf::base::printLn("[Steam]: Error getting achievement {}", name);
+        zb::printLn("[Steam]: Error getting achievement {}", name);
         return false;
     }
 
     return true;
 }
 
-[[nodiscard]] bool SteamManager::SteamManagerImpl::getStat(int* out, sf::base::StringView name)
+[[nodiscard]] bool SteamManager::SteamManagerImpl::getStat(int* out, zb::StringView name)
 {
     if (!m_initialized || !m_gotStats)
     {
@@ -374,21 +374,21 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(sf::base::StringView name, 
         return true;
     }
 
-    sf::base::printLn("[Steam]: Error getting stat {}", name.data());
+    zb::printLn("[Steam]: Error getting stat {}", name.data());
     return false;
 }
 
-[[nodiscard]] sf::base::Optional<bool> SteamManager::SteamManagerImpl::isAchievementUnlocked(const char* name)
+[[nodiscard]] zb::Optional<bool> SteamManager::SteamManagerImpl::isAchievementUnlocked(const char* name)
 {
     bool       res{false};
     const bool rc = getAchievement(&res, name);
 
     if (!rc)
     {
-        return sf::base::nullOpt;
+        return zb::nullOpt;
     }
 
-    return sf::base::makeOptional(res);
+    return zb::makeOptional(res);
 }
 
 bool SteamManager::SteamManagerImpl::updateHardcodedAchievementCubeMaster()
@@ -447,17 +447,17 @@ bool SteamManager::SteamManagerImpl::updateHardcodedAchievements()
 
 [[nodiscard]] const SteamManager::SteamManagerImpl& SteamManager::impl() const noexcept
 {
-    SFML_BASE_ASSERT(m_impl != nullptr);
+    ZB_ASSERT(m_impl != nullptr);
     return *m_impl;
 }
 
 [[nodiscard]] SteamManager::SteamManagerImpl& SteamManager::impl() noexcept
 {
-    SFML_BASE_ASSERT(m_impl != nullptr);
+    ZB_ASSERT(m_impl != nullptr);
     return *m_impl;
 }
 
-SteamManager::SteamManager() : m_impl{sf::base::makeUnique<SteamManagerImpl>()}
+SteamManager::SteamManager() : m_impl{zb::makeUnique<SteamManagerImpl>()}
 {
 }
 
@@ -483,32 +483,32 @@ bool SteamManager::storeStats()
     return impl().storeStats();
 }
 
-bool SteamManager::unlockAchievement(sf::base::SizeT idx)
+bool SteamManager::unlockAchievement(zb::SizeT idx)
 {
     return impl().unlockAchievement(idx);
 }
 
-bool SteamManager::isAchievementUnlocked(sf::base::SizeT idx)
+bool SteamManager::isAchievementUnlocked(zb::SizeT idx)
 {
     return impl().isAchievementUnlocked(idx);
 }
 
-bool SteamManager::setRichPresenceInGame(sf::base::StringView levelNameFormat)
+bool SteamManager::setRichPresenceInGame(zb::StringView levelNameFormat)
 {
     return impl().setRichPresenceInGame(levelNameFormat);
 }
 
-bool SteamManager::setAndStoreStat(sf::base::StringView name, int data)
+bool SteamManager::setAndStoreStat(zb::StringView name, int data)
 {
     return impl().setAndStoreStat(name, data);
 }
 
-[[nodiscard]] bool SteamManager::getAchievement(bool* out, sf::base::StringView name)
+[[nodiscard]] bool SteamManager::getAchievement(bool* out, zb::StringView name)
 {
     return impl().getAchievement(out, name);
 }
 
-[[nodiscard]] bool SteamManager::getStat(int* out, sf::base::StringView name)
+[[nodiscard]] bool SteamManager::getStat(int* out, zb::StringView name)
 {
     return impl().getStat(out, name);
 }

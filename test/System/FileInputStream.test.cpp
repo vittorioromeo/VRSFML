@@ -3,33 +3,33 @@
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/FileInputStream.hpp"
+#include "Zancle/System/FileInputStream.hpp"
 
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-using sf::testing::TemporaryFile;
+using za::testing::TemporaryFile;
 
-TEST_CASE("[System] sf::FileInputStream")
+TEST_CASE("[System] za::FileInputStream")
 {
-    using namespace sf::base::literals;
+    using namespace zb::literals;
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::FileInputStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::FileInputStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::FileInputStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::FileInputStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::FileInputStream));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::FileInputStream));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::FileInputStream));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::FileInputStream));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::FileInputStream));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::FileInputStream));
     }
 
     const TemporaryFile temporaryFile("Hello world");
@@ -39,52 +39,52 @@ TEST_CASE("[System] sf::FileInputStream")
     {
         SECTION("Move constructor")
         {
-            auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
-            sf::FileInputStream fileInputStream      = SFML_BASE_MOVE(movedFileInputStream);
+            auto                movedFileInputStream = za::FileInputStream::open(temporaryFile.getPath()).value();
+            za::FileInputStream fileInputStream      = ZB_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
-            CHECK(sf::base::StringView(buffer, 6) == "Hello "_sv);
+            CHECK(zb::StringView(buffer, 6) == "Hello "_sv);
         }
 
         SECTION("Move assignment")
         {
-            auto                movedFileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
+            auto                movedFileInputStream = za::FileInputStream::open(temporaryFile.getPath()).value();
             const TemporaryFile temporaryFile2("Hello world the sequel");
-            auto                fileInputStream = sf::FileInputStream::open(temporaryFile2.getPath()).value();
-            fileInputStream                     = SFML_BASE_MOVE(movedFileInputStream);
+            auto                fileInputStream = za::FileInputStream::open(temporaryFile2.getPath()).value();
+            fileInputStream                     = ZB_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
-            CHECK(sf::base::StringView(buffer, 6) == "Hello "_sv);
+            CHECK(zb::StringView(buffer, 6) == "Hello "_sv);
         }
     }
 
     SECTION("Temporary file stream")
     {
-        auto fileInputStream = sf::FileInputStream::open(temporaryFile.getPath()).value();
+        auto fileInputStream = za::FileInputStream::open(temporaryFile.getPath()).value();
         CHECK(fileInputStream.read(buffer, 5).value() == 5);
         CHECK(fileInputStream.tell().value() == 5);
         CHECK(fileInputStream.getSize().value() == 11);
-        CHECK(sf::base::StringView(buffer, 5) == "Hello"_sv);
+        CHECK(zb::StringView(buffer, 5) == "Hello"_sv);
         CHECK(fileInputStream.seek(6).value() == 6);
         CHECK(fileInputStream.tell().value() == 6);
     }
 
-#ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: throws an exception on Emscripten
+#ifndef ZA_SYSTEM_EMSCRIPTEN // TODO P1: throws an exception on Emscripten
     SECTION("open()")
     {
-        const sf::Path filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+        const za::Path filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
         for (const auto& filenameSuffix : filenameSuffixes)
         {
-            const sf::Path filename = U"test" + filenameSuffix + U".txt";
-            INFO("Filename: " << filename.to<sf::base::String>().cStr());
+            const za::Path filename = U"test" + filenameSuffix + U".txt";
+            INFO("Filename: " << filename.to<zb::String>().cStr());
 
-            auto fileInputStream = sf::FileInputStream::open(filename).value();
+            auto fileInputStream = za::FileInputStream::open(filename).value();
             CHECK(fileInputStream.read(buffer, 5).value() == 5);
             CHECK(fileInputStream.tell().value() == 5);
             CHECK(fileInputStream.getSize().value() == 12);
-            CHECK(sf::base::StringView(buffer, 5) == "Hello"_sv);
+            CHECK(zb::StringView(buffer, 5) == "Hello"_sv);
             CHECK(fileInputStream.seek(6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
         }

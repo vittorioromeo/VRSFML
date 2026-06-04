@@ -9,36 +9,36 @@
 
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Math/Atan2.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Math/Atan2.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <box2d/box2d.h>
 #include <box2d/collision.h>
@@ -55,14 +55,14 @@ constexpr float texPxPerMeter = 200.f; // body-local meters → render-texture p
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Vec2f toSfVec(const b2Vec2 v) noexcept
+[[nodiscard]] za::Vec2f toSfVec(const b2Vec2 v) noexcept
 {
     return {v.x, v.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] b2Vec2 toB2Vec(const sf::Vec2f v) noexcept
+[[nodiscard]] b2Vec2 toB2Vec(const za::Vec2f v) noexcept
 {
     return {v.x, v.y};
 }
@@ -70,16 +70,16 @@ constexpr float texPxPerMeter = 200.f; // body-local meters → render-texture p
 
 ////////////////////////////////////////////////////////////
 // Map a window pixel to world-space meters using the active view.
-[[nodiscard]] sf::Vec2f pixelToWorld(const sf::Vec2i pixel, const sf::Vec2f windowSize, const sf::View& view)
+[[nodiscard]] za::Vec2f pixelToWorld(const za::Vec2i pixel, const za::Vec2f windowSize, const za::View& view)
 {
-    const sf::Vec2f normalized = pixel.toVec2f().componentWiseDiv(windowSize);
+    const za::Vec2f normalized = pixel.toVec2f().componentWiseDiv(windowSize);
     return view.center - view.size / 2.f + normalized.componentWiseMul(view.size);
 }
 
 
 ////////////////////////////////////////////////////////////
 // Map body-local meters to texture pixels (origin at top-left of the texture).
-[[nodiscard]] sf::Vec2f localToTexture(const sf::Vec2f localM, const sf::Vec2f halfSizeM, const sf::Vec2u texSize)
+[[nodiscard]] za::Vec2f localToTexture(const za::Vec2f localM, const za::Vec2f halfSizeM, const za::Vec2u texSize)
 {
     return {(localM.x + halfSizeM.x) / (2.f * halfSizeM.x) * static_cast<float>(texSize.x),
             (localM.y + halfSizeM.y) / (2.f * halfSizeM.y) * static_cast<float>(texSize.y)};
@@ -87,9 +87,9 @@ constexpr float texPxPerMeter = 200.f; // body-local meters → render-texture p
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool isInsideHalfBox(const sf::Vec2f localM, const sf::Vec2f halfSizeM)
+[[nodiscard]] bool isInsideHalfBox(const za::Vec2f localM, const za::Vec2f halfSizeM)
 {
-    return sf::base::fabs(localM.x) <= halfSizeM.x && sf::base::fabs(localM.y) <= halfSizeM.y;
+    return zb::fabs(localM.x) <= halfSizeM.x && zb::fabs(localM.y) <= halfSizeM.y;
 }
 
 
@@ -99,11 +99,11 @@ struct Screen
     b2BodyId  bodyId{};
     b2ShapeId shapeId{};
 
-    sf::Vec2f baseHalfSizeM; // unscaled half-size used to derive the current shape
-    sf::Vec2f halfSizeM;     // current (post-scale) half-size in world meters
-    sf::Vec2u textureSize;   // pixels
+    za::Vec2f baseHalfSizeM; // unscaled half-size used to derive the current shape
+    za::Vec2f halfSizeM;     // current (post-scale) half-size in world meters
+    za::Vec2u textureSize;   // pixels
 
-    sf::base::Optional<sf::ImGuiContext> imGuiContext;
+    zb::Optional<za::ImGuiContext> imGuiContext;
 
     // Per-screen UI state
     float     sliderValue{1.f};    // slider drives the box scale
@@ -112,7 +112,7 @@ struct Screen
     bool      sliderActive{false}; // true while the user is dragging the slider this frame
     int       counter{0};
     bool      checkBox{false};
-    sf::Vec2f cursorTexPos; // last known cursor in texture pixels (for the active screen)
+    za::Vec2f cursorTexPos; // last known cursor in texture pixels (for the active screen)
 
     // Visual tint applied to the rendered screen sprite, also editable from inside the screen
     float tintRGB[3]{0.7f, 0.9f, 1.f};
@@ -120,7 +120,7 @@ struct Screen
 
 
 ////////////////////////////////////////////////////////////
-b2BodyId makeStaticBox(b2WorldId world, sf::Vec2f centerM, sf::Vec2f halfSizeM)
+b2BodyId makeStaticBox(b2WorldId world, za::Vec2f centerM, za::Vec2f halfSizeM)
 {
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type      = b2_staticBody;
@@ -140,7 +140,7 @@ b2BodyId makeStaticBox(b2WorldId world, sf::Vec2f centerM, sf::Vec2f halfSizeM)
 
 
 ////////////////////////////////////////////////////////////
-void initScreen(Screen& s, b2WorldId world, sf::Vec2f initialPosM, sf::Vec2f halfSizeM, const float tint[3], ImFontAtlas& sharedFontAtlas)
+void initScreen(Screen& s, b2WorldId world, za::Vec2f initialPosM, za::Vec2f halfSizeM, const float tint[3], ImFontAtlas& sharedFontAtlas)
 {
     s.baseHalfSizeM = halfSizeM;
     s.halfSizeM     = halfSizeM;
@@ -154,8 +154,8 @@ void initScreen(Screen& s, b2WorldId world, sf::Vec2f initialPosM, sf::Vec2f hal
     // also owns the GL font texture; the others adopt it (saving ~1 MB of GPU memory per
     // sharer).
     s.imGuiContext.emplace(sharedFontAtlas.OwnerContext == nullptr
-                               ? sf::ImGuiContext::createOwningAtlas(sharedFontAtlas)
-                               : sf::ImGuiContext::createSharingAtlas(sharedFontAtlas));
+                               ? za::ImGuiContext::createOwningAtlas(sharedFontAtlas)
+                               : za::ImGuiContext::createSharingAtlas(sharedFontAtlas));
 
     // Scale text and widgets so the in-world UI is readable at the on-screen size
     // (each screen body is drawn at ~half the texture's pixel resolution).
@@ -205,13 +205,13 @@ void rescaleScreenShape(Screen& s)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Screen* findScreenAt(sf::base::Vector<Screen>& screens, sf::Vec2f worldM, sf::Vec2f& outLocalM)
+[[nodiscard]] Screen* findScreenAt(zb::Vector<Screen>& screens, za::Vec2f worldM, za::Vec2f& outLocalM)
 {
     // Iterate in reverse so the topmost (later-drawn) screen wins overlapping hits
-    for (sf::base::SizeT i = screens.size(); i-- > 0u;)
+    for (zb::SizeT i = screens.size(); i-- > 0u;)
     {
         Screen&         s     = screens[i];
-        const sf::Vec2f local = toSfVec(b2Body_GetLocalPoint(s.bodyId, toB2Vec(worldM)));
+        const za::Vec2f local = toSfVec(b2Body_GetLocalPoint(s.bodyId, toB2Vec(worldM)));
         if (isInsideHalfBox(local, s.halfSizeM))
         {
             outLocalM = local;
@@ -227,9 +227,9 @@ void rescaleScreenShape(Screen& s)
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    constexpr sf::Vec2u windowPx{1280u, 720u};
+    constexpr za::Vec2u windowPx{1280u, 720u};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -240,10 +240,10 @@ int main()
                       })
                       .value();
 
-    const sf::Vec2f worldSizeM = windowPx.toVec2f() / pxPerMeter;
-    sf::View        worldView{.center = worldSizeM / 2.f, .size = worldSizeM};
+    const za::Vec2f worldSizeM = windowPx.toVec2f() / pxPerMeter;
+    za::View        worldView{.center = worldSizeM / 2.f, .size = worldSizeM};
 
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     // ----- Box2D world -----
 
@@ -274,14 +274,14 @@ int main()
     ImFontAtlas sharedFontAtlas;
     sharedFontAtlas.AddFontDefaultBitmap();
 
-    constexpr sf::Vec2f maxScreenHalfSizeM{1.4f, 1.f};
-    const sf::Vec2u     scratchRTSize = (maxScreenHalfSizeM * 2.f * texPxPerMeter).toVec2u();
+    constexpr za::Vec2f maxScreenHalfSizeM{1.4f, 1.f};
+    const za::Vec2u     scratchRTSize = (maxScreenHalfSizeM * 2.f * texPxPerMeter).toVec2u();
 
-    auto scratchRT = sf::RenderTexture::create(scratchRTSize, {.smooth = true}).value();
+    auto scratchRT = za::RenderTexture::create(scratchRTSize, {.smooth = true}).value();
 
     // ----- Screens -----
 
-    sf::base::Vector<Screen> screens;
+    zb::Vector<Screen> screens;
     screens.reserve(3u);
 
     constexpr float palette[3][3] = {
@@ -290,95 +290,95 @@ int main()
         {0.85f, 1.f, 0.7f},
     };
 
-    const sf::Vec2f startPositions[3]  = {{4.f, 2.f}, {7.f, 2.f}, {10.f, 2.f}};
-    const sf::Vec2f screenHalfSizes[3] = {{1.4f, 1.f}, {1.4f, 1.f}, {1.4f, 1.f}};
+    const za::Vec2f startPositions[3]  = {{4.f, 2.f}, {7.f, 2.f}, {10.f, 2.f}};
+    const za::Vec2f screenHalfSizes[3] = {{1.4f, 1.f}, {1.4f, 1.f}, {1.4f, 1.f}};
 
     for (int i = 0; i < 3; ++i)
         initScreen(screens.emplaceBack(), world, startPositions[i], screenHalfSizes[i], palette[i], sharedFontAtlas);
 
     // ----- Drag/interaction state -----
 
-    sf::base::Optional<b2BodyId> draggedBody;
-    sf::Vec2f                    dragLocalAnchor{};
+    zb::Optional<b2BodyId> draggedBody;
+    za::Vec2f                    dragLocalAnchor{};
 
     Screen* activeScreen = nullptr;
 
-    sf::Clock clock;
+    za::Clock clock;
 
     while (true)
     {
-        const sf::Time  dt          = clock.restart();
-        const sf::Vec2f windowSizeF = window.getSize().toVec2f();
+        const za::Time  dt          = clock.restart();
+        const za::Vec2f windowSizeF = window.getSize().toVec2f();
 
-        const auto pixelToWorldM = [&](const sf::Vec2i pixel) { return pixelToWorld(pixel, windowSizeF, worldView); };
+        const auto pixelToWorldM = [&](const za::Vec2i pixel) { return pixelToWorld(pixel, windowSizeF, worldView); };
 
         // ----- Event handling -----
 
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (const auto* moved = event->getIf<sf::Event::MouseMoved>())
+            if (const auto* moved = event->getIf<za::Event::MouseMoved>())
             {
                 if (activeScreen != nullptr)
                 {
-                    const sf::Vec2f worldM = pixelToWorldM(moved->position);
-                    const sf::Vec2f localM = toSfVec(b2Body_GetLocalPoint(activeScreen->bodyId, toB2Vec(worldM)));
+                    const za::Vec2f worldM = pixelToWorldM(moved->position);
+                    const za::Vec2f localM = toSfVec(b2Body_GetLocalPoint(activeScreen->bodyId, toB2Vec(worldM)));
 
                     activeScreen->cursorTexPos = localToTexture(localM, activeScreen->halfSizeM, activeScreen->textureSize);
 
                     activeScreen->imGuiContext->processEvent(window,
-                                                             sf::Event::MouseMoved{
+                                                             za::Event::MouseMoved{
                                                                  .position = activeScreen->cursorTexPos.toVec2i(),
                                                              });
                 }
             }
-            else if (const auto* pressed = event->getIf<sf::Event::MouseButtonPressed>())
+            else if (const auto* pressed = event->getIf<za::Event::MouseButtonPressed>())
             {
-                const sf::Vec2f worldM = pixelToWorldM(pressed->position);
+                const za::Vec2f worldM = pixelToWorldM(pressed->position);
 
-                sf::Vec2f localM{};
+                za::Vec2f localM{};
                 Screen*   hitScreen = findScreenAt(screens, worldM, localM);
 
-                if (pressed->button == sf::Mouse::Button::Right && hitScreen != nullptr)
+                if (pressed->button == za::Mouse::Button::Right && hitScreen != nullptr)
                 {
-                    draggedBody     = sf::base::makeOptional(hitScreen->bodyId);
+                    draggedBody     = zb::makeOptional(hitScreen->bodyId);
                     dragLocalAnchor = localM;
                     b2Body_SetAwake(hitScreen->bodyId, true);
                 }
-                else if (pressed->button == sf::Mouse::Button::Left && hitScreen != nullptr)
+                else if (pressed->button == za::Mouse::Button::Left && hitScreen != nullptr)
                 {
                     activeScreen               = hitScreen;
                     activeScreen->cursorTexPos = localToTexture(localM, hitScreen->halfSizeM, hitScreen->textureSize);
 
                     // Synthesize a move first so ImGui has the cursor position before the click
                     activeScreen->imGuiContext->processEvent(window,
-                                                             sf::Event::MouseMoved{
+                                                             za::Event::MouseMoved{
                                                                  .position = activeScreen->cursorTexPos.toVec2i(),
                                                              });
 
                     activeScreen->imGuiContext->processEvent(window,
-                                                             sf::Event::MouseButtonPressed{
+                                                             za::Event::MouseButtonPressed{
                                                                  .button   = pressed->button,
                                                                  .position = activeScreen->cursorTexPos.toVec2i(),
                                                              });
                 }
             }
-            else if (const auto* released = event->getIf<sf::Event::MouseButtonReleased>())
+            else if (const auto* released = event->getIf<za::Event::MouseButtonReleased>())
             {
-                if (released->button == sf::Mouse::Button::Right)
+                if (released->button == za::Mouse::Button::Right)
                 {
                     draggedBody.reset();
                 }
-                else if (released->button == sf::Mouse::Button::Left && activeScreen != nullptr)
+                else if (released->button == za::Mouse::Button::Left && activeScreen != nullptr)
                 {
-                    const sf::Vec2f worldM = pixelToWorldM(released->position);
-                    const sf::Vec2f localM = toSfVec(b2Body_GetLocalPoint(activeScreen->bodyId, toB2Vec(worldM)));
-                    const sf::Vec2f tex    = localToTexture(localM, activeScreen->halfSizeM, activeScreen->textureSize);
+                    const za::Vec2f worldM = pixelToWorldM(released->position);
+                    const za::Vec2f localM = toSfVec(b2Body_GetLocalPoint(activeScreen->bodyId, toB2Vec(worldM)));
+                    const za::Vec2f tex    = localToTexture(localM, activeScreen->halfSizeM, activeScreen->textureSize);
 
                     activeScreen->imGuiContext->processEvent(window,
-                                                             sf::Event::MouseButtonReleased{
+                                                             za::Event::MouseButtonReleased{
                                                                  .button   = released->button,
                                                                  .position = tex.toVec2i(),
                                                              });
@@ -392,8 +392,8 @@ int main()
 
         if (draggedBody.hasValue())
         {
-            const sf::Vec2i mousePixel  = sf::Mouse::getPosition(window);
-            const sf::Vec2f targetWorld = pixelToWorldM(mousePixel);
+            const za::Vec2i mousePixel  = za::Mouse::getPosition(window);
+            const za::Vec2f targetWorld = pixelToWorldM(mousePixel);
             const b2Vec2    worldAnchor = b2Body_GetWorldPoint(*draggedBody, toB2Vec(dragLocalAnchor));
 
             constexpr float stiffness = 60.f;
@@ -426,11 +426,11 @@ int main()
 
             // For the actively-interacted screen, refresh cursor each frame from real-time mouse;
             // for inactive screens, freeze the cursor far away so ImGui doesn't think it's hovering.
-            sf::Vec2f cursorTexPos = s.cursorTexPos;
+            za::Vec2f cursorTexPos = s.cursorTexPos;
             if (&s == activeScreen)
             {
-                const sf::Vec2f worldM = pixelToWorldM(sf::Mouse::getPosition(window));
-                const sf::Vec2f localM = toSfVec(b2Body_GetLocalPoint(s.bodyId, toB2Vec(worldM)));
+                const za::Vec2f worldM = pixelToWorldM(za::Mouse::getPosition(window));
+                const za::Vec2f localM = toSfVec(b2Body_GetLocalPoint(s.bodyId, toB2Vec(worldM)));
 
                 cursorTexPos   = localToTexture(localM, s.halfSizeM, s.textureSize);
                 s.cursorTexPos = cursorTexPos;
@@ -472,24 +472,24 @@ int main()
             ImGui::End();
 
             // Render this screen's UI into the shared scratch RT.
-            scratchRT.clear(sf::Color::White);
+            scratchRT.clear(za::Color::White);
             s.imGuiContext->render(scratchRT);
             scratchRT.display();
 
             // Composite the scratch onto the main window with the body's transform. Subsequent
             // screens will overwrite scratchRT, but by then we've already drawn this one out.
-            const sf::Vec2f bodyPos   = toSfVec(b2Body_GetPosition(s.bodyId));
+            const za::Vec2f bodyPos   = toSfVec(b2Body_GetPosition(s.bodyId));
             const float     bodyAngle = b2Rot_GetAngle(b2Body_GetRotation(s.bodyId));
-            const sf::Vec2f sizeM     = s.halfSizeM * 2.f;
+            const za::Vec2f sizeM     = s.halfSizeM * 2.f;
 
             drawCtx.draw(scratchRT.getTexture(),
                          {
                              .position    = bodyPos,
                              .scale       = sizeM.componentWiseDiv(s.textureSize.toVec2f()),
                              .origin      = s.textureSize.toVec2f() / 2.f,
-                             .rotation    = sf::radians(bodyAngle),
+                             .rotation    = za::radians(bodyAngle),
                              .textureRect = {{0.f, 0.f}, s.textureSize.toVec2f()},
-                             .color       = sf::Color::fromFloats(s.tintRGB[0], s.tintRGB[1], s.tintRGB[2]),
+                             .color       = za::Color::fromFloats(s.tintRGB[0], s.tintRGB[1], s.tintRGB[2]),
                          });
 
             // The next iteration calls `scratchRT.display()`, which bumps the texture's
@@ -520,9 +520,9 @@ int main()
             else
             {
                 const float bodyAngleRad = b2Rot_GetAngle(b2Body_GetRotation(s.bodyId));
-                const float gravityAlong = sf::base::sin(bodyAngleRad);
+                const float gravityAlong = zb::sin(bodyAngleRad);
 
-                if (sf::base::fabs(gravityAlong) > sliderFrictionSinThresh)
+                if (zb::fabs(gravityAlong) > sliderFrictionSinThresh)
                     s.sliderVelocity += gravityAlong * sliderGravityStrength * dt.asSeconds();
 
                 s.sliderVelocity -= s.sliderVelocity * sliderDamping * dt.asSeconds();
@@ -541,34 +541,34 @@ int main()
             }
 
             // If the slider moved (by the user or by gravity), resync the collision shape.
-            if (sf::base::fabs(s.sliderValue - s.currentScale) > 0.001f)
+            if (zb::fabs(s.sliderValue - s.currentScale) > 0.001f)
                 rescaleScreenShape(s);
         }
 
         // Drag rubber-band
         if (draggedBody.hasValue())
         {
-            const sf::Vec2f anchorWorld = toSfVec(b2Body_GetWorldPoint(*draggedBody, toB2Vec(dragLocalAnchor)));
-            const sf::Vec2f mouseWorld  = pixelToWorldM(sf::Mouse::getPosition(window));
+            const za::Vec2f anchorWorld = toSfVec(b2Body_GetWorldPoint(*draggedBody, toB2Vec(dragLocalAnchor)));
+            const za::Vec2f mouseWorld  = pixelToWorldM(za::Mouse::getPosition(window));
 
             // anchor dot
-            drawCtx.draw(sf::CircleShapeData{
+            drawCtx.draw(za::CircleShapeData{
                 .position  = anchorWorld,
                 .origin    = {0.06f, 0.06f},
-                .fillColor = sf::Color::Red,
+                .fillColor = za::Color::Red,
                 .radius    = 0.06f,
             });
 
             // line from anchor to cursor (built as a thin rectangle)
-            const sf::Vec2f delta  = mouseWorld - anchorWorld;
+            const za::Vec2f delta  = mouseWorld - anchorWorld;
             const float     length = delta.length();
 
             if (length > 0.f)
             {
-                drawCtx.draw(sf::RectangleShapeData{
+                drawCtx.draw(za::RectangleShapeData{
                     .position  = anchorWorld,
                     .origin    = {0.f, 0.02f},
-                    .rotation  = sf::radians(sf::base::atan2(delta.y, delta.x)),
+                    .rotation  = za::radians(zb::atan2(delta.y, delta.x)),
                     .fillColor = {255u, 80u, 80u, 220u},
                     .size      = {length, 0.04f},
                 });
@@ -577,7 +577,7 @@ int main()
 
         // HUD instructions (drawn in window pixels)
         window.draw(font,
-                    sf::TextData{
+                    za::TextData{
                         .position      = {12.f, 8.f},
                         .string        = "Left-click a surface to interact with its UI - Right-drag to fling it",
                         .characterSize = 16u,

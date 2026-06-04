@@ -4,23 +4,23 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/IndexType.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/IndexType.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Math/Ceil.hpp"
-#include "SFML/Base/Remainder.hpp"
-#include "SFML/Base/SinCosLookup.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Math/Ceil.hpp"
+#include "ZancleBase/Remainder.hpp"
+#include "ZancleBase/SinCosLookup.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace tsurv
@@ -46,9 +46,9 @@ public:
     /// \param coreThickness  The thickness of the bright inner core
     ///
     ////////////////////////////////////////////////////////////
-    explicit LaserBeam(const sf::Vec2f theStart,
-                       const sf::Vec2f theEnd,
-                       const sf::Color color         = sf::Color(255, 25, 25),
+    explicit LaserBeam(const za::Vec2f theStart,
+                       const za::Vec2f theEnd,
+                       const za::Color color         = za::Color(255, 25, 25),
                        const float     coreThickness = 1.5f) :
         start(theStart),
         end(theEnd),
@@ -65,7 +65,7 @@ public:
     /// \param dt Time elapsed since the last frame
     ///
     ////////////////////////////////////////////////////////////
-    void update(const sf::Time dt)
+    void update(const za::Time dt)
     {
         m_lifetime += dt;
 
@@ -81,19 +81,19 @@ public:
 
         constexpr float pixelsPerSegment = 10.f; // How long each segment of the beam is
 
-        const sf::Vec2f beamVector = end - start;
+        const za::Vec2f beamVector = end - start;
         const float     beamLength = beamVector.length();
 
         if (beamLength == 0.f)
             return;
 
-        const auto numSegments = static_cast<sf::base::SizeT>(sf::base::ceil(beamLength / pixelsPerSegment));
+        const auto numSegments = static_cast<zb::SizeT>(zb::ceil(beamLength / pixelsPerSegment));
 
         if (numSegments == 0u)
             return;
 
-        const sf::Vec2f direction = beamVector / beamLength; // Normalized direction
-        const sf::Vec2f normal    = direction.perpendicular();
+        const za::Vec2f direction = beamVector / beamLength; // Normalized direction
+        const za::Vec2f normal    = direction.perpendicular();
 
         // Calculate the current wobbled points
         const auto nBasePoints = numSegments + 1u;
@@ -104,23 +104,23 @@ public:
         const float timeOffset1 = m_lifetime.asSeconds() * wobbleSpeed1;
         const float timeOffset2 = m_lifetime.asSeconds() * wobbleSpeed2;
 
-        for (sf::base::SizeT i = 0u; i < nBasePoints; ++i)
+        for (zb::SizeT i = 0u; i < nBasePoints; ++i)
         {
             const float progress = static_cast<float>(i) / static_cast<float>(numSegments);
             const float distance = beamLength * progress;
 
             // Calculate the displacement from the first (primary) wave
-            const float sineInput1 = sf::base::positiveRemainder(timeOffset1 + distance * spatialFrequency1, sf::base::tau);
-            const float displacement1 = sf::base::sinLookup(sineInput1) * wobbleAmplitude1;
+            const float sineInput1 = zb::positiveRemainder(timeOffset1 + distance * spatialFrequency1, zb::tau);
+            const float displacement1 = zb::sinLookup(sineInput1) * wobbleAmplitude1;
 
             // Calculate the displacement from the second (detail) wave
-            const float sineInput2 = sf::base::positiveRemainder(timeOffset2 + distance * spatialFrequency2, sf::base::tau);
-            const float displacement2 = sf::base::sinLookup(sineInput2) * wobbleAmplitude2;
+            const float sineInput2 = zb::positiveRemainder(timeOffset2 + distance * spatialFrequency2, zb::tau);
+            const float displacement2 = zb::sinLookup(sineInput2) * wobbleAmplitude2;
 
             // The final displacement is the sum of both waves
             const float totalDisplacement = displacement1 + displacement2;
 
-            const sf::Vec2f basePoint = start + direction * distance;
+            const za::Vec2f basePoint = start + direction * distance;
             m_currentPoints.pushBack(basePoint + normal * totalDisplacement);
         }
 
@@ -136,15 +136,15 @@ public:
     /// \brief Draw the laser beam to a render target
     ///
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& target, const sf::RenderStates states) const
+    void draw(za::RenderTarget& target, const za::RenderStates states) const
     {
-        const auto drawVertices = [&](const sf::base::Vector<sf::Vertex>& vertices)
+        const auto drawVertices = [&](const zb::Vector<za::Vertex>& vertices)
         {
             target.drawIndexedVertices(
-                sf::DrawIndexedVerticesSettings{
+                za::DrawIndexedVerticesSettings{
                     .vertexSpan    = vertices,
                     .indexSpan     = m_indices,
-                    .primitiveType = sf::PrimitiveType::Triangles,
+                    .primitiveType = za::PrimitiveType::Triangles,
                 },
                 states);
         };
@@ -154,8 +154,8 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    sf::Vec2f start;
-    sf::Vec2f end;
+    za::Vec2f start;
+    za::Vec2f end;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -165,12 +165,12 @@ private:
     /// called by the update loop every frame.
     ///
     ////////////////////////////////////////////////////////////
-    void updateVertexGeometry(const sf::base::Vector<sf::Vec2f>& points)
+    void updateVertexGeometry(const zb::Vector<za::Vec2f>& points)
     {
         if (points.size() < 2)
             return;
 
-        const auto numQuads    = static_cast<sf::base::SizeT>(points.size() - 1u);
+        const auto numQuads    = static_cast<zb::SizeT>(points.size() - 1u);
         const auto vertexCount = numQuads * 4u;
         const auto indexCount  = numQuads * 6u;
 
@@ -181,9 +181,9 @@ private:
             m_indices.resize(indexCount);
         }
 
-        for (sf::base::SizeT i = 0u; i < numQuads; ++i)
+        for (zb::SizeT i = 0u; i < numQuads; ++i)
         {
-            const auto baseIndex = static_cast<sf::IndexType>(i * 4u);
+            const auto baseIndex = static_cast<za::IndexType>(i * 4u);
             const auto idxOffset = i * 6u;
 
             m_indices[idxOffset + 0u] = baseIndex + 0u;
@@ -196,27 +196,27 @@ private:
 
         const auto glowColor = m_color.withAlpha(m_color.a / 4u);
 
-        for (sf::base::SizeT i = 0u; i < points.size() - 1u; ++i)
+        for (zb::SizeT i = 0u; i < points.size() - 1u; ++i)
         {
-            const sf::Vec2f p1 = points[i];
-            const sf::Vec2f p2 = points[i + 1];
+            const za::Vec2f p1 = points[i];
+            const za::Vec2f p2 = points[i + 1];
 
             // Calculate the normal for the current segment
-            const sf::Vec2f dir    = (p2 - p1).normalized();
-            const sf::Vec2f normal = dir.perpendicular();
+            const za::Vec2f dir    = (p2 - p1).normalized();
+            const za::Vec2f normal = dir.perpendicular();
 
             // Calculate miter normals for smooth joins between segments
-            sf::Vec2f normalP1 = normal;
+            za::Vec2f normalP1 = normal;
             if (i > 0)
             {
-                const sf::Vec2f prevDir = (p1 - points[i - 1]).normalized();
+                const za::Vec2f prevDir = (p1 - points[i - 1]).normalized();
                 normalP1                = (dir + prevDir).normalized().perpendicular();
             }
 
-            sf::Vec2f normalP2 = normal;
+            za::Vec2f normalP2 = normal;
             if (i < points.size() - 2)
             {
-                const sf::Vec2f nextDir = (points[i + 2] - p2).normalized();
+                const za::Vec2f nextDir = (points[i + 2] - p2).normalized();
                 normalP2                = (nextDir + dir).normalized().perpendicular();
             }
 
@@ -239,16 +239,16 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::Color m_color;
+    za::Color m_color;
     float     m_coreThickness;
     float     m_glowThickness;
-    sf::Time  m_lifetime;
+    za::Time  m_lifetime;
 
-    sf::base::Vector<sf::Vec2f> m_currentPoints;
+    zb::Vector<za::Vec2f> m_currentPoints;
 
-    sf::base::Vector<sf::Vertex>    m_verticesCore;
-    sf::base::Vector<sf::Vertex>    m_verticesGlow;
-    sf::base::Vector<sf::IndexType> m_indices;
+    zb::Vector<za::Vertex>    m_verticesCore;
+    zb::Vector<za::Vertex>    m_verticesGlow;
+    zb::Vector<za::IndexType> m_indices;
 };
 
 } // namespace tsurv

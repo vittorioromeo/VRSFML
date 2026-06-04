@@ -3,35 +3,35 @@
 ////////////////////////////////////////////////////////////
 #include "Server.hpp"
 
-#include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/SoundChannel.hpp"
-#include "SFML/Audio/SoundStream.hpp"
+#include "Zancle/Audio/ChannelMap.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/SoundChannel.hpp"
+#include "Zancle/Audio/SoundStream.hpp"
 
-#include "SFML/Network/IpAddressUtils.hpp"
-#include "SFML/Network/Packet.hpp"
-#include "SFML/Network/Socket.hpp"
-#include "SFML/Network/TcpListener.hpp"
-#include "SFML/Network/TcpSocket.hpp"
+#include "Zancle/Network/IpAddressUtils.hpp"
+#include "Zancle/Network/Packet.hpp"
+#include "Zancle/Network/Socket.hpp"
+#include "Zancle/Network/TcpListener.hpp"
+#include "Zancle/Network/TcpSocket.hpp"
 
-#include "SFML/System/Thread.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Scn/ScnStdin.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp" // IWYU pragma: keep
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Scn/ScnStdin.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp" // IWYU pragma: keep
+#include "ZancleBase/Vector.hpp"
 
 #include <mutex>
 
 
-constexpr sf::base::U8 serverAudioData   = 1;
-constexpr sf::base::U8 serverEndOfStream = 2;
+constexpr zb::U8 serverAudioData   = 1;
+constexpr zb::U8 serverEndOfStream = 2;
 
 
 namespace
@@ -46,23 +46,23 @@ namespace
 struct NetworkState
 {
     mutable std::recursive_mutex    mutex;
-    sf::base::Vector<sf::base::I16> samples;
-    sf::base::SizeT                 offset{};
+    zb::Vector<zb::I16> samples;
+    zb::SizeT                 offset{};
     bool                            hasFinished{};
 
     ////////////////////////////////////////////////////////////
-    bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
+    bool onGetData(zb::Vector<zb::I16>& outBuffer)
     {
         if ((offset >= samples.size()) && hasFinished)
             return false;
 
         // No new data has arrived since last update: wait until we get some
         while ((offset >= samples.size()) && !hasFinished)
-            sf::ThisThread::sleepFor(sf::milliseconds(10));
+            za::ThisThread::sleepFor(za::milliseconds(10));
 
         {
             const std::lock_guard lock(mutex);
-            outBuffer.assignRange(samples.begin() + static_cast<sf::base::Vector<sf::base::I16>::difference_type>(offset),
+            outBuffer.assignRange(samples.begin() + static_cast<zb::Vector<zb::I16>::difference_type>(offset),
                                   samples.end());
         }
 
@@ -71,9 +71,9 @@ struct NetworkState
     }
 
     ////////////////////////////////////////////////////////////
-    void onSeek(sf::Time timeOffset)
+    void onSeek(za::Time timeOffset)
     {
-        offset = static_cast<sf::base::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
+        offset = static_cast<zb::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
     }
 };
 
@@ -82,12 +82,12 @@ struct NetworkState
 /// Customized sound stream for acquiring audio data
 /// from the network
 ////////////////////////////////////////////////////////////
-class NetworkAudioStream : public sf::SoundStream<NetworkState>
+class NetworkAudioStream : public za::SoundStream<NetworkState>
 {
 public:
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream(sf::PlaybackDevice& playbackDevice) :
-        sf::SoundStream<NetworkState>{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u}
+    NetworkAudioStream(za::PlaybackDevice& playbackDevice) :
+        za::SoundStream<NetworkState>{playbackDevice, za::ChannelMap{za::SoundChannel::Mono}, 44'100u}
     {
     }
 
@@ -102,17 +102,17 @@ public:
         if (!s.hasFinished)
         {
             // Create a server socket already listening on `port`
-            m_listener = sf::TcpListener::create(port, /* isBlocking */ true);
+            m_listener = za::TcpListener::create(port, /* isBlocking */ true);
             if (!m_listener.hasValue())
                 return;
-            sf::base::printLn("Server is listening to port {}, waiting for connections... ", port);
+            zb::printLn("Server is listening to port {}, waiting for connections... ", port);
 
             // Wait for a connection
             auto acceptResult = m_listener->accept();
-            if (acceptResult.status != sf::Socket::Status::Done)
+            if (acceptResult.status != za::Socket::Status::Done)
                 return;
-            m_client = SFML_BASE_MOVE(acceptResult.socket);
-            sf::base::printLn("Client connected: {}", sf::IpAddressUtils::toString(m_client->getRemoteAddress().value()));
+            m_client = ZB_MOVE(acceptResult.socket);
+            zb::printLn("Client connected: {}", za::IpAddressUtils::toString(m_client->getRemoteAddress().value()));
 
             play();
             receiveLoop();
@@ -133,20 +133,20 @@ private:
 
         while (!s.hasFinished)
         {
-            sf::Packet packet;
-            if (m_client->receive(packet) != sf::Socket::Status::Done)
+            za::Packet packet;
+            if (m_client->receive(packet) != za::Socket::Status::Done)
                 break;
 
-            sf::base::U8 id = 0;
+            zb::U8 id = 0;
             packet >> id;
 
             if (id == serverAudioData)
             {
-                const sf::base::SizeT sampleCount = (packet.getDataSize() - 1) / sizeof(sf::base::I16);
+                const zb::SizeT sampleCount = (packet.getDataSize() - 1) / sizeof(zb::I16);
                 {
                     const std::lock_guard lock(s.mutex);
                     const auto*           begin = static_cast<const char*>(packet.getData()) + 1;
-                    const auto*           end   = begin + sampleCount * sizeof(sf::base::I16);
+                    const auto*           end   = begin + sampleCount * sizeof(zb::I16);
 
                     for (const auto* it = begin; it != end; ++it)
                         s.samples.emplaceBack(*it);
@@ -154,12 +154,12 @@ private:
             }
             else if (id == serverEndOfStream)
             {
-                sf::base::printLn("Audio data has been 100% received!");
+                zb::printLn("Audio data has been 100% received!");
                 s.hasFinished = true;
             }
             else
             {
-                sf::base::printLn("Invalid packet received...");
+                zb::printLn("Invalid packet received...");
                 s.hasFinished = true;
             }
         }
@@ -168,8 +168,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data (network-only; audio-thread state lives in `state()`)
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<sf::TcpListener> m_listener;
-    sf::base::Optional<sf::TcpSocket>   m_client;
+    zb::Optional<za::TcpListener> m_listener;
+    zb::Optional<za::TcpSocket>   m_client;
 };
 
 } // namespace
@@ -180,7 +180,7 @@ private:
 /// a connected client
 ///
 ////////////////////////////////////////////////////////////
-void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
+void doServer(za::PlaybackDevice& playbackDevice, unsigned short port)
 {
     // Build an audio stream to play sound data as it is received through the network
     NetworkAudioStream audioStream(playbackDevice);
@@ -190,14 +190,14 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
     while (audioStream.isPlaying())
     {
         // Leave some CPU time for other threads
-        sf::ThisThread::sleepFor(sf::milliseconds(100));
+        za::ThisThread::sleepFor(za::milliseconds(100));
     }
 
-    sf::base::scnStdinIgnoreLine();
+    zb::scnStdinIgnoreLine();
 
     // Wait until the user presses 'enter' key
-    sf::base::printLn("Press enter to replay the sound...");
-    sf::base::scnStdinIgnoreLine();
+    zb::printLn("Press enter to replay the sound...");
+    zb::scnStdinIgnoreLine();
 
     // Replay the sound (just to make sure replaying the received data is OK)
     audioStream.play();
@@ -206,6 +206,6 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
     while (audioStream.isPlaying())
     {
         // Leave some CPU time for other threads
-        sf::ThisThread::sleepFor(sf::milliseconds(100));
+        za::ThisThread::sleepFor(za::milliseconds(100));
     }
 }

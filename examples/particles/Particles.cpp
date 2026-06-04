@@ -3,46 +3,46 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
-#include "SFML/Window/EventUtils.hpp"
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Algorithm/SwapAndPop.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/InterferenceSize.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/ThreadPool.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Algorithm/SwapAndPop.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/InterferenceSize.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/PtrDiffT.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/ThreadPool.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/UniquePtr.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <latch>
 
@@ -51,9 +51,9 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void updateParticle(
-    sf::Vec2f&      position,
-    sf::Vec2f&      velocity,
-    const sf::Vec2f acceleration,
+    za::Vec2f&      position,
+    za::Vec2f&      velocity,
+    const za::Vec2f acceleration,
 
     float&      scale,
     const float scaleGrowth,
@@ -73,23 +73,23 @@ namespace
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
-    const sf::Texture& texture,
-    const sf::Rect2f&  txr,
-    const sf::Vec2f    origin,
-    const sf::Vec2f    position,
+    const za::Texture& texture,
+    const za::Rect2f&  txr,
+    const za::Vec2f    origin,
+    const za::Vec2f    position,
     const float        scale,
     const float        rotation,
     auto&&             drawFn)
 {
     drawFn(
-        sf::Sprite{
+        za::Sprite{
             .position    = position,
             .scale       = {scale, scale},
             .origin      = origin,
-            .rotation    = sf::radians(rotation),
+            .rotation    = za::radians(rotation),
             .textureRect = txr,
         },
-        sf::RenderStates{.texture = &texture});
+        za::RenderStates{.texture = &texture});
 }
 
 } // namespace
@@ -109,14 +109,14 @@ int main()
     //
     //
     // Set up graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     //
     //
     // Set up window
-    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
+    constexpr za::Vec2f windowSize{1680.f, 1050.f};
 
-    auto window = sf::RenderWindow::create(
+    auto window = za::RenderWindow::create(
                       {
                           .size      = windowSize.toVec2u(),
                           .title     = "Vittorio's SFML fork: particles example",
@@ -128,26 +128,26 @@ int main()
     //
     //
     // Set up imgui
-    sf::ImGuiContext imGuiContext;
+    za::ImGuiContext imGuiContext;
 
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({512u, 512u}, {.smooth = true}).value()};
+    za::TextureAtlas textureAtlas{za::Texture::create({512u, 512u}, {.smooth = true}).value()};
 
-    const auto addImgResourceToAtlas = [&](const sf::Path& path)
-    { return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value(); };
+    const auto addImgResourceToAtlas = [&](const za::Path& path)
+    { return textureAtlas.add(za::Image::loadFromFile("resources" / path).value()).value(); };
 
     //
     //
     // Load fonts
-    const auto fontTuffy        = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
-    const auto fontMouldyCheese = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
+    const auto fontTuffy        = za::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
+    const auto fontMouldyCheese = za::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
 
     //
     //
     // Load images and add to texture atlas
-    const sf::Rect2f spriteTextureRects[]{
+    const za::Rect2f spriteTextureRects[]{
         addImgResourceToAtlas("pCircle.png"),
         addImgResourceToAtlas("pExplosion.png"),
         addImgResourceToAtlas("pFire.png"),
@@ -169,16 +169,16 @@ int main()
         {
         }
 
-        virtual void draw(const sf::Texture&, sf::RenderTarget&)
+        virtual void draw(const za::Texture&, za::RenderTarget&)
         {
         }
     };
 
     struct ParticleOOP : Entity
     {
-        sf::Vec2f position;
-        sf::Vec2f velocity;
-        sf::Vec2f acceleration;
+        za::Vec2f position;
+        za::Vec2f velocity;
+        za::Vec2f acceleration;
 
         float scale;
         float scaleGrowth;
@@ -189,9 +189,9 @@ int main()
         float rotation;
         float torque;
 
-        ParticleOOP(sf::Vec2f thePosition,
-                    sf::Vec2f theVelocity,
-                    sf::Vec2f theAcceleration,
+        ParticleOOP(za::Vec2f thePosition,
+                    za::Vec2f theVelocity,
+                    za::Vec2f theAcceleration,
                     float     theScale,
                     float     theScaleGrowth,
                     float     theOpacity,
@@ -216,7 +216,7 @@ int main()
             alive = opacity > 0.f;
         }
 
-        void draw(const sf::Texture& texture, sf::RenderTarget& rt) override
+        void draw(const za::Texture& texture, za::RenderTarget& rt) override
         {
             drawParticleImpl(texture,
                              {{0.f, 0.f}, {64.f, 64.f}},
@@ -224,20 +224,20 @@ int main()
                              position,
                              scale,
                              rotation,
-                             [&](const sf::Sprite& sprite, const sf::RenderStates& states) { rt.draw(sprite, states); });
+                             [&](const za::Sprite& sprite, const za::RenderStates& states) { rt.draw(sprite, states); });
         }
     };
 
-    sf::base::Vector<sf::base::UniquePtr<Entity>> entities;
+    zb::Vector<zb::UniquePtr<Entity>> entities;
 
     //
     //
     // SoA Particles
     struct ParticleAoS // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        sf::Vec2f position;
-        sf::Vec2f velocity;
-        sf::Vec2f acceleration;
+        za::Vec2f position;
+        za::Vec2f velocity;
+        za::Vec2f acceleration;
 
         float scale;
         float scaleGrowth;
@@ -249,14 +249,14 @@ int main()
         float torque;
     };
 
-    sf::base::Vector<ParticleAoS> particlesAoS;
+    zb::Vector<ParticleAoS> particlesAoS;
 
     //
     //
     // AoS Particles
-    using ParticleSoA = SoAFor<sf::Vec2f, // position
-                               sf::Vec2f, // velocity
-                               sf::Vec2f, // acceleration
+    using ParticleSoA = SoAFor<za::Vec2f, // position
+                               za::Vec2f, // velocity
+                               za::Vec2f, // acceleration
 
                                float, // scale
                                float, // scaleGrowth
@@ -272,8 +272,8 @@ int main()
     //
     //
     // Get hardware constants
-    const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
-    constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
+    const auto     nMaxWorkers   = static_cast<zb::U64>(zb::ThreadPool::getHardwareWorkerCount());
+    constexpr auto cacheLineSize = static_cast<zb::SizeT>(zb::hardwareDestructiveInterferenceSize);
 
     //
     //
@@ -286,7 +286,7 @@ int main()
     };
 
     const auto defaultBatchType =
-#ifdef SFML_OPENGL_ES
+#ifdef ZA_OPENGL_ES
         BatchType::CPUStorage
 #else
         BatchType::GPUStorage
@@ -295,7 +295,7 @@ int main()
 
     auto          batchType                = BatchType::Disabled;
     auto          autobatchType            = defaultBatchType;
-    sf::base::U64 autoBatchVertexThreshold = 32'768u;
+    zb::U64 autoBatchVertexThreshold = 32'768u;
     bool          multithreadedUpdate      = false;
     bool          multithreadedDraw        = false;
     bool          useOOP                   = false;
@@ -303,43 +303,43 @@ int main()
     bool          unifiedSoAProcessing     = false;
     bool          destroyParticles         = true;
     bool          destroyBySwapping        = true;
-    sf::base::U64 nWorkers                 = nMaxWorkers;
+    zb::U64 nWorkers                 = nMaxWorkers;
     int           numEntities              = 50'000;
     bool          drawStep                 = true;
 
     //
     //
     // Set up drawable batches
-    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : sf::CPUDrawableBatch
+    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : za::CPUDrawableBatch
     {
-        using sf::CPUDrawableBatch::CPUDrawableBatch;
+        using za::CPUDrawableBatch::CPUDrawableBatch;
     };
 
-    struct alignas(cacheLineSize) AlignedGPUDrawableBatch : sf::PersistentGPUDrawableBatch
+    struct alignas(cacheLineSize) AlignedGPUDrawableBatch : za::PersistentGPUDrawableBatch
     {
-        using sf::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
+        using za::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
-    sf::base::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
+    zb::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<zb::SizeT>(nMaxWorkers));
+    zb::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<zb::SizeT>(nMaxWorkers));
 
     //
     //
     // Set up thread pool
-    sf::base::ThreadPool pool(nMaxWorkers);
+    zb::ThreadPool pool(nMaxWorkers);
 
-    const auto doInBatches = [&](const sf::base::SizeT nParticlesTotal, auto&& f)
+    const auto doInBatches = [&](const zb::SizeT nParticlesTotal, auto&& f)
     {
-        const sf::base::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
+        const zb::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
 
-        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
+        std::latch latch{static_cast<zb::PtrDiffT>(nWorkers)};
 
-        for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
+        for (zb::SizeT i = 0u; i < nWorkers; ++i)
         {
             pool.post([&, i]
             {
-                const sf::base::SizeT batchStartIdx = i * particlesPerBatch;
-                const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+                const zb::SizeT batchStartIdx = i * particlesPerBatch;
+                const zb::SizeT batchEndIdx = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -353,8 +353,8 @@ int main()
     //
     //
     // Set up clock and time sampling
-    sf::Clock clock;
-    sf::Clock fpsClock;
+    za::Clock clock;
+    za::Clock fpsClock;
 
     Sampler<float> samplesUpdateMs(/* capacity */ 64u);
     Sampler<float> samplesDrawMs(/* capacity */ 64u);
@@ -373,12 +373,12 @@ int main()
                rng.getF(-0.002f, 0.002f),                  // scaleGrowth
                rng.getF(0.75f, 1.f),                       // opacity
                rng.getF(-0.0015f, -0.0005f),               // opacityGrowth
-               rng.getF(0.f, sf::base::tau),               // rotation
+               rng.getF(0.f, zb::tau),               // rotation
                rng.getF(-0.005f, 0.005f)                   // torque
         );
     };
 
-    const auto populateParticlesOOP = [&](const sf::base::SizeT n)
+    const auto populateParticlesOOP = [&](const zb::SizeT n)
     {
         if (n < entities.size())
         {
@@ -388,12 +388,12 @@ int main()
 
         entities.reserve(n);
 
-        for (sf::base::SizeT i = entities.size(); i < n; ++i)
+        for (zb::SizeT i = entities.size(); i < n; ++i)
             pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args)
-            { entities.emplaceBack(sf::base::makeUnique<ParticleOOP>(args...)); });
+            { entities.emplaceBack(zb::makeUnique<ParticleOOP>(args...)); });
     };
 
-    const auto populateParticlesAoS = [&](const sf::base::SizeT n)
+    const auto populateParticlesAoS = [&](const zb::SizeT n)
     {
         if (n < particlesAoS.size())
         {
@@ -403,11 +403,11 @@ int main()
 
         particlesAoS.reserve(n);
 
-        for (sf::base::SizeT i = particlesAoS.size(); i < n; ++i)
+        for (zb::SizeT i = particlesAoS.size(); i < n; ++i)
             pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args) { particlesAoS.emplaceBack(args...); });
     };
 
-    const auto populateParticlesSoA = [&](const sf::base::SizeT n)
+    const auto populateParticlesSoA = [&](const zb::SizeT n)
     {
         if (n < particlesSoA.getSize())
         {
@@ -417,11 +417,11 @@ int main()
 
         particlesSoA.reserve(n);
 
-        for (sf::base::SizeT i = particlesSoA.getSize(); i < n; ++i)
+        for (zb::SizeT i = particlesSoA.getSize(); i < n; ++i)
             pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args) { particlesSoA.pushBack(args...); });
     };
 
-    const auto populateParticles = [&](const sf::base::SizeT n)
+    const auto populateParticles = [&](const zb::SizeT n)
     {
         if (useOOP)
             populateParticlesOOP(n);
@@ -431,7 +431,7 @@ int main()
             populateParticlesAoS(n);
     };
 
-    populateParticles(static_cast<sf::base::SizeT>(numEntities));
+    populateParticles(static_cast<zb::SizeT>(numEntities));
 
     //
     //
@@ -446,11 +446,11 @@ int main()
         // ---
         clock.restart();
         {
-            while (sf::base::Optional event = window.pollEvent())
+            while (zb::Optional event = window.pollEvent())
             {
                 imGuiContext.processEvent(window, *event);
 
-                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
             }
         }
@@ -470,7 +470,7 @@ int main()
 
                 if (useOOP)
                 {
-                    sf::base::vectorSwapAndPopIf(entities, [](const auto& e) { return !e->alive; });
+                    zb::vectorSwapAndPopIf(entities, [](const auto& e) { return !e->alive; });
                 }
                 else if (useSoA)
                 {
@@ -483,8 +483,8 @@ int main()
                 {
                     if (destroyBySwapping)
                     {
-                        sf::base::SizeT n = particlesAoS.size();
-                        sf::base::SizeT i = 0;
+                        zb::SizeT n = particlesAoS.size();
+                        zb::SizeT i = 0;
 
                         while (i < n)
                         {
@@ -501,14 +501,14 @@ int main()
                     }
                     else
                     {
-                        sf::base::vectorEraseIf(particlesAoS,
+                        zb::vectorEraseIf(particlesAoS,
                                                 [] [[gnu::always_inline, gnu::flatten]] (const ParticleAoS& p)
                         { return p.opacity <= 0.f; });
                     }
                 }
             }
 
-            populateParticles(static_cast<sf::base::SizeT>(numEntities));
+            populateParticles(static_cast<zb::SizeT>(numEntities));
 
             if (!multithreadedUpdate)
             {
@@ -526,11 +526,11 @@ int main()
                     else
                     {
                         particlesSoA.with<1, 2>(
-                            [] [[gnu::always_inline, gnu::flatten]] (sf::Vec2f & velocity, const sf::Vec2f acc)
+                            [] [[gnu::always_inline, gnu::flatten]] (za::Vec2f & velocity, const za::Vec2f acc)
                         { velocity += acc; });
 
                         particlesSoA.with<0, 1>(
-                            [] [[gnu::always_inline, gnu::flatten]] (sf::Vec2f & position, sf::Vec2f & velocity)
+                            [] [[gnu::always_inline, gnu::flatten]] (za::Vec2f & position, za::Vec2f & velocity)
                         { position += velocity; });
 
                         particlesSoA.with<3, 4>(
@@ -569,30 +569,30 @@ int main()
                 {
                     if (unifiedSoAProcessing)
                     {
-                        doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                                    [&] [[gnu::always_inline, gnu::flatten]] (const sf::base::SizeT /* iBatch */,
-                                                                              const sf::base::SizeT batchStartIdx,
-                                                                              const sf::base::SizeT batchEndIdx)
+                        doInBatches(static_cast<zb::SizeT>(numEntities),
+                                    [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT /* iBatch */,
+                                                                              const zb::SizeT batchStartIdx,
+                                                                              const zb::SizeT batchEndIdx)
                         { particlesSoA.withAllSubRange(batchStartIdx, batchEndIdx, updateParticle); });
                     }
                     else
                     {
-                        doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                                    [&] [[gnu::always_inline, gnu::flatten]] (const sf::base::SizeT /* iBatch */,
-                                                                              const sf::base::SizeT batchStartIdx,
-                                                                              const sf::base::SizeT batchEndIdx)
+                        doInBatches(static_cast<zb::SizeT>(numEntities),
+                                    [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT /* iBatch */,
+                                                                              const zb::SizeT batchStartIdx,
+                                                                              const zb::SizeT batchEndIdx)
                         {
                             particlesSoA.withSubRange<1, 2>(batchStartIdx,
                                                             batchEndIdx,
                                                             [] [[gnu::always_inline,
-                                                                 gnu::flatten]] (sf::Vec2f & velocity, const sf::Vec2f acc)
+                                                                 gnu::flatten]] (za::Vec2f & velocity, const za::Vec2f acc)
 
                             { velocity += acc; });
 
                             particlesSoA.withSubRange<0, 1>(batchStartIdx,
                                                             batchEndIdx,
                                                             [] [[gnu::always_inline,
-                                                                 gnu::flatten]] (sf::Vec2f & position, sf::Vec2f & velocity)
+                                                                 gnu::flatten]] (za::Vec2f & position, za::Vec2f & velocity)
 
                             { position += velocity; });
 
@@ -621,12 +621,12 @@ int main()
                 }
                 else
                 {
-                    doInBatches(static_cast<sf::base::SizeT>(numEntities),
-                                [&] [[gnu::always_inline, gnu::flatten]] (const sf::base::SizeT /* iBatch */,
-                                                                          const sf::base::SizeT batchStartIdx,
-                                                                          const sf::base::SizeT batchEndIdx)
+                    doInBatches(static_cast<zb::SizeT>(numEntities),
+                                [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT /* iBatch */,
+                                                                          const zb::SizeT batchStartIdx,
+                                                                          const zb::SizeT batchEndIdx)
                     {
-                        for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                        for (zb::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         {
                             ParticleAoS& p = particlesAoS[i];
 
@@ -668,7 +668,7 @@ int main()
 
             constexpr const char* batchTypeItems[]{"Disabled",
                                                    "CPU Storage",
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
                                                    "GPU Storage"
 #endif
             };
@@ -676,25 +676,25 @@ int main()
             if (ImGui::Combo("Batch type",
                              reinterpret_cast<int*>(&batchType),
                              batchTypeItems,
-                             sf::base::getArraySize(batchTypeItems)))
+                             zb::getArraySize(batchTypeItems)))
                 clearSamples();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
             if (ImGui::Combo("Autobatch type",
                              reinterpret_cast<int*>(&autobatchType),
                              batchTypeItems,
-                             sf::base::getArraySize(batchTypeItems)))
+                             zb::getArraySize(batchTypeItems)))
             {
                 clearSamples();
-                window.setAutoBatchMode(static_cast<sf::RenderTarget::AutoBatchMode>(autobatchType));
+                window.setAutoBatchMode(static_cast<za::RenderTarget::AutoBatchMode>(autobatchType));
             }
 
             {
-                const sf::base::U64 step = 1u;
+                const zb::U64 step = 1u;
                 ImGui::SetNextItemWidth(172.f);
                 if (ImGui::InputScalar("Autobatch Vertex Threshold", ImGuiDataType_U64, &autoBatchVertexThreshold, &step))
                     window.setAutoBatchVertexThreshold(
-                        static_cast<sf::base::SizeT>(sf::base::max(autoBatchVertexThreshold, sf::base::U64{1024u})));
+                        static_cast<zb::SizeT>(zb::max(autoBatchVertexThreshold, zb::U64{1024u})));
             }
             ImGui::EndDisabled();
 
@@ -705,11 +705,11 @@ int main()
             ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Use OOP", &useOOP))
-                populateParticles(static_cast<sf::base::SizeT>(numEntities));
+                populateParticles(static_cast<zb::SizeT>(numEntities));
 
 
             if (ImGui::Checkbox("Use SoA", &useSoA))
-                populateParticles(static_cast<sf::base::SizeT>(numEntities));
+                populateParticles(static_cast<zb::SizeT>(numEntities));
 
             ImGui::Checkbox("Unified SoA processing", &unifiedSoAProcessing);
             ImGui::Checkbox("Destroy/recreate particles", &destroyParticles);
@@ -717,17 +717,17 @@ int main()
             ImGui::Checkbox("Draw step", &drawStep);
 
             {
-                const sf::base::U64 step = 1u;
+                const zb::U64 step = 1u;
                 ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
             }
-            nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, nMaxWorkers);
+            nWorkers = zb::clamp(nWorkers, zb::U64{2u}, nMaxWorkers);
 
             ImGui::NewLine();
 
             ImGui::Text("Number of entities:");
 
             if (ImGui::InputInt("##InputInt", &numEntities))
-                populateParticles(static_cast<sf::base::SizeT>(numEntities));
+                populateParticles(static_cast<zb::SizeT>(numEntities));
 
             ImGui::NewLine();
 
@@ -737,7 +737,7 @@ int main()
                                  samples.data(),
                                  static_cast<int>(samples.capacity()),
                                  static_cast<int>(samples.insertionIndex()),
-                                 (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
+                                 (zb::toString(samples.getAverageAs<double>()) + unit).cStr(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});
@@ -761,20 +761,20 @@ int main()
         {
             window.clear();
 
-            const sf::Rect2f& textureRect = spriteTextureRects[0];
+            const za::Rect2f& textureRect = spriteTextureRects[0];
             const auto        origin      = textureRect.size / 2.f;
 
-            const auto nParticles = static_cast<sf::base::SizeT>(numEntities);
+            const auto nParticles = static_cast<zb::SizeT>(numEntities);
 
             const auto makeParticleSprite =
-                [&] [[gnu::always_inline, gnu::flatten]] (const sf::Vec2f position, const float scale, const float rotation)
+                [&] [[gnu::always_inline, gnu::flatten]] (const za::Vec2f position, const float scale, const float rotation)
 
             {
-                return sf::Sprite{
+                return za::Sprite{
                     .position    = position,
                     .scale       = {scale, scale},
                     .origin      = origin,
-                    .rotation    = sf::radians(rotation),
+                    .rotation    = za::radians(rotation),
                     .textureRect = textureRect,
                 };
             };
@@ -782,12 +782,12 @@ int main()
             // Iterates over non-OOP particles, hoisting the SoA/AoS branch outside the inner loop
             const auto forEachNonOOPParticle =
                 [&] [[gnu::always_inline,
-                      gnu::flatten]] (const sf::base::SizeT startIdx, const sf::base::SizeT endIdx, auto&& fn)
+                      gnu::flatten]] (const zb::SizeT startIdx, const zb::SizeT endIdx, auto&& fn)
 
             {
                 if (useSoA)
                 {
-                    for (sf::base::SizeT i = startIdx; i < endIdx; ++i)
+                    for (zb::SizeT i = startIdx; i < endIdx; ++i)
                         particlesSoA.withNth<0, 3, 7>(i,
                                                       [&] [[gnu::always_inline, gnu::flatten]] (const auto& position,
                                                                                                 const auto& scale,
@@ -797,7 +797,7 @@ int main()
                 }
                 else
                 {
-                    for (sf::base::SizeT i = startIdx; i < endIdx; ++i)
+                    for (zb::SizeT i = startIdx; i < endIdx; ++i)
                     {
                         const ParticleAoS& p = particlesAoS[i];
                         fn(makeParticleSprite(p.position, p.scale, p.rotation));
@@ -808,7 +808,7 @@ int main()
             if (useOOP)
             {
                 // OOP particles always draw directly to window (no batching/locked states)
-                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                for (zb::SizeT i = 0u; i < nParticles; ++i)
                     entities[i]->draw(textureAtlas.getTexture(), window);
             }
             else if (batchType == BatchType::Disabled)
@@ -816,7 +816,7 @@ int main()
                 // Use withLockedRenderStates to skip per-sprite RenderStates comparison
                 auto drawCtx = window.withLockedRenderStates({.texture = &textureAtlas.getTexture()});
 
-                forEachNonOOPParticle(0u, nParticles, [&] [[gnu::always_inline, gnu::flatten]] (const sf::Sprite& sprite) {
+                forEachNonOOPParticle(0u, nParticles, [&] [[gnu::always_inline, gnu::flatten]] (const za::Sprite& sprite) {
                     drawCtx.draw(sprite);
                 });
             }
@@ -826,7 +826,7 @@ int main()
                 {
                     batch.clear();
 
-                    forEachNonOOPParticle(0u, nParticles, [&] [[gnu::always_inline, gnu::flatten]] (const sf::Sprite& sprite) {
+                    forEachNonOOPParticle(0u, nParticles, [&] [[gnu::always_inline, gnu::flatten]] (const za::Sprite& sprite) {
                         batch.add(sprite);
                     });
 
@@ -846,13 +846,13 @@ int main()
                         batch.clear();
 
                     doInBatches(nParticles,
-                                [&](const sf::base::SizeT iBatch,
-                                    const sf::base::SizeT batchStartIdx,
-                                    const sf::base::SizeT batchEndIdx)
+                                [&](const zb::SizeT iBatch,
+                                    const zb::SizeT batchStartIdx,
+                                    const zb::SizeT batchEndIdx)
                     {
                         forEachNonOOPParticle(batchStartIdx,
                                               batchEndIdx,
-                                              [&] [[gnu::always_inline, gnu::flatten]] (const sf::Sprite& sprite)
+                                              [&] [[gnu::always_inline, gnu::flatten]] (const za::Sprite& sprite)
                         { batchesArray[iBatch].add(sprite); });
                     });
 
@@ -867,7 +867,7 @@ int main()
                 else if (batchType == BatchType::GPUStorage)
                 {
                     // Must reserve in advance as reserving is not thread-safe
-                    for (sf::base::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
+                    for (zb::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
                         gpuDrawableBatches[iBatch].reserveQuads(nParticles / nWorkers * 2u);
 
                     doMultithreadedDraw(gpuDrawableBatches);

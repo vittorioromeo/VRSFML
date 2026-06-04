@@ -1,17 +1,17 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseTextComparison.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GlyphMappedText.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GlyphMappedText.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/Texture.hpp"
 
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Builtin/Strlen.hpp"
+#include "ZancleBase/Builtin/Strlen.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ void ExampleTextComparison::imgui()
 
     if (ImGui::InputTextMultiline("Text", m_inputBuffer, sizeof(m_inputBuffer)))
     {
-        m_convertedStr = sf::Utf8String{m_inputBuffer, SFML_BASE_STRLEN(m_inputBuffer)};
+        m_convertedStr = za::Utf8String{m_inputBuffer, ZB_STRLEN(m_inputBuffer)};
 
         m_legacyText.setString(m_convertedStr);
         m_mappedText.setString(m_convertedStr);
@@ -71,35 +71,35 @@ void ExampleTextComparison::imgui()
 void ExampleTextComparison::draw()
 {
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {50.f, 50.f}, .string = "Legacy sf::Text:", .characterSize = 16},
+                        za::TextData{.position = {50.f, 50.f}, .string = "Legacy za::Text:", .characterSize = 16},
                         {.view = *m_deps.view});
 
     m_legacyText.draw(*m_deps.rtGame, {.view = *m_deps.view});
 
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {50.f, 250.f}, .string = "sf::GlyphMappedText:", .characterSize = 16},
+                        za::TextData{.position = {50.f, 250.f}, .string = "za::GlyphMappedText:", .characterSize = 16},
                         {.view = *m_deps.view});
 
     m_mappedText.draw(*m_deps.rtGame, {.view = *m_deps.view});
 
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {450.f, 50.f}, .string = "Legacy sf::TextData:", .characterSize = 16},
+                        za::TextData{.position = {450.f, 50.f}, .string = "Legacy za::TextData:", .characterSize = 16},
                         {.view = *m_deps.view});
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {450.f, 70.f}, .string = m_convertedStr, .characterSize = 30},
+                        za::TextData{.position = {450.f, 70.f}, .string = m_convertedStr, .characterSize = 30},
                         {.view = *m_deps.view});
 
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {450.f, 250.f}, .string = "sf::GlyphMappedTextData:", .characterSize = 16},
+                        za::TextData{.position = {450.f, 250.f}, .string = "za::GlyphMappedTextData:", .characterSize = 16},
                         {.view = *m_deps.view});
 
     m_deps.rtGame->draw(m_fontFace,
                         m_mapping,
-                        sf::GlyphMappedTextData{.position = {450.f, 270.f}, .string = m_convertedStr},
+                        za::GlyphMappedTextData{.position = {450.f, 270.f}, .string = m_convertedStr},
                         {
                             .view    = *m_deps.view,
                             .texture = &m_atlas.getTexture(),
@@ -107,14 +107,14 @@ void ExampleTextComparison::draw()
 
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {50.f, 560.f}, .string = "Legacy atlas:", .characterSize = 16},
+                        za::TextData{.position = {50.f, 560.f}, .string = "Legacy atlas:", .characterSize = 16},
                         {.view = *m_deps.view});
 
     m_deps.rtGame->draw(m_deps.font->getTexture(), {.position = {50.f, 580.f}, .scale = {0.75f, 0.75f}});
 
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{.position = {50.f, 700.f}, .string = "Mapped atlas:", .characterSize = 16},
+                        za::TextData{.position = {50.f, 700.f}, .string = "Mapped atlas:", .characterSize = 16},
                         {.view = *m_deps.view});
 
     m_deps.rtGame->draw(m_atlas.getTexture(), {.position = {50.f, 720.f}, .scale = {0.75f, 0.75f}});

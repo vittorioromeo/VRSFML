@@ -31,40 +31,40 @@
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Algorithm/AnyOf.hpp"
-#include "SFML/Base/Algorithm/Count.hpp"
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Ceil.hpp"
-#include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/AnyOf.hpp"
+#include "ZancleBase/Algorithm/Count.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Ceil.hpp"
+#include "ZancleBase/Math/Pow.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <climits>
 #include <cstdio>
@@ -72,8 +72,8 @@
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
                                const bool                          anyBubblePoppedByClicking,
-                               const sf::Vec2f                     mousePos,
-                               const sf::base::Optional<sf::Vec2f> clickPosition)
+                               const za::Vec2f                     mousePos,
+                               const zb::Optional<za::Vec2f> clickPosition)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
@@ -111,7 +111,7 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
     {
         if (playerLastCombo > 2)
         {
-            comboState.comboAccReward = static_cast<int>(sf::base::pow(static_cast<float>(comboState.comboNOthers), 1.25f));
+            comboState.comboAccReward = static_cast<int>(zb::pow(static_cast<float>(comboState.comboNOthers), 1.25f));
             comboState.comboAccStarReward = comboState.comboNStars;
         }
         else
@@ -138,8 +138,8 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
             {
                 earnedCoinParticles.back().startPosition += rngFast.getVec2f({-25.f, -25.f}, {25.f, 25.f});
 
-                const sf::Vec2f viewSize           = getCurrentGameViewSize();
-                const sf::Vec2f viewCenter         = getViewCenter();
+                const za::Vec2f viewSize           = getCurrentGameViewSize();
+                const za::Vec2f viewCenter         = getViewCenter();
                 sounds.coindelay.settings.position = {viewCenter.x - viewSize.x / 2.f + 25.f,
                                                       viewCenter.y - viewSize.y / 2.f + 25.f};
                 sounds.coindelay.settings.pitch    = 0.8f + static_cast<float>(comboState.iComboAccReward) * 0.04f;
@@ -165,7 +165,7 @@ void Main::gameLoopUpdateCombo(const float                         deltaTimeMs,
                                        .accelerationY = -0.002f,
                                        .opacity       = 1.f,
                                        .opacityDecay  = rngFast.getF(0.00025f, 0.002f),
-                                       .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                       .rotation      = rngFast.getF(0.f, zb::tau),
                                        .torque        = rngFast.getF(-0.002f, 0.002f)},
                           0.f,
                           ParticleType::Star);
@@ -185,7 +185,7 @@ void Main::gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
         handleBubbleCollision(deltaTimeMs, pt->bubbles[bubbleIdxI], pt->bubbles[bubbleIdxJ]);
     };
 
-    const sf::base::SizeT nWorkers = threadPool.getWorkerCount();
+    const zb::SizeT nWorkers = threadPool.getWorkerCount();
     sweepAndPrune->forEachUniqueIndexPair(nWorkers, threadPool, func);
 }
 
@@ -334,17 +334,17 @@ void Main::gameLoopUpdateScreenShake(const float deltaTimeMs)
     if (screenShakeTimer > 0.f)
     {
         screenShakeTimer -= deltaTimeMs;
-        screenShakeTimer = sf::base::max(0.f, screenShakeTimer);
+        screenShakeTimer = zb::max(0.f, screenShakeTimer);
     }
 
-    const bool anyShrineDying = sf::base::anyOf(pt->shrines.begin(), pt->shrines.end(), [](const Shrine& shrine) {
+    const bool anyShrineDying = zb::anyOf(pt->shrines.begin(), pt->shrines.end(), [](const Shrine& shrine) {
         return shrine.tcDeath.hasValue();
     });
 
     if (!anyShrineDying && screenShakeTimer <= 0.f && screenShakeAmount > 0.f)
     {
         screenShakeAmount -= deltaTimeMs * 0.05f;
-        screenShakeAmount = sf::base::max(0.f, screenShakeAmount);
+        screenShakeAmount = zb::max(0.f, screenShakeAmount);
     }
 }
 
@@ -365,11 +365,11 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
 
             p.rotation += p.torque * deltaTimeMs;
 
-            p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-            p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
+            p.opacity = zb::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+            p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
         }
 
-        sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
+        zb::vectorEraseIf(particleLikeVec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
     };
 
     updateParticleLike(particles);
@@ -378,7 +378,7 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     updateParticleLike(hudBottomParticles);
     updateParticleLike(textParticles);
 
-    sf::base::vectorEraseIf(spentCoinParticles,
+    zb::vectorEraseIf(spentCoinParticles,
                             [&](const auto& p)
     {
         return p.type == ParticleType::Coin &&
@@ -388,20 +388,20 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     for (auto& earnedCoinParticle : earnedCoinParticles)
         (void)earnedCoinParticle.progress.advance(deltaTimeMs * 0.0015f);
 
-    sf::base::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
+    zb::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePos)
+void Main::gameLoopUpdateSounds(const float deltaTimeMs, const za::Vec2f mousePos)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
 #ifndef BUBBLEBYTE_NO_AUDIO
     const float volumeMult = profile.playAudioInBackground || window.hasFocus() ? 1.f : 0.f;
 
-    listener.position = {sf::base::clamp(mousePos.x, 0.f, pt->getMapLimit()),
-                         sf::base::clamp(mousePos.y, 0.f, boundaries.y),
+    listener.position = {zb::clamp(mousePos.x, 0.f, pt->getMapLimit()),
+                         zb::clamp(mousePos.y, 0.f, boundaries.y),
                          0.f};
 
     listener.volume = profile.masterVolume / 100.f * volumeMult;
@@ -413,9 +413,9 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePo
 
     if (!bgmTransition.isDone())
     {
-        SFML_BASE_ASSERT(optNextMusic.hasValue());
+        ZB_ASSERT(optNextMusic.hasValue());
 
-        const auto processMusic = [&](sf::base::Optional<BGMBuffer>& optMusic, const float transitionMult)
+        const auto processMusic = [&](zb::Optional<BGMBuffer>& optMusic, const float transitionMult)
         {
             if (!optMusic.hasValue())
                 return;
@@ -438,7 +438,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePo
     }
     else
     {
-        const auto processMusic = [&](sf::base::Optional<BGMBuffer>& optMusic)
+        const auto processMusic = [&](zb::Optional<BGMBuffer>& optMusic)
         {
             if (!optMusic.hasValue())
                 return;
@@ -461,7 +461,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePo
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateTimePlayed(const sf::base::I64 elapsedUs)
+void Main::gameLoopUpdateTimePlayed(const zb::I64 elapsedUs)
 {
     playedUsAccumulator += elapsedUs;
 
@@ -474,7 +474,7 @@ void Main::gameLoopUpdateTimePlayed(const sf::base::I64 elapsedUs)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateAutosave(const sf::base::I64 elapsedUs)
+void Main::gameLoopUpdateAutosave(const zb::I64 elapsedUs)
 {
     if (inSpeedrunPlaythrough())
         return;
@@ -484,14 +484,14 @@ void Main::gameLoopUpdateAutosave(const sf::base::I64 elapsedUs)
     if (autosaveUsAccumulator >= 180'000'000) // 3 min
     {
         autosaveUsAccumulator = 0;
-        sf::base::printLn("Autosaving...");
+        zb::printLn("Autosaving...");
         saveMainPlaythroughToFile();
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, const sf::base::I64 elapsedUs)
+void Main::gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, const zb::I64 elapsedUs)
 {
     fixedBgSlideAccumulator += elapsedUs;
 
@@ -510,7 +510,7 @@ void Main::gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, con
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::View& gameBackgroundView)
+void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const za::View& gameBackgroundView)
 {
     static float backgroundScroll = 0.f;
     backgroundScroll += deltaTimeMs * 0.01f;
@@ -518,10 +518,10 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
     rtBackground.clear(outlineHueColor);
 
     const auto getAlpha = [&](const float mult)
-    { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
+    { return static_cast<zb::U8>(profile.backgroundOpacity / 100.f * mult); };
 
     ////////////////////////////////////////////////////////////
-    const sf::Texture* const chunkTx[] = {
+    const za::Texture* const chunkTx[] = {
         &txBackgroundChunk,            // Normal
         &txBackgroundChunkDesaturated, // Voodoo
         &txBackgroundChunk,            // Magic
@@ -533,10 +533,10 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
         &txBackgroundChunk,            // Victory
     };
 
-    static_assert(sf::base::getArraySize(chunkTx) == nShrineTypes + 1u);
+    static_assert(zb::getArraySize(chunkTx) == nShrineTypes + 1u);
 
     ////////////////////////////////////////////////////////////
-    const sf::Texture* const detailTx[] = {
+    const za::Texture* const detailTx[] = {
         &txClouds,          // Normal
         &txBgSwamp,         // Voodoo
         &txBgObservatory,   // Magic
@@ -548,16 +548,16 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
         &txClouds,          // Victory
     };
 
-    static_assert(sf::base::getArraySize(detailTx) == nShrineTypes + 1u);
+    static_assert(zb::getArraySize(detailTx) == nShrineTypes + 1u);
 
     ////////////////////////////////////////////////////////////
     const auto      idx = profile.selectedBackground;
-    const sf::Vec2f chunkScale{1.f, 1.f};
-    const sf::Vec2f detailScale{1.f, 1.f};
-    const sf::Vec2f chunkTextureRectSize  = gameBackgroundView.size.componentWiseDiv(chunkScale);
-    const sf::Vec2f detailTextureRectSize = gameBackgroundView.size.componentWiseDiv(detailScale);
+    const za::Vec2f chunkScale{1.f, 1.f};
+    const za::Vec2f detailScale{1.f, 1.f};
+    const za::Vec2f chunkTextureRectSize  = gameBackgroundView.size.componentWiseDiv(chunkScale);
+    const za::Vec2f detailTextureRectSize = gameBackgroundView.size.componentWiseDiv(detailScale);
 
-    targetBackgroundHue  = sf::radians(sf::degrees(backgroundHues[idx]).asRadians()).wrapUnsigned();
+    targetBackgroundHue  = za::radians(za::degrees(backgroundHues[idx]).asRadians()).wrapUnsigned();
     currentBackgroundHue = currentBackgroundHue.rotatedTowards(targetBackgroundHue, deltaTimeMs * 0.01f).wrapUnsigned();
     outlineHueColor      = colorBlueOutline.withRotatedHue(currentBackgroundHue.asDegrees());
 
@@ -581,7 +581,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                           .origin      = {0.f, 0.f},
                           .textureRect = {{playerInputState.actualScroll * 1.5f + backgroundScroll * 1.5f, 0.f},
                                           detailTextureRectSize},
-                          .color       = sf::Color::whiteWithAlpha(getAlpha(255.f * easeInOutSine(firstCloudTimer))),
+                          .color       = za::Color::whiteWithAlpha(getAlpha(255.f * easeInOutSine(firstCloudTimer))),
                       },
                       {.view = gameBackgroundView});
 
@@ -595,7 +595,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                           {
                               .textureRect = {{playerInputState.actualScroll * 2.f, 0.f},
                                               txBackgroundChunk.getSize().toVec2f() * 2.f},
-                              .color = sf::Color::whiteWithAlpha(getAlpha(200.f * easeInOutSine(firstDrawingTimer))),
+                              .color = za::Color::whiteWithAlpha(getAlpha(200.f * easeInOutSine(firstDrawingTimer))),
                           },
                           {.view = gameBackgroundView});
 
@@ -606,7 +606,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
                               .scale       = detailScale,
                               .textureRect = {{playerInputState.actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
                                               detailTextureRectSize},
-                              .color       = sf::Color::whiteWithAlpha(getAlpha(190.f)),
+                              .color       = za::Color::whiteWithAlpha(getAlpha(190.f)),
                           },
                           {.view = gameBackgroundView});
 
@@ -618,7 +618,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const sf::Vi
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMinimap)
 {
-    moneyText.setString("$" + sf::base::String(toStringWithSeparators(pt->money + spentMoney)));
+    moneyText.setString("$" + zb::String(toStringWithSeparators(pt->money + spentMoney)));
 
     moneyText.setOutlineColor(outlineHueColor);
     moneyText.scale  = {0.5f, 0.5f};
@@ -645,20 +645,20 @@ void Main::gameLoopUpdateSpentMoneyEffect(const float deltaTimeMs)
 
         spawnSpentCoinParticle(
             {.position      = moneyText.getGlobalCenterRight().addY(rngFast.getF(-12.f, 12.f)),
-             .velocity      = sf::Vec2f{3.f, 0.f},
+             .velocity      = za::Vec2f{3.f, 0.f},
              .scale         = 0.35f,
              .scaleDecay    = 0.f,
              .accelerationY = 0.f,
              .opacity       = 0.f,
              .opacityDecay  = -0.015f,
-             .rotation      = rngFast.getF(0.f, sf::base::tau),
+             .rotation      = rngFast.getF(0.f, zb::tau),
              .torque        = 0.f});
     }
 
     if (spentMoney > 5u)
     {
         const auto spentMoneyAsFloat = static_cast<float>(spentMoney);
-        spentMoney -= static_cast<MoneyType>(sf::base::max(1.f, sf::base::ceil(spentMoneyAsFloat / 10.f)));
+        spentMoney -= static_cast<MoneyType>(zb::max(1.f, zb::ceil(spentMoneyAsFloat / 10.f)));
     }
     else
     {
@@ -668,9 +668,9 @@ void Main::gameLoopUpdateSpentMoneyEffect(const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
-sf::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMinimap)
+za::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMinimap)
 {
-    sf::TextData td{};
+    za::TextData td{};
 
     if (!pt->comboPurchased)
         return td;
@@ -679,9 +679,9 @@ sf::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float 
 
     td = {
         .position         = {comboState.baseTextPosition.x, yBelowMinimap + 45.f},
-        .string           = "x" + sf::base::toString(comboState.combo + 1),
+        .string           = "x" + zb::toString(comboState.combo + 1),
         .characterSize    = 48u,
-        .fillColor        = sf::Color::White,
+        .fillColor        = za::Color::White,
         .outlineColor     = outlineHueColor,
         .outlineThickness = 3.f,
     };
@@ -694,7 +694,7 @@ sf::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float 
 
 
 ////////////////////////////////////////////////////////////
-sf::TextData Main::gameLoopUpdateBuffText(const sf::Rect2f& comboBounds)
+za::TextData Main::gameLoopUpdateBuffText(const za::Rect2f& comboBounds)
 {
     const char* devilBuffName = (isDevilcatHellsingedActive()) ? "Portal Storm (Scales With Bomb Spawn Chance)"
                                                                : "Explosive Downpour (Bomb Spawn Chance)";
@@ -716,17 +716,17 @@ sf::TextData Main::gameLoopUpdateBuffText(const sf::Rect2f& comboBounds)
         "N/A",                                         // Duck
     };
 
-    static_assert(sf::base::getArraySize(buffNames) == nCatTypes);
+    static_assert(zb::getArraySize(buffNames) == nCatTypes);
 
     char  buffStrBuffer[1024]{};
     SizeT writeIdx = 0u;
 
-    const auto countPendingDolls = [](const sf::base::Vector<HexSession>& sessions)
+    const auto countPendingDolls = [](const zb::Vector<HexSession>& sessions)
     {
         SizeT count = 0u;
 
         for (const HexSession& session : sessions)
-            count += sf::base::countIf(session.dolls.begin(), session.dolls.end(), [](const Doll& doll) {
+            count += zb::countIf(session.dolls.begin(), session.dolls.end(), [](const Doll& doll) {
                 return !doll.tcDeath.hasValue();
             });
 
@@ -782,7 +782,7 @@ sf::TextData Main::gameLoopUpdateBuffText(const sf::Rect2f& comboBounds)
         .scale            = {0.5f, 0.5f},
         .string           = buffStrBuffer,
         .characterSize    = 48u,
-        .fillColor        = sf::Color::White,
+        .fillColor        = za::Color::White,
         .outlineColor     = outlineHueColor,
         .outlineThickness = 3.f,
     };
@@ -853,7 +853,7 @@ void Main::gameLoopReminderSpendPPs()
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateDpsSampler(const sf::base::I64 elapsedUs)
+void Main::gameLoopUpdateDpsSampler(const zb::I64 elapsedUs)
 {
     moneyGainedUsAccumulator += elapsedUs;
     while (moneyGainedUsAccumulator >= 1'000'000)
@@ -863,6 +863,6 @@ void Main::gameLoopUpdateDpsSampler(const sf::base::I64 elapsedUs)
         samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
         moneyGainedLastSecond = 0u;
 
-        statHighestDPS(static_cast<sf::base::U64>(samplerMoneyPerSecond.getAverageAs<double>()));
+        statHighestDPS(static_cast<zb::U64>(samplerMoneyPerSecond.getAverageAs<double>()));
     }
 }

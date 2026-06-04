@@ -1,52 +1,52 @@
 #pragma once
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Export.hpp"
+#include "Zancle/Window/Export.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
-#include "SFML/System/String.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "Zancle/System/AnchorPointMixin.hpp"
+#include "Zancle/System/String.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vector2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
 class Cursor;
-} // namespace sf
+} // namespace za
 
 
-namespace sf::priv
+namespace za::priv
 {
 class WindowImpl;
-} // namespace sf::priv
+} // namespace za::priv
 
-namespace sf::Vulkan
+namespace za::Vulkan
 {
 struct VulkanSurfaceData;
-} // namespace sf::Vulkan
+} // namespace za::Vulkan
 
-namespace sf
+namespace za
 {
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API SDLWindowBase : public AnchorPointMixin<SDLWindowBase>
+class ZA_WINDOW_API SDLWindowBase : public AnchorPointMixin<SDLWindowBase>
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ public:
     /// this function in a loop to make sure that you process every
     /// pending event.
     /// \code
-    /// while (const sf::base::Optional event = window.pollEvent())
+    /// while (const zb::Optional event = window.pollEvent())
     /// {
     ///    // process event...
     /// }
@@ -143,7 +143,7 @@ public:
     /// dedicated to events handling: you want to make this thread sleep
     /// as long as no new event is received.
     /// \code
-    /// while (const sf::base::Optional event = window.waitEvent())
+    /// while (const zb::Optional event = window.waitEvent())
     /// {
     ///    // process event...
     /// }
@@ -177,14 +177,14 @@ public:
     /// time.
     ///
     /// Examples of callables:
-    /// - Lambda expressions: `[&](const sf::Event::KeyPressed) { ... }`
-    /// - Free functions: `void handler(const sf::Event::KeyPressed&) { ... }`
+    /// - Lambda expressions: `[&](const za::Event::KeyPressed) { ... }`
+    /// - Free functions: `void handler(const za::Event::KeyPressed&) { ... }`
     ///
     /// \code
     /// // Only provide handlers for concrete event types
     /// window.pollAndHandleEvents(
-    ///     [&](sf::Event::Closed) { /* handle event */ },
-    ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ }
+    ///     [&](za::Event::Closed) { /* handle event */ },
+    ///     [&](const za::Event::KeyPressed& keyPress) { /* handle event */ }
     /// );
     /// \endcode
     /// \code
@@ -192,12 +192,12 @@ public:
     /// window.pollAndHandleEvents(
     ///     [&](const auto& event)
     ///     {
-    ///         if constexpr (std::is_same_v<std::decay_t<decltype(event)>, sf::Event::Closed>)
+    ///         if constexpr (std::is_same_v<std::decay_t<decltype(event)>, za::Event::Closed>)
     ///         {
     ///             // Handle Closed
     ///             handleClosed();
     ///         }
-    ///         else if constexpr (std::is_same_v<std::decay_t<decltype(event)>, sf::Event::KeyPressed>)
+    ///         else if constexpr (std::is_same_v<std::decay_t<decltype(event)>, za::Event::KeyPressed>)
     ///         {
     ///             // Handle KeyPressed
     ///             handleKeyPressed(event);
@@ -213,8 +213,8 @@ public:
     /// \code
     /// // Provide handlers for concrete types and fall back to generic handler
     /// window.pollAndHandleEvents(
-    ///     [&](sf::Event::Closed) { /* handle event */ },
-    ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ },
+    ///     [&](za::Event::Closed) { /* handle event */ },
+    ///     [&](const za::Event::KeyPressed& keyPress) { /* handle event */ },
     ///     [&](const auto& event) { /* handle all other events */ }
     /// );
     /// \endcode
@@ -382,7 +382,7 @@ public:
     ///
     /// \param cursor Native system cursor type to display
     ///
-    /// \see `sf::Cursor::loadFromSystem`, `sf::Cursor::loadFromPixels`
+    /// \see `za::Cursor::loadFromSystem`, `za::Cursor::loadFromPixels`
     ///
     ////////////////////////////////////////////////////////////
     void setMouseCursor(const Cursor& cursor);
@@ -455,7 +455,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
     ///
-    /// The type of the returned handle is `sf::WindowHandle`,
+    /// The type of the returned handle is `za::WindowHandle`,
     /// which is a type alias to the handle type defined by the OS.
     /// You shouldn't need to use this function, unless you have
     /// very specific stuff to implement that SFML doesn't support,
@@ -509,20 +509,20 @@ private:
     Vector2u              m_size; //!< Current size of the window
 };
 
-} // namespace sf
+} // namespace za
 
-#include "SFML/Window/SDLWindowBase.inl"
+#include "Zancle/Window/SDLWindowBase.inl"
 
 ////////////////////////////////////////////////////////////
-/// \class sf::SDLWindowBase
+/// \class za::SDLWindowBase
 /// \ingroup window
 ///
-/// `sf::SDLWindowBase` serves as the base class for all Windows.
+/// `za::SDLWindowBase` serves as the base class for all Windows.
 ///
-/// A `sf::SDLWindowBase` can create its own new window, or be embedded into
+/// A `za::SDLWindowBase` can create its own new window, or be embedded into
 /// an already existing control using the `create(handle)` function.
 ///
-/// The `sf::SDLWindowBase` class provides a simple interface for manipulating
+/// The `za::SDLWindowBase` class provides a simple interface for manipulating
 /// the window: move, resize, show/hide, control mouse cursor, etc.
 /// It also provides event handling through its `pollEvent()` and `waitEvent()`
 /// functions.
@@ -530,16 +530,16 @@ private:
 /// Usage example:
 /// \code
 /// // Declare and create a new window
-/// sf::SDLWindowBase window({.size{800u, 600u}, .title = "SFML Window"});
+/// za::SDLWindowBase window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // The main loop - ends as soon as the window is closed
 /// while (true)
 /// {
 ///    // Event processing
-///    while (const sf::base::Optional event = window.pollEvent())
+///    while (const zb::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
-///        if (event->is<sf::Event::Closed>())
+///        if (event->is<za::Event::Closed>())
 ///        return 0; // break out of both loops
 ///    }
 ///

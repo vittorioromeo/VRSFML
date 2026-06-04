@@ -1,15 +1,15 @@
 #include "ShowcaseAudio.hpp"
 #include "ShowcaseExample.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
 
-#include "SFML/Base/Algorithm/Find.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Algorithm/Find.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 #include <cstdio>
 
@@ -23,7 +23,7 @@ void ExampleAudio::refreshPlaybackDevices()
 
     m_playbackDevices.clear();
 
-    for (const auto& playbackDeviceHandle : sf::AudioContext::getAvailablePlaybackDeviceHandles())
+    for (const auto& playbackDeviceHandle : za::AudioContext::getAvailablePlaybackDeviceHandles())
         m_playbackDevices.emplaceBack(playbackDeviceHandle);
 }
 
@@ -48,7 +48,7 @@ void ExampleAudio::imgui()
 
     ImGui::Text("Playback devices:");
 
-    sf::base::SizeT i = 0u;
+    zb::SizeT i = 0u;
     for (auto& playbackDevice : m_playbackDevices)
     {
         ImGui::Text("%s", playbackDevice.getName());
@@ -61,10 +61,10 @@ void ExampleAudio::imgui()
         std::snprintf(buttonLabel, sizeof(buttonLabel), "Play Sound##%zu", i);
         if (ImGui::Button(buttonLabel))
         {
-            auto* const it = sf::base::findIf( //
+            auto* const it = zb::findIf( //
                 m_activeSounds.begin(),
                 m_activeSounds.end(),
-                [](const sf::Sound& sound) { return !sound.isPlaying(); });
+                [](const za::Sound& sound) { return !sound.isPlaying(); });
 
             if (it != m_activeSounds.end())
             {
@@ -114,9 +114,9 @@ void ExampleAudio::imgui()
     if (ImGui::Button("Switch Music Source"))
     {
         if (m_useAlternativeMusicSource)
-            m_msBGMWizard = sf::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
+            m_msBGMWizard = za::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
         else
-            m_msBGMWizard = sf::MusicReader::openFromFile("resources/bgmwitch.mp3").value();
+            m_msBGMWizard = za::MusicReader::openFromFile("resources/bgmwitch.mp3").value();
 
         m_useAlternativeMusicSource = !m_useAlternativeMusicSource;
     }

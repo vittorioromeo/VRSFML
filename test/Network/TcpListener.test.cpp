@@ -1,32 +1,32 @@
-#include "SFML/Network/TcpListener.hpp"
+#include "Zancle/Network/TcpListener.hpp"
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
 
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/Socket.hpp"
-#include "SFML/Network/TcpSocket.hpp"
+#include "Zancle/Network/IpAddress.hpp"
+#include "Zancle/Network/Socket.hpp"
+#include "Zancle/Network/TcpSocket.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Network] sf::TcpListener")
+TEST_CASE("[Network] za::TcpListener")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::TcpListener));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::TcpListener));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::TcpListener));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::TcpListener));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::TcpListener));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::TcpListener));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::TcpListener));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::TcpListener));
     }
 
     SECTION("Factory: valid port")
     {
-        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ true);
+        auto listenerOpt = za::TcpListener::create(za::Socket::AnyPort, /* isBlocking */ true);
         REQUIRE(listenerOpt.hasValue());
 
         CHECK(listenerOpt->getLocalPort() != 0);
@@ -34,16 +34,16 @@ TEST_CASE("[Network] sf::TcpListener")
 
     SECTION("Factory: rejects broadcast address")
     {
-        CHECK(!sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ true, sf::IpAddress::Broadcast).hasValue());
+        CHECK(!za::TcpListener::create(za::Socket::AnyPort, /* isBlocking */ true, za::IpAddress::Broadcast).hasValue());
     }
 
     SECTION("accept() without a pending connection (non-blocking)")
     {
-        auto listenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+        auto listenerOpt = za::TcpListener::create(za::Socket::AnyPort, /* isBlocking */ false);
         REQUIRE(listenerOpt.hasValue());
 
         const auto result = listenerOpt->accept();
-        CHECK(result.status == sf::Socket::Status::NotReady);
+        CHECK(result.status == za::Socket::Status::NotReady);
         CHECK(!result.socket.hasValue());
     }
 }

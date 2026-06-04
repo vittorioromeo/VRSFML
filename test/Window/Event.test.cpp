@@ -1,28 +1,28 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Window/Event.hpp"
+#include "Zancle/Window/Event.hpp"
 
-#include "SFML/Window/Joystick.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/Sensor.hpp"
+#include "Zancle/Window/Joystick.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/Sensor.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Vec3.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Vec3.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsEmpty.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsEmpty.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace
@@ -30,27 +30,27 @@ namespace
 ////////////////////////////////////////////////////////////
 struct
 {
-    int operator()(sf::Event::Closed&) const
+    int operator()(za::Event::Closed&) const
     {
         return 0;
     }
 
-    int operator()(const sf::Event::Closed&) const
+    int operator()(const za::Event::Closed&) const
     {
         return 1;
     }
 
-    int operator()(sf::Event::Resized&) const
+    int operator()(za::Event::Resized&) const
     {
         return 2;
     }
 
-    int operator()(sf::Event::KeyPressed) const
+    int operator()(za::Event::KeyPressed) const
     {
         return 3;
     }
 
-    int operator()(sf::Event::FocusGained) const
+    int operator()(za::Event::FocusGained) const
     {
         return 4;
     }
@@ -64,68 +64,68 @@ struct
 
 } // namespace
 
-TEST_CASE("[Window] sf::Event")
+TEST_CASE("[Window] za::Event")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Event));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Event));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Event));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Event));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Event));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Event));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Event)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Event));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Event, sf::Event));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Event)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Event));
+        STATIC_CHECK(!ZB_IS_AGGREGATE(za::Event));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Event));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Event));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Event, za::Event));
     }
 
     SECTION("Construction")
     {
         SECTION("Template constructor")
         {
-            const sf::Event event = sf::Event::Resized{{1, 2}};
-            CHECK(event.is<sf::Event::Resized>());
-            CHECK(event.getIf<sf::Event::Resized>());
-            const auto& resized = *event.getIf<sf::Event::Resized>();
-            CHECK(resized.size == sf::Vec2u{1, 2});
+            const za::Event event = za::Event::Resized{{1, 2}};
+            CHECK(event.is<za::Event::Resized>());
+            CHECK(event.getIf<za::Event::Resized>());
+            const auto& resized = *event.getIf<za::Event::Resized>();
+            CHECK(resized.size == za::Vec2u{1, 2});
         }
     }
 
     SECTION("Assign all possible values")
     {
-        sf::Event event = sf::Event::Closed{};
-        CHECK(event.is<sf::Event::Closed>());
-        CHECK(event.getIf<sf::Event::Closed>());
+        za::Event event = za::Event::Closed{};
+        CHECK(event.is<za::Event::Closed>());
+        CHECK(event.getIf<za::Event::Closed>());
 
-        event = sf::Event::Resized{{1, 2}};
-        CHECK(event.is<sf::Event::Resized>());
-        CHECK(event.getIf<sf::Event::Resized>());
-        const auto& resized = *event.getIf<sf::Event::Resized>();
-        CHECK(resized.size == sf::Vec2u{1, 2});
+        event = za::Event::Resized{{1, 2}};
+        CHECK(event.is<za::Event::Resized>());
+        CHECK(event.getIf<za::Event::Resized>());
+        const auto& resized = *event.getIf<za::Event::Resized>();
+        CHECK(resized.size == za::Vec2u{1, 2});
 
-        event = sf::Event::FocusLost{};
-        CHECK(event.is<sf::Event::FocusLost>());
-        CHECK(event.getIf<sf::Event::FocusLost>());
+        event = za::Event::FocusLost{};
+        CHECK(event.is<za::Event::FocusLost>());
+        CHECK(event.getIf<za::Event::FocusLost>());
 
-        event = sf::Event::FocusGained{};
-        CHECK(event.is<sf::Event::FocusGained>());
-        CHECK(event.getIf<sf::Event::FocusGained>());
+        event = za::Event::FocusGained{};
+        CHECK(event.is<za::Event::FocusGained>());
+        CHECK(event.getIf<za::Event::FocusGained>());
 
-        event = sf::Event::TextEntered{123'456};
-        CHECK(event.is<sf::Event::TextEntered>());
-        CHECK(event.getIf<sf::Event::TextEntered>());
-        const auto& textEntered = *event.getIf<sf::Event::TextEntered>();
+        event = za::Event::TextEntered{123'456};
+        CHECK(event.is<za::Event::TextEntered>());
+        CHECK(event.getIf<za::Event::TextEntered>());
+        const auto& textEntered = *event.getIf<za::Event::TextEntered>();
         CHECK(textEntered.unicode == 123'456);
 
-        event = sf::Event::KeyPressed{sf::Keyboard::Key::C, sf::Keyboard::Scan::C, true, true, true, true, true, true, true};
-        CHECK(event.is<sf::Event::KeyPressed>());
-        CHECK(event.getIf<sf::Event::KeyPressed>());
-        const auto& keyPressed = *event.getIf<sf::Event::KeyPressed>();
-        CHECK(keyPressed.code == sf::Keyboard::Key::C);
-        CHECK(keyPressed.scancode == sf::Keyboard::Scan::C);
+        event = za::Event::KeyPressed{za::Keyboard::Key::C, za::Keyboard::Scan::C, true, true, true, true, true, true, true};
+        CHECK(event.is<za::Event::KeyPressed>());
+        CHECK(event.getIf<za::Event::KeyPressed>());
+        const auto& keyPressed = *event.getIf<za::Event::KeyPressed>();
+        CHECK(keyPressed.code == za::Keyboard::Key::C);
+        CHECK(keyPressed.scancode == za::Keyboard::Scan::C);
         CHECK(keyPressed.alt);
         CHECK(keyPressed.control);
         CHECK(keyPressed.shift);
@@ -134,12 +134,12 @@ TEST_CASE("[Window] sf::Event")
         CHECK(keyPressed.numLock);
         CHECK(keyPressed.scrollLock);
 
-        event = sf::Event::KeyReleased{sf::Keyboard::Key::D, sf::Keyboard::Scan::D, true, true, true, true, true, true, true};
-        CHECK(event.is<sf::Event::KeyReleased>());
-        CHECK(event.getIf<sf::Event::KeyReleased>());
-        const auto& keyReleased = *event.getIf<sf::Event::KeyReleased>();
-        CHECK(keyReleased.code == sf::Keyboard::Key::D);
-        CHECK(keyReleased.scancode == sf::Keyboard::Scan::D);
+        event = za::Event::KeyReleased{za::Keyboard::Key::D, za::Keyboard::Scan::D, true, true, true, true, true, true, true};
+        CHECK(event.is<za::Event::KeyReleased>());
+        CHECK(event.getIf<za::Event::KeyReleased>());
+        const auto& keyReleased = *event.getIf<za::Event::KeyReleased>();
+        CHECK(keyReleased.code == za::Keyboard::Key::D);
+        CHECK(keyReleased.scancode == za::Keyboard::Scan::D);
         CHECK(keyReleased.alt);
         CHECK(keyReleased.control);
         CHECK(keyReleased.shift);
@@ -148,236 +148,236 @@ TEST_CASE("[Window] sf::Event")
         CHECK(keyReleased.numLock);
         CHECK(keyReleased.scrollLock);
 
-        event = sf::Event::MouseWheelScrolled{sf::Mouse::Wheel::Horizontal, 3.14f, {4, 5}};
-        CHECK(event.is<sf::Event::MouseWheelScrolled>());
-        CHECK(event.getIf<sf::Event::MouseWheelScrolled>());
-        const auto& mouseWheelScrolled = *event.getIf<sf::Event::MouseWheelScrolled>();
-        CHECK(mouseWheelScrolled.wheel == sf::Mouse::Wheel::Horizontal);
+        event = za::Event::MouseWheelScrolled{za::Mouse::Wheel::Horizontal, 3.14f, {4, 5}};
+        CHECK(event.is<za::Event::MouseWheelScrolled>());
+        CHECK(event.getIf<za::Event::MouseWheelScrolled>());
+        const auto& mouseWheelScrolled = *event.getIf<za::Event::MouseWheelScrolled>();
+        CHECK(mouseWheelScrolled.wheel == za::Mouse::Wheel::Horizontal);
         CHECK(mouseWheelScrolled.delta == 3.14f);
-        CHECK(mouseWheelScrolled.position == sf::Vec2i{4, 5});
+        CHECK(mouseWheelScrolled.position == za::Vec2i{4, 5});
 
-        event = sf::Event::MouseButtonPressed{sf::Mouse::Button::Middle, {6, 7}};
-        CHECK(event.is<sf::Event::MouseButtonPressed>());
-        CHECK(event.getIf<sf::Event::MouseButtonPressed>());
-        const auto& mouseButtonPressed = *event.getIf<sf::Event::MouseButtonPressed>();
-        CHECK(mouseButtonPressed.button == sf::Mouse::Button::Middle);
-        CHECK(mouseButtonPressed.position == sf::Vec2i{6, 7});
+        event = za::Event::MouseButtonPressed{za::Mouse::Button::Middle, {6, 7}};
+        CHECK(event.is<za::Event::MouseButtonPressed>());
+        CHECK(event.getIf<za::Event::MouseButtonPressed>());
+        const auto& mouseButtonPressed = *event.getIf<za::Event::MouseButtonPressed>();
+        CHECK(mouseButtonPressed.button == za::Mouse::Button::Middle);
+        CHECK(mouseButtonPressed.position == za::Vec2i{6, 7});
 
-        event = sf::Event::MouseButtonReleased{sf::Mouse::Button::Extra1, {8, 9}};
-        CHECK(event.is<sf::Event::MouseButtonReleased>());
-        CHECK(event.getIf<sf::Event::MouseButtonReleased>());
-        const auto& mouseButtonReleased = *event.getIf<sf::Event::MouseButtonReleased>();
-        CHECK(mouseButtonReleased.button == sf::Mouse::Button::Extra1);
-        CHECK(mouseButtonReleased.position == sf::Vec2i{8, 9});
+        event = za::Event::MouseButtonReleased{za::Mouse::Button::Extra1, {8, 9}};
+        CHECK(event.is<za::Event::MouseButtonReleased>());
+        CHECK(event.getIf<za::Event::MouseButtonReleased>());
+        const auto& mouseButtonReleased = *event.getIf<za::Event::MouseButtonReleased>();
+        CHECK(mouseButtonReleased.button == za::Mouse::Button::Extra1);
+        CHECK(mouseButtonReleased.position == za::Vec2i{8, 9});
 
-        event = sf::Event::MouseMoved{{4, 2}};
-        CHECK(event.is<sf::Event::MouseMoved>());
-        CHECK(event.getIf<sf::Event::MouseMoved>());
-        const auto& mouseMoved = *event.getIf<sf::Event::MouseMoved>();
-        CHECK(mouseMoved.position == sf::Vec2i{4, 2});
+        event = za::Event::MouseMoved{{4, 2}};
+        CHECK(event.is<za::Event::MouseMoved>());
+        CHECK(event.getIf<za::Event::MouseMoved>());
+        const auto& mouseMoved = *event.getIf<za::Event::MouseMoved>();
+        CHECK(mouseMoved.position == za::Vec2i{4, 2});
 
-        event = sf::Event::MouseMovedRaw{{3, 7}};
-        CHECK(event.is<sf::Event::MouseMovedRaw>());
-        CHECK(event.getIf<sf::Event::MouseMovedRaw>());
-        const auto& mouseMovedRaw = *event.getIf<sf::Event::MouseMovedRaw>();
-        CHECK(mouseMovedRaw.delta == sf::Vec2i{3, 7});
+        event = za::Event::MouseMovedRaw{{3, 7}};
+        CHECK(event.is<za::Event::MouseMovedRaw>());
+        CHECK(event.getIf<za::Event::MouseMovedRaw>());
+        const auto& mouseMovedRaw = *event.getIf<za::Event::MouseMovedRaw>();
+        CHECK(mouseMovedRaw.delta == za::Vec2i{3, 7});
 
-        event = sf::Event::MouseEntered{};
-        CHECK(event.is<sf::Event::MouseEntered>());
-        CHECK(event.getIf<sf::Event::MouseEntered>());
+        event = za::Event::MouseEntered{};
+        CHECK(event.is<za::Event::MouseEntered>());
+        CHECK(event.getIf<za::Event::MouseEntered>());
 
-        event = sf::Event::MouseLeft{};
-        CHECK(event.is<sf::Event::MouseLeft>());
-        CHECK(event.getIf<sf::Event::MouseLeft>());
+        event = za::Event::MouseLeft{};
+        CHECK(event.is<za::Event::MouseLeft>());
+        CHECK(event.getIf<za::Event::MouseLeft>());
 
-        event = sf::Event::JoystickButtonPressed{100, 200};
-        CHECK(event.is<sf::Event::JoystickButtonPressed>());
-        CHECK(event.getIf<sf::Event::JoystickButtonPressed>());
-        const auto& joystickButtonPressed = *event.getIf<sf::Event::JoystickButtonPressed>();
+        event = za::Event::JoystickButtonPressed{100, 200};
+        CHECK(event.is<za::Event::JoystickButtonPressed>());
+        CHECK(event.getIf<za::Event::JoystickButtonPressed>());
+        const auto& joystickButtonPressed = *event.getIf<za::Event::JoystickButtonPressed>();
         CHECK(joystickButtonPressed.joystickId == 100);
         CHECK(joystickButtonPressed.button == 200);
 
-        event = sf::Event::JoystickButtonReleased{300, 400};
-        CHECK(event.is<sf::Event::JoystickButtonReleased>());
-        CHECK(event.getIf<sf::Event::JoystickButtonReleased>());
-        const auto& joystickButtonReleased = *event.getIf<sf::Event::JoystickButtonReleased>();
+        event = za::Event::JoystickButtonReleased{300, 400};
+        CHECK(event.is<za::Event::JoystickButtonReleased>());
+        CHECK(event.getIf<za::Event::JoystickButtonReleased>());
+        const auto& joystickButtonReleased = *event.getIf<za::Event::JoystickButtonReleased>();
         CHECK(joystickButtonReleased.joystickId == 300);
         CHECK(joystickButtonReleased.button == 400);
 
-        event = sf::Event::JoystickMoved{300, sf::Joystick::Axis::Z, 1.23f};
-        CHECK(event.is<sf::Event::JoystickMoved>());
-        CHECK(event.getIf<sf::Event::JoystickMoved>());
-        const auto& joystickMoved = *event.getIf<sf::Event::JoystickMoved>();
+        event = za::Event::JoystickMoved{300, za::Joystick::Axis::Z, 1.23f};
+        CHECK(event.is<za::Event::JoystickMoved>());
+        CHECK(event.getIf<za::Event::JoystickMoved>());
+        const auto& joystickMoved = *event.getIf<za::Event::JoystickMoved>();
         CHECK(joystickMoved.joystickId == 300);
-        CHECK(joystickMoved.axis == sf::Joystick::Axis::Z);
+        CHECK(joystickMoved.axis == za::Joystick::Axis::Z);
         CHECK(joystickMoved.position == 1.23f);
 
-        event = sf::Event::JoystickConnected{42};
-        CHECK(event.is<sf::Event::JoystickConnected>());
-        CHECK(event.getIf<sf::Event::JoystickConnected>());
-        const auto& joystickConnected = *event.getIf<sf::Event::JoystickConnected>();
+        event = za::Event::JoystickConnected{42};
+        CHECK(event.is<za::Event::JoystickConnected>());
+        CHECK(event.getIf<za::Event::JoystickConnected>());
+        const auto& joystickConnected = *event.getIf<za::Event::JoystickConnected>();
         CHECK(joystickConnected.joystickId == 42);
 
-        event = sf::Event::JoystickDisconnected{43};
-        CHECK(event.is<sf::Event::JoystickDisconnected>());
-        CHECK(event.getIf<sf::Event::JoystickDisconnected>());
-        const auto& joystickDisconnected = *event.getIf<sf::Event::JoystickDisconnected>();
+        event = za::Event::JoystickDisconnected{43};
+        CHECK(event.is<za::Event::JoystickDisconnected>());
+        CHECK(event.getIf<za::Event::JoystickDisconnected>());
+        const auto& joystickDisconnected = *event.getIf<za::Event::JoystickDisconnected>();
         CHECK(joystickDisconnected.joystickId == 43);
 
-        event = sf::Event::TouchBegan{99, {98, 97}, 0.f};
-        CHECK(event.is<sf::Event::TouchBegan>());
-        CHECK(event.getIf<sf::Event::TouchBegan>());
-        const auto& touchBegan = *event.getIf<sf::Event::TouchBegan>();
+        event = za::Event::TouchBegan{99, {98, 97}, 0.f};
+        CHECK(event.is<za::Event::TouchBegan>());
+        CHECK(event.getIf<za::Event::TouchBegan>());
+        const auto& touchBegan = *event.getIf<za::Event::TouchBegan>();
         CHECK(touchBegan.finger == 99);
-        CHECK(touchBegan.position == sf::Vec2i{98, 97});
+        CHECK(touchBegan.position == za::Vec2i{98, 97});
 
-        event = sf::Event::TouchMoved{96, {95, 94}, 0.f};
-        CHECK(event.is<sf::Event::TouchMoved>());
-        CHECK(event.getIf<sf::Event::TouchMoved>());
-        const auto& touchMoved = *event.getIf<sf::Event::TouchMoved>();
+        event = za::Event::TouchMoved{96, {95, 94}, 0.f};
+        CHECK(event.is<za::Event::TouchMoved>());
+        CHECK(event.getIf<za::Event::TouchMoved>());
+        const auto& touchMoved = *event.getIf<za::Event::TouchMoved>();
         CHECK(touchMoved.finger == 96);
-        CHECK(touchMoved.position == sf::Vec2i{95, 94});
+        CHECK(touchMoved.position == za::Vec2i{95, 94});
 
-        event = sf::Event::TouchEnded{93, {92, 91}, 0.f};
-        CHECK(event.is<sf::Event::TouchEnded>());
-        CHECK(event.getIf<sf::Event::TouchEnded>());
-        const auto& touchEnded = *event.getIf<sf::Event::TouchEnded>();
+        event = za::Event::TouchEnded{93, {92, 91}, 0.f};
+        CHECK(event.is<za::Event::TouchEnded>());
+        CHECK(event.getIf<za::Event::TouchEnded>());
+        const auto& touchEnded = *event.getIf<za::Event::TouchEnded>();
         CHECK(touchEnded.finger == 93);
-        CHECK(touchEnded.position == sf::Vec2i{92, 91});
+        CHECK(touchEnded.position == za::Vec2i{92, 91});
 
-        event = sf::Event::SensorChanged{sf::Sensor::Type::Gravity, {1.2f, 3.4f, 5.6f}};
-        CHECK(event.is<sf::Event::SensorChanged>());
-        CHECK(event.getIf<sf::Event::SensorChanged>());
-        const auto& sensorChanged = *event.getIf<sf::Event::SensorChanged>();
-        CHECK(sensorChanged.type == sf::Sensor::Type::Gravity);
-        CHECK(sensorChanged.value == sf::Vec3f(1.2f, 3.4f, 5.6f));
+        event = za::Event::SensorChanged{za::Sensor::Type::Gravity, {1.2f, 3.4f, 5.6f}};
+        CHECK(event.is<za::Event::SensorChanged>());
+        CHECK(event.getIf<za::Event::SensorChanged>());
+        const auto& sensorChanged = *event.getIf<za::Event::SensorChanged>();
+        CHECK(sensorChanged.type == za::Sensor::Type::Gravity);
+        CHECK(sensorChanged.value == za::Vec3f(1.2f, 3.4f, 5.6f));
     }
 
     SECTION("Subtypes")
     {
         // Empty structs
-        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::Closed));
-        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::FocusLost));
-        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::FocusGained));
-        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::MouseEntered));
-        STATIC_CHECK(SFML_BASE_IS_EMPTY(sf::Event::MouseLeft));
+        STATIC_CHECK(ZB_IS_EMPTY(za::Event::Closed));
+        STATIC_CHECK(ZB_IS_EMPTY(za::Event::FocusLost));
+        STATIC_CHECK(ZB_IS_EMPTY(za::Event::FocusGained));
+        STATIC_CHECK(ZB_IS_EMPTY(za::Event::MouseEntered));
+        STATIC_CHECK(ZB_IS_EMPTY(za::Event::MouseLeft));
 
         // Non-empty structs
-        const sf::Event::Resized resized{};
-        CHECK(resized.size == sf::Vec2u{});
+        const za::Event::Resized resized{};
+        CHECK(resized.size == za::Vec2u{});
 
-        const sf::Event::TextEntered textEntered;
+        const za::Event::TextEntered textEntered;
         CHECK(textEntered.unicode == 0);
 
-        const sf::Event::KeyPressed keyPressed;
-        CHECK(keyPressed.code == sf::Keyboard::Key{});
-        CHECK(keyPressed.scancode == sf::Keyboard::Scancode{});
+        const za::Event::KeyPressed keyPressed;
+        CHECK(keyPressed.code == za::Keyboard::Key{});
+        CHECK(keyPressed.scancode == za::Keyboard::Scancode{});
         CHECK(!keyPressed.alt);
         CHECK(!keyPressed.control);
         CHECK(!keyPressed.shift);
         CHECK(!keyPressed.system);
 
-        const sf::Event::KeyReleased keyReleased;
-        CHECK(keyReleased.code == sf::Keyboard::Key{});
-        CHECK(keyReleased.scancode == sf::Keyboard::Scancode{});
+        const za::Event::KeyReleased keyReleased;
+        CHECK(keyReleased.code == za::Keyboard::Key{});
+        CHECK(keyReleased.scancode == za::Keyboard::Scancode{});
         CHECK(!keyReleased.alt);
         CHECK(!keyReleased.control);
         CHECK(!keyReleased.shift);
         CHECK(!keyReleased.system);
 
-        const sf::Event::MouseWheelScrolled mouseWheelScrolled{};
-        CHECK(mouseWheelScrolled.wheel == sf::Mouse::Wheel{});
+        const za::Event::MouseWheelScrolled mouseWheelScrolled{};
+        CHECK(mouseWheelScrolled.wheel == za::Mouse::Wheel{});
         CHECK(mouseWheelScrolled.delta == 0);
-        CHECK(mouseWheelScrolled.position == sf::Vec2i{});
+        CHECK(mouseWheelScrolled.position == za::Vec2i{});
 
-        const sf::Event::MouseButtonPressed mouseButtonPressed{};
-        CHECK(mouseButtonPressed.button == sf::Mouse::Button{});
-        CHECK(mouseButtonPressed.position == sf::Vec2i{});
+        const za::Event::MouseButtonPressed mouseButtonPressed{};
+        CHECK(mouseButtonPressed.button == za::Mouse::Button{});
+        CHECK(mouseButtonPressed.position == za::Vec2i{});
 
-        const sf::Event::MouseButtonReleased mouseButtonReleased{};
-        CHECK(mouseButtonReleased.button == sf::Mouse::Button{});
-        CHECK(mouseButtonReleased.position == sf::Vec2i{});
+        const za::Event::MouseButtonReleased mouseButtonReleased{};
+        CHECK(mouseButtonReleased.button == za::Mouse::Button{});
+        CHECK(mouseButtonReleased.position == za::Vec2i{});
 
-        const sf::Event::MouseMoved mouseMoved{};
-        CHECK(mouseMoved.position == sf::Vec2i{});
+        const za::Event::MouseMoved mouseMoved{};
+        CHECK(mouseMoved.position == za::Vec2i{});
 
-        const sf::Event::MouseMovedRaw mouseMovedRaw{};
-        CHECK(mouseMovedRaw.delta == sf::Vec2i{});
+        const za::Event::MouseMovedRaw mouseMovedRaw{};
+        CHECK(mouseMovedRaw.delta == za::Vec2i{});
 
-        const sf::Event::JoystickButtonPressed joystickButtonPressed;
+        const za::Event::JoystickButtonPressed joystickButtonPressed;
         CHECK(joystickButtonPressed.joystickId == 0);
         CHECK(joystickButtonPressed.button == 0);
 
-        const sf::Event::JoystickButtonReleased joystickButtonReleased;
+        const za::Event::JoystickButtonReleased joystickButtonReleased;
         CHECK(joystickButtonReleased.joystickId == 0);
         CHECK(joystickButtonReleased.button == 0);
 
-        const sf::Event::JoystickMoved joystickMoved;
+        const za::Event::JoystickMoved joystickMoved;
         CHECK(joystickMoved.joystickId == 0);
-        CHECK(joystickMoved.axis == sf::Joystick::Axis{});
+        CHECK(joystickMoved.axis == za::Joystick::Axis{});
         CHECK(joystickMoved.position == 0);
 
-        const sf::Event::JoystickConnected joystickConnected;
+        const za::Event::JoystickConnected joystickConnected;
         CHECK(joystickConnected.joystickId == 0);
 
-        const sf::Event::JoystickDisconnected joystickDisconnected;
+        const za::Event::JoystickDisconnected joystickDisconnected;
         CHECK(joystickDisconnected.joystickId == 0);
 
-        const sf::Event::TouchBegan touchBegan{};
+        const za::Event::TouchBegan touchBegan{};
         CHECK(touchBegan.finger == 0);
-        CHECK(touchBegan.position == sf::Vec2i{});
+        CHECK(touchBegan.position == za::Vec2i{});
 
-        const sf::Event::TouchMoved touchMoved{};
+        const za::Event::TouchMoved touchMoved{};
         CHECK(touchMoved.finger == 0);
-        CHECK(touchMoved.position == sf::Vec2i{});
+        CHECK(touchMoved.position == za::Vec2i{});
 
-        const sf::Event::TouchEnded touchEnded{};
+        const za::Event::TouchEnded touchEnded{};
         CHECK(touchEnded.finger == 0);
-        CHECK(touchEnded.position == sf::Vec2i{});
+        CHECK(touchEnded.position == za::Vec2i{});
 
-        const sf::Event::SensorChanged sensorChanged{};
-        CHECK(sensorChanged.type == sf::Sensor::Type{});
-        CHECK(sensorChanged.value == sf::Vec3f());
+        const za::Event::SensorChanged sensorChanged{};
+        CHECK(sensorChanged.type == za::Sensor::Type{});
+        CHECK(sensorChanged.value == za::Vec3f());
     }
 
     SECTION("getIf()")
     {
-        sf::Event event      = sf::Event::MouseMoved{{4, 2}};
-        auto*     mouseMoved = event.getIf<sf::Event::MouseMoved>();
+        za::Event event      = za::Event::MouseMoved{{4, 2}};
+        auto*     mouseMoved = event.getIf<za::Event::MouseMoved>();
         REQUIRE(mouseMoved);
-        mouseMoved->position = sf::Vec2i(6, 9);
-        CHECK(mouseMoved->position == sf::Vec2i(6, 9));
+        mouseMoved->position = za::Vec2i(6, 9);
+        CHECK(mouseMoved->position == za::Vec2i(6, 9));
     }
 
     SECTION("visit()")
     {
         SECTION("Non-const")
         {
-            sf::Event closed = sf::Event::Closed{};
+            za::Event closed = za::Event::Closed{};
             CHECK(closed.visit(visitor) == 0);
 
-            sf::Event resized = sf::Event::Resized{};
+            za::Event resized = za::Event::Resized{};
             CHECK(resized.visit(visitor) == 2);
 
-            sf::Event keyPressed = sf::Event::KeyPressed{};
+            za::Event keyPressed = za::Event::KeyPressed{};
             CHECK(keyPressed.visit(visitor) == 3);
 
-            sf::Event focusLost = sf::Event::FocusLost{};
+            za::Event focusLost = za::Event::FocusLost{};
             CHECK(focusLost.visit(visitor) == 5);
         }
 
         SECTION("Const")
         {
-            const sf::Event closed = sf::Event::Closed{};
+            const za::Event closed = za::Event::Closed{};
             CHECK(closed.visit(visitor) == 1);
 
-            const sf::Event resized = sf::Event::Resized{};
+            const za::Event resized = za::Event::Resized{};
             CHECK(resized.visit(visitor) == 5); // Cannot use non-const reference callback
 
-            const sf::Event keyPressed = sf::Event::KeyPressed{};
+            const za::Event keyPressed = za::Event::KeyPressed{};
             CHECK(keyPressed.visit(visitor) == 3);
 
-            const sf::Event focusLost = sf::Event::FocusLost{};
+            const za::Event focusLost = za::Event::FocusLost{};
             CHECK(focusLost.visit(visitor) == 5);
         }
 
@@ -396,7 +396,7 @@ TEST_CASE("[Window] sf::Event")
                 return 100;
             };
 
-            const sf::Event closed = sf::Event::Closed{};
+            const za::Event closed = za::Event::Closed{};
             CHECK(closed.visit(moveOnlyVisitor) == 100);
         }
     }

@@ -1,76 +1,76 @@
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/CircleShape.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Optional.hpp"
 
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    auto window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
+    auto window = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
 
-    sf::ImGuiContext imGuiContext;
+    za::ImGuiContext imGuiContext;
 
-    const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
+    const za::CircleShape shape{{.fillColor = za::Color::Green, .radius = 100.f}};
 
     const float width     = 128.f;
     const float height    = 64.f;
     const float halfWidth = width / 2.f;
 
-    const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+    const za::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
-    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0}).value();
+    auto baseRenderTexture = za::RenderTexture::create(size, {.antiAliasingLevel = 0}).value();
 
-    auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = 4}).value();
+    auto leftInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = 4}).value();
 
-    const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
-                                        {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
-                                        {{0.f, height}, sf::Color::Red, {0.f, height}},
-                                        {{0.f, height}, sf::Color::Green, {0.f, height}},
-                                        {{halfWidth, 0.f}, sf::Color::Green, {halfWidth, 0.f}},
-                                        {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
+    const za::Vertex leftVertexArray[6]{{{0.f, 0.f}, za::Color::Red, {0.f, 0.f}},
+                                        {{halfWidth, 0.f}, za::Color::Red, {halfWidth, 0.f}},
+                                        {{0.f, height}, za::Color::Red, {0.f, height}},
+                                        {{0.f, height}, za::Color::Green, {0.f, height}},
+                                        {{halfWidth, 0.f}, za::Color::Green, {halfWidth, 0.f}},
+                                        {{halfWidth, height}, za::Color::Green, {halfWidth, height}}};
 
     leftInnerRT.clear();
 
-    auto image   = sf::Image::create(size, sf::Color::White).value();
-    auto texture = sf::Texture::loadFromImage(image).value();
+    auto image   = za::Image::create(size, za::Color::White).value();
+    auto texture = za::Texture::loadFromImage(image).value();
 
     leftInnerRT.draw(texture);
     leftInnerRT.display();
 
     baseRenderTexture.clear();
-    baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+    baseRenderTexture.draw(leftVertexArray, za::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
     baseRenderTexture.display();
 
-    sf::Clock deltaClock;
-    sf::Vec2i eventMousePosition;
+    za::Clock deltaClock;
+    za::Vec2i eventMousePosition;
 
     // TODO P0:
-    const auto modes = sf::VideoModeUtils::getFullscreenModes();
+    const auto modes = za::VideoModeUtils::getFullscreenModes();
     for (const auto& mode : modes)
-        sf::base::printLn("Fullscreen mode: {}x{}; {}bpp; {}x pixel density; {}Hz",
+        zb::printLn("Fullscreen mode: {}x{}; {}bpp; {}x pixel density; {}Hz",
                           mode.size.x,
                           mode.size.y,
                           mode.bitsPerPixel,
@@ -79,17 +79,17 @@ int main()
 
     while (true)
     {
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
 
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (const auto* eResized = event->getIf<sf::Event::Resized>())
-                sf::base::printLn("Resized event: {}, {}", eResized->size.x, eResized->size.y);
+            if (const auto* eResized = event->getIf<za::Event::Resized>())
+                zb::printLn("Resized event: {}, {}", eResized->size.x, eResized->size.y);
 
-            if (const auto* eMouseMoved = event->getIf<sf::Event::MouseMoved>())
+            if (const auto* eMouseMoved = event->getIf<za::Event::MouseMoved>())
                 eventMousePosition = eMouseMoved->position;
         }
 
@@ -99,10 +99,10 @@ int main()
 
         ImGui::Begin("Hello, world!");
 
-        const auto globalMousePosition = sf::Mouse::getPosition();
+        const auto globalMousePosition = za::Mouse::getPosition();
         ImGui::Text("Global mouse position: %d, %d", globalMousePosition.x, globalMousePosition.y);
 
-        const auto relativeMousePosition = sf::Mouse::getPosition(window);
+        const auto relativeMousePosition = za::Mouse::getPosition(window);
         ImGui::Text("Relative mouse position: %d, %d", relativeMousePosition.x, relativeMousePosition.y);
 
         ImGui::Text("Event mouse position: %d, %d", eventMousePosition.x, eventMousePosition.y);
@@ -114,7 +114,7 @@ int main()
             window.setSize({800u, 800u});
 
         if (ImGui::Button("Recreate Window"))
-            window = sf::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true})
+            window = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true})
                          .value(); // TODO P0: doesn't work on emscripten
 
         ImGui::Button("Look at this pretty button");

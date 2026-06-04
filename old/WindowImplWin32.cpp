@@ -1,26 +1,26 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/CursorImpl.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/Win32/WindowImplWin32.hpp"
-#include "SFML/Window/WindowBase.hpp"
-#include "SFML/Window/WindowImpl.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "Zancle/Window/CursorImpl.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/Win32/WindowImplWin32.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+#include "Zancle/Window/WindowImpl.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 
-#include "SFML/System/Err.hpp"
-#include "SFML/System/String.hpp"
-#include "SFML/System/Utf.hpp"
-#include "SFML/System/Win32/WindowsHeader.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/String.hpp"
+#include "Zancle/System/Utf.hpp"
+#include "Zancle/System/Win32/WindowsHeader.hpp"
 
 // dbt.h is lowercase here, as a cross-compile on linux with mingw-w64
 // expects lowercase, and a native compile on windows, whether via msvc
 // or mingw-w64 addresses files in a case insensitive manner.
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/TrivialVector.hpp"
 
 #include <_mingw_stat64.h>
 #include <dbt.h>
@@ -46,8 +46,8 @@ namespace
 {
 unsigned int               windowCount      = 0; // Windows owned by SFML
 unsigned int               handleCount      = 0; // All window handles
-const wchar_t*             className        = L"SFML_Window";
-sf::priv::WindowImplWin32* fullscreenWindow = nullptr;
+const wchar_t*             className        = L"ZA_Window";
+za::priv::WindowImplWin32* fullscreenWindow = nullptr;
 
 constexpr GUID guidDevinterfaceHid = {0x4d'1e'55'b2, 0xf1'6f, 0x11'cf, {0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30}};
 
@@ -80,7 +80,7 @@ void setProcessDpiAware()
             // by default when moving the window between monitors.
             if (setProcessDpiAwarenessFunc(ProcessSystemDpiAware) == E_INVALIDARG)
             {
-                sf::priv::err() << "Failed to set process DPI awareness";
+                za::priv::err() << "Failed to set process DPI awareness";
             }
             else
             {
@@ -103,7 +103,7 @@ void setProcessDpiAware()
         if (setProcessDPIAwareFunc)
         {
             if (!setProcessDPIAwareFunc())
-                sf::priv::err() << "Failed to set process DPI awareness";
+                za::priv::err() << "Failed to set process DPI awareness";
         }
 
         FreeLibrary(user32Dll);
@@ -151,10 +151,10 @@ void initRawMouse(HWND handle)
     const RAWINPUTDEVICE rawMouse{0x01, 0x02, 0, nullptr}; // HID usage: mouse device class, no flags, follow keyboard focus
 
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse)) != TRUE)
-        sf::priv::err() << "Failed to initialize raw mouse input";
+        za::priv::err() << "Failed to initialize raw mouse input";
 
     if (RegisterTouchWindow(handle, TWF_WANTPALM) != TRUE)
-        sf::priv::err() << "Failed to initialize touch input";
+        za::priv::err() << "Failed to initialize touch input";
 
     using SetWindowFeedbackSettingType = BOOL(WINAPI*)(HWND, FEEDBACK_TYPE, DWORD, UINT, PVOID);
 
@@ -167,7 +167,7 @@ void initRawMouse(HWND handle)
             if (pSetWindowFeedbackSetting(handle, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(ULONG), &contactVisualization) !=
                 TRUE)
             {
-                sf::priv::err() << "Failed to disable touch gestures";
+                za::priv::err() << "Failed to disable touch gestures";
             }
         }
     }
@@ -177,8 +177,8 @@ void initRawMouse(HWND handle)
 struct TouchInfo
 {
     unsigned int     normalizedIndex;
-    sf::Vector2i     position;
-    sf::WindowHandle handle;
+    za::Vector2i     position;
+    za::WindowHandle handle;
 };
 
 bool                                  touchIndexPool[10]{};
@@ -187,7 +187,7 @@ std::unordered_map<UINT32, TouchInfo> touchMap;
 } // namespace
 
 
-namespace sf::priv::InputImpl
+namespace za::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int finger)
@@ -229,9 +229,9 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& window)
     return {};
 }
 
-} // namespace sf::priv::InputImpl
+} // namespace za::priv::InputImpl
 
-namespace sf::priv
+namespace za::priv
 {
 ////////////////////////////////////////////////////////////
 WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
@@ -965,7 +965,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     {
                         // Convert the UTF-16 surrogate pair to a single UTF-32 value
                         char16_t utf16[]{m_surrogate, static_cast<char16_t>(character)};
-                        sf::Utf16::toUtf32(utf16, utf16 + 2, &character);
+                        za::Utf16::toUtf32(utf16, utf16 + 2, &character);
                         m_surrogate = 0;
                     }
 
@@ -1141,7 +1141,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     POINT pt = {pointerInfo.ptPixelLocation.x, pointerInfo.ptPixelLocation.y};
                     ScreenToClient(m_handle, &pt);
 
-                    const sf::Vector2i touchPos{pt.x, pt.y};
+                    const za::Vector2i touchPos{pt.x, pt.y};
 
                     // Get normalized index
                     const auto findFirstNormalizedIndex = [&]
@@ -1150,7 +1150,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                             if (!touchIndexPool[i])
                                 return static_cast<int>(i);
 
-                        sf::priv::err() << "No available touch index\n";
+                        za::priv::err() << "No available touch index\n";
                         return -1;
                     };
 
@@ -1158,7 +1158,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     {
                         case WM_POINTERDOWN:
                         {
-                            SFML_BASE_ASSERT(!touchMap.contains(pointerId));
+                            ZB_ASSERT(!touchMap.contains(pointerId));
 
                             const int normalizedIndex = findFirstNormalizedIndex();
                             if (normalizedIndex == -1)
@@ -1169,26 +1169,26 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                             touchIndexPool[normalizedIndex] = true;
                             touchMap.emplace(pointerId, TouchInfo{fingerIdx, touchPos, m_handle});
 
-                            pushEvent(sf::Event::TouchBegan{fingerIdx, touchPos});
+                            pushEvent(za::Event::TouchBegan{fingerIdx, touchPos});
                             break;
                         }
                         case WM_POINTERUPDATE:
                         {
-                            SFML_BASE_ASSERT(touchMap.contains(pointerId));
+                            ZB_ASSERT(touchMap.contains(pointerId));
                             const auto [fingerIdx, pos, handle] = touchMap[pointerId];
 
-                            pushEvent(sf::Event::TouchMoved{fingerIdx, touchPos});
+                            pushEvent(za::Event::TouchMoved{fingerIdx, touchPos});
                             break;
                         }
                         case WM_POINTERUP:
                         {
-                            SFML_BASE_ASSERT(touchMap.contains(pointerId));
+                            ZB_ASSERT(touchMap.contains(pointerId));
                             const auto [fingerIdx, pos, handle] = touchMap[pointerId];
 
                             touchIndexPool[fingerIdx] = false;
                             touchMap.erase(pointerId);
 
-                            pushEvent(sf::Event::TouchEnded{fingerIdx, touchPos});
+                            pushEvent(za::Event::TouchEnded{fingerIdx, touchPos});
                             break;
                         }
                     }
@@ -1482,4 +1482,4 @@ LRESULT CALLBACK WindowImplWin32::globalOnEvent(HWND handle, UINT message, WPARA
     return DefWindowProcW(handle, message, wParam, lParam);
 }
 
-} // namespace sf::priv
+} // namespace za::priv

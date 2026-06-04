@@ -1,0 +1,27 @@
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "Zancle/System/SuspendAwareClock.hpp"
+
+#include <ctime>
+
+
+namespace za
+{
+
+SuspendAwareClock::time_point SuspendAwareClock::now() noexcept
+{
+    ::timespec ts{};
+#ifdef CLOCK_BOOTTIME
+    clock_gettime(CLOCK_BOOTTIME, &ts);
+#else
+    #error "CLOCK_BOOTTIME is essential for SuspendAwareClock to work"
+#endif // CLOCK_BOOTTIME
+    return time_point(std::chrono::seconds(ts.tv_sec) + std::chrono::nanoseconds(ts.tv_nsec));
+}
+
+} // namespace za

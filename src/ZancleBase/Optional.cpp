@@ -1,0 +1,39 @@
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "ZancleBase/Optional.hpp"
+
+#include "Zancle/Config.hpp" // IWYU pragma: keep
+
+#include "ZancleBase/StackTrace.hpp"
+
+#include <cstdio>
+
+#if !defined(ZA_SYSTEM_EMSCRIPTEN) && defined(__EXCEPTIONS)
+    #define ZB_OPTIONAL_USE_EXCEPTIONS
+#endif
+
+#ifndef ZB_OPTIONAL_USE_EXCEPTIONS
+    #include "ZancleBase/Abort.hpp"
+#endif
+
+namespace zb::priv
+{
+////////////////////////////////////////////////////////////
+void throwIfNotEngaged()
+{
+    std::puts("\n[[SFML OPTIONAL FAILURE]]: not engaged!");
+    printStackTrace();
+
+#ifdef ZB_OPTIONAL_USE_EXCEPTIONS
+    throw BadOptionalAccess{};
+#else
+    base::abort();
+#endif
+}
+
+} // namespace zb::priv

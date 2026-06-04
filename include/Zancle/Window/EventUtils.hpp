@@ -1,0 +1,53 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "Zancle/Window/Export.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace za
+{
+class Event;
+} // namespace za
+
+
+////////////////////////////////////////////////////////////
+/// \brief Event handling utilities
+///
+////////////////////////////////////////////////////////////
+namespace za::EventUtils
+{
+////////////////////////////////////////////////////////////
+/// \brief Check if the event is `Event::Closed` or an escape key press
+///
+/// Convenience helper for the common "exit on close or
+/// Escape" pattern. Returns `true` if the event is either
+/// `za::Event::Closed` or `za::Event::KeyPressed` with
+/// `code == za::Keyboard::Key::Escape`.
+///
+/// \param event Event to inspect
+///
+/// \return `true` if the event matches, `false` otherwise
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] ZA_WINDOW_API bool isClosedOrEscapeKeyPressed(const Event& event);
+
+} // namespace za::EventUtils
+
+////////////////////////////////////////////////////////////
+/// \namespace za::EventUtils
+/// \ingroup window
+///
+/// Small collection of free helpers built on top of
+/// `za::Event` for the most common event-loop patterns.
+///
+/// \see `za::Event`
+///
+////////////////////////////////////////////////////////////

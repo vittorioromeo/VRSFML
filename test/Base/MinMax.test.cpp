@@ -1,6 +1,6 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/MinMax.hpp"
+#include "ZancleBase/MinMax.hpp"
 
 
 TEST_CASE("[Base] Base/MinMax.hpp")
@@ -10,12 +10,12 @@ TEST_CASE("[Base] Base/MinMax.hpp")
         const int a = 10;
         const int b = -10;
 
-        CHECK(&sf::base::min(a, b) == &b);
-        CHECK(&sf::base::max(a, b) == &a);
+        CHECK(&zb::min(a, b) == &b);
+        CHECK(&zb::max(a, b) == &a);
 
         const int c = 10;
 
-        CHECK(&sf::base::min(a, c) == &a);
-        CHECK(&sf::base::max(a, c) == &a);
+        CHECK(&zb::min(a, c) == &a);
+        CHECK(&zb::max(a, c) == &a);
     }
 }

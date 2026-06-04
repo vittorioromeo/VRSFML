@@ -4,32 +4,32 @@
 #include "ExampleUtils/SfexCoroutine.hpp"
 #include "ExampleUtils/SfexYield.hpp"
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextUtils.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TextUtils.hpp"
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
-#include "SFML/Window/EventUtils.hpp"
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/String.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f worldSize{800.f, 600.f};
+constexpr za::Vec2f worldSize{800.f, 600.f};
 
 
 ////////////////////////////////////////////////////////////
@@ -48,13 +48,13 @@ struct World
     ////////////////////////////////////////////////////////////
     // dialogue box state
     const char*      speaker = "";
-    sf::base::String text;
+    zb::String text;
     bool             boxVisible = false;
 
     ////////////////////////////////////////////////////////////
     // character state
-    sf::Vec2f heroPos;
-    sf::Vec2f villainPos;
+    za::Vec2f heroPos;
+    za::Vec2f villainPos;
     bool      charactersVisible = false;
 
 
@@ -82,7 +82,7 @@ struct Cutscene : sfex::Coroutine
     // persistent "locals"
     int       paceIdx = 0;
     float     t       = 0.f;
-    sf::Vec2f paceStartPos;
+    za::Vec2f paceStartPos;
 
 
     ////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ struct Cutscene : sfex::Coroutine
 
             while (t < 1.f) // smoothly move by 100px per step
             {
-                t                  = sf::base::min(t + world.dt * 3.f, 1.f);
+                t                  = zb::min(t + world.dt * 3.f, 1.f);
                 world.villainPos.x = paceStartPos.x - 100.f * t;
 
                 SFEX_CO_YIELD(NextFrame{});
@@ -135,7 +135,7 @@ struct Cutscene : sfex::Coroutine
 
         while (t < 1.f)
         {
-            t               = sf::base::min(t + world.dt * 3.f, 1.f);
+            t               = zb::min(t + world.dt * 3.f, 1.f);
             world.heroPos.x = paceStartPos.x - 60.f * t;
 
             SFEX_CO_YIELD(NextFrame{});
@@ -159,9 +159,9 @@ struct Cutscene : sfex::Coroutine
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    auto window = sf::RenderWindow::create(
+    auto window = za::RenderWindow::create(
                       {
                           .size      = worldSize.toVec2u(),
                           .title     = "SFEX Coroutine Dialogue",
@@ -170,7 +170,7 @@ int main()
                       })
                       .value();
 
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     World    world;
     Cutscene scene;
@@ -178,14 +178,14 @@ int main()
     float waitTimer = 0.f;
     float restartIn = 0.f; // small pause between cutscene loops
 
-    sf::Clock frameClock;
+    za::Clock frameClock;
 
     while (true)
     {
         // -- event phase --
 
-        while (const sf::base::Optional event = window.pollEvent())
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+        while (const zb::Optional event = window.pollEvent())
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
         // -- update phase --
@@ -205,7 +205,7 @@ int main()
         }
         else if (waitTimer > 0.f)
         {
-            waitTimer = sf::base::max(waitTimer - world.dt, 0.f);
+            waitTimer = zb::max(waitTimer - world.dt, 0.f);
         }
         else
         {
@@ -221,44 +221,44 @@ int main()
 
         if (world.charactersVisible)
         {
-            window.draw(sf::CircleShapeData{
+            window.draw(za::CircleShapeData{
                 .position         = world.heroPos,
                 .origin           = {32.f, 32.f},
                 .fillColor        = {120u, 220u, 255u},
-                .outlineColor     = sf::Color::White,
+                .outlineColor     = za::Color::White,
                 .outlineThickness = 2.f,
                 .radius           = 32.f,
             });
 
             window.draw(font,
-                        sf::TextUtils::anchored(font,
-                                                sf::TextData{
+                        za::TextUtils::anchored(font,
+                                                za::TextData{
                                                     .position         = world.heroPos.addY(-48.f),
                                                     .string           = "Hero",
                                                     .characterSize    = 19u,
                                                     .fillColor        = {180u, 220u, 255u},
-                                                    .outlineColor     = sf::Color::Black,
+                                                    .outlineColor     = za::Color::Black,
                                                     .outlineThickness = 1.f,
                                                 },
                                                 {0.5f, 0.5f}));
 
-            window.draw(sf::CircleShapeData{
+            window.draw(za::CircleShapeData{
                 .position         = world.villainPos,
                 .origin           = {32.f, 32.f},
                 .fillColor        = {255u, 100u, 100u},
-                .outlineColor     = sf::Color::White,
+                .outlineColor     = za::Color::White,
                 .outlineThickness = 2.f,
                 .radius           = 32.f,
             });
 
             window.draw(font,
-                        sf::TextUtils::anchored(font,
-                                                sf::TextData{
+                        za::TextUtils::anchored(font,
+                                                za::TextData{
                                                     .position         = world.villainPos.addY(-48.f),
                                                     .string           = "Villain",
                                                     .characterSize    = 19u,
                                                     .fillColor        = {255u, 180u, 180u},
-                                                    .outlineColor     = sf::Color::Black,
+                                                    .outlineColor     = za::Color::Black,
                                                     .outlineThickness = 1.f,
                                                 },
                                                 {0.5f, 0.5f}));
@@ -266,10 +266,10 @@ int main()
 
         if (world.boxVisible)
         {
-            constexpr sf::Vec2f boxPos  = {40.f, worldSize.y - 180.f};
-            constexpr sf::Vec2f boxSize = {worldSize.x - 80.f, 140.f};
+            constexpr za::Vec2f boxPos  = {40.f, worldSize.y - 180.f};
+            constexpr za::Vec2f boxSize = {worldSize.x - 80.f, 140.f};
 
-            window.draw(sf::RectangleShapeData{
+            window.draw(za::RectangleShapeData{
                 .position         = boxPos,
                 .fillColor        = {20u, 30u, 60u},
                 .outlineColor     = {180u, 220u, 255u},
@@ -278,23 +278,23 @@ int main()
             });
 
             window.draw(font,
-                        sf::TextData{
-                            .position         = boxPos + sf::Vec2f{12.f, -28.f},
+                        za::TextData{
+                            .position         = boxPos + za::Vec2f{12.f, -28.f},
                             .string           = world.speaker,
                             .characterSize    = 18u,
                             .fillColor        = {255u, 240u, 120u},
-                            .outlineColor     = sf::Color::Black,
+                            .outlineColor     = za::Color::Black,
                             .outlineThickness = 2.f,
                             .bold             = true,
                         });
 
             window.draw(font,
-                        sf::TextData{
-                            .position         = boxPos + sf::Vec2f{16.f, 16.f},
+                        za::TextData{
+                            .position         = boxPos + za::Vec2f{16.f, 16.f},
                             .string           = world.text,
                             .characterSize    = 22u,
-                            .fillColor        = sf::Color::White,
-                            .outlineColor     = sf::Color::Black,
+                            .fillColor        = za::Color::White,
+                            .outlineColor     = za::Color::Black,
                             .outlineThickness = 1.f,
                         });
         }

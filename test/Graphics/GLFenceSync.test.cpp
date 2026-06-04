@@ -1,28 +1,28 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/GLUtils/GLFenceSync.hpp"
+#include "Zancle/GLUtils/GLFenceSync.hpp"
 
-#include "SFML/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
 
-#include "SFML/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 
-#include "SFML/GLUtils/FenceUtils.hpp"
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/Glad.hpp"
+#include "Zancle/GLUtils/FenceUtils.hpp"
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
 
 namespace
 {
-using Fence = sf::priv::GLFenceSync;
+using Fence = za::priv::GLFenceSync;
 
 
 ////////////////////////////////////////////////////////////
@@ -34,16 +34,16 @@ void drainGLCommandQueue()
 } // namespace
 
 
-TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplayTests))
+TEST_CASE("[GLUtils] za::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!sf::base::isCopyConstructible<Fence>);
-        STATIC_CHECK(!sf::base::isCopyAssignable<Fence>);
-        STATIC_CHECK(sf::base::isNoThrowMoveConstructible<Fence>);
-        STATIC_CHECK(sf::base::isNoThrowMoveAssignable<Fence>);
+        STATIC_CHECK(!zb::isCopyConstructible<Fence>);
+        STATIC_CHECK(!zb::isCopyAssignable<Fence>);
+        STATIC_CHECK(zb::isNoThrowMoveConstructible<Fence>);
+        STATIC_CHECK(zb::isNoThrowMoveAssignable<Fence>);
     }
 
     SECTION("Default-constructed state has no native fence")
@@ -61,13 +61,13 @@ TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplay
         fence.reset();
         CHECK(!fence);
 
-        sf::priv::deleteFenceIfNeeded(fence);
+        za::priv::deleteFenceIfNeeded(fence);
         CHECK(!fence);
     }
 
     SECTION("makeFence returns an owning fence")
     {
-        Fence fence = sf::priv::makeFence();
+        Fence fence = za::priv::makeFence();
         CHECK(fence.hasValue());
         CHECK(static_cast<bool>(fence));
         CHECK(fence.getNativeHandle() != nullptr);
@@ -75,30 +75,30 @@ TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplay
 
     SECTION("deleteFenceIfNeeded consumes the fence and is idempotent")
     {
-        Fence fence = sf::priv::makeFence();
+        Fence fence = za::priv::makeFence();
         REQUIRE(static_cast<bool>(fence));
 
-        sf::priv::deleteFenceIfNeeded(fence);
+        za::priv::deleteFenceIfNeeded(fence);
         CHECK(!fence);
 
-        sf::priv::deleteFenceIfNeeded(fence);
+        za::priv::deleteFenceIfNeeded(fence);
         CHECK(!fence);
     }
 
     SECTION("waitOnFence on an empty fence is a no-op")
     {
         Fence fence;
-        sf::priv::waitOnFence(fence);
+        za::priv::waitOnFence(fence);
         CHECK(!fence);
     }
 
     SECTION("waitOnFence consumes a signaled fence")
     {
-        Fence fence = sf::priv::makeFence();
+        Fence fence = za::priv::makeFence();
         REQUIRE(static_cast<bool>(fence));
 
         drainGLCommandQueue();
-        sf::priv::waitOnFence(fence);
+        za::priv::waitOnFence(fence);
 
         CHECK(!fence);
     }
@@ -106,52 +106,52 @@ TEST_CASE("[GLUtils] sf::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplay
     SECTION("tryWaitOnFence returns true for an empty fence")
     {
         Fence fence;
-        CHECK(sf::priv::tryWaitOnFence(fence));
+        CHECK(za::priv::tryWaitOnFence(fence));
         CHECK(!fence);
     }
 
     SECTION("tryWaitOnFence consumes a signaled fence")
     {
-        Fence fence = sf::priv::makeFence();
+        Fence fence = za::priv::makeFence();
         REQUIRE(static_cast<bool>(fence));
 
         drainGLCommandQueue();
-        CHECK(sf::priv::tryWaitOnFence(fence));
+        CHECK(za::priv::tryWaitOnFence(fence));
         CHECK(!fence);
     }
 
     SECTION("Move construction transfers ownership")
     {
-        Fence source = sf::priv::makeFence();
+        Fence source = za::priv::makeFence();
         REQUIRE(static_cast<bool>(source));
 
         const void* const originalHandle = source.getNativeHandle();
-        Fence             dest{SFML_BASE_MOVE(source)};
+        Fence             dest{ZB_MOVE(source)};
 
         CHECK(!source);
         CHECK(static_cast<bool>(dest));
         CHECK(dest.getNativeHandle() == originalHandle);
 
-        sf::priv::deleteFenceIfNeeded(dest);
+        za::priv::deleteFenceIfNeeded(dest);
     }
 
     SECTION("Move assignment transfers ownership and clears the source")
     {
-        Fence source = sf::priv::makeFence();
-        Fence dest   = sf::priv::makeFence();
+        Fence source = za::priv::makeFence();
+        Fence dest   = za::priv::makeFence();
 
         REQUIRE(static_cast<bool>(source));
         REQUIRE(static_cast<bool>(dest));
 
         const void* const sourceHandle = source.getNativeHandle();
-        dest                           = SFML_BASE_MOVE(source);
+        dest                           = ZB_MOVE(source);
 
         CHECK(!source);
         CHECK(static_cast<bool>(dest));
         CHECK(dest.getNativeHandle() == sourceHandle);
 
-        sf::priv::deleteFenceIfNeeded(dest);
+        za::priv::deleteFenceIfNeeded(dest);
     }
 }
 
-#endif // !SFML_OPENGL_ES
+#endif // !ZA_OPENGL_ES

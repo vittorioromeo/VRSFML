@@ -12,24 +12,24 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/NinePatchUtils.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/FloatMax.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/FloatMax.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -46,17 +46,17 @@ static_assert(sizeof(unsigned int) <= sizeof(ImTextureID), "ImTextureID is not l
 }
 
 void drawNinePatchInImGui(ImDrawList&            drawList,
-                          const sf::Texture&     texture,
-                          const sf::Vec2f        position,
-                          const sf::Vec2f        size,
-                          const sf::Rect2f       textureRect,
+                          const za::Texture&     texture,
+                          const za::Vec2f        position,
+                          const za::Vec2f        size,
+                          const za::Rect2f       textureRect,
                           const NinePatchBorders borders,
                           const ImU32            color)
 {
     if (size.x <= 0.f || size.y <= 0.f)
         return;
 
-    const sf::Rect2f sourceRect = textureRect == sf::Rect2f{} ? texture.getRect() : textureRect;
+    const za::Rect2f sourceRect = textureRect == za::Rect2f{} ? texture.getRect() : textureRect;
 
     if (sourceRect.size.x <= 0.f || sourceRect.size.y <= 0.f)
         return;
@@ -70,14 +70,14 @@ void drawNinePatchInImGui(ImDrawList&            drawList,
     const auto dstPosX = makeNinePatchPositions(position.x, dstX);
     const auto dstPosY = makeNinePatchPositions(position.y, dstY);
 
-    const sf::Vec2f   textureSize = texture.getSize().toVec2f();
+    const za::Vec2f   textureSize = texture.getSize().toVec2f();
     const ImTextureID textureID   = toImTextureIDUiRuntime(texture.getNativeHandle());
 
     drawList.PushClipRectFullScreen();
 
-    for (sf::base::SizeT iy = 0; iy < 3u; ++iy)
+    for (zb::SizeT iy = 0; iy < 3u; ++iy)
     {
-        for (sf::base::SizeT ix = 0; ix < 3u; ++ix)
+        for (zb::SizeT ix = 0; ix < 3u; ++ix)
         {
             if (srcX[ix] <= 0.f || srcY[iy] <= 0.f || dstX[ix] <= 0.f || dstY[iy] <= 0.f)
                 continue;
@@ -154,7 +154,7 @@ struct ImGuiStyleScales
 } // namespace
 
 ////////////////////////////////////////////////////////////
-void Main::uiDraw(const sf::Vec2f mousePos)
+void Main::uiDraw(const za::Vec2f mousePos)
 {
     ImGuiStyle& style = ImGui::GetStyle();
 
@@ -201,8 +201,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     style.Colors[ImGuiCol_WindowBg]     = ImVec4(0.f, 0.f, 0.f, 0.65f);
     style.Colors[ImGuiCol_PopupBg]      = ImVec4(0.96f, 0.98f, 1.00f, 0.97f);
     style.Colors[ImGuiCol_Border]       = colorBlueOutline.toVec4<ImVec4>();
-    style.Colors[ImGuiCol_Text]         = sf::Color{50u, 84u, 135u};
-    style.Colors[ImGuiCol_TextDisabled] = sf::Color{50u, 84u, 135u}.withLightness(0.35f).withSaturation(0.25f);
+    style.Colors[ImGuiCol_Text]         = za::Color{50u, 84u, 135u};
+    style.Colors[ImGuiCol_TextDisabled] = za::Color{50u, 84u, 135u}.withLightness(0.35f).withSaturation(0.25f);
 
     style.Colors[ImGuiCol_FrameBg]        = ImVec4(0.82f, 0.88f, 0.96f, 0.85f);
     style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.72f, 0.82f, 0.95f, 0.95f);
@@ -234,7 +234,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     const auto      resolution       = getResolution();
     const float     deltaTime        = ImGui::GetIO().DeltaTime;
     const ImVec2    imguiMousePos    = ImGui::GetMousePos();
-    const sf::Vec2f windowMousePos{imguiMousePos.x, imguiMousePos.y};
+    const za::Vec2f windowMousePos{imguiMousePos.x, imguiMousePos.y};
 
     constexpr float uiMenuAutoHideDelaySeconds = 1.25f;
     constexpr float uiMenuRevealDuration       = 0.7f;
@@ -257,8 +257,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     if (!uiState.debugHideUI)
         uiDrawMinimapZoomButtons();
 
-    const sf::Vec2f  uiOpenWindowPos = uiGetWindowPos();
-    const sf::Rect2f gameViewBounds  = getViewportPixelBounds(gameView, resolution);
+    const za::Vec2f  uiOpenWindowPos = uiGetWindowPos();
+    const za::Rect2f gameViewBounds  = getViewportPixelBounds(gameView, resolution);
     const float      gameViewRightX  = gameViewBounds.position.x + gameViewBounds.size.x;
     const float playableRightScreenX = gameView.worldToScreen({pt->getMapLimit(), gameView.center.y}, resolution).x;
     const bool  uiMenuDoesNotCoverPlayableSpace = uiOpenWindowPos.x >= gameViewRightX ||
@@ -268,7 +268,7 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     const float hotspotHeight = uiState.uiMenuLastDrawSize.y > 1.f ? uiState.uiMenuLastDrawSize.y
                                                                    : uiGetMaxWindowHeight() * newScalingFactor;
 
-    const sf::Rect2f menuHoverHotspot{
+    const za::Rect2f menuHoverHotspot{
         {resolution.x - uiMenuHotspotWidth * newScalingFactor, uiOpenWindowPos.y},
         {uiMenuHotspotWidth * newScalingFactor, hotspotHeight},
     };
@@ -283,22 +283,22 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     }
     else if (menuHoverHotspot.contains(windowMousePos) ||
              (uiState.uiMenuLastDrawSize.x > 1.f && uiState.uiMenuLastDrawSize.y > 1.f &&
-              sf::Rect2f{uiState.uiMenuLastDrawPos, uiState.uiMenuLastDrawSize}.contains(windowMousePos)))
+              za::Rect2f{uiState.uiMenuLastDrawPos, uiState.uiMenuLastDrawSize}.contains(windowMousePos)))
     {
         uiState.uiMenuHideTimer = uiMenuAutoHideDelaySeconds;
     }
     else
     {
-        uiState.uiMenuHideTimer = sf::base::clamp(uiState.uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
+        uiState.uiMenuHideTimer = zb::clamp(uiState.uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
     }
 
     const float uiMenuRevealTarget = uiState.uiMenuHideTimer > 0.f ? 1.f : 0.f;
     const float uiMenuRevealStep   = uiMenuRevealDuration > 0.f ? deltaTime / uiMenuRevealDuration : 1.f;
 
     if (uiState.uiMenuRevealT < uiMenuRevealTarget)
-        uiState.uiMenuRevealT = sf::base::clamp(uiState.uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
+        uiState.uiMenuRevealT = zb::clamp(uiState.uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
     else if (uiState.uiMenuRevealT > uiMenuRevealTarget)
-        uiState.uiMenuRevealT = sf::base::clamp(uiState.uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
+        uiState.uiMenuRevealT = zb::clamp(uiState.uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
 
     const float  uiMenuRevealEased = easeInOutBack(uiState.uiMenuRevealT);
     const float  uiMenuDrawX       = menuHiddenX + (uiOpenWindowPos.x - menuHiddenX) * uiMenuRevealEased;
@@ -322,9 +322,9 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     (void)col_top;
     (void)col_bot;
 
-    cpuCloudUiDrawableBatch.add(sf::RectangleShapeData{
+    cpuCloudUiDrawableBatch.add(za::RectangleShapeData{
         .position  = p_min,
-        .fillColor = sf::Color::White,
+        .fillColor = za::Color::White,
         .size      = p_max - p_min,
     });
 
@@ -356,8 +356,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
     if (!ImGui::GetIO().WantCaptureMouse && particleCullingBoundaries.isInside(mousePos))
         uiMakeShrineOrCatTooltip(mousePos);
 
-    const sf::Vec2f windowDrawPos  = ImGui::GetWindowPos();
-    const sf::Vec2f windowDrawSize = ImGui::GetWindowSize();
+    const za::Vec2f windowDrawPos  = ImGui::GetWindowPos();
+    const za::Vec2f windowDrawSize = ImGui::GetWindowSize();
 
     uiState.uiMenuLastDrawPos  = windowDrawPos;
     uiState.uiMenuLastDrawSize = windowDrawSize;
@@ -370,8 +370,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
             drawNinePatchInImGui(*draw_list,
                                  txFrame,
-                                 windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
-                                 windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+                                 windowDrawPos - za::Vec2f{offset, offset} + za::Vec2f{2.f, 1.f},
+                                 windowDrawSize + za::Vec2f{offset * 2.f, offset * 2.f} - za::Vec2f{3.f, 3.f},
                                  txFrame.getRect(),
                                  NinePatchBorders::all(64.f),
                                  IM_COL32_WHITE);
@@ -382,8 +382,8 @@ void Main::uiDraw(const sf::Vec2f mousePos)
 
             drawNinePatchInImGui(*draw_list,
                                  txFrameTiny,
-                                 windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{2.f, 1.f},
-                                 windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{3.f, 3.f},
+                                 windowDrawPos - za::Vec2f{offset, offset} + za::Vec2f{2.f, 1.f},
+                                 windowDrawSize + za::Vec2f{offset * 2.f, offset * 2.f} - za::Vec2f{3.f, 3.f},
                                  txFrameTiny.getRect(),
                                  NinePatchBorders::all(18.f),
                                  IM_COL32_WHITE);
@@ -408,19 +408,19 @@ void Main::uiDraw(const sf::Vec2f mousePos)
             const ImVec2 winPos  = ImGui::GetWindowPos();
             const ImVec2 winSize = ImGui::GetWindowSize();
 
-            const sf::Vec2f pMin{winPos.x - 8.f, winPos.y - 8.f};
-            const sf::Vec2f pMax{winPos.x + winSize.x + 8.f, winPos.y + winSize.y + 8.f};
+            const za::Vec2f pMin{winPos.x - 8.f, winPos.y - 8.f};
+            const za::Vec2f pMax{winPos.x + winSize.x + 8.f, winPos.y + winSize.y + 8.f};
 
-            const auto tintColor = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(opacity * 255.f));
+            const auto tintColor = za::Color::whiteWithAlpha(static_cast<zb::U8>(opacity * 255.f));
 
-            cpuCloudUiDrawableBatch.add(sf::RectangleShapeData{
+            cpuCloudUiDrawableBatch.add(za::RectangleShapeData{
                 .position  = pMin,
                 .fillColor = tintColor,
                 .size      = pMax - pMin,
             });
 
-            const int xSteps = sf::base::clamp(static_cast<int>((pMax.x - pMin.x) / 28.f), 3, 24);
-            const int ySteps = sf::base::clamp(static_cast<int>((pMax.y - pMin.y) / 28.f), 3, 24);
+            const int xSteps = zb::clamp(static_cast<int>((pMax.x - pMin.x) / 28.f), 3, 24);
+            const int ySteps = zb::clamp(static_cast<int>((pMax.y - pMin.y) / 28.f), 3, 24);
 
             drawCloudFrame({
                 .time              = shaderTime,
@@ -482,7 +482,7 @@ void Main::uiDpsMeter()
 
     uiSetFontScale(0.75f);
 
-    static thread_local sf::base::Vector<float> sampleBuffer(60);
+    static thread_local zb::Vector<float> sampleBuffer(60);
     samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
 
     const auto average = static_cast<MoneyType>(samplerMoneyPerSecond.getAverageAs<double>());
@@ -496,19 +496,19 @@ void Main::uiDpsMeter()
                      0,
                      avgBuffer,
                      0.f,
-                     SFML_BASE_FLOAT_MAX,
+                     ZB_FLOAT_MAX,
                      ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
 
-    const auto windowDrawPos  = sf::Vec2f(ImGui::GetWindowPos());
-    const auto windowDrawSize = sf::Vec2f(ImGui::GetWindowSize());
+    const auto windowDrawPos  = za::Vec2f(ImGui::GetWindowPos());
+    const auto windowDrawSize = za::Vec2f(ImGui::GetWindowSize());
 
     {
         const float offset = -2.f * profile.uiScale;
 
         drawNinePatchInImGui(*drawList,
                              txFrameTiny,
-                             windowDrawPos - sf::Vec2f{offset, offset} + sf::Vec2f{1.f, 1.f},
-                             windowDrawSize + sf::Vec2f{offset * 2.f, offset * 2.f} - sf::Vec2f{1.f, 3.f},
+                             windowDrawPos - za::Vec2f{offset, offset} + za::Vec2f{1.f, 1.f},
+                             windowDrawSize + za::Vec2f{offset * 2.f, offset * 2.f} - za::Vec2f{1.f, 3.f},
                              txFrameTiny.getRect(),
                              NinePatchBorders::all(18.f),
                              IM_COL32_WHITE);
@@ -546,7 +546,7 @@ void Main::uiSpeedrunning()
 
     if (pt->speedrunStartTime.hasValue())
     {
-        const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::Clock::now() - *(pt->speedrunStartTime));
+        const auto [hours, mins, secs, millis] = formatSpeedrunTime(za::Clock::now() - *(pt->speedrunStartTime));
         ImGui::Text("%02llu:%02llu:%02llu:%03llu", hours, mins, secs, millis);
     }
     else
@@ -567,7 +567,7 @@ void Main::uiSpeedrunning()
         }
         else
         {
-            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::microseconds(static_cast<sf::base::I64>(split)));
+            const auto [hours, mins, secs, millis] = formatSpeedrunTime(za::microseconds(static_cast<zb::I64>(split)));
             ImGui::TextColored(textColorUnlocked, "%s: %02llu:%02llu:%02llu:%03llu", title, hours, mins, secs, millis);
         }
     };

@@ -4,9 +4,9 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -28,14 +28,14 @@ struct ComboState
     Countdown accComboStarDelay;      // Combo reward star spawns rate
     int       iComboAccStarReward{0}; // Index of spawned star in combo reward (used for pitch)
 
-    sf::Vec2f       baseTextPosition; // Anchor for combo/buff HUD text (mirrors money text origin)
+    za::Vec2f       baseTextPosition; // Anchor for combo/buff HUD text (mirrors money text origin)
     TextShakeEffect comboTextShakeEffect;
 
     int       cursorComboLastShown{0};   // Last value rendered by cursor combo text (preserved while it fades out)
     float     cursorComboAlpha{0.f};     // Alpha used by cursor combo text/bar across the same frame
-    sf::Color cursorComboOutlineColor{}; // Outline color computed by cursor combo text, reused by the bar
+    za::Color cursorComboOutlineColor{}; // Outline color computed by cursor combo text, reused by the bar
 
-    explicit ComboState(const sf::Vec2f moneyTextPosition) : baseTextPosition{moneyTextPosition}
+    explicit ComboState(const za::Vec2f moneyTextPosition) : baseTextPosition{moneyTextPosition}
     {
     }
 };

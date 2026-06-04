@@ -1,6 +1,6 @@
 # all source files
 set(SRC SoundEffects.cpp)
-if(SFML_OS_IOS)
+if(ZA_OS_IOS)
     set(RESOURCES
         resources/doodle_pop.ogg
         resources/text-background.png
@@ -9,7 +9,7 @@ if(SFML_OS_IOS)
 endif()
 
 # define the sound_effects target
-sfml_add_example(sound_effects GUI_APP
+zancle_add_example(sound_effects GUI_APP
                  SOURCES ${SRC}
                  BUNDLE_RESOURCES ${RESOURCES}
-                 DEPENDS SFML::Audio SFML::Graphics)
+                 DEPENDS Zancle::Audio Zancle::Graphics)

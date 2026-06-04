@@ -33,10 +33,10 @@ if(TARGET box2d)
     set_target_properties(box2d PROPERTIES UNITY_BUILD OFF)
 
     # add flags required for emscripten support (e.g. pthread)
-    sfml_apply_emscripten_options(box2d)
+    zancle_apply_emscripten_options(box2d)
 endif()
 
 # define the imgui_physics target
-sfml_add_example(imgui_physics GUI_APP
+zancle_add_example(imgui_physics GUI_APP
                  SOURCES ${SRC}
-                 DEPENDS SFML::Graphics SFML::ImGui ImGui::ImGui box2d)
+                 DEPENDS Zancle::Graphics Zancle::ImGui ImGui::ImGui box2d)

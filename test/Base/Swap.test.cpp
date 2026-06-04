@@ -1,8 +1,8 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Swap.hpp"
+#include "ZancleBase/Swap.hpp"
 
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
@@ -99,28 +99,28 @@ TEST_CASE("[Base] Base/Swap.hpp")
     {
         int a = 10;
         int b = 20;
-        sf::base::genericSwap(a, b);
+        zb::genericSwap(a, b);
         CHECK(a == 20);
         CHECK(b == 10);
 
-        sf::base::Vector<int> v1{1, 2};
-        sf::base::Vector<int> v2{3, 4, 5};
-        sf::base::genericSwap(v1, v2);
-        CHECK((v1 == sf::base::Vector<int>{3, 4, 5}));
-        CHECK((v2 == sf::base::Vector<int>{1, 2}));
+        zb::Vector<int> v1{1, 2};
+        zb::Vector<int> v2{3, 4, 5};
+        zb::genericSwap(v1, v2);
+        CHECK((v1 == zb::Vector<int>{3, 4, 5}));
+        CHECK((v2 == zb::Vector<int>{1, 2}));
     }
 
     SECTION("IterSwap")
     {
         int values[] = {10, 20, 30, 40};
-        sf::base::iterSwap(values, values + 2); // Swap values[0] and values[2]
+        zb::iterSwap(values, values + 2); // Swap values[0] and values[2]
         CHECK(values[0] == 30);
         CHECK(values[1] == 20);
         CHECK(values[2] == 10);
         CHECK(values[3] == 40);
 
-        sf::base::Vector<int> v{5, 15, 25};
-        sf::base::iterSwap(v.begin(), v.begin() + 1);
+        zb::Vector<int> v{5, 15, 25};
+        zb::iterSwap(v.begin(), v.begin() + 1);
         CHECK(v[0] == 15);
         CHECK(v[1] == 5);
         CHECK(v[2] == 25);
@@ -132,7 +132,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         int arr2[] = {10, 20, 30, 40, 50};
 
         // Swap the first 3 elements
-        auto* resultIter = sf::base::swapRanges(arr1, arr1 + 3, arr2);
+        auto* resultIter = zb::swapRanges(arr1, arr1 + 3, arr2);
 
         CHECK(resultIter == arr2 + 3);
 
@@ -148,16 +148,16 @@ TEST_CASE("[Base] Base/Swap.hpp")
         CHECK(arr2[3] == 40); // Unchanged
         CHECK(arr2[4] == 50); // Unchanged
 
-        sf::base::Vector<int> v1{100, 200, 300, 400};
-        sf::base::Vector<int> v2{500, 600, 700, 800};
+        zb::Vector<int> v1{100, 200, 300, 400};
+        zb::Vector<int> v2{500, 600, 700, 800};
 
         // Swap the middle 2 elements
-        resultIter = sf::base::swapRanges(v1.begin() + 1, v1.begin() + 3, v2.begin() + 1);
+        resultIter = zb::swapRanges(v1.begin() + 1, v1.begin() + 3, v2.begin() + 1);
 
         CHECK((resultIter == (v2.begin() + 3)));
 
-        CHECK((v1 == sf::base::Vector<int>{100, 600, 700, 400}));
-        CHECK((v2 == sf::base::Vector<int>{500, 200, 300, 800}));
+        CHECK((v1 == zb::Vector<int>{100, 600, 700, 400}));
+        CHECK((v2 == zb::Vector<int>{500, 200, 300, 800}));
     }
 
     SECTION("Member swap")
@@ -165,7 +165,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         TestMemberSwap a;
         TestMemberSwap b;
 
-        sf::base::genericSwap(a, b);
+        zb::genericSwap(a, b);
 
         CHECK(a.swapped == 1);
         CHECK(b.swapped == 2);
@@ -176,7 +176,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         TestHiddenFriend a;
         TestHiddenFriend b;
 
-        sf::base::genericSwap(a, b);
+        zb::genericSwap(a, b);
 
         CHECK(a.swapped == 1);
         CHECK(b.swapped == 2);
@@ -211,7 +211,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
 
         // If the Poison Pill succeeds, `HasCustomSwap` gracefully evaluates to false,
         // bypasses the 999-assigning template entirely, and manually swaps them!
-        sf::base::genericSwap(a, b);
+        zb::genericSwap(a, b);
 
         CHECK(a.value == 20);
         CHECK(b.value == 10);
@@ -227,7 +227,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         MoveOnlySwappable b{200};
 
         // Ensures `static_cast<T&&>` is correctly applied in the fallback
-        sf::base::genericSwap(a, b);
+        zb::genericSwap(a, b);
 
         CHECK(a.value == 200);
         CHECK(b.value == 100);
@@ -239,7 +239,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         int arr2[3] = {4, 5, 6};
 
         // Proves the `T (&a)[N]` overload correctly triggers
-        sf::base::genericSwap(arr1, arr2);
+        zb::genericSwap(arr1, arr2);
 
         CHECK(arr1[0] == 4);
         CHECK(arr1[1] == 5);
@@ -256,7 +256,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         int arr2[2][2] = {{5, 6}, {7, 8}};
 
         // Proves the array overload safely recurses into itself!
-        sf::base::genericSwap(arr1, arr2);
+        zb::genericSwap(arr1, arr2);
 
         CHECK(arr1[0][0] == 5);
         CHECK(arr1[0][1] == 6);

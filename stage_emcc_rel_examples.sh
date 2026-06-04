@@ -88,7 +88,7 @@ for example in "${examples[@]}"; do
     # Generate a minimal canvas-only embed wrapper for iframing into other
     # pages (e.g. the VRSFML landing page). It loads the same `<example>.js`
     # as the regular page, so no extra build / link step is required.
-    sed "s|@SFML_EMBED_JS@|${example}.js|g" "${EMBED_TEMPLATE}" \
+    sed "s|@ZA_EMBED_JS@|${example}.js|g" "${EMBED_TEMPLATE}" \
         > "${target_dir}/${example}_embed.html"
 
     copied=$((copied + 1))

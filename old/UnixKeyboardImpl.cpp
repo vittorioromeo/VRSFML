@@ -1,19 +1,19 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Unix/Display.hpp"
-#include "SFML/Window/Unix/KeySymToKeyMapping.hpp"
-#include "SFML/Window/Unix/KeySymToUnicodeMapping.hpp"
-#include "SFML/Window/Unix/KeyboardImpl.hpp"
+#include "Zancle/Window/Unix/Display.hpp"
+#include "Zancle/Window/Unix/KeySymToKeyMapping.hpp"
+#include "Zancle/Window/Unix/KeySymToUnicodeMapping.hpp"
+#include "Zancle/Window/Unix/KeyboardImpl.hpp"
 
-#include "SFML/System/String.hpp"
-#include "SFML/System/Utf.hpp"
+#include "Zancle/System/String.hpp"
+#include "Zancle/System/Utf.hpp"
 
-#include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/EnumArray.hpp"
+#include "ZancleBase/Builtins/Memcpy.hpp"
+#include "ZancleBase/EnumArray.hpp"
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -30,9 +30,9 @@ namespace
 ////////////////////////////////////////////////////////////
 constexpr KeyCode nullKeyCode = 0;
 constexpr int     maxKeyCode  = 256;
-sf::base::EnumArray<sf::Keyboard::Scancode, KeyCode, sf::Keyboard::ScancodeCount>
+zb::EnumArray<za::Keyboard::Scancode, KeyCode, za::Keyboard::ScancodeCount>
                                                scancodeToKeycode; ///< Mapping of SFML scancode to X11 KeyCode
-std::array<sf::Keyboard::Scancode, maxKeyCode> keycodeToScancode; ///< Mapping of X11 KeyCode to SFML scancode
+std::array<za::Keyboard::Scancode, maxKeyCode> keycodeToScancode; ///< Mapping of X11 KeyCode to SFML scancode
 
 ////////////////////////////////////////////////////////////
 bool isValidKeycode(KeyCode keycode)
@@ -43,10 +43,10 @@ bool isValidKeycode(KeyCode keycode)
 
 
 ////////////////////////////////////////////////////////////
-sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
+za::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
 {
     if (!isValidKeycode(keycode))
-        return sf::Keyboard::Scan::Unknown;
+        return za::Keyboard::Scan::Unknown;
 
     // Try secondary keysym, for numeric keypad keys
     // Note: This way we always force "NumLock = ON", which is intentional
@@ -56,20 +56,20 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
     // clang-format off
     switch (keySym)
     {
-        case XK_KP_0:         return sf::Keyboard::Scan::Numpad0;
-        case XK_KP_1:         return sf::Keyboard::Scan::Numpad1;
-        case XK_KP_2:         return sf::Keyboard::Scan::Numpad2;
-        case XK_KP_3:         return sf::Keyboard::Scan::Numpad3;
-        case XK_KP_4:         return sf::Keyboard::Scan::Numpad4;
-        case XK_KP_5:         return sf::Keyboard::Scan::Numpad5;
-        case XK_KP_6:         return sf::Keyboard::Scan::Numpad6;
-        case XK_KP_7:         return sf::Keyboard::Scan::Numpad7;
-        case XK_KP_8:         return sf::Keyboard::Scan::Numpad8;
-        case XK_KP_9:         return sf::Keyboard::Scan::Numpad9;
-        case XK_KP_Separator: return sf::Keyboard::Scan::NumpadDecimal;
-        case XK_KP_Decimal:   return sf::Keyboard::Scan::NumpadDecimal;
-        case XK_KP_Equal:     return sf::Keyboard::Scan::NumpadEqual;
-        case XK_KP_Enter:     return sf::Keyboard::Scan::NumpadEnter;
+        case XK_KP_0:         return za::Keyboard::Scan::Numpad0;
+        case XK_KP_1:         return za::Keyboard::Scan::Numpad1;
+        case XK_KP_2:         return za::Keyboard::Scan::Numpad2;
+        case XK_KP_3:         return za::Keyboard::Scan::Numpad3;
+        case XK_KP_4:         return za::Keyboard::Scan::Numpad4;
+        case XK_KP_5:         return za::Keyboard::Scan::Numpad5;
+        case XK_KP_6:         return za::Keyboard::Scan::Numpad6;
+        case XK_KP_7:         return za::Keyboard::Scan::Numpad7;
+        case XK_KP_8:         return za::Keyboard::Scan::Numpad8;
+        case XK_KP_9:         return za::Keyboard::Scan::Numpad9;
+        case XK_KP_Separator: return za::Keyboard::Scan::NumpadDecimal;
+        case XK_KP_Decimal:   return za::Keyboard::Scan::NumpadDecimal;
+        case XK_KP_Equal:     return za::Keyboard::Scan::NumpadEqual;
+        case XK_KP_Enter:     return za::Keyboard::Scan::NumpadEnter;
         default:              break;
     }
     // clang-format on
@@ -81,356 +81,356 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
     // clang-format off
     switch (keySym)
     {
-        case XK_Return:           return sf::Keyboard::Scan::Enter;
-        case XK_Escape:           return sf::Keyboard::Scan::Escape;
-        case XK_BackSpace:        return sf::Keyboard::Scan::Backspace;
-        case XK_Tab:              return sf::Keyboard::Scan::Tab;
-        case XK_Shift_L:          return sf::Keyboard::Scan::LShift;
-        case XK_Shift_R:          return sf::Keyboard::Scan::RShift;
-        case XK_Control_L:        return sf::Keyboard::Scan::LControl;
-        case XK_Control_R:        return sf::Keyboard::Scan::RControl;
-        case XK_Alt_L:            return sf::Keyboard::Scan::LAlt;
+        case XK_Return:           return za::Keyboard::Scan::Enter;
+        case XK_Escape:           return za::Keyboard::Scan::Escape;
+        case XK_BackSpace:        return za::Keyboard::Scan::Backspace;
+        case XK_Tab:              return za::Keyboard::Scan::Tab;
+        case XK_Shift_L:          return za::Keyboard::Scan::LShift;
+        case XK_Shift_R:          return za::Keyboard::Scan::RShift;
+        case XK_Control_L:        return za::Keyboard::Scan::LControl;
+        case XK_Control_R:        return za::Keyboard::Scan::RControl;
+        case XK_Alt_L:            return za::Keyboard::Scan::LAlt;
         case XK_ISO_Level3_Shift: // AltGr on at least some machines
-        case XK_Alt_R:            return sf::Keyboard::Scan::RAlt;
+        case XK_Alt_R:            return za::Keyboard::Scan::RAlt;
         case XK_Meta_L:
-        case XK_Super_L:          return sf::Keyboard::Scan::LSystem;
+        case XK_Super_L:          return za::Keyboard::Scan::LSystem;
         case XK_Meta_R:
-        case XK_Super_R:          return sf::Keyboard::Scan::RSystem;
-        case XK_Menu:             return sf::Keyboard::Scan::Menu;
+        case XK_Super_R:          return za::Keyboard::Scan::RSystem;
+        case XK_Menu:             return za::Keyboard::Scan::Menu;
 
-        case XK_Num_Lock:         return sf::Keyboard::Scan::NumLock;
-        case XK_Caps_Lock:        return sf::Keyboard::Scan::CapsLock;
-        case XK_Execute:          return sf::Keyboard::Scan::Execute;
-        case XK_Hyper_R:          return sf::Keyboard::Scan::Application;
-        case XK_Select:           return sf::Keyboard::Scan::Select;
-        case XK_Cancel:           return sf::Keyboard::Scan::Stop;
-        case XK_Redo:             return sf::Keyboard::Scan::Redo;
-        case XK_Undo:             return sf::Keyboard::Scan::Undo;
-        case XK_Find:             return sf::Keyboard::Scan::Search;
-        case XK_Mode_switch:      return sf::Keyboard::Scan::ModeChange;
+        case XK_Num_Lock:         return za::Keyboard::Scan::NumLock;
+        case XK_Caps_Lock:        return za::Keyboard::Scan::CapsLock;
+        case XK_Execute:          return za::Keyboard::Scan::Execute;
+        case XK_Hyper_R:          return za::Keyboard::Scan::Application;
+        case XK_Select:           return za::Keyboard::Scan::Select;
+        case XK_Cancel:           return za::Keyboard::Scan::Stop;
+        case XK_Redo:             return za::Keyboard::Scan::Redo;
+        case XK_Undo:             return za::Keyboard::Scan::Undo;
+        case XK_Find:             return za::Keyboard::Scan::Search;
+        case XK_Mode_switch:      return za::Keyboard::Scan::ModeChange;
 
-        case XK_Print:            return sf::Keyboard::Scan::PrintScreen;
-        case XK_Scroll_Lock:      return sf::Keyboard::Scan::ScrollLock;
+        case XK_Print:            return za::Keyboard::Scan::PrintScreen;
+        case XK_Scroll_Lock:      return za::Keyboard::Scan::ScrollLock;
         case XK_Pause:
-        case XK_Break:            return sf::Keyboard::Scan::Pause;
+        case XK_Break:            return za::Keyboard::Scan::Pause;
 
         case XK_Delete:
-        case XK_Clear:            return sf::Keyboard::Scan::Delete;
-        case XK_Home:             return sf::Keyboard::Scan::Home;
-        case XK_End:              return sf::Keyboard::Scan::End;
-        case XK_Page_Up:          return sf::Keyboard::Scan::PageUp;
-        case XK_Page_Down:        return sf::Keyboard::Scan::PageDown;
-        case XK_Insert:           return sf::Keyboard::Scan::Insert;
+        case XK_Clear:            return za::Keyboard::Scan::Delete;
+        case XK_Home:             return za::Keyboard::Scan::Home;
+        case XK_End:              return za::Keyboard::Scan::End;
+        case XK_Page_Up:          return za::Keyboard::Scan::PageUp;
+        case XK_Page_Down:        return za::Keyboard::Scan::PageDown;
+        case XK_Insert:           return za::Keyboard::Scan::Insert;
 
-        case XK_Left:             return sf::Keyboard::Scan::Left;
-        case XK_Right:            return sf::Keyboard::Scan::Right;
-        case XK_Down:             return sf::Keyboard::Scan::Down;
-        case XK_Up:               return sf::Keyboard::Scan::Up;
+        case XK_Left:             return za::Keyboard::Scan::Left;
+        case XK_Right:            return za::Keyboard::Scan::Right;
+        case XK_Down:             return za::Keyboard::Scan::Down;
+        case XK_Up:               return za::Keyboard::Scan::Up;
 
-        case XK_F1:               return sf::Keyboard::Scan::F1;
-        case XK_F2:               return sf::Keyboard::Scan::F2;
-        case XK_F3:               return sf::Keyboard::Scan::F3;
-        case XK_F4:               return sf::Keyboard::Scan::F4;
-        case XK_F5:               return sf::Keyboard::Scan::F5;
-        case XK_F6:               return sf::Keyboard::Scan::F6;
-        case XK_F7:               return sf::Keyboard::Scan::F7;
-        case XK_F8:               return sf::Keyboard::Scan::F8;
-        case XK_F9:               return sf::Keyboard::Scan::F9;
-        case XK_F10:              return sf::Keyboard::Scan::F10;
-        case XK_F11:              return sf::Keyboard::Scan::F11;
-        case XK_F12:              return sf::Keyboard::Scan::F12;
-        case XK_F13:              return sf::Keyboard::Scan::F13;
-        case XK_F14:              return sf::Keyboard::Scan::F14;
-        case XK_F15:              return sf::Keyboard::Scan::F15;
-        case XK_F16:              return sf::Keyboard::Scan::F16;
-        case XK_F17:              return sf::Keyboard::Scan::F17;
-        case XK_F18:              return sf::Keyboard::Scan::F18;
-        case XK_F19:              return sf::Keyboard::Scan::F19;
-        case XK_F20:              return sf::Keyboard::Scan::F20;
-        case XK_F21:              return sf::Keyboard::Scan::F21;
-        case XK_F22:              return sf::Keyboard::Scan::F22;
-        case XK_F23:              return sf::Keyboard::Scan::F23;
-        case XK_F24:              return sf::Keyboard::Scan::F24;
+        case XK_F1:               return za::Keyboard::Scan::F1;
+        case XK_F2:               return za::Keyboard::Scan::F2;
+        case XK_F3:               return za::Keyboard::Scan::F3;
+        case XK_F4:               return za::Keyboard::Scan::F4;
+        case XK_F5:               return za::Keyboard::Scan::F5;
+        case XK_F6:               return za::Keyboard::Scan::F6;
+        case XK_F7:               return za::Keyboard::Scan::F7;
+        case XK_F8:               return za::Keyboard::Scan::F8;
+        case XK_F9:               return za::Keyboard::Scan::F9;
+        case XK_F10:              return za::Keyboard::Scan::F10;
+        case XK_F11:              return za::Keyboard::Scan::F11;
+        case XK_F12:              return za::Keyboard::Scan::F12;
+        case XK_F13:              return za::Keyboard::Scan::F13;
+        case XK_F14:              return za::Keyboard::Scan::F14;
+        case XK_F15:              return za::Keyboard::Scan::F15;
+        case XK_F16:              return za::Keyboard::Scan::F16;
+        case XK_F17:              return za::Keyboard::Scan::F17;
+        case XK_F18:              return za::Keyboard::Scan::F18;
+        case XK_F19:              return za::Keyboard::Scan::F19;
+        case XK_F20:              return za::Keyboard::Scan::F20;
+        case XK_F21:              return za::Keyboard::Scan::F21;
+        case XK_F22:              return za::Keyboard::Scan::F22;
+        case XK_F23:              return za::Keyboard::Scan::F23;
+        case XK_F24:              return za::Keyboard::Scan::F24;
 
         // Numeric keypad
-        case XK_KP_Divide:        return sf::Keyboard::Scan::NumpadDivide;
-        case XK_KP_Multiply:      return sf::Keyboard::Scan::NumpadMultiply;
-        case XK_KP_Subtract:      return sf::Keyboard::Scan::NumpadMinus;
-        case XK_KP_Add:           return sf::Keyboard::Scan::NumpadPlus;
+        case XK_KP_Divide:        return za::Keyboard::Scan::NumpadDivide;
+        case XK_KP_Multiply:      return za::Keyboard::Scan::NumpadMultiply;
+        case XK_KP_Subtract:      return za::Keyboard::Scan::NumpadMinus;
+        case XK_KP_Add:           return za::Keyboard::Scan::NumpadPlus;
 
         // These should have been detected in secondary keysym test above!
-        case XK_KP_Insert:        return sf::Keyboard::Scan::Numpad0;
-        case XK_KP_End:           return sf::Keyboard::Scan::Numpad1;
-        case XK_KP_Down:          return sf::Keyboard::Scan::Numpad2;
-        case XK_KP_Page_Down:     return sf::Keyboard::Scan::Numpad3;
-        case XK_KP_Left:          return sf::Keyboard::Scan::Numpad4;
-        case XK_KP_Right:         return sf::Keyboard::Scan::Numpad6;
-        case XK_KP_Home:          return sf::Keyboard::Scan::Numpad7;
-        case XK_KP_Up:            return sf::Keyboard::Scan::Numpad8;
-        case XK_KP_Page_Up:       return sf::Keyboard::Scan::Numpad9;
-        case XK_KP_Delete:        return sf::Keyboard::Scan::NumpadDecimal;
-        case XK_KP_Equal:         return sf::Keyboard::Scan::NumpadEqual;
-        case XK_KP_Enter:         return sf::Keyboard::Scan::NumpadEnter;
+        case XK_KP_Insert:        return za::Keyboard::Scan::Numpad0;
+        case XK_KP_End:           return za::Keyboard::Scan::Numpad1;
+        case XK_KP_Down:          return za::Keyboard::Scan::Numpad2;
+        case XK_KP_Page_Down:     return za::Keyboard::Scan::Numpad3;
+        case XK_KP_Left:          return za::Keyboard::Scan::Numpad4;
+        case XK_KP_Right:         return za::Keyboard::Scan::Numpad6;
+        case XK_KP_Home:          return za::Keyboard::Scan::Numpad7;
+        case XK_KP_Up:            return za::Keyboard::Scan::Numpad8;
+        case XK_KP_Page_Up:       return za::Keyboard::Scan::Numpad9;
+        case XK_KP_Delete:        return za::Keyboard::Scan::NumpadDecimal;
+        case XK_KP_Equal:         return za::Keyboard::Scan::NumpadEqual;
+        case XK_KP_Enter:         return za::Keyboard::Scan::NumpadEnter;
 
         // Last resort: Check for printable keys (should not happen if the XKB
         // extension is available). This will give a layout dependent mapping
         // (which is wrong, and we may miss some keys, especially on non-US
         // keyboards), but it's better than nothing...
         case XK_a:
-        case XK_A:                return sf::Keyboard::Scan::A;
+        case XK_A:                return za::Keyboard::Scan::A;
         case XK_b:
-        case XK_B:                return sf::Keyboard::Scan::B;
+        case XK_B:                return za::Keyboard::Scan::B;
         case XK_c:
-        case XK_C:                return sf::Keyboard::Scan::C;
+        case XK_C:                return za::Keyboard::Scan::C;
         case XK_d:
-        case XK_D:                return sf::Keyboard::Scan::D;
+        case XK_D:                return za::Keyboard::Scan::D;
         case XK_e:
-        case XK_E:                return sf::Keyboard::Scan::E;
+        case XK_E:                return za::Keyboard::Scan::E;
         case XK_f:
-        case XK_F:                return sf::Keyboard::Scan::F;
+        case XK_F:                return za::Keyboard::Scan::F;
         case XK_g:
-        case XK_G:                return sf::Keyboard::Scan::G;
+        case XK_G:                return za::Keyboard::Scan::G;
         case XK_h:
-        case XK_H:                return sf::Keyboard::Scan::H;
+        case XK_H:                return za::Keyboard::Scan::H;
         case XK_i:
-        case XK_I:                return sf::Keyboard::Scan::I;
+        case XK_I:                return za::Keyboard::Scan::I;
         case XK_j:
-        case XK_J:                return sf::Keyboard::Scan::J;
+        case XK_J:                return za::Keyboard::Scan::J;
         case XK_k:
-        case XK_K:                return sf::Keyboard::Scan::K;
+        case XK_K:                return za::Keyboard::Scan::K;
         case XK_l:
-        case XK_L:                return sf::Keyboard::Scan::L;
+        case XK_L:                return za::Keyboard::Scan::L;
         case XK_m:
-        case XK_M:                return sf::Keyboard::Scan::M;
+        case XK_M:                return za::Keyboard::Scan::M;
         case XK_n:
-        case XK_N:                return sf::Keyboard::Scan::N;
+        case XK_N:                return za::Keyboard::Scan::N;
         case XK_o:
-        case XK_O:                return sf::Keyboard::Scan::O;
+        case XK_O:                return za::Keyboard::Scan::O;
         case XK_p:
-        case XK_P:                return sf::Keyboard::Scan::P;
+        case XK_P:                return za::Keyboard::Scan::P;
         case XK_q:
-        case XK_Q:                return sf::Keyboard::Scan::Q;
+        case XK_Q:                return za::Keyboard::Scan::Q;
         case XK_r:
-        case XK_R:                return sf::Keyboard::Scan::R;
+        case XK_R:                return za::Keyboard::Scan::R;
         case XK_s:
-        case XK_S:                return sf::Keyboard::Scan::S;
+        case XK_S:                return za::Keyboard::Scan::S;
         case XK_t:
-        case XK_T:                return sf::Keyboard::Scan::T;
+        case XK_T:                return za::Keyboard::Scan::T;
         case XK_u:
-        case XK_U:                return sf::Keyboard::Scan::U;
+        case XK_U:                return za::Keyboard::Scan::U;
         case XK_v:
-        case XK_V:                return sf::Keyboard::Scan::V;
+        case XK_V:                return za::Keyboard::Scan::V;
         case XK_w:
-        case XK_W:                return sf::Keyboard::Scan::W;
+        case XK_W:                return za::Keyboard::Scan::W;
         case XK_x:
-        case XK_X:                return sf::Keyboard::Scan::X;
+        case XK_X:                return za::Keyboard::Scan::X;
         case XK_y:
-        case XK_Y:                return sf::Keyboard::Scan::Y;
+        case XK_Y:                return za::Keyboard::Scan::Y;
         case XK_z:
-        case XK_Z:                return sf::Keyboard::Scan::Z;
+        case XK_Z:                return za::Keyboard::Scan::Z;
 
-        case XK_1:                return sf::Keyboard::Scan::Num1;
-        case XK_2:                return sf::Keyboard::Scan::Num2;
-        case XK_3:                return sf::Keyboard::Scan::Num3;
-        case XK_4:                return sf::Keyboard::Scan::Num4;
-        case XK_5:                return sf::Keyboard::Scan::Num5;
-        case XK_6:                return sf::Keyboard::Scan::Num6;
-        case XK_7:                return sf::Keyboard::Scan::Num7;
-        case XK_8:                return sf::Keyboard::Scan::Num8;
-        case XK_9:                return sf::Keyboard::Scan::Num9;
-        case XK_0:                return sf::Keyboard::Scan::Num0;
+        case XK_1:                return za::Keyboard::Scan::Num1;
+        case XK_2:                return za::Keyboard::Scan::Num2;
+        case XK_3:                return za::Keyboard::Scan::Num3;
+        case XK_4:                return za::Keyboard::Scan::Num4;
+        case XK_5:                return za::Keyboard::Scan::Num5;
+        case XK_6:                return za::Keyboard::Scan::Num6;
+        case XK_7:                return za::Keyboard::Scan::Num7;
+        case XK_8:                return za::Keyboard::Scan::Num8;
+        case XK_9:                return za::Keyboard::Scan::Num9;
+        case XK_0:                return za::Keyboard::Scan::Num0;
 
-        case XK_space:            return sf::Keyboard::Scan::Space;
-        case XK_minus:            return sf::Keyboard::Scan::Hyphen;
-        case XK_equal:            return sf::Keyboard::Scan::Equal;
-        case XK_bracketleft:      return sf::Keyboard::Scan::LBracket;
-        case XK_bracketright:     return sf::Keyboard::Scan::RBracket;
-        case XK_backslash:        return sf::Keyboard::Scan::Backslash;
-        case XK_semicolon:        return sf::Keyboard::Scan::Semicolon;
-        case XK_apostrophe:       return sf::Keyboard::Scan::Apostrophe;
-        case XK_grave:            return sf::Keyboard::Scan::Grave;
-        case XK_comma:            return sf::Keyboard::Scan::Comma;
-        case XK_period:           return sf::Keyboard::Scan::Period;
-        case XK_slash:            return sf::Keyboard::Scan::Slash;
-        case XK_less:             return sf::Keyboard::Scan::NonUsBackslash;
+        case XK_space:            return za::Keyboard::Scan::Space;
+        case XK_minus:            return za::Keyboard::Scan::Hyphen;
+        case XK_equal:            return za::Keyboard::Scan::Equal;
+        case XK_bracketleft:      return za::Keyboard::Scan::LBracket;
+        case XK_bracketright:     return za::Keyboard::Scan::RBracket;
+        case XK_backslash:        return za::Keyboard::Scan::Backslash;
+        case XK_semicolon:        return za::Keyboard::Scan::Semicolon;
+        case XK_apostrophe:       return za::Keyboard::Scan::Apostrophe;
+        case XK_grave:            return za::Keyboard::Scan::Grave;
+        case XK_comma:            return za::Keyboard::Scan::Comma;
+        case XK_period:           return za::Keyboard::Scan::Period;
+        case XK_slash:            return za::Keyboard::Scan::Slash;
+        case XK_less:             return za::Keyboard::Scan::NonUsBackslash;
 
-        default:                  return sf::Keyboard::Scan::Unknown;
+        default:                  return za::Keyboard::Scan::Unknown;
     }
     // clang-format on
 }
 
 
 ////////////////////////////////////////////////////////////
-std::unordered_map<std::string, sf::Keyboard::Scancode> getNameScancodeMap()
+std::unordered_map<std::string, za::Keyboard::Scancode> getNameScancodeMap()
 {
     return {
 
-        {"LSGT", sf::Keyboard::Scan::NonUsBackslash},
+        {"LSGT", za::Keyboard::Scan::NonUsBackslash},
 
-        {"TLDE", sf::Keyboard::Scan::Grave},
-        {"AE01", sf::Keyboard::Scan::Num1},
-        {"AE02", sf::Keyboard::Scan::Num2},
-        {"AE03", sf::Keyboard::Scan::Num3},
-        {"AE04", sf::Keyboard::Scan::Num4},
-        {"AE05", sf::Keyboard::Scan::Num5},
-        {"AE06", sf::Keyboard::Scan::Num6},
-        {"AE07", sf::Keyboard::Scan::Num7},
-        {"AE08", sf::Keyboard::Scan::Num8},
-        {"AE09", sf::Keyboard::Scan::Num9},
-        {"AE10", sf::Keyboard::Scan::Num0},
-        {"AE11", sf::Keyboard::Scan::Hyphen},
-        {"AE12", sf::Keyboard::Scan::Equal},
-        {"BKSP", sf::Keyboard::Scan::Backspace},
-        {"TAB", sf::Keyboard::Scan::Tab},
-        {"AD01", sf::Keyboard::Scan::Q},
-        {"AD02", sf::Keyboard::Scan::W},
-        {"AD03", sf::Keyboard::Scan::E},
-        {"AD04", sf::Keyboard::Scan::R},
-        {"AD05", sf::Keyboard::Scan::T},
-        {"AD06", sf::Keyboard::Scan::Y},
-        {"AD07", sf::Keyboard::Scan::U},
-        {"AD08", sf::Keyboard::Scan::I},
-        {"AD09", sf::Keyboard::Scan::O},
-        {"AD10", sf::Keyboard::Scan::P},
-        {"AD11", sf::Keyboard::Scan::LBracket},
-        {"AD12", sf::Keyboard::Scan::RBracket},
-        {"BKSL", sf::Keyboard::Scan::Backslash},
-        {"RTRN", sf::Keyboard::Scan::Enter},
+        {"TLDE", za::Keyboard::Scan::Grave},
+        {"AE01", za::Keyboard::Scan::Num1},
+        {"AE02", za::Keyboard::Scan::Num2},
+        {"AE03", za::Keyboard::Scan::Num3},
+        {"AE04", za::Keyboard::Scan::Num4},
+        {"AE05", za::Keyboard::Scan::Num5},
+        {"AE06", za::Keyboard::Scan::Num6},
+        {"AE07", za::Keyboard::Scan::Num7},
+        {"AE08", za::Keyboard::Scan::Num8},
+        {"AE09", za::Keyboard::Scan::Num9},
+        {"AE10", za::Keyboard::Scan::Num0},
+        {"AE11", za::Keyboard::Scan::Hyphen},
+        {"AE12", za::Keyboard::Scan::Equal},
+        {"BKSP", za::Keyboard::Scan::Backspace},
+        {"TAB", za::Keyboard::Scan::Tab},
+        {"AD01", za::Keyboard::Scan::Q},
+        {"AD02", za::Keyboard::Scan::W},
+        {"AD03", za::Keyboard::Scan::E},
+        {"AD04", za::Keyboard::Scan::R},
+        {"AD05", za::Keyboard::Scan::T},
+        {"AD06", za::Keyboard::Scan::Y},
+        {"AD07", za::Keyboard::Scan::U},
+        {"AD08", za::Keyboard::Scan::I},
+        {"AD09", za::Keyboard::Scan::O},
+        {"AD10", za::Keyboard::Scan::P},
+        {"AD11", za::Keyboard::Scan::LBracket},
+        {"AD12", za::Keyboard::Scan::RBracket},
+        {"BKSL", za::Keyboard::Scan::Backslash},
+        {"RTRN", za::Keyboard::Scan::Enter},
 
-        {"CAPS", sf::Keyboard::Scan::CapsLock},
-        {"AC01", sf::Keyboard::Scan::A},
-        {"AC02", sf::Keyboard::Scan::S},
-        {"AC03", sf::Keyboard::Scan::D},
-        {"AC04", sf::Keyboard::Scan::F},
-        {"AC05", sf::Keyboard::Scan::G},
-        {"AC06", sf::Keyboard::Scan::H},
-        {"AC07", sf::Keyboard::Scan::J},
-        {"AC08", sf::Keyboard::Scan::K},
-        {"AC09", sf::Keyboard::Scan::L},
-        {"AC10", sf::Keyboard::Scan::Semicolon},
-        {"AC11", sf::Keyboard::Scan::Apostrophe},
-        {"AC12", sf::Keyboard::Scan::Backslash},
+        {"CAPS", za::Keyboard::Scan::CapsLock},
+        {"AC01", za::Keyboard::Scan::A},
+        {"AC02", za::Keyboard::Scan::S},
+        {"AC03", za::Keyboard::Scan::D},
+        {"AC04", za::Keyboard::Scan::F},
+        {"AC05", za::Keyboard::Scan::G},
+        {"AC06", za::Keyboard::Scan::H},
+        {"AC07", za::Keyboard::Scan::J},
+        {"AC08", za::Keyboard::Scan::K},
+        {"AC09", za::Keyboard::Scan::L},
+        {"AC10", za::Keyboard::Scan::Semicolon},
+        {"AC11", za::Keyboard::Scan::Apostrophe},
+        {"AC12", za::Keyboard::Scan::Backslash},
 
-        {"LFSH", sf::Keyboard::Scan::LShift},
-        {"AB01", sf::Keyboard::Scan::Z},
-        {"AB02", sf::Keyboard::Scan::X},
-        {"AB03", sf::Keyboard::Scan::C},
-        {"AB04", sf::Keyboard::Scan::V},
-        {"AB05", sf::Keyboard::Scan::B},
-        {"AB06", sf::Keyboard::Scan::N},
-        {"AB07", sf::Keyboard::Scan::M},
-        {"AB08", sf::Keyboard::Scan::Comma},
-        {"AB09", sf::Keyboard::Scan::Period},
-        {"AB10", sf::Keyboard::Scan::Slash},
-        {"RTSH", sf::Keyboard::Scan::RShift},
+        {"LFSH", za::Keyboard::Scan::LShift},
+        {"AB01", za::Keyboard::Scan::Z},
+        {"AB02", za::Keyboard::Scan::X},
+        {"AB03", za::Keyboard::Scan::C},
+        {"AB04", za::Keyboard::Scan::V},
+        {"AB05", za::Keyboard::Scan::B},
+        {"AB06", za::Keyboard::Scan::N},
+        {"AB07", za::Keyboard::Scan::M},
+        {"AB08", za::Keyboard::Scan::Comma},
+        {"AB09", za::Keyboard::Scan::Period},
+        {"AB10", za::Keyboard::Scan::Slash},
+        {"RTSH", za::Keyboard::Scan::RShift},
 
-        {"LCTL", sf::Keyboard::Scan::LControl},
-        {"LALT", sf::Keyboard::Scan::LAlt},
-        {"SPCE", sf::Keyboard::Scan::Space},
-        {"RCTL", sf::Keyboard::Scan::RControl},
-        {"RALT", sf::Keyboard::Scan::RAlt},
-        {"LVL3", sf::Keyboard::Scan::RAlt},
-        {"ALGR", sf::Keyboard::Scan::RAlt},
-        {"LWIN", sf::Keyboard::Scan::LSystem},
-        {"RWIN", sf::Keyboard::Scan::RSystem},
+        {"LCTL", za::Keyboard::Scan::LControl},
+        {"LALT", za::Keyboard::Scan::LAlt},
+        {"SPCE", za::Keyboard::Scan::Space},
+        {"RCTL", za::Keyboard::Scan::RControl},
+        {"RALT", za::Keyboard::Scan::RAlt},
+        {"LVL3", za::Keyboard::Scan::RAlt},
+        {"ALGR", za::Keyboard::Scan::RAlt},
+        {"LWIN", za::Keyboard::Scan::LSystem},
+        {"RWIN", za::Keyboard::Scan::RSystem},
 
-        {"HYPR", sf::Keyboard::Scan::Application},
-        {"EXEC", sf::Keyboard::Scan::Execute},
-        {"MDSW", sf::Keyboard::Scan::ModeChange},
-        {"MENU", sf::Keyboard::Scan::Menu},
-        {"COMP", sf::Keyboard::Scan::Menu},
-        {"SELE", sf::Keyboard::Scan::Select},
+        {"HYPR", za::Keyboard::Scan::Application},
+        {"EXEC", za::Keyboard::Scan::Execute},
+        {"MDSW", za::Keyboard::Scan::ModeChange},
+        {"MENU", za::Keyboard::Scan::Menu},
+        {"COMP", za::Keyboard::Scan::Menu},
+        {"SELE", za::Keyboard::Scan::Select},
 
-        {"ESC", sf::Keyboard::Scan::Escape},
-        {"FK01", sf::Keyboard::Scan::F1},
-        {"FK02", sf::Keyboard::Scan::F2},
-        {"FK03", sf::Keyboard::Scan::F3},
-        {"FK04", sf::Keyboard::Scan::F4},
-        {"FK05", sf::Keyboard::Scan::F5},
-        {"FK06", sf::Keyboard::Scan::F6},
-        {"FK07", sf::Keyboard::Scan::F7},
-        {"FK08", sf::Keyboard::Scan::F8},
-        {"FK09", sf::Keyboard::Scan::F9},
-        {"FK10", sf::Keyboard::Scan::F10},
-        {"FK11", sf::Keyboard::Scan::F11},
-        {"FK12", sf::Keyboard::Scan::F12},
+        {"ESC", za::Keyboard::Scan::Escape},
+        {"FK01", za::Keyboard::Scan::F1},
+        {"FK02", za::Keyboard::Scan::F2},
+        {"FK03", za::Keyboard::Scan::F3},
+        {"FK04", za::Keyboard::Scan::F4},
+        {"FK05", za::Keyboard::Scan::F5},
+        {"FK06", za::Keyboard::Scan::F6},
+        {"FK07", za::Keyboard::Scan::F7},
+        {"FK08", za::Keyboard::Scan::F8},
+        {"FK09", za::Keyboard::Scan::F9},
+        {"FK10", za::Keyboard::Scan::F10},
+        {"FK11", za::Keyboard::Scan::F11},
+        {"FK12", za::Keyboard::Scan::F12},
 
-        {"PRSC", sf::Keyboard::Scan::PrintScreen},
-        {"SCLK", sf::Keyboard::Scan::ScrollLock},
-        {"PAUS", sf::Keyboard::Scan::Pause},
+        {"PRSC", za::Keyboard::Scan::PrintScreen},
+        {"SCLK", za::Keyboard::Scan::ScrollLock},
+        {"PAUS", za::Keyboard::Scan::Pause},
 
-        {"INS", sf::Keyboard::Scan::Insert},
-        {"HOME", sf::Keyboard::Scan::Home},
-        {"PGUP", sf::Keyboard::Scan::PageUp},
-        {"DELE", sf::Keyboard::Scan::Delete},
-        {"END", sf::Keyboard::Scan::End},
-        {"PGDN", sf::Keyboard::Scan::PageDown},
+        {"INS", za::Keyboard::Scan::Insert},
+        {"HOME", za::Keyboard::Scan::Home},
+        {"PGUP", za::Keyboard::Scan::PageUp},
+        {"DELE", za::Keyboard::Scan::Delete},
+        {"END", za::Keyboard::Scan::End},
+        {"PGDN", za::Keyboard::Scan::PageDown},
 
-        {"UP", sf::Keyboard::Scan::Up},
-        {"RGHT", sf::Keyboard::Scan::Right},
-        {"DOWN", sf::Keyboard::Scan::Down},
-        {"LEFT", sf::Keyboard::Scan::Left},
+        {"UP", za::Keyboard::Scan::Up},
+        {"RGHT", za::Keyboard::Scan::Right},
+        {"DOWN", za::Keyboard::Scan::Down},
+        {"LEFT", za::Keyboard::Scan::Left},
 
-        {"NMLK", sf::Keyboard::Scan::NumLock},
-        {"KPDV", sf::Keyboard::Scan::NumpadDivide},
-        {"KPMU", sf::Keyboard::Scan::NumpadMultiply},
-        {"KPSU", sf::Keyboard::Scan::NumpadMinus},
+        {"NMLK", za::Keyboard::Scan::NumLock},
+        {"KPDV", za::Keyboard::Scan::NumpadDivide},
+        {"KPMU", za::Keyboard::Scan::NumpadMultiply},
+        {"KPSU", za::Keyboard::Scan::NumpadMinus},
 
-        {"KP7", sf::Keyboard::Scan::Numpad7},
-        {"KP8", sf::Keyboard::Scan::Numpad8},
-        {"KP9", sf::Keyboard::Scan::Numpad9},
-        {"KPAD", sf::Keyboard::Scan::NumpadPlus},
-        {"KP4", sf::Keyboard::Scan::Numpad4},
-        {"KP5", sf::Keyboard::Scan::Numpad5},
-        {"KP6", sf::Keyboard::Scan::Numpad6},
-        {"KP1", sf::Keyboard::Scan::Numpad1},
-        {"KP2", sf::Keyboard::Scan::Numpad2},
-        {"KP3", sf::Keyboard::Scan::Numpad3},
-        {"KPEN", sf::Keyboard::Scan::NumpadEnter},
-        {"KP0", sf::Keyboard::Scan::Numpad0},
-        {"KPDL", sf::Keyboard::Scan::NumpadDecimal},
-        {"KPEQ", sf::Keyboard::Scan::NumpadEqual},
+        {"KP7", za::Keyboard::Scan::Numpad7},
+        {"KP8", za::Keyboard::Scan::Numpad8},
+        {"KP9", za::Keyboard::Scan::Numpad9},
+        {"KPAD", za::Keyboard::Scan::NumpadPlus},
+        {"KP4", za::Keyboard::Scan::Numpad4},
+        {"KP5", za::Keyboard::Scan::Numpad5},
+        {"KP6", za::Keyboard::Scan::Numpad6},
+        {"KP1", za::Keyboard::Scan::Numpad1},
+        {"KP2", za::Keyboard::Scan::Numpad2},
+        {"KP3", za::Keyboard::Scan::Numpad3},
+        {"KPEN", za::Keyboard::Scan::NumpadEnter},
+        {"KP0", za::Keyboard::Scan::Numpad0},
+        {"KPDL", za::Keyboard::Scan::NumpadDecimal},
+        {"KPEQ", za::Keyboard::Scan::NumpadEqual},
 
-        {"FK13", sf::Keyboard::Scan::F13},
-        {"FK14", sf::Keyboard::Scan::F14},
-        {"FK15", sf::Keyboard::Scan::F15},
-        {"FK16", sf::Keyboard::Scan::F16},
-        {"FK17", sf::Keyboard::Scan::F17},
-        {"FK18", sf::Keyboard::Scan::F18},
-        {"FK19", sf::Keyboard::Scan::F19},
-        {"FK20", sf::Keyboard::Scan::F20},
-        {"FK21", sf::Keyboard::Scan::F21},
-        {"FK22", sf::Keyboard::Scan::F22},
-        {"FK23", sf::Keyboard::Scan::F23},
-        {"FK24", sf::Keyboard::Scan::F24},
-        {"LMTA", sf::Keyboard::Scan::LSystem},
-        {"RMTA", sf::Keyboard::Scan::RSystem},
-        {"MUTE", sf::Keyboard::Scan::VolumeMute},
-        {"VOL-", sf::Keyboard::Scan::VolumeDown},
-        {"VOL+", sf::Keyboard::Scan::VolumeUp},
-        {"STOP", sf::Keyboard::Scan::Stop},
-        {"REDO", sf::Keyboard::Scan::Redo},
-        {"AGAI", sf::Keyboard::Scan::Redo},
-        {"UNDO", sf::Keyboard::Scan::Undo},
-        {"COPY", sf::Keyboard::Scan::Copy},
-        {"PAST", sf::Keyboard::Scan::Paste},
-        {"FIND", sf::Keyboard::Scan::Search},
-        {"CUT", sf::Keyboard::Scan::Cut},
-        {"HELP", sf::Keyboard::Scan::Help},
+        {"FK13", za::Keyboard::Scan::F13},
+        {"FK14", za::Keyboard::Scan::F14},
+        {"FK15", za::Keyboard::Scan::F15},
+        {"FK16", za::Keyboard::Scan::F16},
+        {"FK17", za::Keyboard::Scan::F17},
+        {"FK18", za::Keyboard::Scan::F18},
+        {"FK19", za::Keyboard::Scan::F19},
+        {"FK20", za::Keyboard::Scan::F20},
+        {"FK21", za::Keyboard::Scan::F21},
+        {"FK22", za::Keyboard::Scan::F22},
+        {"FK23", za::Keyboard::Scan::F23},
+        {"FK24", za::Keyboard::Scan::F24},
+        {"LMTA", za::Keyboard::Scan::LSystem},
+        {"RMTA", za::Keyboard::Scan::RSystem},
+        {"MUTE", za::Keyboard::Scan::VolumeMute},
+        {"VOL-", za::Keyboard::Scan::VolumeDown},
+        {"VOL+", za::Keyboard::Scan::VolumeUp},
+        {"STOP", za::Keyboard::Scan::Stop},
+        {"REDO", za::Keyboard::Scan::Redo},
+        {"AGAI", za::Keyboard::Scan::Redo},
+        {"UNDO", za::Keyboard::Scan::Undo},
+        {"COPY", za::Keyboard::Scan::Copy},
+        {"PAST", za::Keyboard::Scan::Paste},
+        {"FIND", za::Keyboard::Scan::Search},
+        {"CUT", za::Keyboard::Scan::Cut},
+        {"HELP", za::Keyboard::Scan::Help},
 
-        // {"I156", sf::Keyboard::Scan::LaunchApplication1},
-        // {"I157", sf::Keyboard::Scan::LaunchApplication2},
-        {"I164", sf::Keyboard::Scan::Favorites},
-        {"I166", sf::Keyboard::Scan::Back},
-        {"I167", sf::Keyboard::Scan::Forward},
-        {"I171", sf::Keyboard::Scan::MediaNextTrack},
-        {"I172", sf::Keyboard::Scan::MediaPlayPause},
-        {"I173", sf::Keyboard::Scan::MediaPreviousTrack},
-        {"I174", sf::Keyboard::Scan::MediaStop},
-        {"I180", sf::Keyboard::Scan::HomePage},
-        {"I181", sf::Keyboard::Scan::Refresh},
-        // {"I223", sf::Keyboard::Scan::LaunchMail},
-        {"I234", sf::Keyboard::Scan::LaunchMediaSelect}
+        // {"I156", za::Keyboard::Scan::LaunchApplication1},
+        // {"I157", za::Keyboard::Scan::LaunchApplication2},
+        {"I164", za::Keyboard::Scan::Favorites},
+        {"I166", za::Keyboard::Scan::Back},
+        {"I167", za::Keyboard::Scan::Forward},
+        {"I171", za::Keyboard::Scan::MediaNextTrack},
+        {"I172", za::Keyboard::Scan::MediaPlayPause},
+        {"I173", za::Keyboard::Scan::MediaPreviousTrack},
+        {"I174", za::Keyboard::Scan::MediaStop},
+        {"I180", za::Keyboard::Scan::HomePage},
+        {"I181", za::Keyboard::Scan::Refresh},
+        // {"I223", za::Keyboard::Scan::LaunchMail},
+        {"I234", za::Keyboard::Scan::LaunchMediaSelect}
 
     };
 }
@@ -446,16 +446,16 @@ void ensureMapping()
 
     // Phase 1: Initialize mappings with default values
     scancodeToKeycode.fill(nullKeyCode);
-    keycodeToScancode.fill(sf::Keyboard::Scan::Unknown);
+    keycodeToScancode.fill(za::Keyboard::Scan::Unknown);
 
     // Phase 2: Get XKB names with key code
-    const auto display = sf::priv::openDisplay();
+    const auto display = za::priv::openDisplay();
 
     char       name[XkbKeyNameLength + 1];
     XkbDescPtr descriptor = XkbGetMap(display.get(), 0, XkbUseCoreKbd);
     XkbGetNames(display.get(), XkbKeyNamesMask, descriptor);
 
-    std::unordered_map<std::string, sf::Keyboard::Scancode> nameScancodeMap = getNameScancodeMap();
+    std::unordered_map<std::string, za::Keyboard::Scancode> nameScancodeMap = getNameScancodeMap();
 
     for (int keycode = descriptor->min_key_code; keycode <= descriptor->max_key_code; ++keycode)
     {
@@ -464,16 +464,16 @@ void ensureMapping()
             continue;
         }
 
-        SFML_BASE_MEMCPY(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
+        ZB_MEMCPY(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
         name[XkbKeyNameLength] = '\0';
 
         const auto mappedScancode = nameScancodeMap.find(std::string(name));
-        auto       scancode       = sf::Keyboard::Scan::Unknown;
+        auto       scancode       = za::Keyboard::Scan::Unknown;
 
         if (mappedScancode != nameScancodeMap.end())
             scancode = mappedScancode->second;
 
-        if (scancode != sf::Keyboard::Scan::Unknown)
+        if (scancode != za::Keyboard::Scan::Unknown)
             scancodeToKeycode[scancode] = static_cast<KeyCode>(keycode);
 
         keycodeToScancode[static_cast<KeyCode>(keycode)] = scancode;
@@ -485,11 +485,11 @@ void ensureMapping()
     // Phase 3: Translate un-translated keycodes using traditional X11 KeySym lookups
     for (int keycode = 8; keycode < maxKeyCode; ++keycode)
     {
-        if (keycodeToScancode[static_cast<KeyCode>(keycode)] == sf::Keyboard::Scan::Unknown)
+        if (keycodeToScancode[static_cast<KeyCode>(keycode)] == za::Keyboard::Scan::Unknown)
         {
             const auto scancode = translateKeyCode(display.get(), static_cast<KeyCode>(keycode));
 
-            if (scancode != sf::Keyboard::Scan::Unknown && scancodeToKeycode[scancode] == nullKeyCode)
+            if (scancode != za::Keyboard::Scan::Unknown && scancodeToKeycode[scancode] == nullKeyCode)
                 scancodeToKeycode[scancode] = static_cast<KeyCode>(keycode);
 
             keycodeToScancode[static_cast<KeyCode>(keycode)] = scancode;
@@ -501,11 +501,11 @@ void ensureMapping()
 
 
 ////////////////////////////////////////////////////////////
-KeyCode scancodeToKeyCode(sf::Keyboard::Scancode code)
+KeyCode scancodeToKeyCode(za::Keyboard::Scancode code)
 {
     ensureMapping();
 
-    if (code != sf::Keyboard::Scan::Unknown)
+    if (code != za::Keyboard::Scan::Unknown)
         return scancodeToKeycode[code];
 
     return nullKeyCode;
@@ -513,25 +513,25 @@ KeyCode scancodeToKeyCode(sf::Keyboard::Scancode code)
 
 
 ////////////////////////////////////////////////////////////
-sf::Keyboard::Scancode keyCodeToScancode(KeyCode code)
+za::Keyboard::Scancode keyCodeToScancode(KeyCode code)
 {
     ensureMapping();
 
     if (isValidKeycode(code))
         return keycodeToScancode[code];
 
-    return sf::Keyboard::Scan::Unknown;
+    return za::Keyboard::Scan::Unknown;
 }
 
 
 ////////////////////////////////////////////////////////////
-KeyCode keyToKeyCode(sf::Keyboard::Key key)
+KeyCode keyToKeyCode(za::Keyboard::Key key)
 {
-    const KeySym keysym = sf::priv::keyToKeySym(key);
+    const KeySym keysym = za::priv::keyToKeySym(key);
 
     if (keysym != NoSymbol)
     {
-        const auto    display = sf::priv::openDisplay();
+        const auto    display = za::priv::openDisplay();
         const KeyCode keycode = XKeysymToKeycode(display.get(), keysym);
 
         if (keycode != nullKeyCode)
@@ -539,17 +539,17 @@ KeyCode keyToKeyCode(sf::Keyboard::Key key)
     }
 
     // Fallback for when XKeysymToKeycode cannot tell the KeyCode for XK_Alt_R
-    if (key == sf::Keyboard::Key::RAlt)
-        return scancodeToKeycode[sf::Keyboard::Scan::RAlt];
+    if (key == za::Keyboard::Key::RAlt)
+        return scancodeToKeycode[za::Keyboard::Scan::RAlt];
 
     return nullKeyCode;
 }
 
 
 ////////////////////////////////////////////////////////////
-KeySym scancodeToKeySym(sf::Keyboard::Scancode code)
+KeySym scancodeToKeySym(za::Keyboard::Scancode code)
 {
-    const auto display = sf::priv::openDisplay();
+    const auto display = za::priv::openDisplay();
 
     KeySym        keysym  = NoSymbol;
     const KeyCode keycode = scancodeToKeyCode(code);
@@ -566,7 +566,7 @@ bool isKeyPressedImpl(KeyCode keycode)
 {
     if (keycode != nullKeyCode)
     {
-        const auto display = sf::priv::openDisplay();
+        const auto display = za::priv::openDisplay();
 
         // Get the whole keyboard state
         char keys[32];
@@ -581,7 +581,7 @@ bool isKeyPressedImpl(KeyCode keycode)
 
 } // anonymous namespace
 
-namespace sf::priv
+namespace za::priv
 {
 
 ////////////////////////////////////////////////////////////
@@ -794,4 +794,4 @@ Keyboard::Scancode KeyboardImpl::getScancodeFromEvent(XKeyEvent& event)
     return keyCodeToScancode(static_cast<KeyCode>(event.keycode));
 }
 
-} // namespace sf::priv
+} // namespace za::priv

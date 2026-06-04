@@ -2,57 +2,57 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Window/Cursor.hpp"
+#include "Zancle/Window/Cursor.hpp"
 
-#include "SFML/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
-TEST_CASE("[Window] sf::Cursor" * tst::skip(skipDisplayTests))
+TEST_CASE("[Window] za::Cursor" * tst::skip(skipDisplayTests))
 {
-    auto windowContext = sf::WindowContext::create().value();
+    auto windowContext = za::WindowContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Cursor));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Cursor));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Cursor));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Cursor));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Cursor));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Cursor));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Cursor));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Cursor));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Cursor));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Cursor));
     }
 
     SECTION("loadFromPixels()")
     {
-        static constexpr sf::base::U8 pixels[4]{};
+        static constexpr zb::U8 pixels[4]{};
 
-        CHECK(!sf::Cursor::loadFromPixels(nullptr, {}, {}).hasValue());
-        CHECK(!sf::Cursor::loadFromPixels(pixels, {0, 1}, {}).hasValue());
-        CHECK(!sf::Cursor::loadFromPixels(pixels, {1, 0}, {}).hasValue());
-        CHECK(sf::Cursor::loadFromPixels(pixels, {1, 1}, {}).hasValue());
+        CHECK(!za::Cursor::loadFromPixels(nullptr, {}, {}).hasValue());
+        CHECK(!za::Cursor::loadFromPixels(pixels, {0, 1}, {}).hasValue());
+        CHECK(!za::Cursor::loadFromPixels(pixels, {1, 0}, {}).hasValue());
+        CHECK(za::Cursor::loadFromPixels(pixels, {1, 1}, {}).hasValue());
     }
 
     SECTION("loadFromSystem()")
     {
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::Hand).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeHorizontal).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeVertical).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeLeft).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeRight).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeTop).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeBottom).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeTopLeft).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeTopRight).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeBottomLeft).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::SizeBottomRight).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::Cross).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::Help).hasValue());
-        CHECK(sf::Cursor::loadFromSystem(sf::Cursor::Type::NotAllowed).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::Hand).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeHorizontal).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeVertical).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeLeft).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeRight).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeTop).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeBottom).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeTopLeft).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeTopRight).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeBottomLeft).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::SizeBottomRight).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::Cross).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::Help).hasValue());
+        CHECK(za::Cursor::loadFromSystem(za::Cursor::Type::NotAllowed).hasValue());
     }
 }

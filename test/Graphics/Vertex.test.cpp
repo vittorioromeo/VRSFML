@@ -1,60 +1,60 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::Vertex")
+TEST_CASE("[Graphics] za::Vertex")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Vertex));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Vertex));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Vertex));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Vertex));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Vertex));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vertex));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vertex));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vertex));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vertex));
+        STATIC_CHECK(ZB_IS_AGGREGATE(za::Vertex));
     }
 
     SECTION("Construction")
     {
         SECTION("Aggregate initialization -- Nothing")
         {
-            constexpr sf::Vertex vertex{};
-            STATIC_CHECK(vertex.position == sf::Vec2f(0.f, 0.f));
-            STATIC_CHECK(vertex.color == sf::Color(255, 255, 255));
-            STATIC_CHECK(vertex.texCoords == sf::Vec2f(0.f, 0.f));
+            constexpr za::Vertex vertex{};
+            STATIC_CHECK(vertex.position == za::Vec2f(0.f, 0.f));
+            STATIC_CHECK(vertex.color == za::Color(255, 255, 255));
+            STATIC_CHECK(vertex.texCoords == za::Vec2f(0.f, 0.f));
         }
 
         SECTION("Aggregate initialization -- Position")
         {
-            constexpr sf::Vertex vertex{{1.f, 2.f}};
-            STATIC_CHECK(vertex.position == sf::Vec2f(1.f, 2.f));
-            STATIC_CHECK(vertex.color == sf::Color(255, 255, 255));
-            STATIC_CHECK(vertex.texCoords == sf::Vec2f(0.f, 0.f));
+            constexpr za::Vertex vertex{{1.f, 2.f}};
+            STATIC_CHECK(vertex.position == za::Vec2f(1.f, 2.f));
+            STATIC_CHECK(vertex.color == za::Color(255, 255, 255));
+            STATIC_CHECK(vertex.texCoords == za::Vec2f(0.f, 0.f));
         }
 
         SECTION("Aggregate initialization -- Position and color")
         {
-            constexpr sf::Vertex vertex{{1.f, 2.f}, {3, 4, 5, 6}};
-            STATIC_CHECK(vertex.position == sf::Vec2f(1.f, 2.f));
-            STATIC_CHECK(vertex.color == sf::Color(3, 4, 5, 6));
-            STATIC_CHECK(vertex.texCoords == sf::Vec2f(0.f, 0.f));
+            constexpr za::Vertex vertex{{1.f, 2.f}, {3, 4, 5, 6}};
+            STATIC_CHECK(vertex.position == za::Vec2f(1.f, 2.f));
+            STATIC_CHECK(vertex.color == za::Color(3, 4, 5, 6));
+            STATIC_CHECK(vertex.texCoords == za::Vec2f(0.f, 0.f));
         }
 
         SECTION("Aggregate initialization -- Position, color, and coords")
         {
-            constexpr sf::Vertex vertex{{1.f, 2.f}, {3, 4, 5, 6}, {7.f, 8.f}};
-            STATIC_CHECK(vertex.position == sf::Vec2f(1.f, 2.f));
-            STATIC_CHECK(vertex.color == sf::Color(3, 4, 5, 6));
-            STATIC_CHECK(vertex.texCoords == sf::Vec2f(7.f, 8.f));
+            constexpr za::Vertex vertex{{1.f, 2.f}, {3, 4, 5, 6}, {7.f, 8.f}};
+            STATIC_CHECK(vertex.position == za::Vec2f(1.f, 2.f));
+            STATIC_CHECK(vertex.color == za::Color(3, 4, 5, 6));
+            STATIC_CHECK(vertex.texCoords == za::Vec2f(7.f, 8.f));
         }
     }
 }

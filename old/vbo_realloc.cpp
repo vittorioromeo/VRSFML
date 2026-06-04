@@ -19,18 +19,18 @@ base::SizeT eboCapacity{0u}; //!< Currently allocated capacity of the EBO
     auto&           object,
     base::SizeT&    capacity,
     const void*     data,
-    sf::base::SizeT byteCount)
+    zb::SizeT byteCount)
 {
     reallocObjectIfNeeded(type, object, capacity, byteCount);
     glCheck(glBufferSubData(type, 0u, byteCount, data));
 }
 
-[[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+[[gnu::always_inline]] void vboReallocAndMemcpy(const void* data, zb::SizeT byteCount)
 {
     objectReallocAndMemcpy(GL_ARRAY_BUFFER, vbo, vboCapacity, data, byteCount);
 }
 
-[[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, sf::base::SizeT byteCount)
+[[gnu::always_inline]] void eboReallocAndMemcpy(const void* data, zb::SizeT byteCount)
 {
     objectReallocAndMemcpy(GL_ELEMENT_ARRAY_BUFFER, ebo, eboCapacity, data, byteCount);
 }

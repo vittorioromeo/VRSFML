@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@ZA_RELATIVE_INSTALL_LIBDIR@
+includedir=${prefix}/include
+
+Name: SFML-all
+Description: The Simple and Fast Multimedia Library, all modules.
+URL: http://www.zancle-dev.org
+Version: @PROJECT_VERSION@
+Requires: zancle-system, zancle-window, zancle-graphics, zancle-audio, zancle-network

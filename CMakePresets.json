@@ -13,11 +13,11 @@
         "CMAKE_CXX_EXTENSIONS": "OFF",
         "CMAKE_CXX_SCAN_FOR_MODULES": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "SFML_BUILD_EXAMPLES": "ON",
-        "SFML_BUILD_TEST_SUITE": "ON",
-        "SFML_ENABLE_PCH": "OFF",
-        "SFML_USE_SYSTEM_DEPS": "OFF",
-        "SFML_WARNINGS_AS_ERRORS": "OFF"
+        "ZA_BUILD_EXAMPLES": "ON",
+        "ZA_BUILD_TEST_SUITE": "ON",
+        "ZA_ENABLE_PCH": "OFF",
+        "ZA_USE_SYSTEM_DEPS": "OFF",
+        "ZA_WARNINGS_AS_ERRORS": "OFF"
       },
       "environment": {
         "CXX_WARNINGS": "-Wall -Wextra -Wpedantic -Wno-ignored-attributes -Wno-unused-command-line-argument",
@@ -32,11 +32,11 @@
       "inherits": "build_base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "DEBUG",
-        "SFML_ENABLE_HARDENING_FLAGS": "ON",
-        "SFML_ENABLE_LIFETIME_TRACKING": "ON",
-        "SFML_ENABLE_STACK_TRACES": "ON",
-        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
-        "SFML_FATAL_OPENGL_ERRORS": "ON"
+        "ZA_ENABLE_HARDENING_FLAGS": "ON",
+        "ZA_ENABLE_LIFETIME_TRACKING": "ON",
+        "ZA_ENABLE_STACK_TRACES": "ON",
+        "ZA_ENABLE_STDLIB_ASSERTIONS": "ON",
+        "ZA_FATAL_OPENGL_ERRORS": "ON"
       }
     },
     {
@@ -46,9 +46,9 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-g -DNDEBUG",
-        "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
-        "SFML_ENABLE_STACK_TRACES": "OFF",
-        "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"
+        "ZA_ENABLE_LIFETIME_TRACKING": "OFF",
+        "ZA_ENABLE_STACK_TRACES": "OFF",
+        "ZA_ENABLE_STDLIB_ASSERTIONS": "OFF"
       }
     },
     {
@@ -75,7 +75,7 @@
       "name": "vrdev_clang_egl",
       "inherits": "vrdev_clang",
       "cacheVariables": {
-        "SFML_OPENGL_ES": "ON"
+        "ZA_OPENGL_ES": "ON"
       }
     },
     {
@@ -96,7 +96,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_OPENGL_ES": "ON"
+        "ZA_OPENGL_ES": "ON"
       }
     },
     {
@@ -159,7 +159,7 @@
       "name": "vrdev_clang_egl_rel",
       "inherits": "vrdev_clang_rel",
       "cacheVariables": {
-        "SFML_OPENGL_ES": "ON"
+        "ZA_OPENGL_ES": "ON"
       }
     },
     {
@@ -190,7 +190,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{OFAST} $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_OPENGL_ES": "ON"
+        "ZA_OPENGL_ES": "ON"
       }
     },
     {
@@ -201,7 +201,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_OPENGL_ES": "ON"
+        "ZA_OPENGL_ES": "ON"
       }
     },
     {
@@ -212,7 +212,7 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{OFAST} $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_OPENGL_ES": "ON"
+        "ZA_OPENGL_ES": "ON"
       }
     },
     {

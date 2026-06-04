@@ -4,13 +4,13 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/CaptureDevice.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/CaptureDevice.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Scn/ScnStdin.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Scn/ScnStdin.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -23,14 +23,14 @@ int main()
     const unsigned short port = 2435;
 
     // Client or server ?
-    sf::base::print("Do you want to be a server ('s') or a client ('c')? ");
-    const char who = sf::base::scnStdin<char>().valueOr('c');
+    zb::print("Do you want to be a server ('s') or a client ('c')? ");
+    const char who = zb::scnStdin<char>().valueOr('c');
 
     if (who == 's')
     {
         // Create an audio context and get the default playback device
-        auto               audioContext = sf::AudioContext::create().value();
-        sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+        auto               audioContext = za::AudioContext::create().value();
+        za::PlaybackDevice playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
         // Run as a server
         doServer(playbackDevice, port);
@@ -38,14 +38,14 @@ int main()
     else
     {
         // Create an audio context and get the default capture device
-        auto              audioContext = sf::AudioContext::create().value();
-        sf::CaptureDevice captureDevice{sf::AudioContext::getDefaultCaptureDeviceHandle().value()};
+        auto              audioContext = za::AudioContext::create().value();
+        za::CaptureDevice captureDevice{za::AudioContext::getDefaultCaptureDeviceHandle().value()};
 
         // Run as a client
         doClient(captureDevice, port);
     }
 
     // Wait until the user presses 'enter' key
-    sf::base::printLn("Press enter to exit...");
-    sf::base::scnStdinIgnoreLine();
+    zb::printLn("Press enter to exit...");
+    zb::scnStdinIgnoreLine();
 }

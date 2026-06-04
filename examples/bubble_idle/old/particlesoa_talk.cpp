@@ -1,8 +1,8 @@
 struct ParticleSoA
 {
-    std::vector<sf::Vec2f> position;
-    std::vector<sf::Vec2f> velocity;
-    std::vector<sf::Vec2f> acceleration;
+    std::vector<za::Vec2f> position;
+    std::vector<za::Vec2f> velocity;
+    std::vector<za::Vec2f> acceleration;
 
     std::vector<float> scale;
     std::vector<float> opacity;
@@ -12,7 +12,7 @@ struct ParticleSoA
     std::vector<float> opacityChange;
     std::vector<float> angularVelocity;
 
-    void pushBack(const sf::Vec2f pos, const sf::Vec2f vel, const sf::Vec2f acc, float s, float o, float r, float sr, float oc, float av)
+    void pushBack(const za::Vec2f pos, const za::Vec2f vel, const za::Vec2f acc, float s, float o, float r, float sr, float oc, float av)
     {
         position.push_back(pos);
         velocity.push_back(vel);

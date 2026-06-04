@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Builtin/Unreachable.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Builtin/Unreachable.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 namespace tsurv
@@ -16,7 +16,7 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 struct LaserDirection
 {
-    enum [[nodiscard]] Enum : sf::base::U8
+    enum [[nodiscard]] Enum : zb::U8
     {
         Left  = 0u,
         Right = 1u,
@@ -25,11 +25,11 @@ struct LaserDirection
 
 
 /////////////////////////////////////////////////////////////
-inline constexpr sf::base::SizeT laserDirectionCount = 2u;
+inline constexpr zb::SizeT laserDirectionCount = 2u;
 
 
 /////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr sf::Vec2i laserDirectionToVec2i(const LaserDirection::Enum direction)
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr za::Vec2i laserDirectionToVec2i(const LaserDirection::Enum direction)
 {
     switch (direction)
     {
@@ -38,7 +38,7 @@ inline constexpr sf::base::SizeT laserDirectionCount = 2u;
         case LaserDirection::Right:
             return {1, 1};
         default:
-            SFML_BASE_UNREACHABLE();
+            ZB_UNREACHABLE();
     }
 }
 

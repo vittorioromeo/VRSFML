@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Assert.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Assert.hpp"
 
 
 namespace tsurv
@@ -18,23 +18,23 @@ class [[nodiscard]] BitmapFont
 {
 private:
     //////////////////////////////////////////////////////////////
-    sf::base::Array<sf::Rect2uz, 256> m_glyphRects;
+    zb::Array<za::Rect2uz, 256> m_glyphRects;
 
 public:
     //////////////////////////////////////////////////////////////
-    void addGlyph(const char c, const sf::Vec2uz position, const sf::Vec2uz size)
+    void addGlyph(const char c, const za::Vec2uz position, const za::Vec2uz size)
     {
-        SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(c) < m_glyphRects.size());
+        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
 
-        m_glyphRects[static_cast<sf::base::SizeT>(c)] = {position, size};
+        m_glyphRects[static_cast<zb::SizeT>(c)] = {position, size};
     }
 
     //////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2uz getGlyphRect(const char c) const
+    [[nodiscard]] za::Rect2uz getGlyphRect(const char c) const
     {
-        SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(c) < m_glyphRects.size());
+        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
 
-        const auto& [glyphPos, glyphSize] = m_glyphRects[static_cast<sf::base::SizeT>(c)];
+        const auto& [glyphPos, glyphSize] = m_glyphRects[static_cast<zb::SizeT>(c)];
 
         return {
             .position = glyphPos,
@@ -43,7 +43,7 @@ public:
     }
 
     //////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f getGlyphTextureRect(const sf::Rect2f& fontTextureRect, const char c) const
+    [[nodiscard]] za::Rect2f getGlyphTextureRect(const za::Rect2f& fontTextureRect, const char c) const
     {
         const auto glyphRect = getGlyphRect(c).toRect2f();
 
@@ -54,20 +54,20 @@ public:
     }
 
     //////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2uz getGlyphSize([[maybe_unused]] const char c) const
+    [[nodiscard]] za::Vec2uz getGlyphSize([[maybe_unused]] const char c) const
     {
-        SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(c) < m_glyphRects.size());
+        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
 
-        return m_glyphRects[static_cast<sf::base::SizeT>(c)].size;
+        return m_glyphRects[static_cast<zb::SizeT>(c)].size;
     }
 
 
     //////////////////////////////////////////////////////////////
-    void adjustSize(const char c, const sf::Vec2i offset)
+    void adjustSize(const char c, const za::Vec2i offset)
     {
-        SFML_BASE_ASSERT(static_cast<sf::base::SizeT>(c) < m_glyphRects.size());
+        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
 
-        auto& glyphRect = m_glyphRects[static_cast<sf::base::SizeT>(c)];
+        auto& glyphRect = m_glyphRects[static_cast<zb::SizeT>(c)];
         glyphRect.size  = (glyphRect.size.toVec2i() + offset).toVec2uz();
     }
 };

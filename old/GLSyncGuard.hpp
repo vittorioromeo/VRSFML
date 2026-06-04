@@ -1,17 +1,17 @@
 #pragma once
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/Glad.hpp"
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
 
-#include "SFML/Base/Assert.hpp"
+#include "ZancleBase/Assert.hpp"
 
 
-namespace sf
+namespace za
 {
 ////////////////////////////////////////////////////////////
 class GLSyncGuard
@@ -30,7 +30,7 @@ public:
         {
             const GLenum waitReturn = glCheck(glClientWaitSync(m_sync, GL_SYNC_FLUSH_COMMANDS_BIT, 1u));
 
-            SFML_BASE_ASSERT(waitReturn != GL_WAIT_FAILED);
+            ZB_ASSERT(waitReturn != GL_WAIT_FAILED);
 
             if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
                 return;
@@ -54,4 +54,4 @@ private:
     GLsync m_sync;
 };
 
-} // namespace sf
+} // namespace za

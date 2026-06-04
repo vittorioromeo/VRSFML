@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] BubbleType : sf::base::U8
+enum class [[nodiscard]] BubbleType : zb::U8
 {
     Normal = 0u,
     Star   = 1u,
@@ -19,11 +19,11 @@ enum class [[nodiscard]] BubbleType : sf::base::U8
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto asIdx(const BubbleType type) noexcept
 {
-    return static_cast<sf::base::SizeT>(type);
+    return static_cast<zb::SizeT>(type);
 }
 
 ////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
+enum : zb::SizeT
 {
     nBubbleTypes = asIdx(BubbleType::Count)
 };

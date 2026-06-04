@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Base/TokenPaste.hpp"
+#include "ZancleBase/TokenPaste.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,4 +24,4 @@ struct MemberScopeGuard
 
 ////////////////////////////////////////////////////////////
 #define MEMBER_SCOPE_GUARD(type, ...) \
-    MemberScopeGuard<type, [](auto& self) __VA_ARGS__> SFML_BASE_TOKEN_PASTE(bbMemberScopeGuard, __LINE__) { this }
+    MemberScopeGuard<type, [](auto& self) __VA_ARGS__> ZB_TOKEN_PASTE(bbMemberScopeGuard, __LINE__) { this }

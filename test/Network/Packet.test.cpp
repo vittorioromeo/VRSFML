@@ -1,20 +1,20 @@
-#include "SFML/Network/Packet.hpp"
+#include "Zancle/Network/Packet.hpp"
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/Trait/RemoveConst.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/RemoveConst.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <limits>
 #include <string>
@@ -25,7 +25,7 @@
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
     do                                                       \
     {                                                        \
-        sf::Packet packet;                                   \
+        za::Packet packet;                                   \
         packet << (expected);                                \
         CHECK(packet.getReadPosition() == 0);                \
         CHECK(packet.getData() != nullptr);                  \
@@ -46,7 +46,7 @@
 #define CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(expected, size)      \
     do                                                                   \
     {                                                                    \
-        sf::Packet packet;                                               \
+        za::Packet packet;                                               \
         packet << (expected);                                            \
         CHECK(packet.getReadPosition() == 0);                            \
         CHECK(packet.getData() != nullptr);                              \
@@ -54,20 +54,20 @@
         CHECK(!packet.endOfPacket());                                    \
         CHECK(bool{packet});                                             \
                                                                          \
-        SFML_BASE_REMOVE_CONST(decltype(expected)) received;             \
+        ZB_REMOVE_CONST(decltype(expected)) received;             \
         packet >> received;                                              \
         CHECK(packet.getReadPosition() == (size));                       \
         CHECK(packet.getData() != nullptr);                              \
         CHECK(packet.getDataSize() == (size));                           \
         CHECK(packet.endOfPacket());                                     \
         CHECK(bool{packet});                                             \
-        CHECK(sf::base::String{expected} == sf::base::String{received}); \
+        CHECK(zb::String{expected} == zb::String{received}); \
     } while (false)
 
 #define CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(expected, size)                               \
     do                                                                                          \
     {                                                                                           \
-        sf::Packet packet;                                                                      \
+        za::Packet packet;                                                                      \
         packet << (expected);                                                                   \
         CHECK(packet.getReadPosition() == 0);                                                   \
         CHECK(packet.getData() != nullptr);                                                     \
@@ -75,7 +75,7 @@
         CHECK(!packet.endOfPacket());                                                           \
         CHECK(bool{packet});                                                                    \
                                                                                                 \
-        SFML_BASE_REMOVE_CONST(decltype(expected)) received;                                    \
+        ZB_REMOVE_CONST(decltype(expected)) received;                                    \
         packet >> received;                                                                     \
         CHECK(packet.getReadPosition() == (size));                                              \
         CHECK(packet.getData() != nullptr);                                                     \
@@ -87,25 +87,25 @@
         CHECK(roundTripEqual);                                                                  \
     } while (false)
 
-struct Packet : sf::Packet
+struct Packet : za::Packet
 {
-    using sf::Packet::onReceive;
-    using sf::Packet::onSend;
+    using za::Packet::onReceive;
+    using za::Packet::onSend;
 };
 
-TEST_CASE("[Network] sf::Packet")
+TEST_CASE("[Network] za::Packet")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Packet));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Packet));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Packet));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Packet));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Packet));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Packet));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Packet));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Packet));
     }
 
     SECTION("Default constructor")
     {
-        const sf::Packet packet;
+        const za::Packet packet;
         CHECK(packet.getReadPosition() == 0);
         CHECK(packet.getData() == nullptr);
         CHECK(packet.getDataSize() == 0);
@@ -117,7 +117,7 @@ TEST_CASE("[Network] sf::Packet")
 
     SECTION("Append and clear")
     {
-        sf::Packet packet;
+        za::Packet packet;
         packet.append(data, 6);
         CHECK(packet.getReadPosition() == 0);
         CHECK(packet.getData() != nullptr);
@@ -135,23 +135,23 @@ TEST_CASE("[Network] sf::Packet")
 
     SECTION("Wire byte order (little-endian, host order)")
     {
-        sf::Packet packet;
+        za::Packet packet;
 
         SECTION("16 bit int")
         {
-            packet << sf::base::U16{12'345};
+            packet << zb::U16{12'345};
             const auto*                       dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x39}, std::byte{0x30}};
+            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const zb::Vector<std::byte> expectedBytes{std::byte{0x39}, std::byte{0x30}};
             CHECK((bytes == expectedBytes));
         }
 
         SECTION("32 bit int")
         {
-            packet << sf::base::U32{1'234'567'890};
+            packet << zb::U32{1'234'567'890};
             const auto*                       dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::Vector<std::byte> expectedBytes{std::byte{0xD2}, std::byte{0x02}, std::byte{0x96}, std::byte{0x49}};
+            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const zb::Vector<std::byte> expectedBytes{std::byte{0xD2}, std::byte{0x02}, std::byte{0x96}, std::byte{0x49}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -159,8 +159,8 @@ TEST_CASE("[Network] sf::Packet")
         {
             packet << 123.456f;
             const auto*                       dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x79}, std::byte{0xe9}, std::byte{0xf6}, std::byte{0x42}};
+            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const zb::Vector<std::byte> expectedBytes{std::byte{0x79}, std::byte{0xe9}, std::byte{0xf6}, std::byte{0x42}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -168,8 +168,8 @@ TEST_CASE("[Network] sf::Packet")
         {
             packet << 789.123;
             const auto*                       dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x44},
+            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const zb::Vector<std::byte> expectedBytes{std::byte{0x44},
                                                             std::byte{0x8b},
                                                             std::byte{0x6c},
                                                             std::byte{0xe7},
@@ -189,68 +189,68 @@ TEST_CASE("[Network] sf::Packet")
             CHECK_PACKET_STREAM_OPERATORS(false);
         }
 
-        SECTION("sf::base::I8")
+        SECTION("zb::I8")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I8(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I8(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I8>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I8>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::I8(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::I8(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I8>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I8>::max());
         }
 
-        SECTION("sf::base::U8")
+        SECTION("zb::U8")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U8(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U8(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U8>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U8>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::U8(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::U8(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U8>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U8>::max());
         }
 
-        SECTION("sf::base::I16")
+        SECTION("zb::I16")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I16(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I16(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I16>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I16>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::I16(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::I16(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I16>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I16>::max());
         }
 
-        SECTION("sf::base::U16")
+        SECTION("zb::U16")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U16(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U16(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U16>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U16>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::U16(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::U16(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U16>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U16>::max());
         }
 
-        SECTION("sf::base::I32")
+        SECTION("zb::I32")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I32(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I32(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I32>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I32>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::I32(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::I32(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I32>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I32>::max());
         }
 
-        SECTION("sf::base::U32")
+        SECTION("zb::U32")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U32(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U32(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U32>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U32>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::U32(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::U32(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U32>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U32>::max());
         }
 
-        SECTION("sf::base::I64")
+        SECTION("zb::I64")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I64(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::I64(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I64>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I64>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::I64(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::I64(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I64>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I64>::max());
         }
 
-        SECTION("sf::base::U64")
+        SECTION("zb::U64")
         {
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U64(0));
-            CHECK_PACKET_STREAM_OPERATORS(sf::base::U64(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U64>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U64>::max());
+            CHECK_PACKET_STREAM_OPERATORS(zb::U64(0));
+            CHECK_PACKET_STREAM_OPERATORS(zb::U64(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U64>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U64>::max());
         }
 
         SECTION("float")
@@ -275,9 +275,9 @@ TEST_CASE("[Network] sf::Packet")
             CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
-        SECTION("sf::base::String")
+        SECTION("zb::String")
         {
-            const sf::base::String string = "testing";
+            const zb::String string = "testing";
             CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
@@ -287,9 +287,9 @@ TEST_CASE("[Network] sf::Packet")
             CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(string, 4 * string.size() + 4);
         }
 
-        SECTION("sf::Utf8String")
+        SECTION("za::Utf8String")
         {
-            const sf::Utf8String string = "testing";
+            const za::Utf8String string = "testing";
             // New wire format: 4-byte length + UTF-8 byte payload.
             CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.byteSize() + 4);
         }
@@ -298,7 +298,7 @@ TEST_CASE("[Network] sf::Packet")
     SECTION("onSend")
     {
         Packet          packet;
-        sf::base::SizeT size = 0;
+        zb::SizeT size = 0;
         CHECK(packet.onSend(size) == nullptr);
         CHECK(size == 0);
 
@@ -320,11 +320,11 @@ TEST_CASE("[Network] sf::Packet")
     {
         static constexpr struct
         {
-            sf::base::U32 length{std::numeric_limits<decltype(length)>::max()};
+            zb::U32 length{std::numeric_limits<decltype(length)>::max()};
             char          data[4]{'S', 'F', 'M', 'L'};
         } string;
 
-        sf::Packet packet;
+        za::Packet packet;
         packet.append(&string, sizeof(string));
 
         std::string out;

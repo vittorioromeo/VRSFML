@@ -15,20 +15,20 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Vector.hpp"
 
 namespace
 {
@@ -70,10 +70,10 @@ void drawButtonRow2(const char* label0, TAction0&& action0, const char* label1, 
 void drawDebugQuickTools(Main& main)
 {
     static int                catTypeN          = 0;
-    static sf::base::I64      speedrunTimerSet  = 0;
+    static zb::I64      speedrunTimerSet  = 0;
     static char               filenameBuf[128]  = "userdata/custom.json";
-    constexpr sf::base::I64   speedrunTimerStep = 1;
-    constexpr sf::base::SizeT currencyStep      = 1u;
+    constexpr zb::I64   speedrunTimerStep = 1;
+    constexpr zb::SizeT currencyStep      = 1u;
 
     auto fullWidth = [&] { return ImGui::GetContentRegionAvail().x - 140.f; };
 
@@ -117,7 +117,7 @@ void drawDebugQuickTools(Main& main)
     ImGui::SetNextItemWidth(fullWidth());
     if (ImGui::InputScalar("Speedrun timer", ImGuiDataType_S64, &speedrunTimerSet, &speedrunTimerStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
     {
-        main.pt->speedrunStartTime.emplace(sf::microseconds(speedrunTimerSet));
+        main.pt->speedrunStartTime.emplace(za::microseconds(speedrunTimerSet));
     }
 
     drawDebugSectionTitle("Events");
@@ -136,7 +136,7 @@ void drawDebugQuickTools(Main& main)
         const float halfWidth   = bfCfg.regionWidth * 0.5f;
         const float mapLimit    = main.pt->getMapLimit();
 
-        main.addEventBubblefall(sf::base::clamp(viewCenterX, halfWidth, mapLimit - halfWidth));
+        main.addEventBubblefall(zb::clamp(viewCenterX, halfWidth, mapLimit - halfWidth));
     });
 
     drawButtonRow2("Clear events", [&main] { main.pt->activeEvents.clear(); }, "Invincible bubble", [&main] {
@@ -145,7 +145,7 @@ void drawDebugQuickTools(Main& main)
 
     if (ImGui::Button("Nap random cat", {fullWidth(), 0.f}))
     {
-        sf::base::SizeT eligibleCount = 0u;
+        zb::SizeT eligibleCount = 0u;
         Cat*            selected      = nullptr;
 
         for (Cat& candidate : main.pt->cats)
@@ -156,7 +156,7 @@ void drawDebugQuickTools(Main& main)
             ++eligibleCount;
 
             // Reservoir sampling.
-            if (main.rng.getI<sf::base::SizeT>(0, eligibleCount - 1) == 0)
+            if (main.rng.getI<zb::SizeT>(0, eligibleCount - 1) == 0)
                 selected = &candidate;
         }
 
@@ -292,20 +292,20 @@ void drawDebugStateEditors(Main& main)
     main.uiSetFontScale(main.uiToolTipFontScale);
     ImGui::PushFont(main.fontImGuiMouldyCheese);
 
-    sf::base::SizeT integerStep = 1u;
+    zb::SizeT integerStep = 1u;
     float           floatStep   = 1.f;
-    sf::base::SizeT counter     = 0u;
+    zb::SizeT counter     = 0u;
 
     const auto scalarInput = [&](const char* label, float& value)
     {
-        sf::base::String lbuf = label;
+        zb::String lbuf = label;
         lbuf += "##";
-        lbuf += sf::base::toString(counter++);
+        lbuf += zb::toString(counter++);
 
         ImGui::SetNextItemWidth(160.f * main.profile.uiScale);
         if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_Float, &value, &floatStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
         {
-            value = sf::base::clamp(value, 0.f, 10'000.f);
+            value = zb::clamp(value, 0.f, 10'000.f);
         }
     };
 
@@ -314,14 +314,14 @@ void drawDebugStateEditors(Main& main)
         if (psv.data->nMaxPurchases == 0u)
             return;
 
-        sf::base::String lbuf = label;
+        zb::String lbuf = label;
         lbuf += "##";
-        lbuf += sf::base::toString(counter++);
+        lbuf += zb::toString(counter++);
 
         ImGui::SetNextItemWidth(160.f * main.profile.uiScale);
         if (ImGui::InputScalar(lbuf.cStr(), ImGuiDataType_U64, &psv.nPurchases, &integerStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
         {
-            psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
+            psv.nPurchases = zb::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
         }
     };
 
@@ -337,7 +337,7 @@ void drawDebugStateEditors(Main& main)
         ImGui::InputInt(label, &value);
     };
 
-    const auto inputVec2 = [&](const char* label, sf::Vec2f& value)
+    const auto inputVec2 = [&](const char* label, za::Vec2f& value)
     {
         ImGui::SetNextItemWidth(280.f * main.profile.uiScale);
         ImGui::InputFloat2(label, &value.x, "%.2f");
@@ -369,7 +369,7 @@ void drawDebugStateEditors(Main& main)
     if (ImGui::CollapsingHeader("Cat Buff Countdown Values"))
     {
         for (SizeT i = 0u; i < nCatTypes; ++i)
-            scalarInput((sf::base::toString(i) + "Buff").cStr(), main.pt->buffCountdownsPerType[i].time);
+            scalarInput((zb::toString(i) + "Buff").cStr(), main.pt->buffCountdownsPerType[i].time);
     }
 
     if (ImGui::CollapsingHeader("Per-cat Upgrade Tables"))
@@ -549,7 +549,7 @@ void drawDebugStateEditors(Main& main)
                 int bubblesPerTick = static_cast<int>(bf.bubblesPerTick);
                 ImGui::SetNextItemWidth(220.f * main.profile.uiScale);
                 if (ImGui::InputInt("Bubbles per tick", &bubblesPerTick) && bubblesPerTick >= 0)
-                    bf.bubblesPerTick = static_cast<sf::base::SizeT>(bubblesPerTick);
+                    bf.bubblesPerTick = static_cast<zb::SizeT>(bubblesPerTick);
 
                 inputFloat("Initial velocity Y", bf.initialVelocityY);
                 inputFloat("Velocity jitter Y", bf.velocityJitterY);
@@ -573,7 +573,7 @@ void Main::uiDrawDebugWindow()
     if (!isDebugModeEnabled() || !uiState.debugWindowVisible)
         return;
 
-    const sf::Vec2f resolution = getResolution();
+    const za::Vec2f resolution = getResolution();
     const float     scale      = profile.uiScale;
     const float     margin     = 24.f * scale;
 
@@ -620,7 +620,7 @@ void Main::uiSettingsDrawDebugTab()
     const float desiredLeft  = 430.f * profile.uiScale;
     const float minLeft      = 460.f * profile.uiScale;
     const float maxLeft      = contentWidth * 0.48f;
-    const float leftPaneWidth = maxLeft > minLeft ? sf::base::clamp(desiredLeft, minLeft, maxLeft) : contentWidth * 0.5f;
+    const float leftPaneWidth = maxLeft > minLeft ? zb::clamp(desiredLeft, minLeft, maxLeft) : contentWidth * 0.5f;
 
     ImGui::BeginChild("DebugQuickToolsPane", {leftPaneWidth, 0.f}, true);
     drawDebugQuickTools(*this);

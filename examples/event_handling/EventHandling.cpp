@@ -3,42 +3,42 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Trait/Decay.hpp"
-#include "SFML/Base/Trait/IsSame.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Trait/Decay.hpp"
+#include "ZancleBase/Trait/IsSame.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::String vec2ToString(const sf::Vec2i vec2)
+[[nodiscard]] zb::String vec2ToString(const za::Vec2i vec2)
 {
-    return '(' + sf::base::toString(vec2.x) + ", " + sf::base::toString(vec2.y) + ')';
+    return '(' + zb::toString(vec2.x) + ", " + zb::toString(vec2.y) + ')';
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::String scancodeToString(const sf::Keyboard::Scancode scancode)
+[[nodiscard]] zb::String scancodeToString(const za::Keyboard::Scancode scancode)
 {
-    return sf::Keyboard::getDescription(scancode).asBytes();
+    return za::Keyboard::getDescription(scancode).asBytes();
 }
 
 } // namespace
@@ -60,52 +60,52 @@ public:
         {
         }
 
-        sf::base::Optional<sf::base::String> operator()(sf::Event::Closed)
+        zb::Optional<zb::String> operator()(za::Event::Closed)
         {
             application.m_mustClose = true;
-            return sf::base::nullOpt;
+            return zb::nullOpt;
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::KeyPressed& keyPress)
+        zb::Optional<zb::String> operator()(const za::Event::KeyPressed& keyPress)
         {
             // When the enter key is pressed, switch to the next handler type
-            if (keyPress.code == sf::Keyboard::Key::Enter)
+            if (keyPress.code == za::Keyboard::Key::Enter)
             {
                 application.m_handlerType = HandlerType::Overload;
                 application.m_handlerText.setString("Current Handler: Overload");
             }
 
-            return sf::base::makeOptional<sf::base::String>("Key Pressed: " + scancodeToString(keyPress.scancode));
+            return zb::makeOptional<zb::String>("Key Pressed: " + scancodeToString(keyPress.scancode));
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::KeyReleased& keyRelease)
+        zb::Optional<zb::String> operator()(const za::Event::KeyReleased& keyRelease)
         {
-            return sf::base::makeOptional<sf::base::String>("Key Released: " + scancodeToString(keyRelease.scancode));
+            return zb::makeOptional<zb::String>("Key Released: " + scancodeToString(keyRelease.scancode));
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::MouseMoved& mouseMoved)
+        zb::Optional<zb::String> operator()(const za::Event::MouseMoved& mouseMoved)
         {
-            return sf::base::makeOptional<sf::base::String>("Mouse Moved: " + vec2ToString(mouseMoved.position));
+            return zb::makeOptional<zb::String>("Mouse Moved: " + vec2ToString(mouseMoved.position));
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::MouseButtonPressed&)
+        zb::Optional<zb::String> operator()(const za::Event::MouseButtonPressed&)
         {
-            return sf::base::makeOptional<sf::base::String>("Mouse Pressed");
+            return zb::makeOptional<zb::String>("Mouse Pressed");
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::TouchBegan& touchBegan)
+        zb::Optional<zb::String> operator()(const za::Event::TouchBegan& touchBegan)
         {
-            return sf::base::makeOptional<sf::base::String>("Touch Began: " + vec2ToString(touchBegan.position));
+            return zb::makeOptional<zb::String>("Touch Began: " + vec2ToString(touchBegan.position));
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::TouchEnded& touchEnded)
+        zb::Optional<zb::String> operator()(const za::Event::TouchEnded& touchEnded)
         {
-            return sf::base::makeOptional<sf::base::String>("Touch Ended: " + vec2ToString(touchEnded.position));
+            return zb::makeOptional<zb::String>("Touch Ended: " + vec2ToString(touchEnded.position));
         }
 
-        sf::base::Optional<sf::base::String> operator()(const sf::Event::TouchMoved& touchMoved)
+        zb::Optional<zb::String> operator()(const za::Event::TouchMoved& touchMoved)
         {
-            return sf::base::makeOptional<sf::base::String>("Touch Moved: " + vec2ToString(touchMoved.position));
+            return zb::makeOptional<zb::String>("Touch Moved: " + vec2ToString(touchMoved.position));
         }
 
         // When defining a visitor, make sure all event types can be handled by it.
@@ -113,11 +113,11 @@ public:
         // event type, you can provide a templated operator() that will be selected
         // by overload resolution when no other event type matches.
         template <typename T>
-        sf::base::Optional<sf::base::String> operator()(const T&)
+        zb::Optional<zb::String> operator()(const T&)
         {
             // All unhandled events will end up here
             // application.m_log.emplaceBack("Other Event");
-            return sf::base::nullOpt;
+            return zb::nullOpt;
         }
 
         Application& application;
@@ -129,46 +129,46 @@ public:
         // The "classical form" of event handling
         // Poll/Wait for events in a loop and handle them
         // individually based on their concrete type
-        while (const sf::base::Optional event = m_window.pollEvent())
+        while (const zb::Optional event = m_window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>())
+            if (event->is<za::Event::Closed>())
             {
                 m_mustClose = true;
                 return;
             }
 
-            if (const auto* keyPress = event->getIf<sf::Event::KeyPressed>())
+            if (const auto* keyPress = event->getIf<za::Event::KeyPressed>())
             {
                 m_log.emplaceBack("Key Pressed: " + scancodeToString(keyPress->scancode));
 
                 // When the enter key is pressed, switch to the next handler type
-                if (keyPress->code == sf::Keyboard::Key::Enter)
+                if (keyPress->code == za::Keyboard::Key::Enter)
                 {
                     m_handlerType = HandlerType::Visitor;
                     m_handlerText.setString("Current Handler: Visitor");
                 }
             }
-            else if (const auto* keyRelease = event->getIf<sf::Event::KeyReleased>())
+            else if (const auto* keyRelease = event->getIf<za::Event::KeyReleased>())
             {
                 m_log.emplaceBack("Key Released: " + scancodeToString(keyRelease->scancode));
             }
-            else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            else if (const auto* mouseMoved = event->getIf<za::Event::MouseMoved>())
             {
                 m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved->position));
             }
-            else if (event->is<sf::Event::MouseButtonPressed>())
+            else if (event->is<za::Event::MouseButtonPressed>())
             {
                 m_log.emplaceBack("Mouse Pressed");
             }
-            else if (const auto* touchBegan = event->getIf<sf::Event::TouchBegan>())
+            else if (const auto* touchBegan = event->getIf<za::Event::TouchBegan>())
             {
                 m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan->position));
             }
-            else if (const auto* touchEnded = event->getIf<sf::Event::TouchEnded>())
+            else if (const auto* touchEnded = event->getIf<za::Event::TouchEnded>())
             {
                 m_log.emplaceBack("Touch Ended: " + vec2ToString(touchEnded->position));
             }
-            else if (const auto* touchMoved = event->getIf<sf::Event::TouchMoved>())
+            else if (const auto* touchMoved = event->getIf<za::Event::TouchMoved>())
             {
                 m_log.emplaceBack("Touch Moved: " + vec2ToString(touchMoved->position));
             }
@@ -186,10 +186,10 @@ public:
         // Event Visitor
         // A visitor able to visit all event types is passed to the event
         // The visitor's defined operator()s can also return values
-        while (const sf::base::Optional event = m_window.pollEvent())
+        while (const zb::Optional event = m_window.pollEvent())
         {
-            if (sf::base::Optional logMessage = event->visit(Visitor(*this)))
-                m_log.emplaceBack(SFML_BASE_MOVE(*logMessage));
+            if (zb::Optional logMessage = event->visit(Visitor(*this)))
+                m_log.emplaceBack(ZB_MOVE(*logMessage));
         }
     }
 
@@ -198,28 +198,28 @@ public:
     {
         // Overloaded visitation
         // A callable taking a concrete event type is provided per event type you want to handle
-        m_window.pollAndHandleEvents([&](sf::Event::Closed) { m_mustClose = true; },
-                                     [&](const sf::Event::KeyPressed& keyPress)
+        m_window.pollAndHandleEvents([&](za::Event::Closed) { m_mustClose = true; },
+                                     [&](const za::Event::KeyPressed& keyPress)
         {
             m_log.emplaceBack("Key Pressed: " + scancodeToString(keyPress.scancode));
 
             // When the enter key is pressed, switch to the next handler type
-            if (keyPress.code == sf::Keyboard::Key::Enter)
+            if (keyPress.code == za::Keyboard::Key::Enter)
             {
                 m_handlerType = HandlerType::Generic;
                 m_handlerText.setString("Current Handler: Generic");
             }
         },
-                                     [&](const sf::Event::KeyReleased& keyRelease)
+                                     [&](const za::Event::KeyReleased& keyRelease)
         { m_log.emplaceBack("Key Released: " + scancodeToString(keyRelease.scancode)); },
-                                     [&](const sf::Event::MouseMoved& mouseMoved)
+                                     [&](const za::Event::MouseMoved& mouseMoved)
         { m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
-                                     [&](const sf::Event::MouseButtonPressed&) { m_log.emplaceBack("Mouse Pressed"); },
-                                     [&](const sf::Event::TouchBegan& touchBegan)
+                                     [&](const za::Event::MouseButtonPressed&) { m_log.emplaceBack("Mouse Pressed"); },
+                                     [&](const za::Event::TouchBegan& touchBegan)
         { m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position)); },
-                                     [&](const sf::Event::TouchEnded& touchEnded)
+                                     [&](const za::Event::TouchEnded& touchEnded)
         { m_log.emplaceBack("Touch Ended: " + vec2ToString(touchEnded.position)); },
-                                     [&](const sf::Event::TouchMoved& touchMoved)
+                                     [&](const za::Event::TouchMoved& touchMoved)
         { m_log.emplaceBack("Touch Moved: " + vec2ToString(touchMoved.position)); });
 
         // To handle unhandled events, just add the following lambda to the set of handlers
@@ -234,44 +234,44 @@ public:
         m_window.pollAndHandleEvents([&](auto&& event)
         {
             // Remove reference and cv-qualifiers
-            using T = sf::base::Decay<decltype(event)>;
+            using T = zb::Decay<decltype(event)>;
 
-            if constexpr (sf::base::isSame<T, sf::Event::Closed>)
+            if constexpr (zb::isSame<T, za::Event::Closed>)
             {
                 m_mustClose = true;
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::KeyPressed>)
+            else if constexpr (zb::isSame<T, za::Event::KeyPressed>)
             {
                 m_log.emplaceBack("Key Pressed: " + scancodeToString(event.scancode));
 
                 // When the enter key is pressed, switch to the next handler type
-                if (event.code == sf::Keyboard::Key::Enter)
+                if (event.code == za::Keyboard::Key::Enter)
                 {
                     m_handlerType = HandlerType::Forward;
                     m_handlerText.setString("Current Handler: Forward");
                 }
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::KeyReleased>)
+            else if constexpr (zb::isSame<T, za::Event::KeyReleased>)
             {
                 m_log.emplaceBack("Key Released: " + scancodeToString(event.scancode));
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::MouseMoved>)
+            else if constexpr (zb::isSame<T, za::Event::MouseMoved>)
             {
                 m_log.emplaceBack("Mouse Moved: " + vec2ToString(event.position));
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::MouseButtonPressed>)
+            else if constexpr (zb::isSame<T, za::Event::MouseButtonPressed>)
             {
                 m_log.emplaceBack("Mouse Pressed");
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::TouchBegan>)
+            else if constexpr (zb::isSame<T, za::Event::TouchBegan>)
             {
                 m_log.emplaceBack("Touch Began: " + vec2ToString(event.position));
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::TouchEnded>)
+            else if constexpr (zb::isSame<T, za::Event::TouchEnded>)
             {
                 m_log.emplaceBack("Touch Ended: " + vec2ToString(event.position));
             }
-            else if constexpr (sf::base::isSame<T, sf::Event::TouchMoved>)
+            else if constexpr (zb::isSame<T, za::Event::TouchMoved>)
             {
                 m_log.emplaceBack("Touch Moved: " + vec2ToString(event.position));
             }
@@ -327,7 +327,7 @@ public:
             // Draw the contents of the log to the window
             m_window.clear();
 
-            for (sf::base::SizeT i = 0u; i < m_log.size(); ++i)
+            for (zb::SizeT i = 0u; i < m_log.size(); ++i)
             {
                 m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
@@ -345,49 +345,49 @@ public:
     // To handle any other events that are left, the templated handle method will be called
     // Overload resolution will prefer the handle methods that fit the event type better
     // before falling back to the templated method
-    void handle(sf::Event::Closed)
+    void handle(za::Event::Closed)
     {
         m_mustClose = true;
     }
 
-    void handle(const sf::Event::KeyPressed& keyPress)
+    void handle(const za::Event::KeyPressed& keyPress)
     {
         m_log.emplaceBack("Key Pressed: " + scancodeToString(keyPress.scancode));
 
         // When the enter key is pressed, switch to the next handler type
-        if (keyPress.code == sf::Keyboard::Key::Enter)
+        if (keyPress.code == za::Keyboard::Key::Enter)
         {
             m_handlerType = HandlerType::Classic;
             m_handlerText.setString("Current Handler: Classic");
         }
     }
 
-    void handle(const sf::Event::KeyReleased& keyRelease)
+    void handle(const za::Event::KeyReleased& keyRelease)
     {
         m_log.emplaceBack("Key Released: " + scancodeToString(keyRelease.scancode));
     }
 
-    void handle(const sf::Event::MouseMoved& mouseMoved)
+    void handle(const za::Event::MouseMoved& mouseMoved)
     {
         m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved.position));
     }
 
-    void handle(const sf::Event::MouseButtonPressed&)
+    void handle(const za::Event::MouseButtonPressed&)
     {
         m_log.emplaceBack("Mouse Pressed");
     }
 
-    void handle(const sf::Event::TouchBegan& touchBegan)
+    void handle(const za::Event::TouchBegan& touchBegan)
     {
         m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position));
     }
 
-    void handle(const sf::Event::TouchEnded& touchEnded)
+    void handle(const za::Event::TouchEnded& touchEnded)
     {
         m_log.emplaceBack("Touch Ended: " + vec2ToString(touchEnded.position));
     }
 
-    void handle(const sf::Event::TouchMoved& touchMoved)
+    void handle(const za::Event::TouchMoved& touchMoved)
     {
         m_log.emplaceBack("Touch Moved: " + vec2ToString(touchMoved.position));
     }
@@ -412,7 +412,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+    za::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
                                         .size      = {800u, 600u},
                                         .title     = "SFML Event Handling",
@@ -421,34 +421,34 @@ private:
                                     })
                                     .value();
 
-    const sf::Font m_font{sf::Font::openFromFile("resources/tuffy.ttf").value()};
+    const za::Font m_font{za::Font::openFromFile("resources/tuffy.ttf").value()};
 
-    sf::Text m_logText{m_font,
+    za::Text m_logText{m_font,
                        {
                            .string        = "",
                            .characterSize = 20u,
-                           .fillColor     = sf::Color::White,
+                           .fillColor     = za::Color::White,
                        }};
 
-    sf::Text m_handlerText{m_font,
+    za::Text m_handlerText{m_font,
                            {
                                .position      = {380.f, 260.f},
                                .string        = "Current Handler: Classic",
                                .characterSize = 24u,
-                               .fillColor     = sf::Color::White,
+                               .fillColor     = za::Color::White,
                                .bold          = true,
                            }};
 
-    sf::Text m_instructions{m_font,
+    za::Text m_instructions{m_font,
                             {
                                 .position      = {380.f, 310.f},
                                 .string        = "Press Enter to change handler type",
                                 .characterSize = 24u,
-                                .fillColor     = sf::Color::White,
+                                .fillColor     = za::Color::White,
                                 .bold          = true,
                             }};
 
-    sf::base::Vector<sf::base::String> m_log;
+    zb::Vector<zb::String> m_log;
     HandlerType                        m_handlerType{HandlerType::Classic};
     bool                               m_mustClose{false};
 };
@@ -460,6 +460,6 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
     Application{}.run();
 }

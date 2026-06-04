@@ -1,35 +1,35 @@
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/View.hpp" // IWYU pragma: keep
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -47,14 +47,14 @@ int main()
     //
     //
     // Set up graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     //
     //
     // Set up window
-    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
+    constexpr za::Vec2f windowSize{1680.f, 1050.f};
 
-    auto window = sf::RenderWindow::create(
+    auto window = za::RenderWindow::create(
                       {
                           .size      = windowSize.toVec2u(),
                           .title     = "Vittorio's SFML fork: batching benchmark",
@@ -66,28 +66,28 @@ int main()
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
+    za::TextureAtlas textureAtlas{za::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
 
     //
     //
     // Load fonts
-    const auto fontTuffy        = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
-    const auto fontMouldyCheese = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
+    const auto fontTuffy        = za::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
+    const auto fontMouldyCheese = za::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
 
     //
     //
     // Load images
-    const auto imgElephant = sf::Image::loadFromFile("resources/elephant.png").value();
-    const auto imgGiraffe  = sf::Image::loadFromFile("resources/giraffe.png").value();
-    const auto imgMonkey   = sf::Image::loadFromFile("resources/monkey.png").value();
-    const auto imgPig      = sf::Image::loadFromFile("resources/pig.png").value();
-    const auto imgRabbit   = sf::Image::loadFromFile("resources/rabbit.png").value();
-    const auto imgSnake    = sf::Image::loadFromFile("resources/snake.png").value();
+    const auto imgElephant = za::Image::loadFromFile("resources/elephant.png").value();
+    const auto imgGiraffe  = za::Image::loadFromFile("resources/giraffe.png").value();
+    const auto imgMonkey   = za::Image::loadFromFile("resources/monkey.png").value();
+    const auto imgPig      = za::Image::loadFromFile("resources/pig.png").value();
+    const auto imgRabbit   = za::Image::loadFromFile("resources/rabbit.png").value();
+    const auto imgSnake    = za::Image::loadFromFile("resources/snake.png").value();
 
     //
     //
     // Add images to texture atlas
-    const sf::Rect2f spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
+    const za::Rect2f spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
                                           textureAtlas.add(imgGiraffe).value(),
                                           textureAtlas.add(imgMonkey).value(),
                                           textureAtlas.add(imgPig).value(),
@@ -99,34 +99,34 @@ int main()
     // Simulation stuff
     struct Entity
     {
-        sf::Text   text;
-        sf::Sprite sprite;
+        za::Text   text;
+        za::Sprite sprite;
         float      torque;
     };
 
-    sf::base::Vector<Entity> entities;
+    zb::Vector<Entity> entities;
 
-    const auto populateEntities = [&](const sf::base::SizeT n)
+    const auto populateEntities = [&](const zb::SizeT n)
     {
         entities.clear();
         entities.reserve(n);
 
-        for (sf::base::SizeT i = 0u; i < n; ++i)
+        for (zb::SizeT i = 0u; i < n; ++i)
         {
-            const sf::base::SizeT type        = i % 6u;
-            const sf::Rect2f&     textureRect = spriteTextureRects[type];
+            const zb::SizeT type        = i % 6u;
+            const za::Rect2f&     textureRect = spriteTextureRects[type];
 
-            auto& [text, sprite, torque] = entities.emplaceBack(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
+            auto& [text, sprite, torque] = entities.emplaceBack(za::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                                                                          {.string           = "abcdefABCDEF",
                                                                           .characterSize    = 30u,
-                                                                          .fillColor        = sf::Color::Black,
-                                                                          .outlineColor     = sf::Color::White,
+                                                                          .fillColor        = za::Color::Black,
+                                                                          .outlineColor     = za::Color::White,
                                                                           .outlineThickness = 5.f}},
-                                                                sf::Sprite{.textureRect = textureRect},
+                                                                za::Sprite{.textureRect = textureRect},
                                                                 getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
-            sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
+            sprite.rotation = za::radians(getRndFloat(0.f, zb::tau));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
             sprite.scale            = {scaleFactor, scaleFactor};
@@ -149,26 +149,26 @@ int main()
 //
 //
 // Set up benchmark
-#ifndef SFML_OPENGL_ES
-    sf::base::printLn("OpenGL ES not detected, using persistent GPU batching");
-    sf::PersistentGPUDrawableBatch drawableBatch;
+#ifndef ZA_OPENGL_ES
+    zb::printLn("OpenGL ES not detected, using persistent GPU batching");
+    za::PersistentGPUDrawableBatch drawableBatch;
 #else
-    sf::base::printLn("OpenGL ES detected, using CPU storage-backed batching");
-    sf::CPUDrawableBatch drawableBatch;
+    zb::printLn("OpenGL ES detected, using CPU storage-backed batching");
+    za::CPUDrawableBatch drawableBatch;
 #endif
-    populateEntities(static_cast<sf::base::SizeT>(numEntities));
+    populateEntities(static_cast<zb::SizeT>(numEntities));
 
     if (useBatch)
     {
         drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
-        drawableBatch.reserveQuads(static_cast<sf::base::SizeT>(numEntities) * 25u);
+        drawableBatch.reserveQuads(static_cast<zb::SizeT>(numEntities) * 25u);
     }
     else
     {
-        window.reserveAutoBatchQuads(static_cast<sf::base::SizeT>(numEntities) * 25u);
+        window.reserveAutoBatchQuads(static_cast<zb::SizeT>(numEntities) * 25u);
     }
 
-    const sf::Clock clock;
+    const za::Clock clock;
     const auto      startTime = clock.getElapsedTime();
 
     while (--numFrames > 0)
@@ -178,7 +178,7 @@ int main()
         if (useBatch)
         {
             drawableBatch.clear();
-            drawableBatch.rotation += sf::degrees(2.f);
+            drawableBatch.rotation += za::degrees(2.f);
         }
 
         while (window.pollEvent())
@@ -206,5 +206,5 @@ int main()
 
     const auto finalTime = clock.getElapsedTime() - startTime;
 
-    sf::base::printLn("FINAL TIME: {} ms", finalTime.asMilliseconds());
+    zb::printLn("FINAL TIME: {} ms", finalTime.asMilliseconds());
 }

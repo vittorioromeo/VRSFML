@@ -7,44 +7,44 @@
 #include "ExampleUtils/SfexCoroutine.hpp"
 #include "ExampleUtils/SfexYield.hpp"
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextUtils.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TextUtils.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm/SwapAndPop.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Variant.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/SwapAndPop.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Variant.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f worldSize{800.f, 600.f};
+constexpr za::Vec2f worldSize{800.f, 600.f};
 
 
 ////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ struct Tween
         if (t >= 1.f)
             return false;
 
-        t = sf::base::min(t + dt / duration, 1.f);
+        t = zb::min(t + dt / duration, 1.f);
         return true;
     }
 
@@ -97,18 +97,18 @@ struct Tween
 ////////////////////////////////////////////////////////////
 struct Bullet
 {
-    sf::Vec2f pos;
-    sf::Vec2f vel;
+    za::Vec2f pos;
+    za::Vec2f vel;
     float     radius = 6.f;
-    sf::Color color  = sf::Color::White;
+    za::Color color  = za::Color::White;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct PlayerBullet
 {
-    sf::Vec2f pos;
-    sf::Vec2f vel;
+    za::Vec2f pos;
+    za::Vec2f vel;
     float     radius = 4.f;
     bool      dead   = false;
 };
@@ -117,7 +117,7 @@ struct PlayerBullet
 ////////////////////////////////////////////////////////////
 struct Player
 {
-    sf::Vec2f pos           = {worldSize.x * 0.5f, worldSize.y - 60.f};
+    za::Vec2f pos           = {worldSize.x * 0.5f, worldSize.y - 60.f};
     float     drawRadius    = 9.f;
     float     hitRadius     = 3.f;
     bool      alive         = true;
@@ -130,13 +130,13 @@ struct Boss
 {
     ////////////////////////////////////////////////////////////
     // game values
-    sf::Vec2f homePos;
-    sf::Vec2f pos;
-    sf::Vec2f vel        = {0.f, 0.f};
+    za::Vec2f homePos;
+    za::Vec2f pos;
+    za::Vec2f vel        = {0.f, 0.f};
     float     radius     = 30.f;
     float     scale      = 1.f;
-    sf::Color color      = {120u, 170u, 255u};
-    sf::Color bodyTint   = {120u, 170u, 255u};
+    za::Color color      = {120u, 170u, 255u};
+    za::Color bodyTint   = {120u, 170u, 255u};
     float     maxHp      = 120.f;
     float     hp         = 120.f;
     bool      alive      = true;
@@ -170,27 +170,27 @@ struct World
 
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<Boss>             bosses;
-    sf::base::Vector<Bullet>           bullets;
-    sf::base::Vector<PlayerBullet>     playerBullets;
-    sf::base::Vector<sf::base::String> log;
+    zb::Vector<Boss>             bosses;
+    zb::Vector<Bullet>           bullets;
+    zb::Vector<PlayerBullet>     playerBullets;
+    zb::Vector<zb::String> log;
 
 
     ////////////////////////////////////////////////////////////
-    static constexpr sf::base::SizeT maxLogLines = 22u;
+    static constexpr zb::SizeT maxLogLines = 22u;
 
 
     ////////////////////////////////////////////////////////////
-    void addLog(const char* who, const sf::base::String& what)
+    void addLog(const char* who, const zb::String& what)
     {
-        sf::base::String line = "[t=";
-        sf::base::appendToString(line, time);
+        zb::String line = "[t=";
+        zb::appendToString(line, time);
         line += "s] ";
         line += who;
         line += "  ";
         line += what;
 
-        log.emplaceBack(SFML_BASE_MOVE(line));
+        log.emplaceBack(ZB_MOVE(line));
 
         if (log.size() > maxLogLines)
             log.erase(log.begin());
@@ -198,15 +198,15 @@ struct World
 
 
     ////////////////////////////////////////////////////////////
-    void spawnBulletRing(sf::Vec2f source, int count, float speed, sf::Angle startAngle, sf::Color color, float bulletRadius)
+    void spawnBulletRing(za::Vec2f source, int count, float speed, za::Angle startAngle, za::Color color, float bulletRadius)
     {
-        const auto total = sf::radians(sf::base::tau);
+        const auto total = za::radians(zb::tau);
         for (int i = 0; i < count; ++i)
         {
-            const sf::Angle a = startAngle + total * (static_cast<float>(i) / static_cast<float>(count));
+            const za::Angle a = startAngle + total * (static_cast<float>(i) / static_cast<float>(count));
             bullets.emplaceBack(Bullet{
                 .pos    = source,
-                .vel    = sf::Vec2f::fromAngle(speed, a),
+                .vel    = za::Vec2f::fromAngle(speed, a),
                 .radius = bulletRadius,
                 .color  = color,
             });
@@ -215,9 +215,9 @@ struct World
 
 
     ////////////////////////////////////////////////////////////
-    void spawnAimedBullet(sf::Vec2f source, sf::Vec2f target, float speed, sf::Color color)
+    void spawnAimedBullet(za::Vec2f source, za::Vec2f target, float speed, za::Color color)
     {
-        sf::Vec2f   dir = target - source;
+        za::Vec2f   dir = target - source;
         const float len = dir.length();
         if (len > 0.0001f)
             dir /= len;
@@ -238,8 +238,8 @@ struct World
 
         struct Spawn
         {
-            sf::Vec2f home{};
-            sf::Color tint{};
+            za::Vec2f home{};
+            za::Color tint{};
             float     maxHp = 0.f;
         };
 
@@ -259,7 +259,7 @@ struct World
                 .hp       = s.maxHp,
             });
 
-        addLog("SYSTEM", "spawned " + sf::base::toString(bosses.size()) + " bosses");
+        addLog("SYSTEM", "spawned " + zb::toString(bosses.size()) + " bosses");
     }
 };
 
@@ -304,17 +304,17 @@ struct BulletRingBarrage : BossCoroutine
     float     gapSeconds     = 0.30f;
     float     bulletSpeed    = 140.f;
     float     bulletRadius   = 6.f;
-    sf::Angle ringAngleStep  = sf::degrees(7.f);
-    sf::Color bulletColor    = {255u, 180u, 80u};
+    za::Angle ringAngleStep  = za::degrees(7.f);
+    za::Color bulletColor    = {255u, 180u, 80u};
 
     int       i         = 0;
-    sf::Angle ringAngle = sf::Angle::Zero;
+    za::Angle ringAngle = za::Angle::Zero;
 
     Yield operator()(BossCtx ctx)
     {
         SFEX_CO_BEGIN;
 
-        ringAngle = sf::Angle::Zero;
+        ringAngle = za::Angle::Zero;
         for (i = 0; i < ringsToFire; ++i)
         {
             ctx.world.spawnBulletRing(ctx.self.pos, bulletsPerRing, bulletSpeed, ringAngle, bulletColor, bulletRadius);
@@ -331,7 +331,7 @@ struct BulletRingBarrage : BossCoroutine
 ////////////////////////////////////////////////////////////
 struct DashAttack : BossCoroutine
 {
-    sf::Vec2f dashTarget;
+    za::Vec2f dashTarget;
     float     dashTime = 0.25f;
 
     Yield operator()(BossCtx ctx)
@@ -350,10 +350,10 @@ struct DashAttack : BossCoroutine
         ctx.self.vel = (dashTarget - ctx.self.pos) / dashTime;
         for (int k = -2; k <= 2; ++k)
         {
-            const sf::Angle a = ctx.self.vel.angle() + sf::degrees(static_cast<float>(k) * 10.f);
+            const za::Angle a = ctx.self.vel.angle() + za::degrees(static_cast<float>(k) * 10.f);
             ctx.world.bullets.emplaceBack(Bullet{
                 .pos    = ctx.self.pos,
-                .vel    = sf::Vec2f::fromAngle(220.f, a),
+                .vel    = za::Vec2f::fromAngle(220.f, a),
                 .radius = 6.f,
                 .color  = {255u, 140u, 40u},
             });
@@ -398,10 +398,10 @@ struct AimedVolley : BossCoroutine
 ////////////////////////////////////////////////////////////
 struct SlamAttack : BossCoroutine
 {
-    sf::Vec2f windupOffset = {0.f, -80.f};
-    sf::Vec2f slamOffset   = {0.f, 180.f};
+    za::Vec2f windupOffset = {0.f, -80.f};
+    za::Vec2f slamOffset   = {0.f, 180.f};
 
-    Tween<sf::Vec2f> tween{};
+    Tween<za::Vec2f> tween{};
 
     Yield operator()(BossCtx ctx)
     {
@@ -426,7 +426,7 @@ struct SlamAttack : BossCoroutine
             SFEX_CO_YIELD(NextFrame{});
         }
 
-        ctx.world.spawnBulletRing(ctx.self.pos, 18, 240.f, sf::Angle::Zero, {255u, 140u, 40u}, 6.f);
+        ctx.world.spawnBulletRing(ctx.self.pos, 18, 240.f, za::Angle::Zero, {255u, 140u, 40u}, 6.f);
         SFEX_CO_YIELD(Wait{0.15f});
 
         ctx.self.color = ctx.self.bodyTint;
@@ -472,7 +472,7 @@ struct PulseAttack : BossCoroutine
             ctx.world.spawnBulletRing(ctx.self.pos,
                                       ringBullets,
                                       160.f,
-                                      sf::radians(static_cast<float>(p) * 0.13f),
+                                      za::radians(static_cast<float>(p) * 0.13f),
                                       {255u, 200u, 120u},
                                       6.f);
 
@@ -500,7 +500,7 @@ struct SweepAttack : BossCoroutine
     float sweepDuration = 1.60f;
     float spawnEvery    = 0.10f;
 
-    Tween<sf::Vec2f> tween{};
+    Tween<za::Vec2f> tween{};
     float            spawnTimer = 0.f;
 
     Yield operator()(BossCtx ctx)
@@ -511,14 +511,14 @@ struct SweepAttack : BossCoroutine
         ctx.self.busyMoving = true;
 
         ctx.self.color = {180u, 140u, 255u};
-        tween.start(ctx.self.pos, ctx.self.homePos + sf::Vec2f{-sweepRange, 0.f});
+        tween.start(ctx.self.pos, ctx.self.homePos + za::Vec2f{-sweepRange, 0.f});
         while (tween.step(ctx.world.dt, sweepDuration))
         {
             ctx.self.pos = tween.sample(easeInOutQuint);
             SFEX_CO_YIELD(NextFrame{});
         }
 
-        tween.start(ctx.self.pos, ctx.self.homePos + sf::Vec2f{sweepRange, 0.f});
+        tween.start(ctx.self.pos, ctx.self.homePos + za::Vec2f{sweepRange, 0.f});
         spawnTimer = 0.f;
         while (tween.step(ctx.world.dt, sweepDuration))
         {
@@ -564,7 +564,7 @@ struct DodgeWatcher : BossCoroutine
 
     [[nodiscard]] bool playerIsUnderneath(BossCtx ctx) const
     {
-        const float dx = sf::base::fabs(ctx.world.player.pos.x - ctx.self.pos.x);
+        const float dx = zb::fabs(ctx.world.player.pos.x - ctx.self.pos.x);
         return ctx.world.player.alive && !ctx.self.busyMoving && (dx <= xThreshold);
     }
 
@@ -583,7 +583,7 @@ struct DodgeWatcher : BossCoroutine
 ////////////////////////////////////////////////////////////
 struct DodgeMove : BossCoroutine
 {
-    Tween<sf::Vec2f> tween{};
+    Tween<za::Vec2f> tween{};
 
     Yield operator()(BossCtx ctx)
     {
@@ -591,7 +591,7 @@ struct DodgeMove : BossCoroutine
         ctx.self.dodging = true;
         ctx.self.color   = {255u, 255u, 100u}; // flash yellow
 
-        tween.start(ctx.self.pos, ctx.self.pos + sf::Vec2f{ctx.world.player.pos.x > ctx.self.pos.x ? 135.f : -135.f, 0.f});
+        tween.start(ctx.self.pos, ctx.self.pos + za::Vec2f{ctx.world.player.pos.x > ctx.self.pos.x ? 135.f : -135.f, 0.f});
         while (tween.step(ctx.world.dt, 0.25f))
         {
             ctx.self.pos = tween.sample(easeOutQuint);
@@ -720,12 +720,12 @@ struct BossPhases : BossCoroutine
 
         // ----- PHASE 5: dash + vulnerability -----
         dash = DashAttack{
-            .dashTarget = ctx.self.homePos + sf::Vec2f{-80.f, 40.f},
+            .dashTarget = ctx.self.homePos + za::Vec2f{-80.f, 40.f},
         };
         SFEX_CO_AWAIT(dash(ctx));
 
         dash = DashAttack{
-            .dashTarget = ctx.self.homePos + sf::Vec2f{80.f, 40.f},
+            .dashTarget = ctx.self.homePos + za::Vec2f{80.f, 40.f},
         };
         SFEX_CO_AWAIT(dash(ctx));
 
@@ -743,7 +743,7 @@ struct BossPhases : BossCoroutine
             .bulletsPerRing = 12,
             .gapSeconds     = 0.18f,
             .bulletSpeed    = 160.f,
-            .ringAngleStep  = sf::degrees(11.f),
+            .ringAngleStep  = za::degrees(11.f),
             .bulletColor    = {255u, 120u, 120u},
         };
         SFEX_CO_AWAIT(barrage(ctx));
@@ -776,7 +776,7 @@ struct BossFight : BossCoroutine
 struct Snapshot
 {
     World                       world;
-    sf::base::Vector<BossFight> bossScripts;
+    zb::Vector<BossFight> bossScripts;
 };
 
 } // namespace
@@ -788,7 +788,7 @@ struct Snapshot
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -801,18 +801,18 @@ int main()
 
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), worldSize);
 
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     World                       world;
-    sf::base::Vector<BossFight> bossScripts; // parallel to `world.bosses`
+    zb::Vector<BossFight> bossScripts; // parallel to `world.bosses`
 
     const auto resetScriptsToBosses = [&] { bossScripts.resize(world.bosses.size()); };
 
     world.initBosses();
     resetScriptsToBosses();
 
-    sf::Clock                    frameClock;
-    sf::base::Optional<Snapshot> quickSave;
+    za::Clock                    frameClock;
+    zb::Optional<Snapshot> quickSave;
 
     const auto doRestart = [&]
     {
@@ -831,21 +831,21 @@ int main()
         bool requestQuickSave = false;
         bool requestQuickLoad = false;
 
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, worldSize, windowView))
                 continue;
 
-            if (const auto* kp = event->getIf<sf::Event::KeyPressed>())
+            if (const auto* kp = event->getIf<za::Event::KeyPressed>())
             {
-                if (kp->code == sf::Keyboard::Key::R)
+                if (kp->code == za::Keyboard::Key::R)
                     requestRestart = true;
-                else if (kp->code == sf::Keyboard::Key::F5)
+                else if (kp->code == za::Keyboard::Key::F5)
                     requestQuickSave = true;
-                else if (kp->code == sf::Keyboard::Key::F6)
+                else if (kp->code == za::Keyboard::Key::F6)
                     requestQuickLoad = true;
             }
         }
@@ -877,7 +877,7 @@ int main()
         world.time += dt;
         world.dt = dt;
 
-        sf::base::SizeT aliveCount = 0;
+        zb::SizeT aliveCount = 0;
         for (const Boss& b : world.bosses)
             if (b.alive)
                 ++aliveCount;
@@ -887,22 +887,22 @@ int main()
         // ---- Player input ----
         if (gameActive)
         {
-            using K           = sf::Keyboard::Key;
-            const bool  focus = sf::Keyboard::isKeyPressed(K::LShift);
+            using K           = za::Keyboard::Key;
+            const bool  focus = za::Keyboard::isKeyPressed(K::LShift);
             const float speed = focus ? 140.f : 320.f;
 
-            sf::Vec2f move{0.f, 0.f};
+            za::Vec2f move{0.f, 0.f};
 
-            if (sf::Keyboard::isKeyPressed(K::Left))
+            if (za::Keyboard::isKeyPressed(K::Left))
                 move.x -= 1.f;
 
-            if (sf::Keyboard::isKeyPressed(K::Right))
+            if (za::Keyboard::isKeyPressed(K::Right))
                 move.x += 1.f;
 
-            if (sf::Keyboard::isKeyPressed(K::Up))
+            if (za::Keyboard::isKeyPressed(K::Up))
                 move.y -= 1.f;
 
-            if (sf::Keyboard::isKeyPressed(K::Down))
+            if (za::Keyboard::isKeyPressed(K::Down))
                 move.y += 1.f;
 
             if (move.lengthSquared() > 0.f)
@@ -914,22 +914,22 @@ int main()
             world.player.pos += move * (speed * dt);
 
             const float m      = world.player.drawRadius;
-            world.player.pos.x = sf::base::clamp(world.player.pos.x, m, worldSize.x - m);
-            world.player.pos.y = sf::base::clamp(world.player.pos.y, m, worldSize.y - m);
+            world.player.pos.x = zb::clamp(world.player.pos.x, m, worldSize.x - m);
+            world.player.pos.y = zb::clamp(world.player.pos.y, m, worldSize.y - m);
 
-            world.player.shootCooldown = sf::base::max(world.player.shootCooldown - dt, 0.f);
+            world.player.shootCooldown = zb::max(world.player.shootCooldown - dt, 0.f);
 
-            if (sf::Keyboard::isKeyPressed(K::Z) && world.player.shootCooldown == 0.f)
+            if (za::Keyboard::isKeyPressed(K::Z) && world.player.shootCooldown == 0.f)
             {
                 world.player.shootCooldown = 0.07f;
 
                 world.playerBullets.emplaceBack(PlayerBullet{
-                    .pos = world.player.pos + sf::Vec2f{-9.f, -6.f},
+                    .pos = world.player.pos + za::Vec2f{-9.f, -6.f},
                     .vel = {0.f, -900.f},
                 });
 
                 world.playerBullets.emplaceBack(PlayerBullet{
-                    .pos = world.player.pos + sf::Vec2f{9.f, -6.f},
+                    .pos = world.player.pos + za::Vec2f{9.f, -6.f},
                     .vel = {0.f, -900.f},
                 });
             }
@@ -938,7 +938,7 @@ int main()
         // ---- Per-boss coroutine driver ----
         if (gameActive)
         {
-            for (sf::base::SizeT i = 0u; i < world.bosses.size(); ++i)
+            for (zb::SizeT i = 0u; i < world.bosses.size(); ++i)
             {
                 Boss& boss = world.bosses[i];
                 if (!boss.alive)
@@ -949,7 +949,7 @@ int main()
 
                 if (boss.restartIn > 0.f)
                 {
-                    boss.restartIn = sf::base::max(boss.restartIn - dt, 0.f);
+                    boss.restartIn = zb::max(boss.restartIn - dt, 0.f);
                     if (boss.restartIn == 0.f)
                     {
                         script          = BossFight{};
@@ -1001,10 +1001,10 @@ int main()
             }
             if (!boss.alive && boss.deathTimer > 0.f)
             {
-                boss.deathTimer = sf::base::max(boss.deathTimer - dt, 0.f);
+                boss.deathTimer = zb::max(boss.deathTimer - dt, 0.f);
                 const float k   = boss.deathTimer / 1.5f;
                 boss.scale      = k;
-                boss.color.a    = static_cast<sf::base::U8>(255.f * k);
+                boss.color.a    = static_cast<zb::U8>(255.f * k);
             }
             if (boss.alive)
                 boss.pos += boss.vel * dt;
@@ -1020,7 +1020,7 @@ int main()
             lastBossCleared = false;
 
         // ---- Enemy bullets vs player ----
-        sf::base::vectorSwapAndPopIf(world.bullets,
+        zb::vectorSwapAndPopIf(world.bullets,
                                      [&](Bullet& b)
         {
             b.pos += b.vel * dt;
@@ -1041,7 +1041,7 @@ int main()
         });
 
         // ---- Player bullets vs bosses ----
-        sf::base::vectorSwapAndPopIf(world.playerBullets,
+        zb::vectorSwapAndPopIf(world.playerBullets,
                                      [&](PlayerBullet& b)
         {
             b.pos += b.vel * dt;
@@ -1056,7 +1056,7 @@ int main()
                     const auto  dd = (b.pos - boss.pos).lengthSquared();
                     if (dd < r * r)
                     {
-                        boss.hp = sf::base::max(boss.hp - 1.f, 0.f);
+                        boss.hp = zb::max(boss.hp - 1.f, 0.f);
                         b.dead  = true;
                         break;
                     }
@@ -1078,18 +1078,18 @@ int main()
                 continue;
 
             const float bossDrawRadius = boss.radius * boss.scale;
-            drawCtx.draw(sf::CircleShapeData{
+            drawCtx.draw(za::CircleShapeData{
                 .position         = boss.pos,
                 .origin           = {bossDrawRadius, bossDrawRadius},
                 .fillColor        = boss.color,
-                .outlineColor     = sf::Color::White,
+                .outlineColor     = za::Color::White,
                 .outlineThickness = 2.f,
                 .radius           = bossDrawRadius,
             });
         }
 
         for (const Bullet& b : world.bullets)
-            drawCtx.draw(sf::CircleShapeData{
+            drawCtx.draw(za::CircleShapeData{
                 .position         = b.pos,
                 .origin           = {b.radius, b.radius},
                 .fillColor        = b.color,
@@ -1099,7 +1099,7 @@ int main()
             });
 
         for (const PlayerBullet& b : world.playerBullets)
-            drawCtx.draw(sf::RectangleShapeData{
+            drawCtx.draw(za::RectangleShapeData{
                 .position         = b.pos,
                 .origin           = {3.f, 7.f},
                 .fillColor        = {180u, 240u, 255u},
@@ -1110,23 +1110,23 @@ int main()
 
         if (world.player.alive)
         {
-            drawCtx.draw(sf::CircleShapeData{
+            drawCtx.draw(za::CircleShapeData{
                 .position         = world.player.pos,
                 .origin           = {world.player.drawRadius, world.player.drawRadius},
                 .fillColor        = {120u, 220u, 255u},
-                .outlineColor     = sf::Color::White,
+                .outlineColor     = za::Color::White,
                 .outlineThickness = 1.5f,
                 .radius           = world.player.drawRadius,
             });
 
-            const bool  focus  = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift);
+            const bool  focus  = za::Keyboard::isKeyPressed(za::Keyboard::Key::LShift);
             const float hitR   = world.player.hitRadius;
-            const auto  hitCol = focus ? sf::Color{255u, 60u, 60u} : sf::Color{255u, 200u, 200u};
-            drawCtx.draw(sf::CircleShapeData{
+            const auto  hitCol = focus ? za::Color{255u, 60u, 60u} : za::Color{255u, 200u, 200u};
+            drawCtx.draw(za::CircleShapeData{
                 .position         = world.player.pos,
                 .origin           = {hitR, hitR},
                 .fillColor        = hitCol,
-                .outlineColor     = sf::Color::White,
+                .outlineColor     = za::Color::White,
                 .outlineThickness = 1.f,
                 .radius           = hitR,
             });
@@ -1142,15 +1142,15 @@ int main()
             {
                 const float hpT = boss.maxHp > 0.f ? boss.hp / boss.maxHp : 0.f;
 
-                drawCtx.draw(sf::RectangleShapeData{
+                drawCtx.draw(za::RectangleShapeData{
                     .position         = {barX, barY},
                     .fillColor        = {30u, 30u, 40u},
-                    .outlineColor     = sf::Color::White,
+                    .outlineColor     = za::Color::White,
                     .outlineThickness = 1.f,
                     .size             = {barW, barH},
                 });
 
-                drawCtx.draw(sf::RectangleShapeData{
+                drawCtx.draw(za::RectangleShapeData{
                     .position  = {barX + 1.f, barY + 1.f},
                     .fillColor = boss.bodyTint,
                     .size      = {(barW - 2.f) * hpT, barH - 2.f},
@@ -1162,28 +1162,28 @@ int main()
 
         {
             const float y0 = 8.f + static_cast<float>(world.bosses.size()) * 13.f + 10.f;
-            for (sf::base::SizeT i = 0u; i < world.log.size(); ++i)
+            for (zb::SizeT i = 0u; i < world.log.size(); ++i)
                 drawCtx.draw(font,
-                             sf::TextData{
+                             za::TextData{
                                  .position         = {10.f, y0 + static_cast<float>(i) * 16.f},
                                  .string           = world.log[i],
                                  .characterSize    = 12u,
-                                 .fillColor        = sf::Color::White,
-                                 .outlineColor     = sf::Color::Black,
+                                 .fillColor        = za::Color::White,
+                                 .outlineColor     = za::Color::Black,
                                  .outlineThickness = 1.f,
                              });
         }
 
-        const auto drawCenteredText = [&](const sf::base::String& str, float y, sf::Color col, unsigned size)
+        const auto drawCenteredText = [&](const zb::String& str, float y, za::Color col, unsigned size)
         {
             drawCtx.draw(font,
-                         sf::TextUtils::anchored(font,
-                                                 sf::TextData{
+                         za::TextUtils::anchored(font,
+                                                 za::TextData{
                                                      .position         = {worldSize.x * 0.5f, y},
                                                      .string           = str,
                                                      .characterSize    = size,
                                                      .fillColor        = col,
-                                                     .outlineColor     = sf::Color::Black,
+                                                     .outlineColor     = za::Color::Black,
                                                      .outlineThickness = 2.f,
                                                  },
                                                  {0.5f, 0.f}));
@@ -1192,7 +1192,7 @@ int main()
         if (!world.player.alive)
         {
             drawCenteredText("GAME OVER", worldSize.y * 0.4f, {255u, 80u, 80u}, 36u);
-            drawCenteredText("Press R to restart", worldSize.y * 0.4f + 48.f, sf::Color::White, 18u);
+            drawCenteredText("Press R to restart", worldSize.y * 0.4f + 48.f, za::Color::White, 18u);
         }
         else if (aliveCount == 0)
         {
@@ -1203,12 +1203,12 @@ int main()
             if (!anyStillDying)
             {
                 drawCenteredText("YOU WIN", worldSize.y * 0.4f, {120u, 255u, 140u}, 36u);
-                drawCenteredText("Press R to restart", worldSize.y * 0.4f + 48.f, sf::Color::White, 18u);
+                drawCenteredText("Press R to restart", worldSize.y * 0.4f + 48.f, za::Color::White, 18u);
             }
         }
 
         drawCtx.draw(font,
-                     sf::TextData{
+                     za::TextData{
                          .position      = {worldSize.x - 360.f, worldSize.y - 22.f},
                          .string        = "Arrows move  Z shoot  LShift focus  R restart  F5 save  F6 load",
                          .characterSize = 11u,

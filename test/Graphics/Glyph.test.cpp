@@ -1,33 +1,33 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/Glyph.hpp"
+#include "Zancle/Graphics/Glyph.hpp"
 
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::Glyph")
+TEST_CASE("[Graphics] za::Glyph")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Glyph));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Glyph));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Glyph));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Glyph));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Glyph));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Glyph));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Glyph));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Glyph));
     }
 
     SECTION("Construction")
     {
-        constexpr sf::Glyph glyph{};
+        constexpr za::Glyph glyph{};
         STATIC_CHECK(glyph.advance == 0.f);
         STATIC_CHECK(glyph.lsbDelta == 0);
         STATIC_CHECK(glyph.rsbDelta == 0);
-        STATIC_CHECK(glyph.bounds == sf::Rect2f());
-        STATIC_CHECK(glyph.textureRect == sf::Rect2f());
+        STATIC_CHECK(glyph.bounds == za::Rect2f());
+        STATIC_CHECK(glyph.textureRect == za::Rect2f());
     }
 }

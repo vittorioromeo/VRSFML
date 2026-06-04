@@ -1,0 +1,31 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+#if __has_builtin(__is_base_of)
+
+    ////////////////////////////////////////////////////////////
+    #define ZB_IS_BASE_OF(b, d) __is_base_of(b, d)
+
+#else
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+    #include <type_traits>
+
+
+    ////////////////////////////////////////////////////////////
+    #define ZB_IS_BASE_OF(b, d) ::std::is_base_of_v<b, d>
+
+#endif
+
+
+namespace zb
+{
+////////////////////////////////////////////////////////////
+template <typename B, typename D>
+inline constexpr bool isBaseOf = ZB_IS_BASE_OF(B, D);
+
+} // namespace zb

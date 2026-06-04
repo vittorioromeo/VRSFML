@@ -1,10 +1,10 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
 ////////////////////////////////////////////////////////////
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 ////////////////////////////////////////////////////////////
 uniform float u_vibrance;   // e.g., 0.0 (none) to 1.0 (max boost)
@@ -40,7 +40,7 @@ vec3 adjustLightness(vec3 color, float light)
 ////////////////////////////////////////////////////////////
 vec4 getAdjustedSample(vec2 coord)
 {
-    vec4 sampleColor = texture(sf_u_texture, coord);
+    vec4 sampleColor = texture(za_u_texture, coord);
     vec3 c           = sampleColor.rgb;
 
     c = adjustVibrance(c, u_vibrance);
@@ -53,7 +53,7 @@ vec4 getAdjustedSample(vec2 coord)
 ////////////////////////////////////////////////////////////
 vec4 getBlurredSample(vec2 coord)
 {
-    vec2 texel       = 1.0 / vec2(textureSize(sf_u_texture, 0));
+    vec2 texel       = 1.0 / vec2(textureSize(za_u_texture, 0));
     float radius     = mix(1.0, 3.5, clamp(u_blur, 0.0, 1.0));
     vec2 axisStep    = texel * radius;
     vec2 axisStepFar = axisStep * 2.0;
@@ -82,13 +82,13 @@ vec4 getBlurredSample(vec2 coord)
 ////////////////////////////////////////////////////////////
 void main()
 {
-    vec4 center = getAdjustedSample(sf_v_texCoord);
-    vec4 blur   = getBlurredSample(sf_v_texCoord);
+    vec4 center = getAdjustedSample(za_v_texCoord);
+    vec4 blur   = getBlurredSample(za_v_texCoord);
 
     vec4 result = mix(center, blur, clamp(u_blur, 0.0, 1.0));
 
     if (u_sharpness > 0.0)
         result.rgb = clamp(result.rgb + u_sharpness * (center.rgb - blur.rgb), 0.0, 1.0);
 
-    sf_fragColor = vec4(result.rgb, result.a * sf_v_color.a);
+    za_fragColor = vec4(result.rgb, result.a * za_v_color.a);
 }

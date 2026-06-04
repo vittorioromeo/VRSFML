@@ -1,26 +1,26 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 #include <string>
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/Cursor.hpp"
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/SDLWindowBase.hpp"
-#include "SFML/Window/Vulkan.hpp"
-#include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowImpl.hpp"
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/Cursor.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/SDLWindowBase.hpp"
+#include "Zancle/Window/Vulkan.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
+#include "Zancle/Window/WindowImpl.hpp"
 
-#include "SFML/System/String.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "Zancle/System/String.hpp"
+#include "Zancle/System/Vector2.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/UniquePtr.hpp"
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_surface.h>
@@ -33,14 +33,14 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::SDLWindowBase::Settings nullifyContextSettings(sf::SDLWindowBase::Settings windowSettings)
+[[nodiscard]] za::SDLWindowBase::Settings nullifyContextSettings(za::SDLWindowBase::Settings windowSettings)
 {
-    windowSettings.contextSettings = sf::ContextSettings{.depthBits         = 0,
+    windowSettings.contextSettings = za::ContextSettings{.depthBits         = 0,
                                                          .stencilBits       = 0,
                                                          .antiAliasingLevel = 0,
                                                          .majorVersion      = 0,
                                                          .minorVersion      = 0,
-                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFF'FF'FF'FFu},
+                                                         .attributeFlags = za::ContextSettings::Attribute{0xFF'FF'FF'FFu},
                                                          .sRgbCapable = false};
 
     return windowSettings;
@@ -50,7 +50,7 @@ namespace
 } // namespace
 
 
-namespace sf
+namespace za
 {
 ////////////////////////////////////////////////////////////
 struct SDLWindowBase::Impl
@@ -69,27 +69,27 @@ struct SDLWindowBase::Impl
     {
         auto props = SDL_CreateProperties();
 
-#if defined(SFML_SYSTEM_WINDOWS)
+#if defined(ZA_SYSTEM_WINDOWS)
 
         SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
 
-#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
+#elif defined(ZA_SYSTEM_LINUX_OR_BSD)
 
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, handle);
 
-#elif defined(SFML_SYSTEM_MACOS)
+#elif defined(ZA_SYSTEM_MACOS)
 
         SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER, handle);
 
-#elif defined(SFML_SYSTEM_IOS)
+#elif defined(ZA_SYSTEM_IOS)
 
         // return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, nullptr);
 
-#elif defined(SFML_SYSTEM_ANDROID)
+#elif defined(ZA_SYSTEM_ANDROID)
 
         // return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr);
 
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
+#elif defined(ZA_SYSTEM_EMSCRIPTEN)
 
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, handle);
 
@@ -199,28 +199,28 @@ struct SDLWindowBase::Impl
 
     [[nodiscard]] WindowHandle getNativeHandle() const
     {
-#if defined(SFML_SYSTEM_WINDOWS)
+#if defined(ZA_SYSTEM_WINDOWS)
 
         return static_cast<HWND__*>(
             SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr));
 
-#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
+#elif defined(ZA_SYSTEM_LINUX_OR_BSD)
 
         return SDL_GetNumberProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
 
-#elif defined(SFML_SYSTEM_MACOS)
+#elif defined(ZA_SYSTEM_MACOS)
 
         return SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 
-#elif defined(SFML_SYSTEM_IOS)
+#elif defined(ZA_SYSTEM_IOS)
 
         return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, nullptr);
 
-#elif defined(SFML_SYSTEM_ANDROID)
+#elif defined(ZA_SYSTEM_ANDROID)
 
         return SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr);
 
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
+#elif defined(ZA_SYSTEM_EMSCRIPTEN)
 
         // Window handle is int on Emscripten
         using WindowHandle = int;
@@ -249,7 +249,7 @@ struct SDLWindowBase::Impl
 
 
 ////////////////////////////////////////////////////////////
-SDLWindowBase::SDLWindowBase(base::UniquePtr<Impl>&& impl) : m_impl(SFML_BASE_MOVE(impl))
+SDLWindowBase::SDLWindowBase(base::UniquePtr<Impl>&& impl) : m_impl(ZB_MOVE(impl))
 {
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);
@@ -343,7 +343,7 @@ void SDLWindowBase::setMinimumSize(const Vector2u& minimumSize)
         return minimumSize.x <= m_impl->getMaximumSize()->x && minimumSize.y <= m_impl->getMaximumSize()->y;
     };
 
-    SFML_BASE_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
+    ZB_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
     m_impl->setMinimumSize(base::makeOptional(minimumSize));
     setSize(getSize());
@@ -374,7 +374,7 @@ void SDLWindowBase::setMaximumSize(const Vector2u& maximumSize)
         return maximumSize.x >= m_impl->getMinimumSize()->x && maximumSize.y >= m_impl->getMinimumSize()->y;
     };
 
-    SFML_BASE_ASSERT(validateMaximumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+    ZB_ASSERT(validateMaximumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
 
     m_impl->setMaximumSize(base::makeOptional(maximumSize));
     setSize(getSize());
@@ -496,4 +496,4 @@ base::Optional<Event> SDLWindowBase::filterEvent(base::Optional<Event> event)
     return event;
 }
 
-} // namespace sf
+} // namespace za

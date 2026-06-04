@@ -18,31 +18,31 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Fmt/FmtPath.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/PathStreamOp.hpp" // IWYU pragma: keep
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Fmt/FmtPath.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/PathStreamOp.hpp" // IWYU pragma: keep
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/OverloadSet.hpp"
-#include "SFML/Base/ScopeGuard.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsEnum.hpp"
-#include "SFML/Base/Trait/IsFloatingPoint.hpp"
-#include "SFML/Base/Trait/IsIntegral.hpp"
-#include "SFML/Base/Trait/IsSame.hpp"
-#include "SFML/Base/Trait/RemoveCVRef.hpp"
-#include "SFML/Base/Trait/UnderlyingType.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/OverloadSet.hpp"
+#include "ZancleBase/ScopeGuard.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Trait/IsEnum.hpp"
+#include "ZancleBase/Trait/IsFloatingPoint.hpp"
+#include "ZancleBase/Trait/IsIntegral.hpp"
+#include "ZancleBase/Trait/IsSame.hpp"
+#include "ZancleBase/Trait/RemoveCVRef.hpp"
+#include "ZancleBase/Trait/UnderlyingType.hpp"
+#include "ZancleBase/Vector.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
@@ -168,7 +168,7 @@ inline cJSON* toJsonValue(bool v)
 }
 
 template <typename T>
-    requires((SFML_BASE_IS_INTEGRAL(T) || SFML_BASE_IS_FLOATING_POINT(T)) && !SFML_BASE_IS_SAME(T, bool))
+    requires((ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_POINT(T)) && !ZB_IS_SAME(T, bool))
 cJSON* toJsonValue(const T& v)
 {
     return cJSON_CreateNumber(static_cast<double>(v));
@@ -183,7 +183,7 @@ inline void fromJsonValue(const cJSON* j, bool& out)
 }
 
 template <typename T>
-    requires((SFML_BASE_IS_INTEGRAL(T) || SFML_BASE_IS_FLOATING_POINT(T)) && !SFML_BASE_IS_SAME(T, bool))
+    requires((ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_POINT(T)) && !ZB_IS_SAME(T, bool))
 void fromJsonValue(const cJSON* j, T& out)
 {
     if (cJSON_IsNumber(j))
@@ -195,26 +195,26 @@ void fromJsonValue(const cJSON* j, T& out)
 // Enum dispatch via compiler builtins (no `<type_traits>` include).
 ////////////////////////////////////////////////////////////
 template <typename T>
-    requires(SFML_BASE_IS_ENUM(T))
+    requires(ZB_IS_ENUM(T))
 cJSON* toJsonValue(const T& v)
 {
-    return cJSON_CreateNumber(static_cast<double>(static_cast<SFML_BASE_UNDERLYING_TYPE(T)>(v)));
+    return cJSON_CreateNumber(static_cast<double>(static_cast<ZB_UNDERLYING_TYPE(T)>(v)));
 }
 
 template <typename T>
-    requires(SFML_BASE_IS_ENUM(T))
+    requires(ZB_IS_ENUM(T))
 void fromJsonValue(const cJSON* j, T& out)
 {
     if (cJSON_IsNumber(j))
-        out = static_cast<T>(static_cast<SFML_BASE_UNDERLYING_TYPE(T)>(cJSON_GetNumberValue(j)));
+        out = static_cast<T>(static_cast<ZB_UNDERLYING_TYPE(T)>(cJSON_GetNumberValue(j)));
 }
 
 
 ////////////////////////////////////////////////////////////
-// `sf::Vec2<T>` round-trips as a JSON array `[x, y]`.
+// `za::Vec2<T>` round-trips as a JSON array `[x, y]`.
 ////////////////////////////////////////////////////////////
 template <typename T>
-cJSON* toJsonValue(const sf::Vec2<T>& p)
+cJSON* toJsonValue(const za::Vec2<T>& p)
 {
     cJSON* arr = cJSON_CreateArray();
     cJSON_AddItemToArray(arr, toJsonValue(p.x));
@@ -223,7 +223,7 @@ cJSON* toJsonValue(const sf::Vec2<T>& p)
 }
 
 template <typename T>
-void fromJsonValue(const cJSON* j, sf::Vec2<T>& p)
+void fromJsonValue(const cJSON* j, za::Vec2<T>& p)
 {
     if (!cJSON_IsArray(j) || cJSON_GetArraySize(j) < 2)
         return;
@@ -233,25 +233,25 @@ void fromJsonValue(const cJSON* j, sf::Vec2<T>& p)
 
 
 ////////////////////////////////////////////////////////////
-// `sf::Time` stored as integer microseconds.
+// `za::Time` stored as integer microseconds.
 ////////////////////////////////////////////////////////////
-inline cJSON* toJsonValue(const sf::Time& t)
+inline cJSON* toJsonValue(const za::Time& t)
 {
     return cJSON_CreateNumber(static_cast<double>(t.asMicroseconds()));
 }
 
-inline void fromJsonValue(const cJSON* j, sf::Time& t)
+inline void fromJsonValue(const cJSON* j, za::Time& t)
 {
     if (cJSON_IsNumber(j))
-        t = sf::microseconds(static_cast<sf::base::I64>(cJSON_GetNumberValue(j)));
+        t = za::microseconds(static_cast<zb::I64>(cJSON_GetNumberValue(j)));
 }
 
 
 ////////////////////////////////////////////////////////////
-// `sf::base::Optional<T>` round-trips as `null` or its contents.
+// `zb::Optional<T>` round-trips as `null` or its contents.
 ////////////////////////////////////////////////////////////
 template <typename T>
-cJSON* toJsonValue(const sf::base::Optional<T>& o)
+cJSON* toJsonValue(const zb::Optional<T>& o)
 {
     if (!o.hasValue())
         return cJSON_CreateNull();
@@ -259,7 +259,7 @@ cJSON* toJsonValue(const sf::base::Optional<T>& o)
 }
 
 template <typename T>
-void fromJsonValue(const cJSON* j, sf::base::Optional<T>& o)
+void fromJsonValue(const cJSON* j, zb::Optional<T>& o)
 {
     if (cJSON_IsNull(j))
     {
@@ -273,10 +273,10 @@ void fromJsonValue(const cJSON* j, sf::base::Optional<T>& o)
 
 
 ////////////////////////////////////////////////////////////
-// `sf::base::Vector<T>` as a JSON array.
+// `zb::Vector<T>` as a JSON array.
 ////////////////////////////////////////////////////////////
 template <typename T>
-cJSON* toJsonValue(const sf::base::Vector<T>& v)
+cJSON* toJsonValue(const zb::Vector<T>& v)
 {
     cJSON* arr = cJSON_CreateArray();
     for (const auto& item : v)
@@ -285,45 +285,45 @@ cJSON* toJsonValue(const sf::base::Vector<T>& v)
 }
 
 template <typename T>
-void fromJsonValue(const cJSON* j, sf::base::Vector<T>& v)
+void fromJsonValue(const cJSON* j, zb::Vector<T>& v)
 {
     v.clear();
     if (!cJSON_IsArray(j))
         return;
 
-    v.reserve(static_cast<sf::base::SizeT>(cJSON_GetArraySize(j)));
+    v.reserve(static_cast<zb::SizeT>(cJSON_GetArraySize(j)));
 
     const cJSON* child{};
     cJSON_ArrayForEach(child, j)
     {
         T item{};
         fromJsonValue(child, item);
-        v.emplaceBack(SFML_BASE_MOVE(item));
+        v.emplaceBack(ZB_MOVE(item));
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-// `sf::base::Array<T, N>` as a JSON array.
+// `zb::Array<T, N>` as a JSON array.
 ////////////////////////////////////////////////////////////
-template <typename T, sf::base::SizeT N>
-cJSON* toJsonValue(const sf::base::Array<T, N>& a)
+template <typename T, zb::SizeT N>
+cJSON* toJsonValue(const zb::Array<T, N>& a)
 {
     cJSON* arr = cJSON_CreateArray();
-    for (sf::base::SizeT i = 0u; i < N; ++i)
+    for (zb::SizeT i = 0u; i < N; ++i)
         cJSON_AddItemToArray(arr, toJsonValue(a.elements[i]));
     return arr;
 }
 
-template <typename T, sf::base::SizeT N>
-void fromJsonValue(const cJSON* j, sf::base::Array<T, N>& a)
+template <typename T, zb::SizeT N>
+void fromJsonValue(const cJSON* j, zb::Array<T, N>& a)
 {
     if (!cJSON_IsArray(j))
         return;
 
-    const auto n     = static_cast<sf::base::SizeT>(cJSON_GetArraySize(j));
+    const auto n     = static_cast<zb::SizeT>(cJSON_GetArraySize(j));
     const auto count = N < n ? N : n;
-    for (sf::base::SizeT i = 0u; i < count; ++i)
+    for (zb::SizeT i = 0u; i < count; ++i)
         fromJsonValue(cJSON_GetArrayItem(j, static_cast<int>(i)), a.elements[i]);
 }
 
@@ -331,24 +331,24 @@ void fromJsonValue(const cJSON* j, sf::base::Array<T, N>& a)
 ////////////////////////////////////////////////////////////
 // Native C-arrays `T[N]` as JSON arrays (recurses for `T[N][M]`).
 ////////////////////////////////////////////////////////////
-template <typename T, sf::base::SizeT N>
+template <typename T, zb::SizeT N>
 cJSON* toJsonValue(const T (&arr)[N])
 {
     cJSON* a = cJSON_CreateArray();
-    for (sf::base::SizeT i = 0u; i < N; ++i)
+    for (zb::SizeT i = 0u; i < N; ++i)
         cJSON_AddItemToArray(a, toJsonValue(arr[i]));
     return a;
 }
 
-template <typename T, sf::base::SizeT N>
+template <typename T, zb::SizeT N>
 void fromJsonValue(const cJSON* j, T (&arr)[N])
 {
     if (!cJSON_IsArray(j))
         return;
 
-    const auto n     = static_cast<sf::base::SizeT>(cJSON_GetArraySize(j));
+    const auto n     = static_cast<zb::SizeT>(cJSON_GetArraySize(j));
     const auto count = N < n ? N : n;
-    for (sf::base::SizeT i = 0u; i < count; ++i)
+    for (zb::SizeT i = 0u; i < count; ++i)
         fromJsonValue(cJSON_GetArrayItem(j, static_cast<int>(i)), arr[i]);
 }
 
@@ -400,7 +400,7 @@ DEFINE_SINGLE_FIELD_SERIALIZER(PurchasableScalingValue, nPurchases);
 inline cJSON* toJsonValue(const GameEvent& p)
 {
     cJSON* obj = cJSON_CreateObject();
-    p.linearVisit(sf::base::OverloadSet{
+    p.linearVisit(zb::OverloadSet{
         [&](const auto& e)
     {
         cJSON_AddStringToObject(obj, "kind", eventKindTag(e));
@@ -424,7 +424,7 @@ inline void fromJsonValue(const cJSON* j, GameEvent& p)
     if (kind == nullptr)
         return;
 
-    const sf::base::StringView kindView{kind};
+    const zb::StringView kindView{kind};
     if (kindView == "bubblefall")
     {
         EBubblefall e{};
@@ -465,7 +465,7 @@ void readField(const cJSON* obj, const char* name, T& field)
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename U>
-concept isSameDecayed = sf::base::isSame<SFML_BASE_REMOVE_CVREF(T), SFML_BASE_REMOVE_CVREF(U)>;
+concept isSameDecayed = zb::isSame<ZB_REMOVE_CVREF(T), ZB_REMOVE_CVREF(U)>;
 
 
 ////////////////////////////////////////////////////////////
@@ -1179,28 +1179,28 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] sf::base::String serializeToJsonString(const T& value, bool pretty)
+[[nodiscard]] zb::String serializeToJsonString(const T& value, bool pretty)
 {
     cJSON* const root = toJsonValue(value);
-    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(root); });
+    ZB_SCOPE_GUARD({ cJSON_Delete(root); });
 
     char* const buf = pretty ? cJSON_Print(root) : cJSON_PrintUnformatted(root);
     if (buf == nullptr)
         return {};
-    SFML_BASE_SCOPE_GUARD({ cJSON_free(buf); });
+    ZB_SCOPE_GUARD({ cJSON_free(buf); });
 
-    return sf::base::String{buf};
+    return zb::String{buf};
 }
 
 
 ////////////////////////////////////////////////////////////
-bool forceCopyFile(const sf::Path& from, const sf::Path& to)
+bool forceCopyFile(const za::Path& from, const za::Path& to)
 {
     (void)to.removeFromDisk();
 
     if (!from.copyFileTo(to))
     {
-        sf::base::printLn("Failed to copy file from '{}' to '{}'", from, to);
+        zb::printLn("Failed to copy file from '{}' to '{}'", from, to);
         return false;
     }
 
@@ -1209,7 +1209,7 @@ bool forceCopyFile(const sf::Path& from, const sf::Path& to)
 
 
 ////////////////////////////////////////////////////////////
-void doRotatingBackup(const sf::base::String& filename)
+void doRotatingBackup(const zb::String& filename)
 {
     (void)forceCopyFile(filename + ".bak2", filename + ".bak3");
     (void)forceCopyFile(filename + ".bak1", filename + ".bak2");
@@ -1222,17 +1222,17 @@ void doRotatingBackup(const sf::base::String& filename)
 ////////////////////////////////////////////////////////////
 bool saveProfileToFile(const Profile& profile, const char* filename)
 {
-    if (!sf::Path{"userdata"}.createDirectoryTree())
+    if (!za::Path{"userdata"}.createDirectoryTree())
     {
-        sf::base::printLn("Failed to save profile to file '{}' (createDirectoryTree failed)", filename);
+        zb::printLn("Failed to save profile to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(profile, /* pretty */ false)))
+    if (!za::writeToFile(zb::StringView{filename}, serializeToJsonString(profile, /* pretty */ false)))
     {
-        sf::base::printLn("Failed to save profile to file '{}' (writeToFile failed)", filename);
+        zb::printLn("Failed to save profile to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1245,13 +1245,13 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
 {
     const auto fail = [&](const char* reason)
     {
-        sf::base::printLn("Failed to load profile from file '{}' ({})", filename, reason);
+        zb::printLn("Failed to load profile from file '{}' ({})", filename, reason);
         return false;
     };
 
-    sf::base::String contents;
+    zb::String contents;
 
-    if (!sf::readFromFile(sf::base::StringView{filename}, contents))
+    if (!za::readFromFile(zb::StringView{filename}, contents))
         return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
@@ -1259,12 +1259,12 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
     if (parsed == nullptr)
         return fail("cJSON_Parse failed");
 
-    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
+    ZB_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        sf::base::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.",
+        zb::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.",
                           filename);
 
         profile = Profile{};
@@ -1278,19 +1278,19 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
 ////////////////////////////////////////////////////////////
 bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* filename)
 {
-    const sf::Path path{filename};
+    const za::Path path{filename};
 
     if (path.hasParent() && !path.getParent().createDirectoryTree())
     {
-        sf::base::printLn("Failed to save game constants to file '{}' (createDirectoryTree failed)", filename);
+        zb::printLn("Failed to save game constants to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(gameConstants, /* pretty */ true)))
+    if (!za::writeToFile(zb::StringView{filename}, serializeToJsonString(gameConstants, /* pretty */ true)))
     {
-        sf::base::printLn("Failed to save game constants to file '{}' (writeToFile failed)", filename);
+        zb::printLn("Failed to save game constants to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1303,13 +1303,13 @@ bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filenam
 {
     const auto fail = [&](const char* reason)
     {
-        sf::base::printLn("Failed to load game constants from file '{}' ({})", filename, reason);
+        zb::printLn("Failed to load game constants from file '{}' ({})", filename, reason);
         return false;
     };
 
-    sf::base::String contents;
+    zb::String contents;
 
-    if (!sf::readFromFile(sf::base::StringView{filename}, contents))
+    if (!za::readFromFile(zb::StringView{filename}, contents))
         return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
@@ -1317,7 +1317,7 @@ bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filenam
     if (parsed == nullptr)
         return fail("cJSON_Parse failed");
 
-    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
+    ZB_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     fromJsonValue(parsed, gameConstants);
     return true;
@@ -1327,17 +1327,17 @@ bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filenam
 ////////////////////////////////////////////////////////////
 bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 {
-    if (!sf::Path{"userdata"}.createDirectoryTree())
+    if (!za::Path{"userdata"}.createDirectoryTree())
     {
-        sf::base::printLn("Failed to save playthrough to file '{}' (createDirectoryTree failed)", filename);
+        zb::printLn("Failed to save playthrough to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
     doRotatingBackup(filename);
 
-    if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(playthrough, /* pretty */ false)))
+    if (!za::writeToFile(zb::StringView{filename}, serializeToJsonString(playthrough, /* pretty */ false)))
     {
-        sf::base::printLn("Failed to save playthrough to file '{}' (writeToFile failed)", filename);
+        zb::printLn("Failed to save playthrough to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1346,12 +1346,12 @@ bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 
 
 ////////////////////////////////////////////////////////////
-sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Playthrough& playthrough)
+zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Playthrough& playthrough)
 {
     if (parsedVersion == currentVersion)
         return "";
 
-    sf::base::printLn("Loaded playthrough version {}.{}.{} does not match current version {}.{}.{}",
+    zb::printLn("Loaded playthrough version {}.{}.{} does not match current version {}.{}.{}",
                       parsedVersion.major,
                       parsedVersion.minor,
                       parsedVersion.patch,
@@ -1366,7 +1366,7 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
 
         if (loadedPrestigeLevel > 0u)
         {
-            sf::base::printLn("Adding missing prestige points...");
+            zb::printLn("Adding missing prestige points...");
 
             const auto oldAccumulatedPPs = Playthrough::calculatePrestigePointReward(0u,
                                                                                      loadedPrestigeLevel,
@@ -1375,7 +1375,7 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
                                                                                      loadedPrestigeLevel,
                                                                                      /* levelBias */ 1u);
 
-            sf::base::printLn("Old accumulated pps: {}{}New accumulated pps: {}{}Adding {} prestige points",
+            zb::printLn("Old accumulated pps: {}{}New accumulated pps: {}{}Adding {} prestige points",
                               oldAccumulatedPPs,
                               '\n',
                               newAccumulatedPPs,
@@ -1393,17 +1393,17 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
 
 
 ////////////////////////////////////////////////////////////
-sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
+zb::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
 {
     const auto fail = [&](const char* reason)
     {
-        sf::base::printLn("Failed to load playthrough from file '{}' ({})", filename, reason);
+        zb::printLn("Failed to load playthrough from file '{}' ({})", filename, reason);
         return "";
     };
 
-    sf::base::String contents;
+    zb::String contents;
 
-    if (!sf::readFromFile(sf::base::StringView{filename}, contents))
+    if (!za::readFromFile(zb::StringView{filename}, contents))
         return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
@@ -1411,12 +1411,12 @@ sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const cha
     if (parsed == nullptr)
         return fail("cJSON_Parse failed");
 
-    SFML_BASE_SCOPE_GUARD({ cJSON_Delete(parsed); });
+    ZB_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        sf::base::printLn("Playthrough '{}' is in the legacy array format and cannot be loaded.", filename);
+        zb::printLn("Playthrough '{}' is in the legacy array format and cannot be loaded.", filename);
         playthrough = Playthrough{};
         return "Your save is from an older version with an incompatible\n"
                "format and could not be loaded. A fresh playthrough has been started.";

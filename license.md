@@ -4,9 +4,9 @@ Copyright (C) 2024-2026 Vittorio Romeo (mail@vittorioromeo.com)
 
 From SFML:
 ```
-  Copyright (C) 2007-2025 Laurent Gomila (laurent@sfml-dev.org)
+  Copyright (C) 2007-2025 Laurent Gomila (laurent@zancle-dev.org)
   Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
-  Copyright (C) 2024-2026 Vittorio Romeo (vittorioromeo@sfml-dev.org)
+  Copyright (C) 2024-2026 Vittorio Romeo (vittorioromeo@zancle-dev.org)
   Copyright (C) 2024-2025 Marco Antognini (antognini.marco@gmail.com)
   Copyright (C) 2013-2013 David Demelier (demelier.david@gmail.com)
   Copyright (C) 2024-2025 Andrew Mickelson

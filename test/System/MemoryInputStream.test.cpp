@@ -1,25 +1,25 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/MemoryInputStream.hpp"
+#include "Zancle/System/MemoryInputStream.hpp"
 
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
-TEST_CASE("[System] sf::MemoryInputStream")
+TEST_CASE("[System] za::MemoryInputStream")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::MemoryInputStream));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::MemoryInputStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::MemoryInputStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::MemoryInputStream));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::MemoryInputStream));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::MemoryInputStream));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::MemoryInputStream));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::MemoryInputStream));
     }
 
-    using namespace sf::base::literals;
+    using namespace zb::literals;
 
     SECTION("open()")
     {
@@ -27,14 +27,14 @@ TEST_CASE("[System] sf::MemoryInputStream")
 
         SECTION("Zero length")
         {
-            sf::MemoryInputStream memoryInputStream(input.data(), 0);
+            za::MemoryInputStream memoryInputStream(input.data(), 0);
             CHECK(memoryInputStream.tell().value() == 0);
             CHECK(memoryInputStream.getSize().value() == 0);
         }
 
         SECTION("Full length")
         {
-            sf::MemoryInputStream memoryInputStream(input.data(), input.size());
+            za::MemoryInputStream memoryInputStream(input.data(), input.size());
             CHECK(memoryInputStream.tell().value() == 0);
             CHECK(memoryInputStream.getSize().value() == input.size());
         }
@@ -43,20 +43,20 @@ TEST_CASE("[System] sf::MemoryInputStream")
     SECTION("read()")
     {
         static constexpr auto input = "hello world"_sv;
-        sf::MemoryInputStream memoryInputStream(input.data(), input.size());
+        za::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read within input
         char output[32]{};
         CHECK(memoryInputStream.read(output, 5).value() == 5);
-        CHECK(sf::base::StringView(output, 5) == "hello"_sv);
+        CHECK(zb::StringView(output, 5) == "hello"_sv);
         CHECK(memoryInputStream.tell().value() == 5);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read beyond input
         CHECK(memoryInputStream.read(output, 100).value() == 6);
-        CHECK(sf::base::StringView(output, 6) == " world"_sv);
+        CHECK(zb::StringView(output, 6) == " world"_sv);
         CHECK(memoryInputStream.tell().value() == 11);
         CHECK(memoryInputStream.getSize().value() == input.size());
     }
@@ -64,7 +64,7 @@ TEST_CASE("[System] sf::MemoryInputStream")
     SECTION("seek()")
     {
         static constexpr auto input = "We Love SFML!"_sv;
-        sf::MemoryInputStream memoryInputStream(input.data(), input.size());
+        za::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());
 

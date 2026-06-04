@@ -2,21 +2,21 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct NotificationData
 {
     const char*      title;
-    sf::base::String content;
+    zb::String content;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct NotificationState
 {
-    sf::base::Vector<NotificationData> queue;
+    zb::Vector<NotificationData> queue;
     TimedCountdown                     countdown{.duration = 750.f};
 };

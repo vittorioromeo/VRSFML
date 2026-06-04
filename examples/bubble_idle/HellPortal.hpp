@@ -2,18 +2,18 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] HellPortal
 {
-    sf::Vec2f       position;
+    za::Vec2f       position;
     Countdown       life;
-    sf::base::SizeT catIdx;
+    zb::SizeT catIdx;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline za::Vec2f getDrawPosition() const
     {
         return position;
     }

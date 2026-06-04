@@ -1,0 +1,22 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#ifndef __DBL_MAX__
+    #include <cfloat>
+#endif
+
+
+////////////////////////////////////////////////////////////
+/// \brief `DBL_MAX` macro, prefers the compiler builtin to avoid `<cfloat>`
+///
+////////////////////////////////////////////////////////////
+#ifdef __DBL_MAX__
+    #define ZB_DOUBLE_MAX __DBL_MAX__
+#else
+    #define ZB_DOUBLE_MAX DBL_MAX
+#endif

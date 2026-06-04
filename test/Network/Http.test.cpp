@@ -2,32 +2,32 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Network/Http.hpp"
+#include "Zancle/Network/Http.hpp"
 
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Network] sf::Http")
+TEST_CASE("[Network] za::Http")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Http));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Http));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Http));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Http));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Http));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Http));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http));
     }
 
     SECTION("setHost")
     {
-        sf::Http http;
+        za::Http http;
 
         SECTION("Valid host w/ prefix")
         {
@@ -54,10 +54,10 @@ TEST_CASE("[Network] sf::Http")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Http::Request));
-            STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Http::Request));
-            STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Http::Request));
-            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http::Request));
+            STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Http::Request));
+            STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Http::Request));
+            STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Http::Request));
+            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http::Request));
         }
     }
 
@@ -65,17 +65,17 @@ TEST_CASE("[Network] sf::Http")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Http::Response));
-            STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Http::Response));
-            STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Http::Response));
-            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http::Response));
+            STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Http::Response));
+            STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Http::Response));
+            STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Http::Response));
+            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http::Response));
         }
 
         SECTION("Construction")
         {
-            const sf::Http::Response response;
+            const za::Http::Response response;
             CHECK(response.getField("").empty());
-            CHECK(response.getStatus() == sf::Http::Response::Status::ConnectionFailed);
+            CHECK(response.getStatus() == za::Http::Response::Status::ConnectionFailed);
             CHECK(response.getMajorHttpVersion() == 0);
             CHECK(response.getMinorHttpVersion() == 0);
             CHECK(response.getBody().empty());
@@ -84,32 +84,32 @@ TEST_CASE("[Network] sf::Http")
 }
 
 
-#ifdef SFML_RUN_CONNECTION_TESTS
+#ifdef ZA_RUN_CONNECTION_TESTS
 
-TEST_CASE("[Network] sf::Http Connection")
+TEST_CASE("[Network] za::Http Connection")
 {
     SECTION("HTTP Connection")
     {
-        sf::Http http("http://github.com");
+        za::Http http("http://github.com");
 
         SECTION("Request Index")
         {
-            const sf::Http::Response         response = http.sendRequest(sf::Http::Request{}, sf::milliseconds(250));
-            const sf::Http::Response::Status status   = response.getStatus();
+            const za::Http::Response         response = http.sendRequest(za::Http::Request{}, za::milliseconds(250));
+            const za::Http::Response::Status status   = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
-            CHECK(status == sf::Http::Response::Status::MovedPermanently);
+            CHECK(status == za::Http::Response::Status::MovedPermanently);
             CHECK(response.getField("Location") == "https://github.com/");
             CHECK(response.getField("location") == "https://github.com/");
         }
 
         SECTION("Request Resource")
         {
-            const sf::Http::Response response = http.sendRequest(sf::Http::Request("SFML/SFML"), sf::milliseconds(250));
-            const sf::Http::Response::Status status = response.getStatus();
+            const za::Http::Response response = http.sendRequest(za::Http::Request("SFML/SFML"), za::milliseconds(250));
+            const za::Http::Response::Status status = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
-            CHECK(status == sf::Http::Response::Status::MovedPermanently);
+            CHECK(status == za::Http::Response::Status::MovedPermanently);
             CHECK(response.getField("Location") == "https://github.com/SFML/SFML");
             CHECK(response.getField("location") == "https://github.com/SFML/SFML");
         }
@@ -117,15 +117,15 @@ TEST_CASE("[Network] sf::Http Connection")
 
     SECTION("HTTPS Connection")
     {
-        sf::Http http("https://github.com");
+        za::Http http("https://github.com");
 
         SECTION("Request Index")
         {
-            const sf::Http::Response         response = http.sendRequest(sf::Http::Request{}, sf::milliseconds(250));
-            const sf::Http::Response::Status status   = response.getStatus();
+            const za::Http::Response         response = http.sendRequest(za::Http::Request{}, za::milliseconds(250));
+            const za::Http::Response::Status status   = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
-            CHECK(status == sf::Http::Response::Status::Ok);
+            CHECK(status == za::Http::Response::Status::Ok);
             CHECK(!response.getField("Server").empty());
             CHECK(!response.getField("server").empty());
             CHECK(!response.getField("Content-Type").empty());
@@ -135,26 +135,26 @@ TEST_CASE("[Network] sf::Http Connection")
 
         SECTION("Request Resource")
         {
-            const sf::Http::Response response = http.sendRequest(sf::Http::Request("SFML/SFML"), sf::milliseconds(250));
-            const sf::Http::Response::Status status = response.getStatus();
+            const za::Http::Response response = http.sendRequest(za::Http::Request("SFML/SFML"), za::milliseconds(250));
+            const za::Http::Response::Status status = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
-            CHECK(status == sf::Http::Response::Status::Ok);
+            CHECK(status == za::Http::Response::Status::Ok);
             CHECK(!response.getField("Server").empty());
             CHECK(!response.getField("server").empty());
             CHECK(!response.getField("Content-Type").empty());
             CHECK(!response.getField("content-type").empty());
-            CHECK(response.getBody().find("SFML") != sf::base::StringView::nPos);
+            CHECK(response.getBody().find("SFML") != zb::StringView::nPos);
         }
 
         SECTION("Request Non-Existant Resource")
         {
-            const sf::Http::Response response = http.sendRequest(sf::Http::Request("SFML/REPOSITORYTHATDOESNOTEXIST"),
-                                                                 sf::milliseconds(250));
-            const sf::Http::Response::Status status = response.getStatus();
+            const za::Http::Response response = http.sendRequest(za::Http::Request("SFML/REPOSITORYTHATDOESNOTEXIST"),
+                                                                 za::milliseconds(250));
+            const za::Http::Response::Status status = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
-            CHECK(status == sf::Http::Response::Status::NotFound);
+            CHECK(status == za::Http::Response::Status::NotFound);
             CHECK(!response.getField("Server").empty());
             CHECK(!response.getField("server").empty());
         }
@@ -163,19 +163,19 @@ TEST_CASE("[Network] sf::Http Connection")
         {
             http.setHost("https://codeload.github.com");
 
-            sf::Http::Request request("SFML/SFML/zip/refs/heads/master", sf::Http::Request::Method::Head);
+            za::Http::Request request("SFML/SFML/zip/refs/heads/master", za::Http::Request::Method::Head);
             request.setHttpVersion(1, 1);
 
-            const sf::Http::Response         response = http.sendRequest(request, sf::milliseconds(250));
-            const sf::Http::Response::Status status   = response.getStatus();
+            const za::Http::Response         response = http.sendRequest(request, za::milliseconds(250));
+            const za::Http::Response::Status status   = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() == 1);
             CHECK(response.getMinorHttpVersion() == 1);
-            CHECK(status == sf::Http::Response::Status::Ok);
+            CHECK(status == za::Http::Response::Status::Ok);
             CHECK(response.getField("Content-Type") == "application/zip");
             CHECK(response.getField("content-type") == "application/zip");
-            CHECK(response.getField("Content-Disposition").find("SFML-master.zip") != sf::base::StringView::nPos);
-            CHECK(response.getField("content-disposition").find("SFML-master.zip") != sf::base::StringView::nPos);
+            CHECK(response.getField("Content-Disposition").find("SFML-master.zip") != zb::StringView::nPos);
+            CHECK(response.getField("content-disposition").find("SFML-master.zip") != zb::StringView::nPos);
         }
     }
 }

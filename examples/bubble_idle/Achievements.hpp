@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -498,9 +498,9 @@ inline constexpr AchievementData achievementData[] = {
 };
 
 ////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
+enum : zb::SizeT
 {
-    nAchievements = sf::base::getArraySize(achievementData)
+    nAchievements = zb::getArraySize(achievementData)
 };
 
 // TODO P2: come up with more secret achivements

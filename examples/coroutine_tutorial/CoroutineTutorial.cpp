@@ -4,36 +4,36 @@
 #include "ExampleUtils/SfexCoroutine.hpp"
 #include "ExampleUtils/SfexYield.hpp"
 
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextUtils.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TextUtils.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f worldSize{800.f, 600.f};
+constexpr za::Vec2f worldSize{800.f, 600.f};
 
 
 ////////////////////////////////////////////////////////////
@@ -45,15 +45,15 @@ using sfex::Wait;
 ////////////////////////////////////////////////////////////
 struct Wall
 {
-    sf::Vec2f pos{}; // top-left
-    sf::Vec2f size{};
+    za::Vec2f pos{}; // top-left
+    za::Vec2f size{};
 };
 
 
 ////////////////////////////////////////////////////////////
 struct Pickup
 {
-    sf::Vec2f pos{};
+    za::Vec2f pos{};
     bool      collected = false;
 };
 
@@ -61,8 +61,8 @@ struct Pickup
 ////////////////////////////////////////////////////////////
 struct Door
 {
-    sf::Vec2f pos{}; // top-left
-    sf::Vec2f size{};
+    za::Vec2f pos{}; // top-left
+    za::Vec2f size{};
     bool      open = false;
 };
 
@@ -70,8 +70,8 @@ struct Door
 ////////////////////////////////////////////////////////////
 struct Player
 {
-    sf::Vec2f pos{}; // top-left
-    sf::Vec2f size{20.f, 20.f};
+    za::Vec2f pos{}; // top-left
+    za::Vec2f size{20.f, 20.f};
     int       keys  = 0;
     float     speed = 140.f;
 };
@@ -80,11 +80,11 @@ struct Player
 ////////////////////////////////////////////////////////////
 struct Guard
 {
-    sf::Vec2f pos{}; // top-left
-    sf::Vec2f size{24.f, 24.f};
+    za::Vec2f pos{}; // top-left
+    za::Vec2f size{24.f, 24.f};
 
-    sf::base::Vector<sf::Vec2f> waypoints; // top-left positions
-    sf::base::SizeT             currentWaypointIdx = 0u;
+    zb::Vector<za::Vec2f> waypoints; // top-left positions
+    zb::SizeT             currentWaypointIdx = 0u;
 
     float detectionRadius = 95.f;
     float patrolSpeed     = 55.f;
@@ -103,8 +103,8 @@ struct Guard
 struct Dialogue
 {
     bool             visible = false;
-    sf::base::String fullText;
-    sf::base::String displayedText;
+    zb::String fullText;
+    zb::String displayedText;
 };
 
 
@@ -116,12 +116,12 @@ struct World
     Player player{};
     Guard  guard{};
 
-    sf::base::Vector<Wall>   walls;
-    sf::base::Vector<Pickup> keys;
-    sf::base::Vector<Door>   doors;
+    zb::Vector<Wall>   walls;
+    zb::Vector<Pickup> keys;
+    zb::Vector<Door>   doors;
 
     Dialogue         dialogue;
-    sf::base::String objective;
+    zb::String objective;
 
     // game progress flags
     bool gameActive   = true;
@@ -144,7 +144,7 @@ struct World
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool aabbOverlap(sf::Vec2f aPos, sf::Vec2f aSize, sf::Vec2f bPos, sf::Vec2f bSize)
+[[nodiscard]] bool aabbOverlap(za::Vec2f aPos, za::Vec2f aSize, za::Vec2f bPos, za::Vec2f bSize)
 {
     return aPos.x < bPos.x + bSize.x && //
            aPos.x + aSize.x > bPos.x && //
@@ -162,8 +162,8 @@ struct World
 
 ////////////////////////////////////////////////////////////
 template <typename ObstacleRange, typename ShouldBlock>
-void resolveCollisionsAxis(sf::Vec2f&     entityPos,
-                           sf::Vec2f      entitySize,
+void resolveCollisionsAxis(za::Vec2f&     entityPos,
+                           za::Vec2f      entitySize,
                            ObstacleRange& obstacles,  // range of entities to check against
                            bool           xAxis,      // x or y axis?
                            float          delta,      // movement delta on chosen axis
@@ -286,8 +286,8 @@ void initLevel(World& world)
 
     // guard patrols vertically in room 3
     world.guard.pos = {588.f, 238.f};
-    world.guard.waypoints.emplaceBack(sf::Vec2f{588.f, 88.f});
-    world.guard.waypoints.emplaceBack(sf::Vec2f{588.f, 468.f});
+    world.guard.waypoints.emplaceBack(za::Vec2f{588.f, 88.f});
+    world.guard.waypoints.emplaceBack(za::Vec2f{588.f, 468.f});
     world.guard.currentWaypointIdx = 0u;
     world.guard.state              = Guard::State::Patrolling;
 }
@@ -297,7 +297,7 @@ void initLevel(World& world)
 struct Typewriter : sfex::Coroutine
 {
     ////////////////////////////////////////////////////////////
-    sf::base::SizeT charIdx = 0u; // persistent across yields
+    zb::SizeT charIdx = 0u; // persistent across yields
 
 
     ////////////////////////////////////////////////////////////
@@ -329,7 +329,7 @@ struct Typewriter : sfex::Coroutine
 struct DialogueBeat : sfex::Coroutine
 {
     ////////////////////////////////////////////////////////////
-    sf::base::String text;
+    zb::String text;
     Typewriter       typewriter;
 
 
@@ -369,7 +369,7 @@ struct DialogueBeat : sfex::Coroutine
 struct GuardPatrol : sfex::Coroutine
 {
     ////////////////////////////////////////////////////////////
-    sf::Vec2f delta;            // difference to next waypoint
+    za::Vec2f delta;            // difference to next waypoint
     float     dist       = 0.f; // distance to next waypoint
     float     pauseTimer = 0.f; // pause timer at waypoint
 
@@ -408,8 +408,8 @@ struct GuardPatrol : sfex::Coroutine
             {
                 // scope to avoid "crosses initialization with case label" error
                 {
-                    const sf::Vec2f dir  = delta / dist;
-                    const sf::Vec2f step = dir * world.guard.patrolSpeed * world.dt;
+                    const za::Vec2f dir  = delta / dist;
+                    const za::Vec2f step = dir * world.guard.patrolSpeed * world.dt;
 
                     resolveGuardMoveAxis(world, true, step.x);
                     resolveGuardMoveAxis(world, false, step.y);
@@ -499,8 +499,8 @@ struct GuardChase : sfex::Coroutine
 
                 if (dist > 0.001f)
                 {
-                    const sf::Vec2f dir  = delta / dist;
-                    const sf::Vec2f step = dir * world.guard.chaseSpeed * world.dt;
+                    const za::Vec2f dir  = delta / dist;
+                    const za::Vec2f step = dir * world.guard.chaseSpeed * world.dt;
 
                     resolveGuardMoveAxis(world, /* xAxis */ true, step.x);
                     resolveGuardMoveAxis(world, /* xAxis */ false, step.y);
@@ -660,7 +660,7 @@ void driveCoroutine(auto& coro, World& world, float& waitTimer, bool& done)
 
     if (waitTimer > 0.f)
     {
-        waitTimer = sf::base::max(waitTimer - world.dt, 0.f);
+        waitTimer = zb::max(waitTimer - world.dt, 0.f);
         return;
     }
 
@@ -672,16 +672,16 @@ void driveCoroutine(auto& coro, World& world, float& waitTimer, bool& done)
 
 
 ////////////////////////////////////////////////////////////
-void drawWorld(sf::RenderWindow&       window,
-               const sf::Font&         font,
+void drawWorld(za::RenderWindow&       window,
+               const za::Font&         font,
                const World&            world,
-               const sf::base::String& statusMessage,
+               const zb::String& statusMessage,
                float                   statusMessageAlpha)
 {
     window.clear({18u, 22u, 30u});
 
     for (const Wall& w : world.walls)
-        window.draw(sf::RectangleShapeData{
+        window.draw(za::RectangleShapeData{
             .position  = w.pos,
             .fillColor = {70u, 80u, 105u},
             .size      = w.size,
@@ -692,7 +692,7 @@ void drawWorld(sf::RenderWindow&       window,
         if (d.open)
             continue;
 
-        window.draw(sf::RectangleShapeData{
+        window.draw(za::RectangleShapeData{
             .position         = d.pos,
             .fillColor        = {180u, 90u, 60u},
             .outlineColor     = {255u, 200u, 140u},
@@ -706,7 +706,7 @@ void drawWorld(sf::RenderWindow&       window,
         if (k.collected)
             continue;
 
-        window.draw(sf::CircleShapeData{
+        window.draw(za::CircleShapeData{
             .position         = k.pos,
             .origin           = {7.f, 7.f},
             .fillColor        = {255u, 220u, 80u},
@@ -716,15 +716,15 @@ void drawWorld(sf::RenderWindow&       window,
         });
     }
 
-    const auto guardRadiusColor = (world.guard.state == Guard::State::Suspicious) ? sf::Color{255u, 220u, 80u, 70u}
-                                  : (world.guard.state == Guard::State::Chasing)  ? sf::Color{255u, 80u, 80u, 90u}
-                                                                                  : sf::Color{120u, 200u, 255u, 40u};
+    const auto guardRadiusColor = (world.guard.state == Guard::State::Suspicious) ? za::Color{255u, 220u, 80u, 70u}
+                                  : (world.guard.state == Guard::State::Chasing)  ? za::Color{255u, 80u, 80u, 90u}
+                                                                                  : za::Color{120u, 200u, 255u, 40u};
 
-    const auto guardBodyColor = (world.guard.state == Guard::State::Suspicious) ? sf::Color{255u, 220u, 80u}
-                                : (world.guard.state == Guard::State::Chasing)  ? sf::Color{255u, 80u, 80u}
-                                                                                : sf::Color{120u, 200u, 255u};
+    const auto guardBodyColor = (world.guard.state == Guard::State::Suspicious) ? za::Color{255u, 220u, 80u}
+                                : (world.guard.state == Guard::State::Chasing)  ? za::Color{255u, 80u, 80u}
+                                                                                : za::Color{120u, 200u, 255u};
 
-    window.draw(sf::CircleShapeData{
+    window.draw(za::CircleShapeData{
         .position         = world.guard.pos + world.guard.size * 0.5f,
         .origin           = {world.guard.detectionRadius, world.guard.detectionRadius},
         .fillColor        = guardRadiusColor,
@@ -733,29 +733,29 @@ void drawWorld(sf::RenderWindow&       window,
         .radius           = world.guard.detectionRadius,
     });
 
-    window.draw(sf::RectangleShapeData{
+    window.draw(za::RectangleShapeData{
         .position         = world.guard.pos,
         .fillColor        = guardBodyColor,
-        .outlineColor     = sf::Color::White,
+        .outlineColor     = za::Color::White,
         .outlineThickness = 1.f,
         .size             = world.guard.size,
     });
 
-    window.draw(sf::RectangleShapeData{
+    window.draw(za::RectangleShapeData{
         .position         = world.player.pos,
         .fillColor        = {200u, 240u, 200u},
-        .outlineColor     = sf::Color::Black,
+        .outlineColor     = za::Color::Black,
         .outlineThickness = 1.f,
         .size             = world.player.size,
     });
 
     window.draw(font,
-                sf::TextData{
+                za::TextData{
                     .position         = {44.f, 38.f},
-                    .string           = sf::base::String{"Keys: "} + static_cast<char>('0' + world.player.keys),
+                    .string           = zb::String{"Keys: "} + static_cast<char>('0' + world.player.keys),
                     .characterSize    = 14u,
                     .fillColor        = {220u, 220u, 220u},
-                    .outlineColor     = sf::Color::Black,
+                    .outlineColor     = za::Color::Black,
                     .outlineThickness = 1.f,
                 });
 
@@ -766,7 +766,7 @@ void drawWorld(sf::RenderWindow&       window,
         const float     boxX = worldSize.x - boxW - 24.f;
         const float     boxY = 24.f;
 
-        window.draw(sf::RectangleShapeData{
+        window.draw(za::RectangleShapeData{
             .position         = {boxX, boxY},
             .fillColor        = {30u, 40u, 60u, 200u},
             .outlineColor     = {180u, 220u, 255u},
@@ -775,22 +775,22 @@ void drawWorld(sf::RenderWindow&       window,
         });
 
         window.draw(font,
-                    sf::TextData{
+                    za::TextData{
                         .position         = {boxX + 10.f, boxY + 4.f},
                         .string           = "Objective",
                         .characterSize    = 11u,
                         .fillColor        = {180u, 220u, 255u},
-                        .outlineColor     = sf::Color::Black,
+                        .outlineColor     = za::Color::Black,
                         .outlineThickness = 1.f,
                     });
 
         window.draw(font,
-                    sf::TextData{
+                    za::TextData{
                         .position         = {boxX + 10.f, boxY + 18.f},
                         .string           = world.objective,
                         .characterSize    = 15u,
-                        .fillColor        = sf::Color::White,
-                        .outlineColor     = sf::Color::Black,
+                        .fillColor        = za::Color::White,
+                        .outlineColor     = za::Color::Black,
                         .outlineThickness = 1.f,
                     });
     }
@@ -802,7 +802,7 @@ void drawWorld(sf::RenderWindow&       window,
         constexpr float boxW = worldSize.x - 80.f;
         constexpr float boxH = 130.f;
 
-        window.draw(sf::RectangleShapeData{
+        window.draw(za::RectangleShapeData{
             .position         = {boxX, boxY},
             .fillColor        = {16u, 24u, 48u, 235u},
             .outlineColor     = {180u, 220u, 255u},
@@ -811,23 +811,23 @@ void drawWorld(sf::RenderWindow&       window,
         });
 
         window.draw(font,
-                    sf::TextData{
+                    za::TextData{
                         .position         = {boxX + 16.f, boxY + 14.f},
                         .string           = world.dialogue.displayedText,
                         .characterSize    = 17u,
-                        .fillColor        = sf::Color::White,
-                        .outlineColor     = sf::Color::Black,
+                        .fillColor        = za::Color::White,
+                        .outlineColor     = za::Color::Black,
                         .outlineThickness = 1.f,
                     });
 
         window.draw(font,
-                    sf::TextUtils::anchored(font,
-                                            sf::TextData{
+                    za::TextUtils::anchored(font,
+                                            za::TextData{
                                                 .position         = {boxX + boxW - 8.f, boxY + boxH - 8.f},
                                                 .string           = "[any key to continue]",
                                                 .characterSize    = 11u,
                                                 .fillColor        = {180u, 220u, 255u},
-                                                .outlineColor     = sf::Color::Black,
+                                                .outlineColor     = za::Color::Black,
                                                 .outlineThickness = 1.f,
                                             },
                                             {1.f, 1.f}));
@@ -835,9 +835,9 @@ void drawWorld(sf::RenderWindow&       window,
 
     if (statusMessageAlpha > 0.f && !statusMessage.empty())
     {
-        const auto alpha = static_cast<sf::base::U8>(sf::base::min(statusMessageAlpha, 1.f) * 255.f);
+        const auto alpha = static_cast<zb::U8>(zb::min(statusMessageAlpha, 1.f) * 255.f);
         window.draw(font,
-                    sf::TextData{
+                    za::TextData{
                         .position         = {44.f, worldSize.y - 32.f},
                         .string           = statusMessage,
                         .characterSize    = 13u,
@@ -848,44 +848,44 @@ void drawWorld(sf::RenderWindow&       window,
     }
 
     window.draw(font,
-                sf::TextData{
+                za::TextData{
                     .position         = {worldSize.x - 360.f, worldSize.y - 18.f},
                     .string           = "Arrows move  R restart  F5 save  F6 load",
                     .characterSize    = 11u,
                     .fillColor        = {160u, 180u, 200u},
-                    .outlineColor     = sf::Color::Black,
+                    .outlineColor     = za::Color::Black,
                     .outlineThickness = 1.f,
                 });
 
     if (world.gameOver)
     {
-        window.draw(sf::RectangleShapeData{
+        window.draw(za::RectangleShapeData{
             .position  = {0.f, worldSize.y * 0.5f - 50.f},
             .fillColor = {0u, 0u, 0u, 200u},
             .size      = {worldSize.x, 100.f},
         });
 
         window.draw(font,
-                    sf::TextUtils::anchored(font,
+                    za::TextUtils::anchored(font,
                                             {
                                                 .position         = (worldSize / 2.f).addY(-20.f),
                                                 .string           = "CAUGHT!",
                                                 .characterSize    = 36u,
                                                 .fillColor        = {255u, 100u, 100u},
-                                                .outlineColor     = sf::Color::Black,
+                                                .outlineColor     = za::Color::Black,
                                                 .outlineThickness = 2.f,
                                                 .bold             = true,
                                             },
                                             {0.5f, 0.5f}));
 
         window.draw(font,
-                    sf::TextUtils::anchored(font,
+                    za::TextUtils::anchored(font,
                                             {
                                                 .position         = (worldSize / 2.f).addY(20.f),
                                                 .string           = "Press R to restart",
                                                 .characterSize    = 16u,
-                                                .fillColor        = sf::Color::White,
-                                                .outlineColor     = sf::Color::Black,
+                                                .fillColor        = za::Color::White,
+                                                .outlineColor     = za::Color::Black,
                                                 .outlineThickness = 1.f,
                                             },
                                             {0.5f, 0.5f}));
@@ -903,9 +903,9 @@ void drawWorld(sf::RenderWindow&       window,
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    auto window = sf::RenderWindow::create(
+    auto window = za::RenderWindow::create(
                       {
                           .size             = worldSize.toVec2u(),
                           .title            = "SFEX Coroutine Tutorial",
@@ -915,12 +915,12 @@ int main()
                       })
                       .value();
 
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     GameState                     gs;
-    sf::base::Optional<GameState> quickSave;
+    zb::Optional<GameState> quickSave;
 
-    sf::base::String statusMessage;
+    zb::String statusMessage;
     float            statusMessageT  = 0.f;
     constexpr float  statusFlashTime = 1.6f;
 
@@ -939,7 +939,7 @@ int main()
 
     initLevel(gs.world);
 
-    sf::Clock frameClock;
+    za::Clock frameClock;
 
     while (true)
     {
@@ -947,18 +947,18 @@ int main()
         bool requestQuickSave = false;
         bool requestQuickLoad = false;
 
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (const auto* kp = event->getIf<sf::Event::KeyPressed>())
+            if (const auto* kp = event->getIf<za::Event::KeyPressed>())
             {
-                if (kp->code == sf::Keyboard::Key::F5)
+                if (kp->code == za::Keyboard::Key::F5)
                     requestQuickSave = true;
-                else if (kp->code == sf::Keyboard::Key::F6)
+                else if (kp->code == za::Keyboard::Key::F6)
                     requestQuickLoad = true;
-                else if (kp->code == sf::Keyboard::Key::R)
+                else if (kp->code == za::Keyboard::Key::R)
                     requestRestart = true;
                 else
                     gs.world.keyEdgeQueued = true;
@@ -991,16 +991,16 @@ int main()
         }
 
         if (statusMessageT > 0.f)
-            statusMessageT = sf::base::max(statusMessageT - dt, 0.f);
+            statusMessageT = zb::max(statusMessageT - dt, 0.f);
 
         if (gs.world.gameActive && !gs.world.gameOver)
         {
-            const bool kUp    = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up);
-            const bool kDown  = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down);
-            const bool kLeft  = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left);
-            const bool kRight = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right);
+            const bool kUp    = za::Keyboard::isKeyPressed(za::Keyboard::Key::Up);
+            const bool kDown  = za::Keyboard::isKeyPressed(za::Keyboard::Key::Down);
+            const bool kLeft  = za::Keyboard::isKeyPressed(za::Keyboard::Key::Left);
+            const bool kRight = za::Keyboard::isKeyPressed(za::Keyboard::Key::Right);
 
-            sf::Vec2f move{0.f, 0.f};
+            za::Vec2f move{0.f, 0.f};
 
             // clang-format off
             if (kUp)    { move.y -= 1.f; gs.world.movedUp = true; }
@@ -1012,7 +1012,7 @@ int main()
             if (move.x != 0.f && move.y != 0.f)
                 move *= 0.70710678f; // diagonal normalization
 
-            const sf::Vec2f step = move * gs.world.player.speed * dt;
+            const za::Vec2f step = move * gs.world.player.speed * dt;
             resolvePlayerMoveAxis(gs.world, /* xAxis */ true, step.x);
             resolvePlayerMoveAxis(gs.world, /* xAxis */ false, step.y);
 
@@ -1021,8 +1021,8 @@ int main()
                 if (k.collected)
                     continue;
 
-                const sf::Vec2f playerCenter = gs.world.player.pos + gs.world.player.size * 0.5f;
-                const sf::Vec2f delta        = playerCenter - k.pos;
+                const za::Vec2f playerCenter = gs.world.player.pos + gs.world.player.size * 0.5f;
+                const za::Vec2f delta        = playerCenter - k.pos;
 
                 const float d2 = delta.x * delta.x + delta.y * delta.y;
 

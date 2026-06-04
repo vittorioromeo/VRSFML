@@ -5,6 +5,6 @@
 
 #pragma once
 
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Vector.hpp"
 
-[[nodiscard]] sf::base::Vector<char> loadIntoMemory(const char* path);
+[[nodiscard]] zb::Vector<char> loadIntoMemory(const char* path);

@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "ParticleType.hpp"
 
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/GetArraySize.hpp"
+#include "ZancleBase/GetArraySize.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -18,184 +18,184 @@ struct [[nodiscard]] MainAtlasRects
 {
     ////////////////////////////////////////////////////////////
     // Quick toolbar icons
-    sf::Rect2f txrIconVolume;
-    sf::Rect2f txrIconBGM;
-    sf::Rect2f txrIconBg;
-    sf::Rect2f txrIconCfg;
-    sf::Rect2f txrIconCopyCat;
+    za::Rect2f txrIconVolume;
+    za::Rect2f txrIconBGM;
+    za::Rect2f txrIconBg;
+    za::Rect2f txrIconCfg;
+    za::Rect2f txrIconCopyCat;
 
     ////////////////////////////////////////////////////////////
     // Shop menu separator textures
-    sf::Rect2f txrMenuSeparator0;
-    sf::Rect2f txrMenuSeparator1;
-    sf::Rect2f txrMenuSeparator2;
-    sf::Rect2f txrMenuSeparator3;
-    sf::Rect2f txrMenuSeparator4;
-    sf::Rect2f txrMenuSeparator5;
-    sf::Rect2f txrMenuSeparator6;
-    sf::Rect2f txrMenuSeparator7;
-    sf::Rect2f txrMenuSeparator8;
+    za::Rect2f txrMenuSeparator0;
+    za::Rect2f txrMenuSeparator1;
+    za::Rect2f txrMenuSeparator2;
+    za::Rect2f txrMenuSeparator3;
+    za::Rect2f txrMenuSeparator4;
+    za::Rect2f txrMenuSeparator5;
+    za::Rect2f txrMenuSeparator6;
+    za::Rect2f txrMenuSeparator7;
+    za::Rect2f txrMenuSeparator8;
 
     ////////////////////////////////////////////////////////////
     // Prestige menu separator textures
-    sf::Rect2f txrPrestigeSeparator0;
-    sf::Rect2f txrPrestigeSeparator1;
-    sf::Rect2f txrPrestigeSeparator2;
-    sf::Rect2f txrPrestigeSeparator3;
-    sf::Rect2f txrPrestigeSeparator4;
-    sf::Rect2f txrPrestigeSeparator5;
-    sf::Rect2f txrPrestigeSeparator6;
-    sf::Rect2f txrPrestigeSeparator7;
-    sf::Rect2f txrPrestigeSeparator8;
-    sf::Rect2f txrPrestigeSeparator9;
-    sf::Rect2f txrPrestigeSeparator10;
-    sf::Rect2f txrPrestigeSeparator11;
-    sf::Rect2f txrPrestigeSeparator12;
-    sf::Rect2f txrPrestigeSeparator13;
-    sf::Rect2f txrPrestigeSeparator14;
-    sf::Rect2f txrPrestigeSeparator15;
+    za::Rect2f txrPrestigeSeparator0;
+    za::Rect2f txrPrestigeSeparator1;
+    za::Rect2f txrPrestigeSeparator2;
+    za::Rect2f txrPrestigeSeparator3;
+    za::Rect2f txrPrestigeSeparator4;
+    za::Rect2f txrPrestigeSeparator5;
+    za::Rect2f txrPrestigeSeparator6;
+    za::Rect2f txrPrestigeSeparator7;
+    za::Rect2f txrPrestigeSeparator8;
+    za::Rect2f txrPrestigeSeparator9;
+    za::Rect2f txrPrestigeSeparator10;
+    za::Rect2f txrPrestigeSeparator11;
+    za::Rect2f txrPrestigeSeparator12;
+    za::Rect2f txrPrestigeSeparator13;
+    za::Rect2f txrPrestigeSeparator14;
+    za::Rect2f txrPrestigeSeparator15;
 
     ////////////////////////////////////////////////////////////
     // Magic menu separator textures
-    sf::Rect2f txrMagicSeparator0;
-    sf::Rect2f txrMagicSeparator1;
-    sf::Rect2f txrMagicSeparator2;
-    sf::Rect2f txrMagicSeparator3;
+    za::Rect2f txrMagicSeparator0;
+    za::Rect2f txrMagicSeparator1;
+    za::Rect2f txrMagicSeparator2;
+    za::Rect2f txrMagicSeparator3;
 
     ////////////////////////////////////////////////////////////
     // Texture atlas rects
-    sf::Rect2f txrWhiteDot;
-    sf::Rect2f txrBubble;
-    sf::Rect2f txrBubbleStar;
-    sf::Rect2f txrBubbleNova;
-    sf::Rect2f txrBubbleGlass;
-    sf::Rect2f txrCat;
+    za::Rect2f txrWhiteDot;
+    za::Rect2f txrBubble;
+    za::Rect2f txrBubbleStar;
+    za::Rect2f txrBubbleNova;
+    za::Rect2f txrBubbleGlass;
+    za::Rect2f txrCat;
 
     // Wardencat composite: drawn back-to-front as guardhouse_back, wardencat
     // (with a tail-like body wobble), guardhouse_front, wardencatpaw.
-    sf::Rect2f txrGuardhouseBack;
-    sf::Rect2f txrWardenCat;
-    sf::Rect2f txrGuardhouseFront;
-    sf::Rect2f txrWardencatPaw;
-    sf::Rect2f txrUniCat;
-    sf::Rect2f txrUniCat2;
-    sf::Rect2f txrUniCatWings;
-    sf::Rect2f txrDevilCat2;
-    sf::Rect2f txrDevilCat3;
-    sf::Rect2f txrDevilCat3Arm;
-    sf::Rect2f txrDevilCat3Book;
-    sf::Rect2f txrDevilCat3Tail;
-    sf::Rect2f txrDevilCat2Book;
-    sf::Rect2f txrCatPaw;
-    sf::Rect2f txrCatTail;
-    sf::Rect2f txrSmartCatHat;
-    sf::Rect2f txrSmartCatDiploma;
-    sf::Rect2f txrBrainBack;
-    sf::Rect2f txrBrainFront;
-    sf::Rect2f txrUniCatTail;
-    sf::Rect2f txrUniCat2Tail;
-    sf::Rect2f txrDevilCatTail2;
-    sf::Rect2f txrAstroCatTail;
-    sf::Rect2f txrAstroCatFlag;
-    sf::Rect2f txrWitchCatTail;
-    sf::Rect2f txrWizardCatTail;
-    sf::Rect2f txrMouseCatTail;
-    sf::Rect2f txrMouseCatMouse;
-    sf::Rect2f txrEngiCatTail;
-    sf::Rect2f txrEngiCatWrench;
-    sf::Rect2f txrRepulsoCatTail;
-    sf::Rect2f txrAttractoCatTail;
-    sf::Rect2f txrCopyCatTail;
-    sf::Rect2f txrAttractoCatMagnet;
-    sf::Rect2f txrUniCatPaw;
-    sf::Rect2f txrDevilCatPaw;
-    sf::Rect2f txrDevilCatPaw2;
-    sf::Rect2f txrParticle;
-    sf::Rect2f txrStarParticle;
-    sf::Rect2f txrFireParticle;
-    sf::Rect2f txrFireParticle2;
-    sf::Rect2f txrSmokeParticle;
-    sf::Rect2f txrExplosionParticle;
-    sf::Rect2f txrTrailParticle;
-    sf::Rect2f txrHexParticle;
-    sf::Rect2f txrShrineParticle;
-    sf::Rect2f txrCogParticle;
-    sf::Rect2f txrGlassParticle;
-    sf::Rect2f txrWitchCat;
-    sf::Rect2f txrWitchCatPaw;
-    sf::Rect2f txrAstroCat;
-    sf::Rect2f txrBomb;
-    sf::Rect2f txrShrine;
-    sf::Rect2f txrWizardCat;
-    sf::Rect2f txrWizardCatPaw;
-    sf::Rect2f txrMouseCat;
-    sf::Rect2f txrMouseCatPaw;
-    sf::Rect2f txrEngiCat;
-    sf::Rect2f txrEngiCatPaw;
-    sf::Rect2f txrRepulsoCat;
-    sf::Rect2f txrRepulsoCatPaw;
-    sf::Rect2f txrAttractoCat;
-    sf::Rect2f txrCopyCat;
-    sf::Rect2f txrDuckCat;
-    sf::Rect2f txrDuckFlag;
-    sf::Rect2f txrAttractoCatPaw;
-    sf::Rect2f txrCopyCatPaw;
-    sf::Rect2f txrDollNormal;
-    sf::Rect2f txrDollUni;
-    sf::Rect2f txrDollDevil;
-    sf::Rect2f txrDollAstro;
-    sf::Rect2f txrDollWizard;
-    sf::Rect2f txrDollMouse;
-    sf::Rect2f txrDollEngi;
-    sf::Rect2f txrDollRepulso;
-    sf::Rect2f txrDollAttracto;
-    sf::Rect2f txrCoin;
-    sf::Rect2f txrCatSoul;
-    sf::Rect2f txrHellPortal;
-    sf::Rect2f txrCatEyeLid0;
-    sf::Rect2f txrCatEyeLid1;
-    sf::Rect2f txrCatEyeLid2;
-    sf::Rect2f txrCatWhiteEyeLid0;
-    sf::Rect2f txrCatWhiteEyeLid1;
-    sf::Rect2f txrCatWhiteEyeLid2;
-    sf::Rect2f txrCatDarkEyeLid0;
-    sf::Rect2f txrCatDarkEyeLid1;
-    sf::Rect2f txrCatDarkEyeLid2;
-    sf::Rect2f txrCatGrayEyeLid0;
-    sf::Rect2f txrCatGrayEyeLid1;
-    sf::Rect2f txrCatGrayEyeLid2;
-    sf::Rect2f txrCatEars0;
-    sf::Rect2f txrCatEars1;
-    sf::Rect2f txrCatEars2;
-    sf::Rect2f txrCatYawn0;
-    sf::Rect2f txrCatYawn1;
-    sf::Rect2f txrCatYawn2;
-    sf::Rect2f txrCatYawn3;
-    sf::Rect2f txrCatYawn4;
-    sf::Rect2f txrCCMaskWitch;
-    sf::Rect2f txrCCMaskWizard;
-    sf::Rect2f txrCCMaskMouse;
-    sf::Rect2f txrCCMaskEngi;
-    sf::Rect2f txrCCMaskRepulso;
-    sf::Rect2f txrCCMaskAttracto;
-    sf::Rect2f txrMMNormal;
-    sf::Rect2f txrMMUni;
-    sf::Rect2f txrMMDevil;
-    sf::Rect2f txrMMAstro;
-    sf::Rect2f txrMMWitch;
-    sf::Rect2f txrMMWizard;
-    sf::Rect2f txrMMMouse;
-    sf::Rect2f txrMMEngi;
-    sf::Rect2f txrMMRepulso;
-    sf::Rect2f txrMMAttracto;
-    sf::Rect2f txrMMCopy;
-    sf::Rect2f txrMMDuck;
-    sf::Rect2f txrMMShrine;
-    sf::Rect2f txrCloud;
+    za::Rect2f txrGuardhouseBack;
+    za::Rect2f txrWardenCat;
+    za::Rect2f txrGuardhouseFront;
+    za::Rect2f txrWardencatPaw;
+    za::Rect2f txrUniCat;
+    za::Rect2f txrUniCat2;
+    za::Rect2f txrUniCatWings;
+    za::Rect2f txrDevilCat2;
+    za::Rect2f txrDevilCat3;
+    za::Rect2f txrDevilCat3Arm;
+    za::Rect2f txrDevilCat3Book;
+    za::Rect2f txrDevilCat3Tail;
+    za::Rect2f txrDevilCat2Book;
+    za::Rect2f txrCatPaw;
+    za::Rect2f txrCatTail;
+    za::Rect2f txrSmartCatHat;
+    za::Rect2f txrSmartCatDiploma;
+    za::Rect2f txrBrainBack;
+    za::Rect2f txrBrainFront;
+    za::Rect2f txrUniCatTail;
+    za::Rect2f txrUniCat2Tail;
+    za::Rect2f txrDevilCatTail2;
+    za::Rect2f txrAstroCatTail;
+    za::Rect2f txrAstroCatFlag;
+    za::Rect2f txrWitchCatTail;
+    za::Rect2f txrWizardCatTail;
+    za::Rect2f txrMouseCatTail;
+    za::Rect2f txrMouseCatMouse;
+    za::Rect2f txrEngiCatTail;
+    za::Rect2f txrEngiCatWrench;
+    za::Rect2f txrRepulsoCatTail;
+    za::Rect2f txrAttractoCatTail;
+    za::Rect2f txrCopyCatTail;
+    za::Rect2f txrAttractoCatMagnet;
+    za::Rect2f txrUniCatPaw;
+    za::Rect2f txrDevilCatPaw;
+    za::Rect2f txrDevilCatPaw2;
+    za::Rect2f txrParticle;
+    za::Rect2f txrStarParticle;
+    za::Rect2f txrFireParticle;
+    za::Rect2f txrFireParticle2;
+    za::Rect2f txrSmokeParticle;
+    za::Rect2f txrExplosionParticle;
+    za::Rect2f txrTrailParticle;
+    za::Rect2f txrHexParticle;
+    za::Rect2f txrShrineParticle;
+    za::Rect2f txrCogParticle;
+    za::Rect2f txrGlassParticle;
+    za::Rect2f txrWitchCat;
+    za::Rect2f txrWitchCatPaw;
+    za::Rect2f txrAstroCat;
+    za::Rect2f txrBomb;
+    za::Rect2f txrShrine;
+    za::Rect2f txrWizardCat;
+    za::Rect2f txrWizardCatPaw;
+    za::Rect2f txrMouseCat;
+    za::Rect2f txrMouseCatPaw;
+    za::Rect2f txrEngiCat;
+    za::Rect2f txrEngiCatPaw;
+    za::Rect2f txrRepulsoCat;
+    za::Rect2f txrRepulsoCatPaw;
+    za::Rect2f txrAttractoCat;
+    za::Rect2f txrCopyCat;
+    za::Rect2f txrDuckCat;
+    za::Rect2f txrDuckFlag;
+    za::Rect2f txrAttractoCatPaw;
+    za::Rect2f txrCopyCatPaw;
+    za::Rect2f txrDollNormal;
+    za::Rect2f txrDollUni;
+    za::Rect2f txrDollDevil;
+    za::Rect2f txrDollAstro;
+    za::Rect2f txrDollWizard;
+    za::Rect2f txrDollMouse;
+    za::Rect2f txrDollEngi;
+    za::Rect2f txrDollRepulso;
+    za::Rect2f txrDollAttracto;
+    za::Rect2f txrCoin;
+    za::Rect2f txrCatSoul;
+    za::Rect2f txrHellPortal;
+    za::Rect2f txrCatEyeLid0;
+    za::Rect2f txrCatEyeLid1;
+    za::Rect2f txrCatEyeLid2;
+    za::Rect2f txrCatWhiteEyeLid0;
+    za::Rect2f txrCatWhiteEyeLid1;
+    za::Rect2f txrCatWhiteEyeLid2;
+    za::Rect2f txrCatDarkEyeLid0;
+    za::Rect2f txrCatDarkEyeLid1;
+    za::Rect2f txrCatDarkEyeLid2;
+    za::Rect2f txrCatGrayEyeLid0;
+    za::Rect2f txrCatGrayEyeLid1;
+    za::Rect2f txrCatGrayEyeLid2;
+    za::Rect2f txrCatEars0;
+    za::Rect2f txrCatEars1;
+    za::Rect2f txrCatEars2;
+    za::Rect2f txrCatYawn0;
+    za::Rect2f txrCatYawn1;
+    za::Rect2f txrCatYawn2;
+    za::Rect2f txrCatYawn3;
+    za::Rect2f txrCatYawn4;
+    za::Rect2f txrCCMaskWitch;
+    za::Rect2f txrCCMaskWizard;
+    za::Rect2f txrCCMaskMouse;
+    za::Rect2f txrCCMaskEngi;
+    za::Rect2f txrCCMaskRepulso;
+    za::Rect2f txrCCMaskAttracto;
+    za::Rect2f txrMMNormal;
+    za::Rect2f txrMMUni;
+    za::Rect2f txrMMDevil;
+    za::Rect2f txrMMAstro;
+    za::Rect2f txrMMWitch;
+    za::Rect2f txrMMWizard;
+    za::Rect2f txrMMMouse;
+    za::Rect2f txrMMEngi;
+    za::Rect2f txrMMRepulso;
+    za::Rect2f txrMMAttracto;
+    za::Rect2f txrMMCopy;
+    za::Rect2f txrMMDuck;
+    za::Rect2f txrMMShrine;
+    za::Rect2f txrCloud;
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking
-    const sf::Rect2f* eyeLidRects[8]{
+    const za::Rect2f* eyeLidRects[8]{
         &txrCatEyeLid2,
         &txrCatEyeLid1,
         &txrCatEyeLid0,
@@ -206,11 +206,11 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatEyeLid2,
     };
 
-    static constexpr auto nEyeLidRects = sf::base::getArraySize(&MainAtlasRects::eyeLidRects);
+    static constexpr auto nEyeLidRects = zb::getArraySize(&MainAtlasRects::eyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (white)
-    const sf::Rect2f* whiteEyeLidRects[8]{
+    const za::Rect2f* whiteEyeLidRects[8]{
         &txrCatWhiteEyeLid2,
         &txrCatWhiteEyeLid1,
         &txrCatWhiteEyeLid0,
@@ -221,11 +221,11 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatWhiteEyeLid2,
     };
 
-    static constexpr auto nWhiteEyeLidRects = sf::base::getArraySize(&MainAtlasRects::whiteEyeLidRects);
+    static constexpr auto nWhiteEyeLidRects = zb::getArraySize(&MainAtlasRects::whiteEyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (dark)
-    const sf::Rect2f* darkEyeLidRects[8]{
+    const za::Rect2f* darkEyeLidRects[8]{
         &txrCatDarkEyeLid2,
         &txrCatDarkEyeLid1,
         &txrCatDarkEyeLid0,
@@ -236,11 +236,11 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatDarkEyeLid2,
     };
 
-    static constexpr auto nDarkEyeLidRects = sf::base::getArraySize(&MainAtlasRects::darkEyeLidRects);
+    static constexpr auto nDarkEyeLidRects = zb::getArraySize(&MainAtlasRects::darkEyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (gray)
-    const sf::Rect2f* grayEyeLidRects[8]{
+    const za::Rect2f* grayEyeLidRects[8]{
         &txrCatGrayEyeLid2,
         &txrCatGrayEyeLid1,
         &txrCatGrayEyeLid0,
@@ -251,11 +251,11 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatGrayEyeLid2,
     };
 
-    static constexpr auto nGrayEyeLidRects = sf::base::getArraySize(&MainAtlasRects::grayEyeLidRects);
+    static constexpr auto nGrayEyeLidRects = zb::getArraySize(&MainAtlasRects::grayEyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: ear flapping
-    const sf::Rect2f* earRects[8]{
+    const za::Rect2f* earRects[8]{
         &txrCatEars0,
         &txrCatEars1,
         &txrCatEars2,
@@ -266,11 +266,11 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatEars0,
     };
 
-    static constexpr auto nEarRects = sf::base::getArraySize(&MainAtlasRects::earRects);
+    static constexpr auto nEarRects = zb::getArraySize(&MainAtlasRects::earRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: yawning
-    const sf::Rect2f* catYawnRects[14]{
+    const za::Rect2f* catYawnRects[14]{
         &txrCatYawn0,
         &txrCatYawn1,
         &txrCatYawn2,
@@ -287,10 +287,10 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatYawn0,
     };
 
-    static constexpr auto nYawnRects = sf::base::getArraySize(&MainAtlasRects::catYawnRects);
+    static constexpr auto nYawnRects = zb::getArraySize(&MainAtlasRects::catYawnRects);
 
     ///////////////////////////////////////////////////////////
-    const sf::Rect2f particleRects[nParticleTypes] = {
+    const za::Rect2f particleRects[nParticleTypes] = {
         txrParticle,
         txrStarParticle,
         txrFireParticle,

@@ -22,37 +22,37 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
-#include "SFML/ImGui/IncludeImGuiInternal.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGuiInternal.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawTextureSettings.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawTextureSettings.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Algorithm/AnyOf.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/FloatMax.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/AnyOf.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Builtin/Strlen.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/FloatMax.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Pow.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/UniquePtr.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -79,7 +79,7 @@ bool Main::drawTabButton(const float             scaleMult,
                          const char*             label,
                          const bool              selected,
                          const TabButtonPalette& palette,
-                         const sf::Vec2f         size,
+                         const za::Vec2f         size,
                          const bool              square)
 {
     ImGui::PushStyleColor(ImGuiCol_Button, (selected ? palette.active : palette.idle).toVec4<ImVec4>());
@@ -109,7 +109,7 @@ bool Main::drawTabButton(const float             scaleMult,
 ////////////////////////////////////////////////////////////
 float Main::uiGetMaxWindowHeight() const
 {
-    return sf::base::max(getResolution().y - 19.f, (getResolution().y - 19.f) / profile.uiScale);
+    return zb::max(getResolution().y - 19.f, (getResolution().y - 19.f) / profile.uiScale);
 }
 
 ////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ void Main::uiPushButtonColors()
 {
     const auto convertColorWithHueMod = [&](const auto colorId)
     {
-        return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId))
+        return za::Color::fromVec4(ImGui::GetStyleColorVec4(colorId))
             .withRotatedHue(uiState.uiButtonHueMod)
             .template toVec4<ImVec4>();
     };
@@ -169,7 +169,7 @@ void Main::uiPopButtonColors()
 ////////////////////////////////////////////////////////////
 void Main::uiBeginTooltip(const float width)
 {
-    ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, SFML_BASE_FLOAT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, ZB_FLOAT_MAX));
 
     ImGui::BeginTooltip();
     ImGui::PushFont(fontImGuiMouldyCheese);
@@ -203,7 +203,7 @@ void Main::uiMakeTooltip(const bool small)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiMakeShrineOrCatTooltip(const sf::Vec2f mousePos)
+void Main::uiMakeShrineOrCatTooltip(const za::Vec2f mousePos)
 {
     const auto* hoveredShrine = [&] -> const Shrine*
     {
@@ -420,9 +420,9 @@ Hex buff: grant the same buff as the mimicked cat.)",
 It's a duck.)",
         };
 
-        static_assert(sf::base::getArraySize(catTooltipsByType) == nCatTypes);
+        static_assert(zb::getArraySize(catTooltipsByType) == nCatTypes);
 
-        SFML_BASE_ASSERT(hoveredCat != nullptr);
+        ZB_ASSERT(hoveredCat != nullptr);
         std::sprintf(uiState.uiTooltipBuffer, "%s", catTooltipsByType[static_cast<SizeT>(hoveredCat->type)] + 1);
     }
 
@@ -434,9 +434,9 @@ It's a duck.)",
 
 ////////////////////////////////////////////////////////////
 Main::AnimatedButtonOutcome Main::uiAnimatedButton(
-    const sf::Texture& tx,
+    const za::Texture& tx,
     const char*        label,
-    const sf::Vec2f    btnSize,
+    const za::Vec2f    btnSize,
     const float        fontScale,
     const float        fontScaleMult,
     const float        btnSizeMult,
@@ -478,11 +478,11 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     auto* animState = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
     if (animState == nullptr)
     {
-        static sf::base::Vector<sf::base::UniquePtr<AnimState>> animStateStorage;
+        static zb::Vector<zb::UniquePtr<AnimState>> animStateStorage;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
-        animState = animStateStorage.emplaceBack(sf::base::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
+        animState = animStateStorage.emplaceBack(zb::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
 #pragma GCC diagnostic pop
 
         storage->SetVoidPtr(animStateId, animState);
@@ -507,7 +507,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     const float timeSinceClick = static_cast<float>(ImGui::GetTime()) - animState->lastClickTime;
 
     const float clickAnimDir = timeSinceClick > 0.f && timeSinceClick < 0.2f ? 1.f : -1.f;
-    animState->clickAnim     = sf::base::clamp(animState->clickAnim + deltaTime * 4.5f * clickAnimDir, 0.f, 1.f);
+    animState->clickAnim     = zb::clamp(animState->clickAnim + deltaTime * 4.5f * clickAnimDir, 0.f, 1.f);
 
     // Save current cursor pos
     const ImVec2 originalPos = imGuiWindow->DC.CursorPos;
@@ -526,11 +526,11 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     const float scale = 1.f - easeInOutBack(animState->clickAnim) * 0.35f;
 
     // Tilt transform: rotate by up to 0.05 radians (≈2.9°). (Use ~0.0873f for 5°.)
-    const float tiltAngle  = sf::base::sin(easeInOutSine(animState->hoverAnim) * sf::base::tau) * 0.1f;
-    const float tiltCos    = sf::base::cos(tiltAngle);
-    const float tiltSin    = sf::base::sin(tiltAngle);
-    const float tiltCosOpp = sf::base::cos(-tiltAngle);
-    const float tiltSinOpp = sf::base::sin(-tiltAngle);
+    const float tiltAngle  = zb::sin(easeInOutSine(animState->hoverAnim) * zb::tau) * 0.1f;
+    const float tiltCos    = zb::cos(tiltAngle);
+    const float tiltSin    = zb::sin(tiltAngle);
+    const float tiltCosOpp = zb::cos(-tiltAngle);
+    const float tiltSinOpp = zb::sin(-tiltAngle);
 
     // Helper lambda: apply scale & rotation about the button center.
     const auto transformPoint = [&](const ImVec2& p) -> ImVec2
@@ -664,7 +664,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
 
     float fontScaleMult = 1.f;
 
-    const auto xBufferLen = SFML_BASE_STRLEN(xBuffer);
+    const auto xBufferLen = ZB_STRLEN(xBuffer);
 
     if (xBufferLen > 20)
         fontScaleMult = 0.65f;
@@ -678,7 +678,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
         fontScaleMult = 1.f;
 
     if (fontScale == uiSubBulletFontScale)
-        fontScaleMult = sf::base::pow(fontScaleMult, 0.4f);
+        fontScaleMult = zb::pow(fontScaleMult, 0.4f);
 
     const float scaledButtonWidth = uiButtonWidth * profile.uiScale;
 
@@ -702,7 +702,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
                                  .accelerationY = 0.002f,
                                  .opacity       = 1.f,
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                                 .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                 .rotation      = rngFast.getF(0.f, zb::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
                                 /* hue */ wrapHue(165.f + uiState.uiButtonHueMod + currentBackgroundHue.asDegrees()),
                                 ParticleType::Star);
@@ -719,7 +719,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
                                  .accelerationY = 0.002f * 0.75f,
                                  .opacity       = 1.f,
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                                 .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                 .rotation      = rngFast.getF(0.f, zb::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
                                 /* hue */ 0.f,
                                 ParticleType::Bubble);
@@ -816,12 +816,12 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
     {
         uiState.btnWasDisabled[label] = false;
 
-        const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameLabel = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                             uiState.purchaseUnlockedEffects.end(),
                                                                             [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
-        const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameY = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                         uiState.purchaseUnlockedEffects.end(),
                                                                         [&](const PurchaseUnlockedEffect& effect)
         {
@@ -937,7 +937,7 @@ void Main::uiCenteredText(const char* str, const float offsetX, const float offs
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiCenteredTextColored(const sf::Color color, const char* str, const float offsetX, const float offsetY)
+void Main::uiCenteredTextColored(const za::Color color, const char* str, const float offsetX, const float offsetY)
 {
     ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(str).x) * 0.5f + offsetX);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
@@ -946,7 +946,7 @@ void Main::uiCenteredTextColored(const sf::Color color, const char* str, const f
 }
 
 ////////////////////////////////////////////////////////////
-sf::Vec2f Main::uiGetWindowPos() const
+za::Vec2f Main::uiGetWindowPos() const
 {
     const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
     const float rightAnchorX      = getResolution().x - scaledWindowWidth - 15.f * profile.uiScale;
@@ -1078,16 +1078,16 @@ bool Main::uiRadio(const char* label, int* i, const int value)
 
 
 ////////////////////////////////////////////////////////////
-void Main::uiSetUnlockLabelY(const sf::base::SizeT unlockId)
+void Main::uiSetUnlockLabelY(const zb::SizeT unlockId)
 {
-    const sf::base::String label = sf::base::toString(unlockId);
+    const zb::String label = zb::toString(unlockId);
     uiState.uiLabelToY[label]    = ImGui::GetCursorScreenPos().y;
 }
 
 ////////////////////////////////////////////////////////////
-bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondition)
+bool Main::checkUiUnlock(const zb::SizeT unlockId, const bool unlockCondition)
 {
-    const sf::base::String label = sf::base::toString(unlockId);
+    const zb::String label = zb::toString(unlockId);
 
     if (!unlockCondition)
     {
@@ -1099,12 +1099,12 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
     {
         profile.uiUnlocks[unlockId] = true;
 
-        const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameLabel = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                             uiState.purchaseUnlockedEffects.end(),
                                                                             [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
-        const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameY = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                         uiState.purchaseUnlockedEffects.end(),
                                                                         [&](const PurchaseUnlockedEffect& effect)
         {
@@ -1132,21 +1132,21 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
 
 
 ////////////////////////////////////////////////////////////
-void Main::uiImageFromAtlas(const sf::Rect2f& txr, const sf::DrawTextureSettings& drawParams)
+void Main::uiImageFromAtlas(const za::Rect2f& txr, const za::DrawTextureSettings& drawParams)
 {
     imGuiContext.image(
-        sf::Sprite{
+        za::Sprite{
             .position    = drawParams.position,
             .scale       = drawParams.scale * profile.uiScale,
             .origin      = txr.size,
             .textureRect = txr,
         },
         uiTextureAtlas.getTexture(),
-        sf::Color{50u, 84u, 135u});
+        za::Color{50u, 84u, 135u});
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool first)
+void Main::uiImgsep(const za::Rect2f& txr, const char* sepLabel, const bool first)
 {
     if (profile.hideCategorySeparators)
         return;
@@ -1180,7 +1180,7 @@ void Main::uiImgsep(const sf::Rect2f& txr, const char* sepLabel, const bool firs
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiImgsep2(const sf::Rect2f& txr, const char* sepLabel)
+void Main::uiImgsep2(const za::Rect2f& txr, const char* sepLabel)
 {
     if (profile.hideCategorySeparators)
         return;
@@ -1206,11 +1206,11 @@ void Main::uiImgsep2(const sf::Rect2f& txr, const char* sepLabel)
 
 ////////////////////////////////////////////////////////////
 
-void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
+void Main::gameLoopDrawImGui(const zb::U8 shouldDrawUIAlpha)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    rtImGui.clear(sf::Color::Transparent);
+    rtImGui.clear(za::Color::Transparent);
     imGuiContext.render(rtImGui);
     rtImGui.display();
 

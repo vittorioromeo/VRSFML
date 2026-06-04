@@ -4,89 +4,89 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureWrapMode.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsDefaultConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
+TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::RenderTexture));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::RenderTexture));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::RenderTexture));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::RenderTexture));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::RenderTexture));
+        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::RenderTexture));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::RenderTexture));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::RenderTexture));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderTexture));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderTexture));
     }
 
     SECTION("create()")
     {
-        CHECK(!sf::RenderTexture::create({1'000'000, 1'000'000}).hasValue());
+        CHECK(!za::RenderTexture::create({1'000'000, 1'000'000}).hasValue());
 
-        CHECK(sf::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 0}).hasValue());
+        CHECK(za::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 0}).hasValue());
 
-        CHECK(sf::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).hasValue());
+        CHECK(za::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).hasValue());
 
-        const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
-        CHECK(renderTexture.getSize() == sf::Vec2u{360, 480});
+        const auto renderTexture = za::RenderTexture::create({360, 480}).value();
+        CHECK(renderTexture.getSize() == za::Vec2u{360, 480});
         CHECK(!renderTexture.isSmooth());
-        CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Clamp);
+        CHECK(renderTexture.getWrapMode() == za::TextureWrapMode::Clamp);
         CHECK(!renderTexture.isSrgb());
 
         const auto& texture = renderTexture.getTexture();
-        CHECK(texture.getSize() == sf::Vec2u{360, 480});
+        CHECK(texture.getSize() == za::Vec2u{360, 480});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
+        CHECK(texture.getWrapMode() == za::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
     }
 
     SECTION("getMaximumAntiAliasingLevel()")
     {
-        CHECK(sf::RenderTexture::getMaximumAntiAliasingLevel() <= 64);
+        CHECK(za::RenderTexture::getMaximumAntiAliasingLevel() <= 64);
     }
 
     SECTION("Set/get smooth")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = za::RenderTexture::create({64, 64}).value();
         renderTexture.setSmooth(true);
         CHECK(renderTexture.isSmooth());
     }
 
     SECTION("Set/get repeated")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        renderTexture.setWrapMode(sf::TextureWrapMode::Repeat);
-        CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Repeat);
+        auto renderTexture = za::RenderTexture::create({64, 64}).value();
+        renderTexture.setWrapMode(za::TextureWrapMode::Repeat);
+        CHECK(renderTexture.getWrapMode() == za::TextureWrapMode::Repeat);
     }
 
     SECTION("generateMipmap()")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = za::RenderTexture::create({64, 64}).value();
         renderTexture.generateMipmap();
     }
 
     SECTION("setActive()")
     {
-        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
+        auto renderTexture = za::RenderTexture::create({64, 64}).value();
         CHECK(renderTexture.setActive());
         CHECK(renderTexture.setActive(false));
         CHECK(renderTexture.setActive(true));
@@ -94,8 +94,8 @@ TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
 
     SECTION("getTexture()")
     {
-        const auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        CHECK(renderTexture.getTexture().getSize() == sf::Vec2u{64, 64});
+        const auto renderTexture = za::RenderTexture::create({64, 64}).value();
+        CHECK(renderTexture.getTexture().getSize() == za::Vec2u{64, 64});
     }
 
     SECTION("Sanity check 1")
@@ -110,15 +110,15 @@ TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
         SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
         // clang-format on
 
-        auto renderTexture = sf::RenderTexture::create({64, 64},
+        auto renderTexture = za::RenderTexture::create({64, 64},
                                                        {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                  .value();
 
-        renderTexture.clear(sf::Color::Green);
+        renderTexture.clear(za::Color::Green);
         renderTexture.display();
 
         auto image = renderTexture.getTexture().copyToImage();
-        CHECK((image.getPixel({0u, 0u}) == sf::Color::Green));
+        CHECK((image.getPixel({0u, 0u}) == za::Color::Green));
     }
 
     SECTION("Sanity check 2")
@@ -137,46 +137,46 @@ TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
         const float height    = 64.f;
         const float halfWidth = width / 2.f;
 
-        const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+        const za::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
-        auto image   = sf::Image::create(size, sf::Color::White).value();
-        auto texture = sf::Texture::loadFromImage(image).value();
+        auto image   = za::Image::create(size, za::Color::White).value();
+        auto texture = za::Texture::loadFromImage(image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto baseRenderTexture = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto leftInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
-        auto rightInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto rightInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                 .value();
 
-        const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::White, {0.f, 0.f}},
-                                            {{halfWidth, 0.f}, sf::Color::White, {halfWidth, 0.f}},
-                                            {{0.f, height}, sf::Color::White, {0.f, height}},
-                                            {{0.f, height}, sf::Color::White, {0.f, height}},
-                                            {{halfWidth, 0.f}, sf::Color::White, {halfWidth, 0.f}},
-                                            {{halfWidth, height}, sf::Color::White, {halfWidth, height}}};
+        const za::Vertex leftVertexArray[6]{{{0.f, 0.f}, za::Color::White, {0.f, 0.f}},
+                                            {{halfWidth, 0.f}, za::Color::White, {halfWidth, 0.f}},
+                                            {{0.f, height}, za::Color::White, {0.f, height}},
+                                            {{0.f, height}, za::Color::White, {0.f, height}},
+                                            {{halfWidth, 0.f}, za::Color::White, {halfWidth, 0.f}},
+                                            {{halfWidth, height}, za::Color::White, {halfWidth, height}}};
 
-        const sf::Vertex rightVertexArray[6]{{{halfWidth, 0.f}, sf::Color::White, {halfWidth, 0.f}},
-                                             {{width, 0.f}, sf::Color::White, {width, 0.f}},
-                                             {{halfWidth, height}, sf::Color::White, {halfWidth, height}},
-                                             {{halfWidth, height}, sf::Color::White, {halfWidth, height}},
-                                             {{width, 0.f}, sf::Color::White, {width, 0.f}},
-                                             {{width, height}, sf::Color::White, {width, height}}};
+        const za::Vertex rightVertexArray[6]{{{halfWidth, 0.f}, za::Color::White, {halfWidth, 0.f}},
+                                             {{width, 0.f}, za::Color::White, {width, 0.f}},
+                                             {{halfWidth, height}, za::Color::White, {halfWidth, height}},
+                                             {{halfWidth, height}, za::Color::White, {halfWidth, height}},
+                                             {{width, 0.f}, za::Color::White, {width, 0.f}},
+                                             {{width, height}, za::Color::White, {width, height}}};
 
         leftInnerRT.clear();
         rightInnerRT.clear();
 
         leftInnerRT.draw(texture);
-        rightInnerRT.draw(texture, {.color = sf::Color::Green});
+        rightInnerRT.draw(texture, {.color = za::Color::Green});
 
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray, za::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
 
         rightInnerRT.display();
-        baseRenderTexture.draw(rightVertexArray, sf::PrimitiveType::Triangles, {.texture = &rightInnerRT.getTexture()});
+        baseRenderTexture.draw(rightVertexArray, za::PrimitiveType::Triangles, {.texture = &rightInnerRT.getTexture()});
 
         baseRenderTexture.display();
 
@@ -184,8 +184,8 @@ TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
 
         CHECK(finalImage.getSize() == size);
 
-        CHECK((finalImage.getPixel({0u, 0u}) == sf::Color::White));
-        CHECK((finalImage.getPixel({static_cast<unsigned int>(width / 2.f) + 1u, 0u}) == sf::Color::Green));
+        CHECK((finalImage.getPixel({0u, 0u}) == za::Color::White));
+        CHECK((finalImage.getPixel({static_cast<unsigned int>(width / 2.f) + 1u, 0u}) == za::Color::Green));
     }
 
     SECTION("Sanity check -- flipping")
@@ -204,23 +204,23 @@ TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
         const float height    = 64.f;
         const float halfWidth = width / 2.f;
 
-        const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+        const za::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
-        auto image   = sf::Image::create(size, sf::Color::White).value();
-        auto texture = sf::Texture::loadFromImage(image).value();
+        auto image   = za::Image::create(size, za::Color::White).value();
+        auto texture = za::Texture::loadFromImage(image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto baseRenderTexture = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto leftInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
 
-        const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
-                                            {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
-                                            {{0.f, height}, sf::Color::Red, {0.f, height}},
-                                            {{0.f, height}, sf::Color::Green, {0.f, height}},
-                                            {{halfWidth, 0.f}, sf::Color::Green, {halfWidth, 0.f}},
-                                            {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
+        const za::Vertex leftVertexArray[6]{{{0.f, 0.f}, za::Color::Red, {0.f, 0.f}},
+                                            {{halfWidth, 0.f}, za::Color::Red, {halfWidth, 0.f}},
+                                            {{0.f, height}, za::Color::Red, {0.f, height}},
+                                            {{0.f, height}, za::Color::Green, {0.f, height}},
+                                            {{halfWidth, 0.f}, za::Color::Green, {halfWidth, 0.f}},
+                                            {{halfWidth, height}, za::Color::Green, {halfWidth, height}}};
 
         leftInnerRT.clear();
         leftInnerRT.draw(texture);
@@ -228,35 +228,35 @@ TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
         baseRenderTexture.clear();
 
         leftInnerRT.display();
-        baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
+        baseRenderTexture.draw(leftVertexArray, za::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
 
         baseRenderTexture.display();
 
         auto finalImage = baseRenderTexture.getTexture().copyToImage();
 
         CHECK(finalImage.getSize() == size);
-        CHECK(finalImage.getPixel({0u, 0u}) == sf::Color::Red);
+        CHECK(finalImage.getPixel({0u, 0u}) == za::Color::Red);
 
-        CHECK(finalImage.getPixel({0u, 31u}) == sf::Color::Red);
-        CHECK(finalImage.getPixel({31u, 0u}) == sf::Color::Red);
-        CHECK(finalImage.getPixel({31u, 31u}) == sf::Color::Red);
+        CHECK(finalImage.getPixel({0u, 31u}) == za::Color::Red);
+        CHECK(finalImage.getPixel({31u, 0u}) == za::Color::Red);
+        CHECK(finalImage.getPixel({31u, 31u}) == za::Color::Red);
 
-        CHECK(finalImage.getPixel({0u, 60u}) == sf::Color::Red);
-        CHECK(finalImage.getPixel({60u, 0u}) == sf::Color::Red);
+        CHECK(finalImage.getPixel({0u, 60u}) == za::Color::Red);
+        CHECK(finalImage.getPixel({60u, 0u}) == za::Color::Red);
 
-        CHECK(finalImage.getPixel({6u, 58u}) == sf::Color::Green);
-        CHECK(finalImage.getPixel({58u, 6u}) == sf::Color::Green);
-        CHECK(finalImage.getPixel({61u, 61u}) == sf::Color::Green);
+        CHECK(finalImage.getPixel({6u, 58u}) == za::Color::Green);
+        CHECK(finalImage.getPixel({58u, 6u}) == za::Color::Green);
+        CHECK(finalImage.getPixel({61u, 61u}) == za::Color::Green);
     }
 
     SECTION("Move assignment")
     {
-        auto rt0 = sf::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
+        auto rt0 = za::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
         CHECK(rt0.hasValue());
 
-        auto rt1 = sf::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
+        auto rt1 = za::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
         CHECK(rt1.hasValue());
 
-        *rt0 = SFML_BASE_MOVE(*rt1);
+        *rt0 = ZB_MOVE(*rt1);
     }
 }

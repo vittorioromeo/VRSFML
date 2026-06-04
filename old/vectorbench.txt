@@ -8,8 +8,8 @@
 
     // Assuming SFML base headers are accessible
     // You might need to adjust paths or provide the content if compiling standalone
-    #include "SFML/Base/InPlaceVector.hpp"
-    #include "SFML/Base/Vector.hpp"
+    #include "ZancleBase/InPlaceVector.hpp"
+    #include "ZancleBase/Vector.hpp"
 // VectorUtils.hpp is included by Vector.hpp and InPlaceVector.hpp
 
 // --- Dummy Obj and counters (not strictly needed for int, but keeps structure if you change type) ---
@@ -95,7 +95,7 @@ void test_push_back(long long& total_ns, bool use_reserve_for_dynamic)
     for (int i = 0; i < BENCH_REPETITIONS; ++i)
     {
         VecType v;
-        if constexpr (std::is_same_v<VecType, sf::base::Vector<ItemType>>)
+        if constexpr (std::is_same_v<VecType, zb::Vector<ItemType>>)
         {
             if (use_reserve_for_dynamic)
             {
@@ -151,7 +151,7 @@ void test_operator_square_bracket(long long& total_ns, const Vec& v_const)
     {
         ItemType sum   = 0;
         auto     start = std::chrono::high_resolution_clock::now();
-        for (sf::base::SizeT j = 0; j < v_const.size(); ++j)
+        for (zb::SizeT j = 0; j < v_const.size(); ++j)
         {
             sum += v_const[j];
         }
@@ -169,7 +169,7 @@ void test_erase_middle(long long& total_ns)
     for (int i = 0; i < BENCH_REPETITIONS; ++i)
     {
         Vec v;
-        if constexpr (std::is_same_v<Vec, sf::base::Vector<ItemType>>)
+        if constexpr (std::is_same_v<Vec, zb::Vector<ItemType>>)
         {
             v.reserve(BENCH_ELEMENT_COUNT); // Pre-reserve to avoid measuring realloc during setup
         }
@@ -204,7 +204,7 @@ void test_clear(long long& total_ns)
     for (int i = 0; i < BENCH_REPETITIONS; ++i)
     {
         Vec v;
-        if constexpr (std::is_same_v<Vec, sf::base::Vector<ItemType>>)
+        if constexpr (std::is_same_v<Vec, zb::Vector<ItemType>>)
         {
             v.reserve(BENCH_ELEMENT_COUNT);
         }
@@ -248,27 +248,27 @@ int main()
 
         long long sf_vector_time, inplace_vector_time, std_vector_time;
 
-        // --- sf::base::Vector ---
-        std::cout << "\n[sf::base::Vector<int>]" << std::endl;
+        // --- zb::Vector ---
+        std::cout << "\n[zb::Vector<int>]" << std::endl;
 
         sf_vector_time = 0;
-        test_construction_empty<sf::base::Vector<ItemType>>(sf_vector_time);
+        test_construction_empty<zb::Vector<ItemType>>(sf_vector_time);
         std::cout << "Construction (empty):        " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
         sf_vector_time = 0;
-        test_construction_sized<sf::base::Vector<ItemType>>(sf_vector_time);
+        test_construction_sized<zb::Vector<ItemType>>(sf_vector_time);
         std::cout << "Construction (sized):        " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
         sf_vector_time = 0;
-        test_push_back<sf::base::Vector<ItemType>>(sf_vector_time, false);
+        test_push_back<zb::Vector<ItemType>>(sf_vector_time, false);
         std::cout << "PushBack (no reserve):       " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
         sf_vector_time = 0;
-        test_push_back<sf::base::Vector<ItemType>>(sf_vector_time, true);
+        test_push_back<zb::Vector<ItemType>>(sf_vector_time, true);
         std::cout << "PushBack (with reserve):     " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
         { // Iteration and operator[] need a pre-filled vector
-            sf::base::Vector<ItemType> v_filled;
+            zb::Vector<ItemType> v_filled;
             v_filled.reserve(BENCH_ELEMENT_COUNT);
             for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
                 v_filled.emplaceBack(static_cast<ItemType>(j));
@@ -283,16 +283,16 @@ int main()
         }
 
         sf_vector_time = 0;
-        test_erase_middle<sf::base::Vector<ItemType>>(sf_vector_time);
+        test_erase_middle<zb::Vector<ItemType>>(sf_vector_time);
         std::cout << "Erase (middle):              " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
         sf_vector_time = 0;
-        test_clear<sf::base::Vector<ItemType>>(sf_vector_time);
+        test_clear<zb::Vector<ItemType>>(sf_vector_time);
         std::cout << "Clear:                       " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
 
-        // --- sf::base::InPlaceVector ---
-        std::cout << "\n[sf::base::InPlaceVector<int, " << BENCH_N_CAPACITY << ">]" << std::endl;
+        // --- zb::InPlaceVector ---
+        std::cout << "\n[zb::InPlaceVector<int, " << BENCH_N_CAPACITY << ">]" << std::endl;
         if (BENCH_ELEMENT_COUNT > BENCH_N_CAPACITY)
         {
             std::cout << "Skipping InPlaceVector tests where BENCH_ELEMENT_COUNT > BENCH_N_CAPACITY" << std::endl;
@@ -300,20 +300,20 @@ int main()
         else
         {
             inplace_vector_time = 0;
-            test_construction_empty<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            test_construction_empty<zb::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
             std::cout << "Construction (empty):        " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
             inplace_vector_time = 0;
-            test_construction_sized<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            test_construction_sized<zb::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
             std::cout << "Construction (sized):        " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
             inplace_vector_time = 0;
             // No 'reserve' concept for InPlaceVector in the same way
-            test_push_back<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time, false);
+            test_push_back<zb::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time, false);
             std::cout << "PushBack:                    " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
             {
-                sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY> ipv_filled;
+                zb::InPlaceVector<ItemType, BENCH_N_CAPACITY> ipv_filled;
                 for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
                     ipv_filled.emplaceBack(static_cast<ItemType>(j));
 
@@ -328,11 +328,11 @@ int main()
             }
 
             inplace_vector_time = 0;
-            test_erase_middle<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            test_erase_middle<zb::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
             std::cout << "Erase (middle):              " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
 
             inplace_vector_time = 0;
-            test_clear<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            test_clear<zb::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
             std::cout << "Clear:                       " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
         }
 

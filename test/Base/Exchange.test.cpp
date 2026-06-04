@@ -1,6 +1,6 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Exchange.hpp"
+#include "ZancleBase/Exchange.hpp"
 
 
 TEST_CASE("[Base] Base/Algorithm.hpp")
@@ -10,7 +10,7 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         int a = 0;
         int b = 1;
 
-        CHECK(sf::base::exchange(a, b) == 0);
+        CHECK(zb::exchange(a, b) == 0);
         CHECK(a == 1);
     }
 }

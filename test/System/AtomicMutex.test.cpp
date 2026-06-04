@@ -1,13 +1,13 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/AtomicMutex.hpp"
+#include "Zancle/System/AtomicMutex.hpp"
 
-#include "SFML/System/LockGuard.hpp"
-#include "SFML/System/Thread.hpp"
+#include "Zancle/System/LockGuard.hpp"
+#include "Zancle/System/Thread.hpp"
 
-#include "SFML/Base/Trait/IsAssignable.hpp"
-#include "SFML/Base/Trait/IsConstructible.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Trait/IsAssignable.hpp"
+#include "ZancleBase/Trait/IsConstructible.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
@@ -18,20 +18,20 @@ namespace
 ////////////////////////////////////////////////////////////
 // Compile-time properties
 ////////////////////////////////////////////////////////////
-static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::AtomicMutex, const sf::AtomicMutex&));
-static_assert(!SFML_BASE_IS_ASSIGNABLE(sf::AtomicMutex, const sf::AtomicMutex&));
-static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::AtomicMutex, sf::AtomicMutex&&));
+static_assert(!ZB_IS_CONSTRUCTIBLE(za::AtomicMutex, const za::AtomicMutex&));
+static_assert(!ZB_IS_ASSIGNABLE(za::AtomicMutex, const za::AtomicMutex&));
+static_assert(!ZB_IS_CONSTRUCTIBLE(za::AtomicMutex, za::AtomicMutex&&));
 
-static_assert(sizeof(sf::AtomicMutex) == sizeof(unsigned int));
+static_assert(sizeof(za::AtomicMutex) == sizeof(unsigned int));
 
-static_assert(!SFML_BASE_IS_CONSTRUCTIBLE(sf::LockGuard, const sf::LockGuard&));
-static_assert(!SFML_BASE_IS_ASSIGNABLE(sf::LockGuard, const sf::LockGuard&));
+static_assert(!ZB_IS_CONSTRUCTIBLE(za::LockGuard, const za::LockGuard&));
+static_assert(!ZB_IS_ASSIGNABLE(za::LockGuard, const za::LockGuard&));
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::AtomicMutex - basic lock/unlock")
+TEST_CASE("[System] za::AtomicMutex - basic lock/unlock")
 {
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
 
     // Single-threaded sanity: lock then unlock leaves the mutex acquirable.
     m.lock();
@@ -43,9 +43,9 @@ TEST_CASE("[System] sf::AtomicMutex - basic lock/unlock")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::AtomicMutex - tryLock when held returns false")
+TEST_CASE("[System] za::AtomicMutex - tryLock when held returns false")
 {
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
 
     m.lock();
     CHECK_FALSE(m.tryLock()); // already held by *this thread*; non-recursive so tryLock must refuse
@@ -58,12 +58,12 @@ TEST_CASE("[System] sf::AtomicMutex - tryLock when held returns false")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::LockGuard - acquires on ctor, releases on dtor")
+TEST_CASE("[System] za::LockGuard - acquires on ctor, releases on dtor")
 {
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
 
     {
-        const sf::LockGuard guard{m};
+        const za::LockGuard guard{m};
         CHECK_FALSE(m.tryLock()); // held by the guard
     }
 
@@ -74,13 +74,13 @@ TEST_CASE("[System] sf::LockGuard - acquires on ctor, releases on dtor")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::LockGuard - exception safety (early return inside locked scope)")
+TEST_CASE("[System] za::LockGuard - exception safety (early return inside locked scope)")
 {
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
 
     const auto scopedLock = [&]
     {
-        const sf::LockGuard guard{m};
+        const za::LockGuard guard{m};
         // Simulate an early-return path inside the locked region.
         return 42;
     };
@@ -94,16 +94,16 @@ TEST_CASE("[System] sf::LockGuard - exception safety (early return inside locked
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::AtomicMutex - concurrent counter (mutual exclusion stress)")
+TEST_CASE("[System] za::AtomicMutex - concurrent counter (mutual exclusion stress)")
 {
     constexpr int       threadCount      = 8;
     constexpr int       incrementsPerThd = 100'000;
     constexpr long long expectedTotal    = static_cast<long long>(threadCount) * incrementsPerThd;
 
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
     long long       counter = 0;
 
-    sf::base::Vector<sf::Thread> threads;
+    zb::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int i = 0; i < threadCount; ++i)
@@ -112,7 +112,7 @@ TEST_CASE("[System] sf::AtomicMutex - concurrent counter (mutual exclusion stres
         {
             for (int j = 0; j < incrementsPerThd; ++j)
             {
-                const sf::LockGuard guard{m};
+                const za::LockGuard guard{m};
                 ++counter;
             }
         });
@@ -127,26 +127,26 @@ TEST_CASE("[System] sf::AtomicMutex - concurrent counter (mutual exclusion stres
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::AtomicMutex - producers wake on unlock (wait/notify path)")
+TEST_CASE("[System] za::AtomicMutex - producers wake on unlock (wait/notify path)")
 {
     // This test exercises the slow path: the main thread holds the lock for
     // long enough that worker threads have to call `wait` rather than win
     // their first CAS. The final counter must still reach `threadCount`.
 
     constexpr int   threadCount = 16;
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
     long long       counter = 0;
 
     m.lock(); // hold the lock so workers must park
 
-    sf::base::Vector<sf::Thread> threads;
+    zb::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int i = 0; i < threadCount; ++i)
     {
         threads.emplaceBack([&]
         {
-            const sf::LockGuard guard{m};
+            const za::LockGuard guard{m};
             ++counter;
         });
     }
@@ -169,26 +169,26 @@ TEST_CASE("[System] sf::AtomicMutex - producers wake on unlock (wait/notify path
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::AtomicMutex - ping-pong between two threads")
+TEST_CASE("[System] za::AtomicMutex - ping-pong between two threads")
 {
     // Strict alternation pattern: each thread can only increment its own
     // counter when a shared "turn" matches. Stresses the lock/unlock/wait
     // cycle in tight succession.
 
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
     int             turn   = 0; // 0 = A's turn, 1 = B's turn
     int             countA = 0;
     int             countB = 0;
 
     constexpr int rounds = 10'000;
 
-    sf::Thread tA([&]
+    za::Thread tA([&]
     {
         for (int i = 0; i < rounds; ++i)
         {
             while (true)
             {
-                const sf::LockGuard guard{m};
+                const za::LockGuard guard{m};
                 if (turn == 0)
                 {
                     ++countA;
@@ -199,13 +199,13 @@ TEST_CASE("[System] sf::AtomicMutex - ping-pong between two threads")
         }
     });
 
-    sf::Thread tB([&]
+    za::Thread tB([&]
     {
         for (int i = 0; i < rounds; ++i)
         {
             while (true)
             {
-                const sf::LockGuard guard{m};
+                const za::LockGuard guard{m};
                 if (turn == 1)
                 {
                     ++countB;
@@ -225,7 +225,7 @@ TEST_CASE("[System] sf::AtomicMutex - ping-pong between two threads")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[System] sf::AtomicMutex - lock/unlock balance with mixed lock + tryLock")
+TEST_CASE("[System] za::AtomicMutex - lock/unlock balance with mixed lock + tryLock")
 {
     // Drives the 3-state state machine simultaneously through both entry
     // points: blocking `lock` (which inflates state 1 -> 2 to announce
@@ -239,14 +239,14 @@ TEST_CASE("[System] sf::AtomicMutex - lock/unlock balance with mixed lock + tryL
     constexpr int iterations  = 50'000;
     static_assert(iterations % 2 == 0, "blocking-lock count below assumes even iterations");
 
-    sf::AtomicMutex m;
+    za::AtomicMutex m;
     long long       counter = 0;
 
     // Per-thread acquired-count -- no false-sharing concerns for correctness;
     // each thread writes only its own slot.
     long long perThreadAcquired[threadCount] = {};
 
-    sf::base::Vector<sf::Thread> threads;
+    zb::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int i = 0; i < threadCount; ++i)

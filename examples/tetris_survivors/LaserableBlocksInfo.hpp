@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/InPlaceVector.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
 
 
 namespace tsurv
@@ -14,9 +14,9 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 struct [[nodiscard]] LaserableBlocksInfo
 {
-    sf::base::InPlaceVector<sf::Vec2i, 32> positions;
-    sf::base::InPlaceVector<sf::Vec2i, 32> bouncePositions;
-    sf::Vec2i                              bouncePos;
+    zb::InPlaceVector<za::Vec2i, 32> positions;
+    zb::InPlaceVector<za::Vec2i, 32> bouncePositions;
+    za::Vec2i                              bouncePos;
 };
 
 } // namespace tsurv

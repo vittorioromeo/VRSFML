@@ -1,32 +1,32 @@
-#include "SFML/Audio/AudioDeviceHandle.hpp"
+#include "Zancle/Audio/AudioDeviceHandle.hpp"
 
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
 
 
-static_assert(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::priv::AudioDeviceHandle));
-static_assert(!SFML_BASE_IS_TRIVIAL(sf::priv::AudioDeviceHandle));
-static_assert(!SFML_BASE_IS_AGGREGATE(sf::priv::AudioDeviceHandle));
+static_assert(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::priv::AudioDeviceHandle));
+static_assert(!ZB_IS_TRIVIAL(za::priv::AudioDeviceHandle));
+static_assert(!ZB_IS_AGGREGATE(za::priv::AudioDeviceHandle));
 
-static_assert(SFML_BASE_IS_COPY_ASSIGNABLE(sf::priv::AudioDeviceHandle));
-static_assert(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::priv::AudioDeviceHandle));
-static_assert(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::priv::AudioDeviceHandle));
-static_assert(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::priv::AudioDeviceHandle));
-static_assert(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::priv::AudioDeviceHandle));
-static_assert(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::priv::AudioDeviceHandle));
-static_assert(SFML_BASE_IS_STANDARD_LAYOUT(sf::priv::AudioDeviceHandle));
+static_assert(ZB_IS_COPY_ASSIGNABLE(za::priv::AudioDeviceHandle));
+static_assert(ZB_IS_COPY_CONSTRUCTIBLE(za::priv::AudioDeviceHandle));
+static_assert(ZB_IS_MOVE_ASSIGNABLE(za::priv::AudioDeviceHandle));
+static_assert(ZB_IS_MOVE_CONSTRUCTIBLE(za::priv::AudioDeviceHandle));
+static_assert(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::priv::AudioDeviceHandle));
+static_assert(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::priv::AudioDeviceHandle));
+static_assert(ZB_IS_STANDARD_LAYOUT(za::priv::AudioDeviceHandle));
 
-static_assert(!SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::priv::AudioDeviceHandle, sf::priv::AudioDeviceHandle));
-static_assert(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::priv::AudioDeviceHandle));
-static_assert(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::priv::AudioDeviceHandle));
+static_assert(!ZB_IS_TRIVIALLY_ASSIGNABLE(za::priv::AudioDeviceHandle, za::priv::AudioDeviceHandle));
+static_assert(!ZB_IS_TRIVIALLY_COPYABLE(za::priv::AudioDeviceHandle));
+static_assert(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::priv::AudioDeviceHandle));

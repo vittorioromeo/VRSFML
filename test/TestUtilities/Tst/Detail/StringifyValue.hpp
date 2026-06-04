@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@
 // Tags (`struct`/`class`) match the rest of the test tree to avoid
 // `-Wmismatched-tags`.
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
 template <typename>
 struct Vec2;
@@ -24,7 +24,7 @@ struct Vec3;
 
 template <typename>
 class Rect2;
-} // namespace sf
+} // namespace za
 
 
 namespace tst
@@ -40,10 +40,10 @@ namespace tst::detail
 //     specialized overload below lands here and renders "<?>".
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const T&) noexcept
+[[gnu::always_inline]] inline zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const T&) noexcept
 {
     const char*     src = "<?>";
-    sf::base::SizeT n   = 0u;
+    zb::SizeT n   = 0u;
 
     while (src[n] != '\0' && n < cap)
     {
@@ -59,10 +59,10 @@ template <typename T>
 // (1b) String literals / char arrays decay to the `const char*` path so
 //      `CHECK("foo" == s)` shows `"foo"` rather than "<?>".
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const char* v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const char* v) noexcept;
 
-template <sf::base::SizeT N>
-[[gnu::always_inline]] inline sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const char (&v)[N]) noexcept
+template <zb::SizeT N>
+[[gnu::always_inline]] inline zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const char (&v)[N]) noexcept
 {
     return stringifyValue(buf, cap, static_cast<const char*>(v));
 }
@@ -71,19 +71,19 @@ template <sf::base::SizeT N>
 ////////////////////////////////////////////////////////////
 // (2) Scalars -- declared here, defined out-of-line.
 ////////////////////////////////////////////////////////////
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, bool v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, char v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, short v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, unsigned short v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, int v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, unsigned int v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, long v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, unsigned long v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, long long v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, unsigned long long v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, float v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, double v) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, long double v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, bool v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, char v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, short v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned short v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, int v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned int v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned long v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long long v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned long long v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, float v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, double v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long double v) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -93,25 +93,25 @@ sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, long double v) no
 //     to the instantiation block there.
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Vec2<T>& v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec2<T>& v) noexcept;
 
 template <typename T>
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Vec3<T>& v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec3<T>& v) noexcept;
 
 template <typename T>
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Rect2<T>& v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Rect2<T>& v) noexcept;
 
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const tst::Approx& v) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const tst::Approx& v) noexcept;
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Copies up to `cap` bytes of `[data, data + n)` into `buf` and
 /// returns the number of bytes copied. The bridge used by out-of-line
-/// formatters that build an `sf::base::String` internally (in their own
+/// formatters that build an `zb::String` internally (in their own
 /// `.cpp`) and hand the bytes back without exposing `String` here.
 ///
 ////////////////////////////////////////////////////////////
-sf::base::SizeT copyInto(char* buf, sf::base::SizeT cap, const char* data, sf::base::SizeT n) noexcept;
+zb::SizeT copyInto(char* buf, zb::SizeT cap, const char* data, zb::SizeT n) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -120,18 +120,18 @@ sf::base::SizeT copyInto(char* buf, sf::base::SizeT cap, const char* data, sf::b
 /// only `stringifyValue` + `SizeT`, so it drags in neither Fmt nor String.
 ///
 ////////////////////////////////////////////////////////////
-using StringifyFn = sf::base::SizeT (*)(char* buf, sf::base::SizeT cap, const void* value);
+using StringifyFn = zb::SizeT (*)(char* buf, zb::SizeT cap, const void* value);
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Non-erased dispatch. Resolves `stringifyValue` by ordinary
 /// lookup (the overloads above) plus ADL (overloads a value type declares
-/// in its own namespace, e.g. `sf::stringifyValue(const sf::Color&)`).
+/// in its own namespace, e.g. `za::stringifyValue(const za::Color&)`).
 /// Wrappers such as `Approx<T>` call this to render their nested value.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline sf::base::SizeT renderValue(char* buf, sf::base::SizeT cap, const T& v) noexcept
+[[gnu::always_inline]] inline zb::SizeT renderValue(char* buf, zb::SizeT cap, const T& v) noexcept
 {
     return stringifyValue(buf, cap, v);
 }
@@ -139,7 +139,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline sf::base::SizeT stringifyThunk(char* buf, sf::base::SizeT cap, const void* value) noexcept
+[[gnu::always_inline]] inline zb::SizeT stringifyThunk(char* buf, zb::SizeT cap, const void* value) noexcept
 {
     return renderValue(buf, cap, *static_cast<const T*>(value));
 }
@@ -156,7 +156,7 @@ template <typename T>
 ///
 ///   * the generic catch-all renders "<?>" for any unhandled type. It is
 ///     defined inline and pulls in NEITHER `<Fmt.hpp>` NOR `<String.hpp>`;
-///   * the scalar overloads and the `sf::Vec2<T>` / `sf::Rect2<T>` /
+///   * the scalar overloads and the `za::Vec2<T>` / `za::Rect2<T>` /
 ///     `tst::Approx` overloads are DECLARED here and DEFINED ONCE in
 ///     `StringifyValue.cpp`, where the heavy Fmt machinery and the full
 ///     value-type headers live. A using TU never sees Fmt or String.

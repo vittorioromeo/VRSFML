@@ -4,15 +4,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/AssertAndAssume.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] TickResult : sf::base::U8
+enum class [[nodiscard]] TickResult : zb::U8
 {
     Running,
     JustFinished,
@@ -56,7 +56,7 @@ struct [[nodiscard]] ProgressBase
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr float getBounce() const noexcept
     {
-        return 1.f - sf::base::fabs(value - 0.5f) * 2.f;
+        return 1.f - zb::fabs(value - 0.5f) * 2.f;
     }
 
 
@@ -107,12 +107,12 @@ struct [[nodiscard]] Progress : ProgressBase
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr TickResult advance(const float delta) noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(delta >= 0.f);
+        ZB_ASSERT_AND_ASSUME(delta >= 0.f);
 
         if (value == 1.f)
             return TickResult::AlreadyFinished;
 
-        SFML_BASE_ASSERT_AND_ASSUME(value < 1.f);
+        ZB_ASSERT_AND_ASSUME(value < 1.f);
         value += delta;
 
         if (value >= 1.f)
@@ -163,14 +163,14 @@ struct [[nodiscard]] Transition : ProgressBase
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr TickResult tick(const float delta) noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(delta >= 0.f);
+        ZB_ASSERT_AND_ASSUME(delta >= 0.f);
 
         if (reversed)
         {
             if (value == 0.f)
                 return TickResult::AlreadyFinished;
 
-            SFML_BASE_ASSERT_AND_ASSUME(value > 0.f);
+            ZB_ASSERT_AND_ASSUME(value > 0.f);
             value -= delta;
 
             if (value <= 0.f)
@@ -184,7 +184,7 @@ struct [[nodiscard]] Transition : ProgressBase
             if (value == 1.f)
                 return TickResult::AlreadyFinished;
 
-            SFML_BASE_ASSERT_AND_ASSUME(value < 1.f);
+            ZB_ASSERT_AND_ASSUME(value < 1.f);
             value += delta;
 
             if (value >= 1.f)
@@ -238,11 +238,11 @@ struct [[nodiscard]] Countdown
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr TickResult tick(const float dt) noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(dt >= 0.f);
+        ZB_ASSERT_AND_ASSUME(dt >= 0.f);
 
         if (time <= 0.f)
         {
-            SFML_BASE_ASSERT(time == 0.f);
+            ZB_ASSERT(time == 0.f);
             return TickResult::AlreadyFinished;
         }
 
@@ -279,7 +279,7 @@ struct [[nodiscard]] Countdown
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool isDone() const noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(time >= 0.f);
+        ZB_ASSERT_AND_ASSUME(time >= 0.f);
         return time == 0.f;
     }
 
@@ -290,7 +290,7 @@ struct [[nodiscard]] Countdown
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Progress asProgress(const float dur) const noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(dur > 0.f);
+        ZB_ASSERT_AND_ASSUME(dur > 0.f);
         return {{1.f - time / dur}};
     }
 };
@@ -320,7 +320,7 @@ struct [[nodiscard]] TimedCountdown : Countdown
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline constexpr LoopResult tickLooping(const float dt) noexcept
     {
-        SFML_BASE_ASSERT_AND_ASSUME(duration > 0.f);
+        ZB_ASSERT_AND_ASSUME(duration > 0.f);
         return Countdown::tickLooping(dt, duration);
     }
 
@@ -351,7 +351,7 @@ struct [[nodiscard]] TimedCountdown : Countdown
 ////////////////////////////////////////////////////////////
 /// \brief Returns `opt->asProgress().getElapsed()` if present, else `fallback`.
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline float getElapsedOr(const sf::base::Optional<TimedCountdown>& opt,
+[[nodiscard, gnu::always_inline]] inline float getElapsedOr(const zb::Optional<TimedCountdown>& opt,
                                                             const float                               fallback) noexcept
 {
     return opt.hasValue() ? opt->asProgress().getElapsed() : fallback;
@@ -361,7 +361,7 @@ struct [[nodiscard]] TimedCountdown : Countdown
 ////////////////////////////////////////////////////////////
 /// \brief Returns `opt->isDone()` if present, else `false`.
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline bool isDoneOr(const sf::base::Optional<TimedCountdown>& opt) noexcept
+[[nodiscard, gnu::always_inline]] inline bool isDoneOr(const zb::Optional<TimedCountdown>& opt) noexcept
 {
     return opt.hasValue() && opt->isDone();
 }

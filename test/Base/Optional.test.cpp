@@ -1,17 +1,17 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Optional.hpp"
 
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
@@ -102,58 +102,58 @@ TEST_CASE("[Base] Base/Optional.hpp")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIAL(Trivial));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(NonTrivial));
+        STATIC_CHECK(ZB_IS_TRIVIAL(Trivial));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(NonTrivial));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Optional<NonTrivial>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Optional<Trivial>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Optional<NonTrivial>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Optional<NonTrivialButRelocatable>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Optional<Trivial>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Optional<NonTrivialButRelocatable>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(MoveOnly));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(MoveOnly));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(MoveOnly));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(MoveOnly));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(MoveOnly));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(MoveOnly));
 
 // Clang bug, see https://stackoverflow.com/questions/78885178
 #ifndef __clang__
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Optional<MoveOnly>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Optional<MoveOnly>));
 #endif
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::Optional<MoveOnly>));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::Optional<MoveOnly>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(zb::Optional<MoveOnly>));
     }
 }
 

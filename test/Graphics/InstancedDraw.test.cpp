@@ -2,23 +2,23 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/InstanceAttributeBinder.hpp"
-#include "SFML/Graphics/InstancedQuad.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/VAOHandle.hpp"
-#include "SFML/Graphics/VBOHandle.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/InstanceAttributeBinder.hpp"
+#include "Zancle/Graphics/InstancedQuad.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RectangleShape.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/VAOHandle.hpp"
+#include "Zancle/Graphics/VBOHandle.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 // On Emscripten, WebGL contexts cannot share resources. SFML's
@@ -28,8 +28,8 @@
 
 TEST_CASE("[Graphics] Shared-resource rendering" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
-    auto renderTexture   = sf::RenderTexture::create({100, 100}).value();
+    auto graphicsContext = za::GraphicsContext::create().value();
+    auto renderTexture   = za::RenderTexture::create({100, 100}).value();
 
     SECTION("Custom shader uniforms are uploaded correctly")
     {
@@ -37,42 +37,42 @@ TEST_CASE("[Graphics] Shared-resource rendering" * tst::skip(skipDisplayTests))
         // accept uniform uploads. This broke on Emscripten when the guard
         // compiled the shader on a different WebGL context.
         constexpr auto vs = R"glsl(
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color;
+layout(location = 2) in vec2 za_a_texCoord;
 
 out vec4 v_color;
 
 void main()
 {
-    gl_Position = vec4(sf_a_position * 2.0, 0.0, 1.0);
+    gl_Position = vec4(za_a_position * 2.0, 0.0, 1.0);
     // Encode MVP row0 as color: expected (0.02, 0, -1) -> (0.51, 0.5, 0.0)
-    v_color = vec4(sf_u_mvpRow0 * 0.5 + 0.5, 1.0);
+    v_color = vec4(za_u_mvpRow0 * 0.5 + 0.5, 1.0);
 }
 )glsl";
 
         constexpr auto fs = R"glsl(
 in vec4 v_color;
-layout(location = 0) out vec4 sf_fragColor;
-void main() { sf_fragColor = v_color; }
+layout(location = 0) out vec4 za_fragColor;
+void main() { za_fragColor = v_color; }
 )glsl";
 
-        auto shader = sf::Shader::loadFromMemory({.vertexCode = vs, .fragmentCode = fs}).value();
+        auto shader = za::Shader::loadFromMemory({.vertexCode = vs, .fragmentCode = fs}).value();
 
-        sf::VAOHandle vao;
+        za::VAOHandle vao;
 
-        renderTexture.clear(sf::Color::Black);
+        renderTexture.clear(za::Color::Black);
         renderTexture.drawInstancedIndexedVertices({.vaoHandle     = vao,
-                                                    .vertexSpan    = sf::instancedQuadVertices,
-                                                    .indexSpan     = sf::instancedQuadIndices,
+                                                    .vertexSpan    = za::instancedQuadVertices,
+                                                    .indexSpan     = za::instancedQuadIndices,
                                                     .instanceCount = 1u,
-                                                    .primitiveType = sf::PrimitiveType::Triangles},
-                                                   [](sf::InstanceAttributeBinder&) {},
-                                                   {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+                                                    .primitiveType = za::PrimitiveType::Triangles},
+                                                   [](za::InstanceAttributeBinder&) {},
+                                                   {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
         renderTexture.display();
 
         const auto pixel = renderTexture.getTexture().copyToImage().getPixel({50, 50});
@@ -86,13 +86,13 @@ void main() { sf_fragColor = v_color; }
     {
         // Textures are created on the shared context via GLSharedContextGuard.
         // Verify they can be sampled in a draw call on the main context.
-        auto redImage = sf::Image::create({2, 2}, sf::Color::Red).value();
-        auto texture  = sf::Texture::loadFromImage(redImage).value();
+        auto redImage = za::Image::create({2, 2}, za::Color::Red).value();
+        auto texture  = za::Texture::loadFromImage(redImage).value();
 
-        sf::RectangleShape rect{{.position = {10.f, 10.f}, .size = {80.f, 80.f}}};
+        za::RectangleShape rect{{.position = {10.f, 10.f}, .size = {80.f, 80.f}}};
 
-        renderTexture.clear(sf::Color::Black);
-        renderTexture.draw(rect, {.view = sf::View::fromScreenSize({100.f, 100.f}), .texture = &texture});
+        renderTexture.clear(za::Color::Black);
+        renderTexture.draw(rect, {.view = za::View::fromScreenSize({100.f, 100.f}), .texture = &texture});
         renderTexture.display();
 
         const auto pixel = renderTexture.getTexture().copyToImage().getPixel({50, 50});
@@ -107,13 +107,13 @@ void main() { sf_fragColor = v_color; }
         // Verify the instanced draw reads correct vertex positions and
         // per-instance data from those buffers.
         constexpr auto vs = R"glsl(
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color;
+layout(location = 2) in vec2 za_a_texCoord;
 
 layout(location = 5) in vec2 instance_offset;
 layout(location = 6) in vec4 instance_color;
@@ -122,10 +122,10 @@ out vec4 v_color;
 
 void main()
 {
-    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+    vec2 worldPos = instance_offset + (za_a_position * vec2(20.0, 20.0));
 
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
+    gl_Position = vec4(dot(za_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(za_u_mvpRow1, vec3(worldPos, 1.0)),
                        0.0,
                        1.0);
 
@@ -135,24 +135,24 @@ void main()
 
         constexpr auto fs = R"glsl(
 in vec4 v_color;
-layout(location = 0) out vec4 sf_fragColor;
-void main() { sf_fragColor = v_color; }
+layout(location = 0) out vec4 za_fragColor;
+void main() { za_fragColor = v_color; }
 )glsl";
 
-        auto shader = sf::Shader::loadFromMemory({.vertexCode = vs, .fragmentCode = fs}).value();
+        auto shader = za::Shader::loadFromMemory({.vertexCode = vs, .fragmentCode = fs}).value();
 
         struct InstanceData
         {
-            sf::Vec2f offset;
-            sf::Color color;
+            za::Vec2f offset;
+            za::Color color;
         };
 
-        sf::VAOHandle vaoHandle;
-        sf::VBOHandle instanceVBO;
+        za::VAOHandle vaoHandle;
+        za::VBOHandle instanceVBO;
 
         const auto drawInstance = [&](InstanceData instance)
         {
-            auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+            auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
             {
                 binder.uploadContiguousData(instanceVBO, &instance);
                 binder.setupField<&InstanceData::offset>(5);
@@ -162,38 +162,38 @@ void main() { sf_fragColor = v_color; }
             renderTexture.drawInstancedIndexedVertices(
                 {
                     .vaoHandle     = vaoHandle,
-                    .vertexSpan    = sf::instancedQuadVertices,
-                    .indexSpan     = sf::instancedQuadIndices,
+                    .vertexSpan    = za::instancedQuadVertices,
+                    .indexSpan     = za::instancedQuadIndices,
                     .instanceCount = 1u,
-                    .primitiveType = sf::PrimitiveType::Triangles,
+                    .primitiveType = za::PrimitiveType::Triangles,
                 },
                 setupAttribs,
-                {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+                {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
         };
 
-        renderTexture.clear(sf::Color::Black);
+        renderTexture.clear(za::Color::Black);
 
-        drawInstance({.offset = {10.f, 10.f}, .color = sf::Color::Green});
-        drawInstance({.offset = {60.f, 10.f}, .color = sf::Color::Red});
+        drawInstance({.offset = {10.f, 10.f}, .color = za::Color::Green});
+        drawInstance({.offset = {60.f, 10.f}, .color = za::Color::Red});
 
         renderTexture.display();
 
         const auto image = renderTexture.getTexture().copyToImage();
 
-        CHECK(image.getPixel({15, 15}) == sf::Color::Green);
-        CHECK(image.getPixel({65, 15}) == sf::Color::Red);
+        CHECK(image.getPixel({15, 15}) == za::Color::Green);
+        CHECK(image.getPixel({65, 15}) == za::Color::Red);
     }
 
     SECTION("SOA instanced draw with separate VBOs per field")
     {
         constexpr auto vs = R"glsl(
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color;
+layout(location = 2) in vec2 za_a_texCoord;
 
 layout(location = 5) in vec2 instance_offset;
 layout(location = 6) in vec4 instance_color;
@@ -202,10 +202,10 @@ out vec4 v_color;
 
 void main()
 {
-    vec2 worldPos = instance_offset + (sf_a_position * vec2(20.0, 20.0));
+    vec2 worldPos = instance_offset + (za_a_position * vec2(20.0, 20.0));
 
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)),
+    gl_Position = vec4(dot(za_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(za_u_mvpRow1, vec3(worldPos, 1.0)),
                        0.0,
                        1.0);
 
@@ -215,52 +215,52 @@ void main()
 
         constexpr auto fs = R"glsl(
 in vec4 v_color;
-layout(location = 0) out vec4 sf_fragColor;
-void main() { sf_fragColor = v_color; }
+layout(location = 0) out vec4 za_fragColor;
+void main() { za_fragColor = v_color; }
 )glsl";
 
-        auto shader = sf::Shader::loadFromMemory({.vertexCode = vs, .fragmentCode = fs}).value();
+        auto shader = za::Shader::loadFromMemory({.vertexCode = vs, .fragmentCode = fs}).value();
 
-        sf::VAOHandle vaoHandle;
-        sf::VBOHandle offsetVBO;
-        sf::VBOHandle colorVBO;
+        za::VAOHandle vaoHandle;
+        za::VBOHandle offsetVBO;
+        za::VBOHandle colorVBO;
 
-        const auto drawInstance = [&](const sf::Vec2f offset, const sf::Color color)
+        const auto drawInstance = [&](const za::Vec2f offset, const za::Color color)
         {
-            const sf::Vec2f instanceOffsetData[]{offset};
-            const sf::Color instanceColorData[]{color};
+            const za::Vec2f instanceOffsetData[]{offset};
+            const za::Color instanceColorData[]{color};
 
-            auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+            auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
             {
                 binder.uploadContiguousData(offsetVBO, instanceOffsetData);
-                binder.setupFlat<sf::Vec2f>(5);
+                binder.setupFlat<za::Vec2f>(5);
 
                 binder.uploadContiguousData(colorVBO, instanceColorData);
-                binder.setupFlat<sf::Color>(6);
+                binder.setupFlat<za::Color>(6);
             };
 
             renderTexture.drawInstancedIndexedVertices(
                 {
                     .vaoHandle     = vaoHandle,
-                    .vertexSpan    = sf::instancedQuadVertices,
-                    .indexSpan     = sf::instancedQuadIndices,
+                    .vertexSpan    = za::instancedQuadVertices,
+                    .indexSpan     = za::instancedQuadIndices,
                     .instanceCount = 1u,
-                    .primitiveType = sf::PrimitiveType::Triangles,
+                    .primitiveType = za::PrimitiveType::Triangles,
                 },
                 setupAttribs,
-                {.view = sf::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+                {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
         };
 
-        renderTexture.clear(sf::Color::Black);
+        renderTexture.clear(za::Color::Black);
 
-        drawInstance({10.f, 10.f}, sf::Color::Green);
-        drawInstance({60.f, 10.f}, sf::Color::Red);
+        drawInstance({10.f, 10.f}, za::Color::Green);
+        drawInstance({60.f, 10.f}, za::Color::Red);
 
         renderTexture.display();
 
         const auto image = renderTexture.getTexture().copyToImage();
 
-        CHECK(image.getPixel({15, 15}) == sf::Color::Green);
-        CHECK(image.getPixel({65, 15}) == sf::Color::Red);
+        CHECK(image.getPixel({15, 15}) == za::Color::Green);
+        CHECK(image.getPixel({65, 15}) == za::Color::Red);
     }
 }

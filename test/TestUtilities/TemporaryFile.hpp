@@ -1,28 +1,28 @@
 #pragma once
 
-#include "SFML/Config.hpp"
+#include "Zancle/Config.hpp"
 
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Fmt/FmtToString.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/UIntPtrT.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Fmt/FmtToString.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/UIntPtrT.hpp"
 
-#if defined(SFML_SYSTEM_WINDOWS)
+#if defined(ZA_SYSTEM_WINDOWS)
     #include <process.h>
 #elif __has_include(<unistd.h>)
     #include <unistd.h>
 #endif
 
 
-namespace sf::testing
+namespace za::testing
 {
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline unsigned int getProcessUniqueId() noexcept
 {
-#if defined(SFML_SYSTEM_WINDOWS)
+#if defined(ZA_SYSTEM_WINDOWS)
     return static_cast<unsigned int>(::_getpid());
 #elif __has_include(<unistd.h>)
     return static_cast<unsigned int>(::getpid());
@@ -44,7 +44,7 @@ inline Path getTemporaryFilePath()
     static int counter = 0;
 
     const auto tmp = Path::getTempDirectory();
-    SFML_BASE_ASSERT(tmp && "Failed to obtain temp directory");
+    ZB_ASSERT(tmp && "Failed to obtain temp directory");
 
     return *tmp / Path(base::fmtToString("sfmltemp_{}_{}.tmp", getProcessUniqueId(), counter++));
 }
@@ -69,10 +69,10 @@ public:
     explicit TemporaryFile(base::StringView contents) : m_path(getTemporaryFilePath())
     {
         auto optFile = OutFile::open(m_path);
-        SFML_BASE_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
+        ZB_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
 
         [[maybe_unused]] const bool wrote = optFile->write(contents.data(), contents.size());
-        SFML_BASE_ASSERT(wrote && "Failed to write temporary file contents");
+        ZB_ASSERT(wrote && "Failed to write temporary file contents");
 
         // Destructor of `optFile` closes the file when this body returns.
     }
@@ -82,7 +82,7 @@ public:
         if (m_path.exists())
         {
             [[maybe_unused]] const bool removed = m_path.removeFromDisk();
-            SFML_BASE_ASSERT(removed && "m_path failed to be removed from filesystem");
+            ZB_ASSERT(removed && "m_path failed to be removed from filesystem");
         }
     }
 
@@ -98,4 +98,4 @@ private:
     Path m_path;
 };
 
-} // namespace sf::testing
+} // namespace za::testing

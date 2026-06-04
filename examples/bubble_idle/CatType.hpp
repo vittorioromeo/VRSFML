@@ -1,12 +1,12 @@
 #pragma once
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] CatType : sf::base::U8
+enum class [[nodiscard]] CatType : zb::U8
 {
     Normal = 0u,
     Uni    = 1u,
@@ -29,11 +29,11 @@ enum class [[nodiscard]] CatType : sf::base::U8
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto asIdx(const CatType type) noexcept
 {
-    return static_cast<sf::base::SizeT>(type);
+    return static_cast<zb::SizeT>(type);
 }
 
 ////////////////////////////////////////////////////////////
-enum : sf::base::SizeT
+enum : zb::SizeT
 {
     nCatTypes = asIdx(CatType::Count)
 };
@@ -41,6 +41,6 @@ enum : sf::base::SizeT
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr bool isUniqueCatType(const CatType catType) noexcept
 {
-    SFML_BASE_ASSERT(catType < CatType::Count);
+    ZB_ASSERT(catType < CatType::Count);
     return catType >= CatType::Witch;
 }

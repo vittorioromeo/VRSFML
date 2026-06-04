@@ -1,2 +1,2 @@
 file(GLOB GLUTILS_SRC CONFIGURE_DEPENDS "*.cpp" "*.hpp" "*.inl")
-sfml_add_test(test-sfml-glutils "${GLUTILS_SRC}" SFML::GLUtils) # TODO P1: cleanup these circular deps
+zancle_add_test(test-zancle-glutils "${GLUTILS_SRC}" Zancle::GLUtils) # TODO P1: cleanup these circular deps

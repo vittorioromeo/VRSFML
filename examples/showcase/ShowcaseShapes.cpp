@@ -1,47 +1,47 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseShapes.hpp"
 
-#include "SFML/Graphics/ArrowShapeData.hpp"
-#include "SFML/Graphics/BatchedGeometry.hpp"
-#include "SFML/Graphics/ChevronShapeData.hpp"
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/CogShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/CrossShapeData.hpp"
-#include "SFML/Graphics/CurvedArrowShapeData.hpp"
-#include "SFML/Graphics/EllipseShapeData.hpp"
-#include "SFML/Graphics/HeartShapeData.hpp"
-#include "SFML/Graphics/PieSliceShapeData.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RingPieSliceShapeData.hpp"
-#include "SFML/Graphics/RingShapeData.hpp"
-#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
-#include "SFML/Graphics/StarShapeData.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TrapezoidShapeData.hpp"
+#include "Zancle/Graphics/ArrowShapeData.hpp"
+#include "Zancle/Graphics/BatchedGeometry.hpp"
+#include "Zancle/Graphics/ChevronShapeData.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/CogShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/CrossShapeData.hpp"
+#include "Zancle/Graphics/CurvedArrowShapeData.hpp"
+#include "Zancle/Graphics/EllipseShapeData.hpp"
+#include "Zancle/Graphics/HeartShapeData.hpp"
+#include "Zancle/Graphics/PieSliceShapeData.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RingPieSliceShapeData.hpp"
+#include "Zancle/Graphics/RingShapeData.hpp"
+#include "Zancle/Graphics/RoundedRectangleShapeData.hpp"
+#include "Zancle/Graphics/StarShapeData.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TrapezoidShapeData.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
-#include "SFML/Base/Math/Sin.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Fmod.hpp"
+#include "ZancleBase/Math/Sin.hpp"
 
 
 ////////////////////////////////////////////////////////////
-auto ExampleShapes::applyCommonSettings(const sf::Vec2f currentOffset, auto shapeData)
+auto ExampleShapes::applyCommonSettings(const za::Vec2f currentOffset, auto shapeData)
 {
-    const auto fillColor = sf::Color::Red.withRotatedHue(m_time + m_phase * 65.f);
+    const auto fillColor = za::Color::Red.withRotatedHue(m_time + m_phase * 65.f);
 
     shapeData.position += currentOffset;
     shapeData.position += {64.f, 64.f};
 
     shapeData.fillColor        = fillColor;
     shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
-    shapeData.outlineThickness = sf::base::fabs(4.f * sf::base::sin(m_time * 0.05f + m_phase));
+    shapeData.outlineThickness = zb::fabs(4.f * zb::sin(m_time * 0.05f + m_phase));
 
-    shapeData.rotation = sf::degrees(sf::base::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
+    shapeData.rotation = za::degrees(zb::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
 
     shapeData.textureRect = {
         .position = {0.f, 0.f},
@@ -53,18 +53,18 @@ auto ExampleShapes::applyCommonSettings(const sf::Vec2f currentOffset, auto shap
 
 
 ////////////////////////////////////////////////////////////
-sf::BatchedGeometry ExampleShapes::drawShape(const char* label, const auto& shapeData)
+za::BatchedGeometry ExampleShapes::drawShape(const char* label, const auto& shapeData)
 {
-    const auto offset = sf::Vec2f{32.f, 32.f};
+    const auto offset = za::Vec2f{32.f, 32.f};
 
     auto result = m_deps.rtGame->draw(applyCommonSettings(offset, shapeData), {.view = *m_deps.view});
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{
+                        za::TextData{
                             .position         = shapeData.position + offset,
                             .string           = label,
                             .characterSize    = 16,
-                            .outlineColor     = sf::Color::Black,
+                            .outlineColor     = za::Color::Black,
                             .outlineThickness = 2.f,
                         },
                         {.view = *m_deps.view});
@@ -78,12 +78,12 @@ sf::BatchedGeometry ExampleShapes::drawShape(const char* label, const auto& shap
 ////////////////////////////////////////////////////////////
 float ExampleShapes::getPhasedValue(const float timeMultiplier, const float phaseMultiplier) const
 {
-    return sf::base::fabs(sf::base::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
+    return zb::fabs(zb::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
 }
 
 
 ////////////////////////////////////////////////////////////
-void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned int shapeIndex)
+void ExampleShapes::drawShapeAtCell(const za::Vec2f cellPosition, const unsigned int shapeIndex)
 {
     // Cycle through the 15 shape types by index. Each case constructs the shape at the given
     // cell and forwards it to `drawShape`, which handles per-frame color/rotation animation.
@@ -91,7 +91,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
     {
         case 0u:
             drawShape("Circle",
-                      sf::CircleShapeData{
+                      za::CircleShapeData{
                           .position   = cellPosition,
                           .origin     = {64.f, 64.f},
                           .radius     = 64.f,
@@ -101,7 +101,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 1u:
             drawShape("Ellipse",
-                      sf::EllipseShapeData{
+                      za::EllipseShapeData{
                           .position         = cellPosition,
                           .origin           = {64.f, 32.f},
                           .horizontalRadius = 64.f,
@@ -112,12 +112,12 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 2u:
             drawShape("PieSlice",
-                      sf::PieSliceShapeData{
+                      za::PieSliceShapeData{
                           .position   = cellPosition,
                           .origin     = {64.f, 64.f},
                           .radius     = 64.f,
-                          .startAngle = sf::degrees(0.f),
-                          .sweepAngle = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
+                          .startAngle = za::degrees(0.f),
+                          .sweepAngle = za::degrees((360.f * getPhasedValue(0.1f, 2.f))),
                           .pointCount = 32u,
                       });
             break;
@@ -127,7 +127,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
             const auto h = 64.f + (16.f * getPhasedValue(0.1f, 1.f));
 
             drawShape("Rectangle",
-                      sf::RectangleShapeData{
+                      za::RectangleShapeData{
                           .position = cellPosition,
                           .origin   = {64.f, h / 2.f},
                           .size     = {128.f, h},
@@ -137,7 +137,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 4u:
             drawShape("RoundedRectangle",
-                      sf::RoundedRectangleShapeData{
+                      za::RoundedRectangleShapeData{
                           .position         = cellPosition,
                           .origin           = {64.f, 32.f},
                           .size             = {128.f, 64.f},
@@ -148,7 +148,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 5u:
             drawShape("Arrow",
-                      sf::ArrowShapeData{
+                      za::ArrowShapeData{
                           .position    = cellPosition,
                           .origin      = {(64.f + 48.f) / 2.f, 0.f},
                           .shaftLength = 64.f,
@@ -160,13 +160,13 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 6u:
             drawShape("CurvedArrow",
-                      sf::CurvedArrowShapeData{
+                      za::CurvedArrowShapeData{
                           .position    = cellPosition,
                           .origin      = {64.f, 64.f},
                           .outerRadius = 64.f,
                           .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
-                          .startAngle  = sf::degrees(0.f),
-                          .sweepAngle  = sf::degrees((270.f * getPhasedValue(0.1f, 2.f))),
+                          .startAngle  = za::degrees(0.f),
+                          .sweepAngle  = za::degrees((270.f * getPhasedValue(0.1f, 2.f))),
                           .headLength  = 32.f,
                           .headWidth   = 8.f + (64.f * getPhasedValue(0.06f, 3.f)),
                       });
@@ -174,7 +174,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 7u:
             drawShape("Ring",
-                      sf::RingShapeData{
+                      za::RingShapeData{
                           .position    = cellPosition,
                           .origin      = {64.f, 64.f},
                           .outerRadius = 64.f,
@@ -185,20 +185,20 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 8u:
             drawShape("RingPieSlice",
-                      sf::RingPieSliceShapeData{
+                      za::RingPieSliceShapeData{
                           .position    = cellPosition,
                           .origin      = {64.f, 64.f},
                           .outerRadius = 64.f,
                           .innerRadius = 32.f + (16.f * getPhasedValue(0.2f, 0.75f)),
-                          .startAngle  = sf::degrees(0.f),
-                          .sweepAngle  = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
+                          .startAngle  = za::degrees(0.f),
+                          .sweepAngle  = za::degrees((360.f * getPhasedValue(0.1f, 2.f))),
                           .pointCount  = 32u,
                       });
             break;
 
         case 9u:
             drawShape("Star",
-                      sf::StarShapeData{
+                      za::StarShapeData{
                           .position    = cellPosition,
                           .origin      = {64.f, 64.f},
                           .outerRadius = 64.f,
@@ -209,7 +209,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 10u:
             drawShape("Cross",
-                      sf::CrossShapeData{
+                      za::CrossShapeData{
                           .position     = cellPosition,
                           .origin       = {64.f, 64.f},
                           .size         = {128.f, 128.f},
@@ -219,7 +219,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 11u:
         {
-            sf::TrapezoidShapeData sd{
+            za::TrapezoidShapeData sd{
                 .position    = cellPosition,
                 .topWidth    = 32.f + (64.f * getPhasedValue(0.08f, 2.f)),
                 .bottomWidth = 128.f,
@@ -232,7 +232,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 12u:
         {
-            sf::ChevronShapeData sd{
+            za::ChevronShapeData sd{
                 .position  = cellPosition,
                 .size      = {128.f, 128.f},
                 .thickness = 16.f + (24.f * getPhasedValue(0.1f, 2.f)),
@@ -244,7 +244,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 13u:
         {
-            sf::HeartShapeData sd{
+            za::HeartShapeData sd{
                 .position   = cellPosition,
                 .size       = {128.f, 128.f},
                 .pointCount = 32u + static_cast<unsigned int>(32.f * getPhasedValue(0.05f, 2.f)),
@@ -256,7 +256,7 @@ void ExampleShapes::drawShapeAtCell(const sf::Vec2f cellPosition, const unsigned
 
         case 14u:
             drawShape("Cog",
-                      sf::CogShapeData{
+                      za::CogShapeData{
                           .position        = cellPosition,
                           .origin          = {64.f, 64.f},
                           .outerRadius     = 64.f,
@@ -296,7 +296,7 @@ void ExampleShapes::draw()
     for (unsigned int row = 0u; row < gridSize; ++row)
         for (unsigned int col = 0u; col < gridSize; ++col)
         {
-            const sf::Vec2f cellPosition{static_cast<float>(col) * cellStep, static_cast<float>(row) * cellStep};
+            const za::Vec2f cellPosition{static_cast<float>(col) * cellStep, static_cast<float>(row) * cellStep};
             drawShapeAtCell(cellPosition, row * gridSize + col);
         }
 }

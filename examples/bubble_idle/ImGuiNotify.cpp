@@ -1,16 +1,16 @@
 #include "IconsFontAwesome6.h"
 #include "ImGuiNotify.hpp"
 
-#include "SFML/ImGui/ImConfigSFML.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
-#include "SFML/ImGui/IncludeImGuiInternal.hpp"
+#include "Zancle/ImGui/ImConfigSFML.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGuiInternal.hpp"
 
-#include "SFML/System/Clock.hpp"
+#include "Zancle/System/Clock.hpp"
 
-#include "SFML/Base/Builtin/Memset.hpp"
-#include "SFML/Base/Builtin/Strlen.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Builtin/Memset.hpp"
+#include "ZancleBase/Builtin/Strlen.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -20,7 +20,7 @@ const ImGuiWindowFlags NOTIFY_DEFAULT_TOAST_FLAGS = ImGuiWindowFlags_AlwaysAutoR
                                                     ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus |
                                                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoSavedSettings;
 
-#define NOTIFY_NULL_OR_EMPTY(str) (!str || !SFML_BASE_STRLEN(str))
+#define NOTIFY_NULL_OR_EMPTY(str) (!str || !ZB_STRLEN(str))
 #define NOTIFY_FORMAT(fn, format, ...) \
     if (format)                        \
     {                                  \
@@ -98,7 +98,7 @@ const char* ImGuiToast::getTitle()
 ////////////////////////////////////////////////////////////
 const char* ImGuiToast::getDefaultTitle()
 {
-    if (!SFML_BASE_STRLEN(this->title))
+    if (!ZB_STRLEN(this->title))
     {
         switch (this->type)
         {
@@ -178,16 +178,16 @@ char* ImGuiToast::getContent()
 
 
 ////////////////////////////////////////////////////////////
-sf::Time ImGuiToast::getElapsedTime()
+za::Time ImGuiToast::getElapsedTime()
 {
-    return sf::Clock::now() - this->creationTime;
+    return za::Clock::now() - this->creationTime;
 }
 
 
 ////////////////////////////////////////////////////////////
 ImGuiToastPhase ImGuiToast::getPhase()
 {
-    const sf::base::I32 elapsed = getElapsedTime().asMilliseconds();
+    const zb::I32 elapsed = getElapsedTime().asMilliseconds();
 
     if (elapsed > NOTIFY_FADE_IN_OUT_TIME + this->dismissTime + NOTIFY_FADE_IN_OUT_TIME)
         return ImGuiToastPhase::Expired;
@@ -206,7 +206,7 @@ ImGuiToastPhase ImGuiToast::getPhase()
 float ImGuiToast::getFadePercent()
 {
     const ImGuiToastPhase phase   = getPhase();
-    const sf::base::I32   elapsed = getElapsedTime().asMilliseconds();
+    const zb::I32   elapsed = getElapsedTime().asMilliseconds();
 
     if (phase == ImGuiToastPhase::FadeIn)
         return (static_cast<float>(elapsed) / static_cast<float>(NOTIFY_FADE_IN_OUT_TIME)) * NOTIFY_OPACITY;
@@ -243,10 +243,10 @@ ImGuiToast::ImGuiToast(const ImGuiToastType toastType, const int toastDismissTim
     this->type        = toastType;
     this->dismissTime = toastDismissTime;
 
-    this->creationTime = sf::Clock::now();
+    this->creationTime = za::Clock::now();
 
-    SFML_BASE_MEMSET(this->title, 0, sizeof(this->title));
-    SFML_BASE_MEMSET(this->content, 0, sizeof(this->content));
+    ZB_MEMSET(this->title, 0, sizeof(this->title));
+    ZB_MEMSET(this->content, 0, sizeof(this->content));
 }
 
 
@@ -270,7 +270,7 @@ namespace ImGui
 namespace
 {
 ////////////////////////////////////////////////////////////
-sf::base::Vector<ImGuiToast> notifications;
+zb::Vector<ImGuiToast> notifications;
 
 } // namespace
 
@@ -285,7 +285,7 @@ void InsertNotification(const ImGuiToast& toast)
 ////////////////////////////////////////////////////////////
 void RemoveNotification(const int index)
 {
-    notifications.eraseAt(static_cast<sf::base::SizeT>(index));
+    notifications.eraseAt(static_cast<zb::SizeT>(index));
 }
 
 
@@ -299,7 +299,7 @@ void RenderNotifications(const float                paddingY,
 
     float height = 0.f;
 
-    for (sf::base::SizeT i = 0; i < notifications.size(); ++i)
+    for (zb::SizeT i = 0; i < notifications.size(); ++i)
     {
         ImGuiToast* currentToast = &notifications[i];
 

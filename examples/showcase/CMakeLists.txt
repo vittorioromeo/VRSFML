@@ -6,6 +6,6 @@ set(SRC
     ShowcaseIndividualShape.cpp
     ShowcaseTextComparison.cpp)
 
-sfml_add_example(showcase GUI_APP
+zancle_add_example(showcase GUI_APP
                  SOURCES ${SRC}
-                 DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui)
+                 DEPENDS Zancle::Audio Zancle::Graphics Zancle::ImGui ImGui::ImGui)

@@ -2,9 +2,9 @@
 
 #include "ShowcaseExample.hpp"
 
-#include "SFML/Graphics/BatchedGeometry.hpp"
+#include "Zancle/Graphics/BatchedGeometry.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -19,16 +19,16 @@ private:
     float m_phase = 0.f;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] auto applyCommonSettings(sf::Vec2f currentOffset, auto shapeData);
+    [[nodiscard]] auto applyCommonSettings(za::Vec2f currentOffset, auto shapeData);
 
     ////////////////////////////////////////////////////////////
-    sf::BatchedGeometry drawShape(const char* label, const auto& shapeData);
+    za::BatchedGeometry drawShape(const char* label, const auto& shapeData);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getPhasedValue(float timeMultiplier, float phaseMultiplier) const;
 
     ////////////////////////////////////////////////////////////
-    void drawShapeAtCell(sf::Vec2f cellPosition, unsigned int shapeIndex);
+    void drawShapeAtCell(za::Vec2f cellPosition, unsigned int shapeIndex);
 
 public:
     ////////////////////////////////////////////////////////////

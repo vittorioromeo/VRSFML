@@ -28,8 +28,9 @@ if [[ "$BRANCH" == "master" || "$BRANCH" == "main" ]]; then
     exit 1
 fi
 
-if [[ -n "$(git status --porcelain)" ]]; then
-    echo "ERROR: working tree dirty. Commit or stash before running." >&2
+if [[ -n "$(git status --porcelain)" && -z "${ZANCLE_MIGRATE_ALLOW_DIRTY:-}" ]]; then
+    echo "ERROR: working tree dirty. Commit or stash before running, or set" >&2
+    echo "  ZANCLE_MIGRATE_ALLOW_DIRTY=1 to bypass (e.g. for an idempotent re-run)." >&2
     git status --short >&2
     exit 1
 fi
@@ -87,19 +88,23 @@ echo
 echo "[Phase 2] Collecting files in scope..."
 mapfile -t FILES < <(
     find . -type d \( \
-           -path './build' -o -path './build_*' \
-        -o -path './CMakeFiles' -o -path './Testing' \
+           -name 'build' -o -name 'build_*' \
+        -o -name 'CMakeFiles' -o -name 'Testing' \
         -o -path './extlibs'    -o -path './.git' \
         -o -path './.cache'     -o -path './.vscode' \
         -o -path './tools/rebrand' \
     \) -prune -o -type f \( \
             -name '*.hpp' -o -name '*.cpp' -o -name '*.h'   -o -name '*.c'   \
          -o -name '*.inl' -o -name '*.cc'  -o -name '*.hh'                   \
-         -o -name '*.cmake' -o -name 'CMakeLists.txt'                        \
+         -o -name '*.mm'  -o -name '*.m'                                     \
+         -o -name '*.cmake' -o -name '*.cmake.in' -o -name 'CMakeLists.txt'  \
          -o -name 'CMakePresets.json' -o -name 'CMakeUserPresets.json'       \
+         -o -name '*.pc.in' -o -name '*.rc.in' -o -name 'doxyfile.in'        \
+         -o -name '*.html.in'                                                \
          -o -name '*.md'  -o -name '*.txt'                                   \
          -o -name '*.sh'  -o -name 'Dockerfile'                              \
          -o -name '*.yml' -o -name '*.yaml'                                  \
+         -o -name '*.kts' -o -name '*.gradle'                                \
          -o -name '*.glsl' -o -name '*.frag' -o -name '*.vert' -o -name '*.geom' \
     \) -print
 )
@@ -112,7 +117,7 @@ mapfile -t CMAKE_FILES < <(
         -o -path './CMakeFiles' -o -path './Testing' \
         -o -path './extlibs'    -o -path './.git' \
         -o -path './tools/rebrand' \
-    \) -prune -o -type f \( -name 'CMakeLists.txt' -o -name '*.cmake' \) -print
+    \) -prune -o -type f \( -name 'CMakeLists.txt' -o -name '*.cmake' -o -name '*.cmake.in' \) -print
 )
 
 # perl -i -pe with explicit file list. xargs would chunk on too-many-args.
@@ -173,6 +178,52 @@ echo "  done."
 # -- 2e. Bare `SFML` token, CMake only --------------------------------------
 echo "[Phase 2e] Bare SFML -> Zancle (CMake only)..."
 sub_cmake 's/\bSFML\b/Zancle/g'
+echo "  done."
+
+# -- 2f. Long-tail mechanical cleanup ---------------------------------------
+# (i) Objective-C `#import` mirrors `#include` for the same headers.
+# (ii) Bare `<SFML/...>` paths in Doxygen comments / strings, scoped to code
+#      files only so we don't rewrite historical content inside *.md docs.
+# (iii) pkg-config `-lsfml-<module>` link flags must follow the library
+#       rename or the linker breaks.
+echo "[Phase 2f] Long-tail cleanup (#import, bare <SFML/>, pkg-config -l)..."
+
+# Obj-C #import directives (mirror the include-path regexes).
+sub 's{#\s*import(\s*)<SFML/Base/}{#import$1<ZancleBase/}g'
+sub 's{#\s*import(\s*)"SFML/Base/}{#import$1"ZancleBase/}g'
+sub 's{#\s*import(\s*)<SFML/}{#import$1<Zancle/}g'
+sub 's{#\s*import(\s*)"SFML/}{#import$1"Zancle/}g'
+
+# Bare <SFML/...> path references in Doxygen comments / error strings --
+# scoped to CODE files so historical .md docs keep their original content.
+mapfile -t CODE_FILES < <(
+    find . -type d \( \
+           -name 'build' -o -name 'build_*' \
+        -o -name 'CMakeFiles' -o -name 'Testing' \
+        -o -path './extlibs'    -o -path './.git' \
+        -o -path './tools/rebrand' \
+    \) -prune -o -type f \( \
+            -name '*.hpp' -o -name '*.cpp' -o -name '*.h'   -o -name '*.c'   \
+         -o -name '*.inl' -o -name '*.cc'  -o -name '*.hh'                   \
+         -o -name '*.mm'  -o -name '*.m' \
+    \) -print
+)
+if (( ${#CODE_FILES[@]} > 0 )); then
+    printf '%s\0' "${CODE_FILES[@]}" | xargs -0 perl -i -pe 's{<SFML/Base/}{<ZancleBase/}g'
+    printf '%s\0' "${CODE_FILES[@]}" | xargs -0 perl -i -pe 's{<SFML/}{<Zancle/}g'
+fi
+
+# pkg-config -l<module> link flags (in *.pc.in templates).
+mapfile -t PC_FILES < <(find tools/pkg-config -type f -name '*.pc.in' 2>/dev/null)
+if (( ${#PC_FILES[@]} > 0 )); then
+    printf '%s\0' "${PC_FILES[@]}" | xargs -0 perl -i -pe 's/-lsfml-/-lzancle-/g'
+    printf '%s\0' "${PC_FILES[@]}" | xargs -0 perl -i -pe 's/Requires:\s*sfml-/Requires: zancle-/g'
+fi
+
+# User-agent string baked into Http.cpp (literal "libsfml-network/...").
+if [[ -f src/Zancle/Network/Http.cpp ]]; then
+    perl -i -pe 's/libsfml-/libzancle-/g' src/Zancle/Network/Http.cpp
+fi
 echo "  done."
 
 echo

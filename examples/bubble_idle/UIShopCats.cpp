@@ -7,7 +7,7 @@
 #include "Playthrough.hpp"
 #include "Version.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include <cstdio>
 

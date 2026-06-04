@@ -1,30 +1,30 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Audio/SoundFileReader.hpp"
+#include "Zancle/Audio/SoundFileReader.hpp"
 
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsConstructible.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Audio] sf::SoundFileReader")
+TEST_CASE("[Audio] za::SoundFileReader")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::SoundFileReader));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundFileReader));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundFileReader));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundFileReader));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundFileReader));
-        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::SoundFileReader));
+        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::SoundFileReader));
+        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::SoundFileReader));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::SoundFileReader));
+        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::SoundFileReader));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::SoundFileReader));
+        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(za::SoundFileReader));
     }
 
     SECTION("Info")
     {
-        const sf::SoundFileReader::Info info{};
+        const za::SoundFileReader::Info info{};
         CHECK(info.sampleCount == 0);
         CHECK(info.channelMap.getSize() == 0);
         CHECK(info.sampleRate == 0);

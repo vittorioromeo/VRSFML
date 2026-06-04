@@ -35,86 +35,86 @@
 #include "ExampleUtils/Scaling.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/DrawTextureSettings.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/IndexType.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/Transform.hpp"
-#include "SFML/Graphics/Vertex.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/DrawTextureSettings.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/IndexType.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RectangleShape.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/Transform.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Rect2.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Algorithm/Find.hpp"
-#include "SFML/Base/Algorithm/Sort.hpp"
-#include "SFML/Base/AnkerlUnorderedDense.hpp"
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtin/Unreachable.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Fmt/FmtToString.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Floor.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/OverloadSet.hpp"
-#include "SFML/Base/Remainder.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Trait/IsConst.hpp"
-#include "SFML/Base/UniquePtr.hpp"
-#include "SFML/Base/Variant.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Algorithm/Find.hpp"
+#include "ZancleBase/Algorithm/Sort.hpp"
+#include "ZancleBase/AnkerlUnorderedDense.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Builtin/Unreachable.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Fmt/FmtToString.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Floor.hpp"
+#include "ZancleBase/Math/Fmod.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/OverloadSet.hpp"
+#include "ZancleBase/Remainder.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Trait/IsConst.hpp"
+#include "ZancleBase/UniquePtr.hpp"
+#include "ZancleBase/Variant.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
 //////////////////////////////////////////////////////////////
-constexpr sf::base::Array<sf::base::StringView, 7>
+constexpr zb::Array<zb::StringView, 7>
     glyphRows{"ABCDEFGHIJKLM",
               "NOPQRSTUVWXYZ",
               "abcdefghijklm",
@@ -129,8 +129,8 @@ constexpr sf::base::Array<sf::base::StringView, 7>
 {
     tsurv::BitmapFont result;
 
-    for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
-        for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+    for (zb::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+        for (zb::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
         {
             const char c = glyphRows[iY][iX];
             result.addGlyph(c, {iX * 6u, iY * 10u}, {6u, 10u});
@@ -145,11 +145,11 @@ constexpr sf::base::Array<sf::base::StringView, 7>
 {
     tsurv::BitmapFont result;
 
-    sf::base::SizeT stepX = 15;
-    sf::base::SizeT stepY = 17;
+    zb::SizeT stepX = 15;
+    zb::SizeT stepY = 17;
 
-    for (sf::base::SizeT iY = 0; iY < glyphRows.size(); ++iY)
-        for (sf::base::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+    for (zb::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+        for (zb::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
         {
             const char c = glyphRows[iY][iX];
             result.addGlyph(c, {4 + (stepX * iX), 7 + (stepY * iY)}, {6u, 8u});
@@ -236,8 +236,8 @@ namespace tsurv
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] CircleParticleData
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
+    za::Vec2f position;
+    za::Vec2f velocity;
 
     float scale;
     float scaleDecay;
@@ -250,7 +250,7 @@ struct [[nodiscard]] CircleParticleData
     float rotation;
     float torque;
 
-    sf::Color color;
+    za::Color color;
 
     float        radius;
     unsigned int pointCount;
@@ -260,9 +260,9 @@ struct [[nodiscard]] CircleParticleData
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SpriteParticleData // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f position;
-    sf::Vec2f origin;
-    sf::Vec2f velocity;
+    za::Vec2f position;
+    za::Vec2f origin;
+    za::Vec2f velocity;
 
     float scale;
     float scaleDecay;
@@ -275,15 +275,15 @@ struct [[nodiscard]] SpriteParticleData // NOLINT(cppcoreguidelines-pro-type-mem
     float rotation;
     float torque;
 
-    sf::Rect2f textureRect;
+    za::Rect2f textureRect;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] EarnedXPParticle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::Vec2f  startPosition;
-    sf::Vec2f  targetPosition;
+    za::Vec2f  startPosition;
+    za::Vec2f  targetPosition;
     PaletteIdx paletteIdx;
 
     float delay;
@@ -315,7 +315,7 @@ struct [[nodiscard]] QuakeSinEffect
     float speed         = 0.f;
 
     ////////////////////////////////////////////////////////////
-    void update(const sf::Time deltaTime)
+    void update(const za::Time deltaTime)
     {
         if (timeRemaining <= 0.f)
             return;
@@ -332,7 +332,7 @@ struct [[nodiscard]] QuakeSinEffect
     ////////////////////////////////////////////////////////////
     void start(const float newMagnitude, const float newSpeed)
     {
-        magnitude = sf::base::max(magnitude, newMagnitude);
+        magnitude = zb::max(magnitude, newMagnitude);
         speed     = newSpeed;
 
         timeRemaining = 1.f;
@@ -341,7 +341,7 @@ struct [[nodiscard]] QuakeSinEffect
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getValue() const
     {
-        return sf::base::sin(timeRemaining * sf::base::pi) * magnitude;
+        return zb::sin(timeRemaining * zb::pi) * magnitude;
     }
 };
 
@@ -383,11 +383,11 @@ struct [[nodiscard]] Sounds
 ////////////////////////////////////////////////////////////
 struct EveryNCounter
 {
-    sf::base::SizeT requiredCount;
-    sf::base::SizeT currentCount = 0u;
+    zb::SizeT requiredCount;
+    zb::SizeT currentCount = 0u;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool incrementAndCheck(const sf::base::SizeT n)
+    [[nodiscard]] bool incrementAndCheck(const zb::SizeT n)
     {
         currentCount += n;
 
@@ -403,7 +403,7 @@ struct EveryNCounter
 ////////////////////////////////////////////////////////////
 struct TriggerTetraminoPlaced
 {
-    sf::base::Optional<TetraminoType> requiredType;
+    zb::Optional<TetraminoType> requiredType;
 
     EveryNCounter counter;
 };
@@ -454,7 +454,7 @@ struct TriggerPowerUpCollected
 
 
 ////////////////////////////////////////////////////////////
-using DynamicPerkTrigger = sf::base::Variant< //
+using DynamicPerkTrigger = zb::Variant< //
     TriggerTetraminoPlaced,
     TriggerLinesCleared,
     TriggerDrillHit,
@@ -467,13 +467,13 @@ using DynamicPerkTrigger = sf::base::Variant< //
 ////////////////////////////////////////////////////////////
 struct EffectGainXP
 {
-    sf::base::U64 amount;
+    zb::U64 amount;
     // TODO: effect spawn position
 };
 
 
 ////////////////////////////////////////////////////////////
-using DynamicPerkEffect = sf::base::Variant< //
+using DynamicPerkEffect = zb::Variant< //
     EffectGainXP>;
 
 
@@ -481,9 +481,9 @@ using DynamicPerkEffect = sf::base::Variant< //
 struct DynamicPerk
 {
     DynamicPerkTrigger                  trigger;
-    sf::base::Vector<DynamicPerkEffect> effects;
+    zb::Vector<DynamicPerkEffect> effects;
 
-    sf::base::Vector<DynamicPerkEffect> pendingEffects{};
+    zb::Vector<DynamicPerkEffect> pendingEffects{};
 
     ////////////////////////////////////////////////////////////
     void onTetraminoPlaced(const Tetramino& tetramino)
@@ -503,7 +503,7 @@ struct DynamicPerk
     }
 
     ////////////////////////////////////////////////////////////
-    void onLinesCleared(const sf::base::SizeT nLinesCleared)
+    void onLinesCleared(const zb::SizeT nLinesCleared)
     {
         auto* t = trigger.getIf<TriggerLinesCleared>();
 
@@ -559,7 +559,7 @@ struct DynamicPerk
     }
 
     ////////////////////////////////////////////////////////////
-    void onBlockDamaged([[maybe_unused]] const sf::Vec2uz position, [[maybe_unused]] Block& block)
+    void onBlockDamaged([[maybe_unused]] const za::Vec2uz position, [[maybe_unused]] Block& block)
     {
         auto* t = trigger.getIf<TriggerBlockDamaged>();
 
@@ -595,7 +595,7 @@ struct DynamicPerk
 
 
 ////////////////////////////////////////////////////////////
-enum class TSpinType : sf::base::U8
+enum class TSpinType : zb::U8
 {
     None,
     Mini,
@@ -619,15 +619,15 @@ enum class TSpinType : sf::base::U8
         return TSpinType::None;
 
     // T-piece center is always at local position (1,1) in the 4x4 shape matrix
-    const sf::Vec2i center = tetramino.position + sf::Vec2i{1, 1};
+    const za::Vec2i center = tetramino.position + za::Vec2i{1, 1};
 
-    const auto isOccupied = [&](const sf::Vec2i pos) -> bool { return !grid.isInBounds(pos) || grid.at(pos).hasValue(); };
+    const auto isOccupied = [&](const za::Vec2i pos) -> bool { return !grid.isInBounds(pos) || grid.at(pos).hasValue(); };
 
     int occupiedCorners = 0;
-    occupiedCorners += isOccupied(center + sf::Vec2i{-1, -1}) ? 1 : 0;
-    occupiedCorners += isOccupied(center + sf::Vec2i{+1, -1}) ? 1 : 0;
-    occupiedCorners += isOccupied(center + sf::Vec2i{-1, +1}) ? 1 : 0;
-    occupiedCorners += isOccupied(center + sf::Vec2i{+1, +1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + za::Vec2i{-1, -1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + za::Vec2i{+1, -1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + za::Vec2i{-1, +1}) ? 1 : 0;
+    occupiedCorners += isOccupied(center + za::Vec2i{+1, +1}) ? 1 : 0;
 
     if (occupiedCorners >= 3)
         return TSpinType::Full;
@@ -644,7 +644,7 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+    za::RenderWindow m_window = makeDPIScaledRenderWindow(
                                     {
                                         .size           = resolution.toVec2u(),
                                         .title          = "Tetris Survivors",
@@ -655,50 +655,50 @@ private:
                                     .value();
 
     ////////////////////////////////////////////////////////////
-    sf::View m_worldView  = sf::View::fromScreenSize(resolution);
-    sf::View m_windowView = m_window.computeView();
+    za::View m_worldView  = za::View::fromScreenSize(resolution);
+    za::View m_windowView = m_window.computeView();
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shader{[]
+    za::Shader m_shader{[]
     {
-        auto result = sf::Shader::loadFromFile({
+        auto result = za::Shader::loadFromFile({
                                                    .vertexPath   = "resources/shader.vert",
                                                    .fragmentPath = "resources/shader.frag",
                                                })
                           .value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shaderCRT{[]
+    za::Shader m_shaderCRT{[]
     {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/crt.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto result = za::Shader::loadFromFile({.fragmentPath = "resources/crt.frag"}).value();
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
     bool m_useCRTShader = true;
 
-    sf::Shader::UniformLocation m_ulInputSize        = m_shaderCRT.getUniformLocation("u_inputSize").value();
-    sf::Shader::UniformLocation m_ulTime             = m_shaderCRT.getUniformLocation("u_time").value();
-    sf::Shader::UniformLocation m_ulCurvature        = m_shaderCRT.getUniformLocation("u_curvature").value();
-    sf::Shader::UniformLocation m_ulVignetteStrength = m_shaderCRT.getUniformLocation("u_vignetteStrength").value();
-    sf::Shader::UniformLocation m_ulVignetteInnerRadius = m_shaderCRT.getUniformLocation("u_vignetteInnerRadius").value();
-    sf::Shader::UniformLocation m_ulVignetteOuterRadius = m_shaderCRT.getUniformLocation("u_vignetteOuterRadius").value();
-    sf::Shader::UniformLocation m_ulScanlineStrength = m_shaderCRT.getUniformLocation("u_scanlineStrength").value();
-    sf::Shader::UniformLocation
+    za::Shader::UniformLocation m_ulInputSize        = m_shaderCRT.getUniformLocation("u_inputSize").value();
+    za::Shader::UniformLocation m_ulTime             = m_shaderCRT.getUniformLocation("u_time").value();
+    za::Shader::UniformLocation m_ulCurvature        = m_shaderCRT.getUniformLocation("u_curvature").value();
+    za::Shader::UniformLocation m_ulVignetteStrength = m_shaderCRT.getUniformLocation("u_vignetteStrength").value();
+    za::Shader::UniformLocation m_ulVignetteInnerRadius = m_shaderCRT.getUniformLocation("u_vignetteInnerRadius").value();
+    za::Shader::UniformLocation m_ulVignetteOuterRadius = m_shaderCRT.getUniformLocation("u_vignetteOuterRadius").value();
+    za::Shader::UniformLocation m_ulScanlineStrength = m_shaderCRT.getUniformLocation("u_scanlineStrength").value();
+    za::Shader::UniformLocation
         m_ulScanlineBrightnessModulation = m_shaderCRT.getUniformLocation("u_scanlineBrightnessModulation").value();
-    sf::Shader::UniformLocation m_ulScanlineScrollSpeed = m_shaderCRT.getUniformLocation("u_scanlineScrollSpeed").value();
-    sf::Shader::UniformLocation m_ulScanlineThickness = m_shaderCRT.getUniformLocation("u_scanlineThickness").value();
-    sf::Shader::UniformLocation m_ulScanlineHeight    = m_shaderCRT.getUniformLocation("u_scanlineHeight").value();
-    sf::Shader::UniformLocation m_ulNoiseStrength     = m_shaderCRT.getUniformLocation("u_noiseStrength").value();
-    sf::Shader::UniformLocation m_ulMaskStrength      = m_shaderCRT.getUniformLocation("u_maskStrength").value();
-    sf::Shader::UniformLocation m_ulMaskScale         = m_shaderCRT.getUniformLocation("u_maskScale").value();
-    sf::Shader::UniformLocation m_ulBloomStrength     = m_shaderCRT.getUniformLocation("u_bloomStrength").value();
-    sf::Shader::UniformLocation m_ulInputGamma        = m_shaderCRT.getUniformLocation("u_inputGamma").value();
-    sf::Shader::UniformLocation m_ulOutputGamma       = m_shaderCRT.getUniformLocation("u_outputGamma").value();
-    sf::Shader::UniformLocation m_ulSaturation        = m_shaderCRT.getUniformLocation("u_saturation").value();
+    za::Shader::UniformLocation m_ulScanlineScrollSpeed = m_shaderCRT.getUniformLocation("u_scanlineScrollSpeed").value();
+    za::Shader::UniformLocation m_ulScanlineThickness = m_shaderCRT.getUniformLocation("u_scanlineThickness").value();
+    za::Shader::UniformLocation m_ulScanlineHeight    = m_shaderCRT.getUniformLocation("u_scanlineHeight").value();
+    za::Shader::UniformLocation m_ulNoiseStrength     = m_shaderCRT.getUniformLocation("u_noiseStrength").value();
+    za::Shader::UniformLocation m_ulMaskStrength      = m_shaderCRT.getUniformLocation("u_maskStrength").value();
+    za::Shader::UniformLocation m_ulMaskScale         = m_shaderCRT.getUniformLocation("u_maskScale").value();
+    za::Shader::UniformLocation m_ulBloomStrength     = m_shaderCRT.getUniformLocation("u_bloomStrength").value();
+    za::Shader::UniformLocation m_ulInputGamma        = m_shaderCRT.getUniformLocation("u_inputGamma").value();
+    za::Shader::UniformLocation m_ulOutputGamma       = m_shaderCRT.getUniformLocation("u_outputGamma").value();
+    za::Shader::UniformLocation m_ulSaturation        = m_shaderCRT.getUniformLocation("u_saturation").value();
 
     float m_fUlCurvature                    = -0.015f;
     float m_fUlVignetteStrength             = 0.2f;
@@ -721,17 +721,17 @@ private:
 
     ////////////////////////////////////////////////////////////
     // Shader with post-processing effects
-    sf::Shader m_shaderPostProcess{[]
+    za::Shader m_shaderPostProcess{[]
     {
-        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/postprocess.frag"}).value();
-        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        auto result = za::Shader::loadFromFile({.fragmentPath = "resources/postprocess.frag"}).value();
+        result.setUniform(result.getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
         return result;
     }()};
 
-    sf::Shader::UniformLocation m_ulPPVibrance   = m_shaderPostProcess.getUniformLocation("u_vibrance").value();
-    sf::Shader::UniformLocation m_ulPPSaturation = m_shaderPostProcess.getUniformLocation("u_saturation").value();
-    sf::Shader::UniformLocation m_ulPPLightness  = m_shaderPostProcess.getUniformLocation("u_lightness").value();
-    sf::Shader::UniformLocation m_ulPPSharpness  = m_shaderPostProcess.getUniformLocation("u_sharpness").value();
+    za::Shader::UniformLocation m_ulPPVibrance   = m_shaderPostProcess.getUniformLocation("u_vibrance").value();
+    za::Shader::UniformLocation m_ulPPSaturation = m_shaderPostProcess.getUniformLocation("u_saturation").value();
+    za::Shader::UniformLocation m_ulPPLightness  = m_shaderPostProcess.getUniformLocation("u_lightness").value();
+    za::Shader::UniformLocation m_ulPPSharpness  = m_shaderPostProcess.getUniformLocation("u_sharpness").value();
 
     float m_fUlPPVibrance   = 0.1f;
     float m_fUlPPSaturation = 0.85f;
@@ -739,32 +739,32 @@ private:
     float m_fUlPPSharpness  = 0.1f;
 
     ////////////////////////////////////////////////////////////
-    sf::Font m_font      = sf::Font::openFromFile("resources/monogram.ttf").value();
-    sf::Font m_fontMago2 = sf::Font::openFromFile("resources/petty5.bdf").value();
-    sf::Font m_font3     = sf::Font::openFromFile("resources/ChiKareGo.ttf").value();
-    sf::Font m_font4     = sf::Font::openFromFile("resources/TinyUnicode.ttf").value();
+    za::Font m_font      = za::Font::openFromFile("resources/monogram.ttf").value();
+    za::Font m_fontMago2 = za::Font::openFromFile("resources/petty5.bdf").value();
+    za::Font m_font3     = za::Font::openFromFile("resources/ChiKareGo.ttf").value();
+    za::Font m_font4     = za::Font::openFromFile("resources/TinyUnicode.ttf").value();
 
     ////////////////////////////////////////////////////////////
-    sf::PlaybackDevice m_playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    za::PlaybackDevice m_playbackDevice{za::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     ////////////////////////////////////////////////////////////
     Sounds       m_sounds;
     SoundManager m_soundManager;
 
     ////////////////////////////////////////////////////////////
-    void playSound(const LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
+    void playSound(const LoadedSound& ls, const zb::SizeT maxOverlap = 255u)
     {
         (void)m_playbackDevice.applyListener({.volume = 0.5f});
         m_soundManager.playPooled(m_playbackDevice, ls, maxOverlap);
     }
 
     ////////////////////////////////////////////////////////////
-    sf::ImGuiContext m_imGuiContext;
+    za::ImGuiContext m_imGuiContext;
     ImFont* const    m_imguiFont{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/monogram.ttf", 16.f)};
     ImFont* const    m_imguiFontBig{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/BoldPixels.ttf", 16.f)};
 
     ////////////////////////////////////////////////////////////
-    sf::Clock m_tickClock;
+    za::Clock m_tickClock;
     float     m_timeAccumulator = 0.f;
     float     m_totalTime       = 0.f;
 
@@ -772,17 +772,17 @@ private:
     World m_world;
 
     ////////////////////////////////////////////////////////////
-    sf::Vec2f                             m_currentTetraminoVisualCenter;
+    za::Vec2f                             m_currentTetraminoVisualCenter;
     AnimationTimeline<AnimationCommandP0> m_animationTimelineP0;
     AnimationTimeline<AnimationCommandP1> m_animationTimelineP1;
     AnimationTimeline<AnimationCommandP2> m_animationTimelineP2;
-    sf::base::Vector<float>               m_rowYOffsets;
+    zb::Vector<float>               m_rowYOffsets;
 
     ////////////////////////////////////////////////////////////
     bool            m_inLevelUpScreen      = false;
-    sf::base::SizeT m_selectedPerk         = 0u;
+    zb::SizeT m_selectedPerk         = 0u;
     float           m_menuDelayProgress    = 0.f; // delay before accepting input in menus
-    sf::base::SizeT m_rerollsLeftThisLevel = 0u;
+    zb::SizeT m_rerollsLeftThisLevel = 0u;
 
     ////////////////////////////////////////////////////////////
     PerkChainLightning                  m_perkChainLightning;
@@ -811,7 +811,7 @@ private:
     PerkDiagonalLaserRightBounce        m_perkDiagonalLaserRightBounce;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<const Perk*> m_perks{
+    zb::Vector<const Perk*> m_perks{
         &m_perkChainLightning,
         &m_perkPeekNextTetraminos,
         &m_perkOnClearLightningStrike,
@@ -838,20 +838,20 @@ private:
         &m_perkDiagonalLaserRightBounce,
     };
 
-    sf::base::Vector<sf::base::SizeT> m_perkIndicesSelectedThisLevel;
+    zb::Vector<zb::SizeT> m_perkIndicesSelectedThisLevel;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<DynamicPerk> m_dynamicPerks; // TODO: to world
+    zb::Vector<DynamicPerk> m_dynamicPerks; // TODO: to world
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<LightningBolt> m_lightningBolts;
+    zb::Vector<LightningBolt> m_lightningBolts;
 
     ////////////////////////////////////////////////////////////
     QuakeSinEffect m_quakeSinEffectLineClear;
     QuakeSinEffect m_quakeSinEffectHardDrop;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<LaserBeam> m_optLaserBeam;
+    zb::Optional<LaserBeam> m_optLaserBeam;
 
     ////////////////////////////////////////////////////////////
     // Screen shake effect state
@@ -868,38 +868,38 @@ private:
     ankerl::unordered_dense::map<BlockId, BlockEffect> m_blockEffects;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<EarnedXPParticle>   m_earnedXPParticles;
-    sf::base::Vector<CircleParticleData> m_hueColorCircleShapeParticles;
-    sf::base::Vector<CircleParticleData> m_fixedColorCircleShapeParticles;
-    sf::base::Vector<SpriteParticleData> m_fixedColorSpriteParticles;
+    zb::Vector<EarnedXPParticle>   m_earnedXPParticles;
+    zb::Vector<CircleParticleData> m_hueColorCircleShapeParticles;
+    zb::Vector<CircleParticleData> m_fixedColorCircleShapeParticles;
+    zb::Vector<SpriteParticleData> m_fixedColorSpriteParticles;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rngFast{static_cast<RNGFast::SeedType>(
-        sf::Clock::now().asMicroseconds())}; // very fast, low-quality, but good enough for VFXs
+        za::Clock::now().asMicroseconds())}; // very fast, low-quality, but good enough for VFXs
 
     //////////////////////////////////////////////////////////////
-    sf::TextureAtlas m_textureAtlas{sf::Texture::create({512u, 512u}, {.smooth = false}).value()};
+    za::TextureAtlas m_textureAtlas{za::Texture::create({512u, 512u}, {.smooth = false}).value()};
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f m_txrWhiteDotTrue   = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
-    const sf::Rect2f m_txrWhiteDot       = {{0.f, 0.f}, {1.f, 1.f}};
-    const sf::Rect2f m_txrBlock0         = addImgResourceToAtlas("block0.png");
-    const sf::Rect2f m_txrBlock1         = addImgResourceToAtlas("block1.png");
-    const sf::Rect2f m_txrBlock2         = addImgResourceToAtlas("block2.png");
-    const sf::Rect2f m_txrBlock3         = addImgResourceToAtlas("block3.png");
-    const sf::Rect2f m_txrBlock4         = addImgResourceToAtlas("block4.png");
-    const sf::Rect2f m_txrBlock5         = addImgResourceToAtlas("block5.png");
-    const sf::Rect2f m_txrBlock6         = addImgResourceToAtlas("block6.png");
-    const sf::Rect2f m_txrDivider        = addImgResourceToAtlas("divider.png");
-    const sf::Rect2f m_txrDrill          = addImgResourceToAtlas("drill.png");
-    const sf::Rect2f m_txrRedDot         = addImgResourceToAtlas("reddot.png");
-    const sf::Rect2f m_txrEmitter        = addImgResourceToAtlas("emitter.png");
-    const sf::Rect2f m_txrPowerupXP      = addImgResourceToAtlas("powerupxp.png");
-    const sf::Rect2f m_txrPowerupBomb    = addImgResourceToAtlas("powerupbomb.png");
-    const sf::Rect2f m_txrBFMinogram6x10 = addImgResourceToAtlas("minogram_6x10.png");
-    const sf::Rect2f m_txrBFTiny5        = addImgResourceToAtlas("tiny5.png");
-    const sf::Rect2f m_txrBlockHalf0     = addImgResourceToAtlas("blockhalf0.png");
-    const sf::Rect2f m_txrBlockHalf1     = addImgResourceToAtlas("blockhalf1.png");
+    const za::Rect2f m_txrWhiteDotTrue   = m_textureAtlas.add(za::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+    const za::Rect2f m_txrWhiteDot       = {{0.f, 0.f}, {1.f, 1.f}};
+    const za::Rect2f m_txrBlock0         = addImgResourceToAtlas("block0.png");
+    const za::Rect2f m_txrBlock1         = addImgResourceToAtlas("block1.png");
+    const za::Rect2f m_txrBlock2         = addImgResourceToAtlas("block2.png");
+    const za::Rect2f m_txrBlock3         = addImgResourceToAtlas("block3.png");
+    const za::Rect2f m_txrBlock4         = addImgResourceToAtlas("block4.png");
+    const za::Rect2f m_txrBlock5         = addImgResourceToAtlas("block5.png");
+    const za::Rect2f m_txrBlock6         = addImgResourceToAtlas("block6.png");
+    const za::Rect2f m_txrDivider        = addImgResourceToAtlas("divider.png");
+    const za::Rect2f m_txrDrill          = addImgResourceToAtlas("drill.png");
+    const za::Rect2f m_txrRedDot         = addImgResourceToAtlas("reddot.png");
+    const za::Rect2f m_txrEmitter        = addImgResourceToAtlas("emitter.png");
+    const za::Rect2f m_txrPowerupXP      = addImgResourceToAtlas("powerupxp.png");
+    const za::Rect2f m_txrPowerupBomb    = addImgResourceToAtlas("powerupbomb.png");
+    const za::Rect2f m_txrBFMinogram6x10 = addImgResourceToAtlas("minogram_6x10.png");
+    const za::Rect2f m_txrBFTiny5        = addImgResourceToAtlas("tiny5.png");
+    const za::Rect2f m_txrBlockHalf0     = addImgResourceToAtlas("blockhalf0.png");
+    const za::Rect2f m_txrBlockHalf1     = addImgResourceToAtlas("blockhalf1.png");
 
     //////////////////////////////////////////////////////////////
     BitmapFont m_bitmapFontMinogram{loadMinogramData()};
@@ -907,25 +907,25 @@ private:
 
 
     //////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtGame{sf::RenderTexture::create(resolution.toVec2u(), {.smooth = false}).value()};
-    sf::RenderTexture m_rtPostProcess{sf::RenderTexture::create(resolution.toVec2u(), {.smooth = true}).value()};
+    za::RenderTexture m_rtGame{za::RenderTexture::create(resolution.toVec2u(), {.smooth = false}).value()};
+    za::RenderTexture m_rtPostProcess{za::RenderTexture::create(resolution.toVec2u(), {.smooth = true}).value()};
 
 
     //////////////////////////////////////////////////////////////
-    sf::base::Vector<sf::Vertex>    m_textVerticesBuffer;
-    sf::base::Vector<sf::IndexType> m_textIndicesBuffer;
+    zb::Vector<za::Vertex>    m_textVerticesBuffer;
+    zb::Vector<za::IndexType> m_textIndicesBuffer;
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr sf::CircleShapeData particleToCircleData(const CircleParticleData& particle)
+    [[nodiscard, gnu::always_inline]] inline constexpr za::CircleShapeData particleToCircleData(const CircleParticleData& particle)
     {
-        SFML_BASE_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
-        const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+        ZB_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
+        const auto opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
 
         return {
             .position    = particle.position.componentWiseFloor(),
             .scale       = {particle.scale, particle.scale},
-            .rotation    = sf::radians(particle.rotation),
+            .rotation    = za::radians(particle.rotation),
             .textureRect = m_txrRedDot, // No texture
             .fillColor   = particle.color.withAlpha(opacityAsAlpha),
             .radius      = particle.radius,
@@ -935,33 +935,33 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr sf::Sprite particleToSpriteData(const SpriteParticleData& particle)
+    [[nodiscard, gnu::always_inline]] inline constexpr za::Sprite particleToSpriteData(const SpriteParticleData& particle)
     {
-        SFML_BASE_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
-        const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+        ZB_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
+        const auto opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
 
         return {
             .position    = particle.position.componentWiseFloor(),
             .scale       = {particle.scale, particle.scale},
             .origin      = particle.origin.componentWiseFloor(),
-            .rotation    = sf::radians(particle.rotation),
+            .rotation    = za::radians(particle.rotation),
             .textureRect = particle.textureRect,
-            .color       = sf::Color::whiteWithAlpha(opacityAsAlpha),
+            .color       = za::Color::whiteWithAlpha(opacityAsAlpha),
         };
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f addImgResourceToAtlas(const sf::Path& path)
+    [[nodiscard]] za::Rect2f addImgResourceToAtlas(const za::Path& path)
     {
-        return m_textureAtlas.add(sf::Image::loadFromFile("resources" / path).value(), /* padding */ {2u, 2u}).value();
+        return m_textureAtlas.add(za::Image::loadFromFile("resources" / path).value(), /* padding */ {2u, 2u}).value();
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] int calculateGhostY(const Tetramino& tetramino) const
     {
-        sf::base::Optional<Tetramino> finalHardDropState;
+        zb::Optional<Tetramino> finalHardDropState;
 
         if (const auto* squish = m_animationTimelineP1.getIfPlaying<AnimSquish>())
             finalHardDropState.emplace(squish->tetramino);
@@ -970,7 +970,7 @@ private:
 
         while (true)
         {
-            const sf::Vec2i nextGhostPos = {tetramino.position.x, ghostY + 1};
+            const za::Vec2i nextGhostPos = {tetramino.position.x, ghostY + 1};
 
             if (!m_world.blockGrid.isValidMove(tetramino.shape, nextGhostPos))
                 break;
@@ -987,51 +987,51 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    static inline constexpr sf::Vec2f drawBlockSize{11.f, 11.f};
-    static inline constexpr sf::Vec2f drawOffset{drawBlockSize.x + 3.f, drawBlockSize.y - drawBlockSize.y * gridGraceY + 3.f};
+    static inline constexpr za::Vec2f drawBlockSize{11.f, 11.f};
+    static inline constexpr za::Vec2f drawOffset{drawBlockSize.x + 3.f, drawBlockSize.y - drawBlockSize.y * gridGraceY + 3.f};
 
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Vec2f toDrawCoordinates(const sf::Vec2<T> position) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] za::Vec2f toDrawCoordinates(const za::Vec2<T> position) const noexcept
     {
         return (drawOffset + position.toVec2f().componentWiseMul(drawBlockSize)).componentWiseFloor();
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Vec2i toGridCoordinates(const sf::Vec2f drawPosition) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] za::Vec2i toGridCoordinates(const za::Vec2f drawPosition) const noexcept
     {
         return (drawPosition - drawOffset).componentWiseDiv(drawBlockSize).toVec2i();
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Color hueColorFromPaletteIdxRotated(
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] za::Color hueColorFromPaletteIdxRotated(
         const PaletteIdx   paletteIdx,
-        const sf::base::U8 alpha,
+        const zb::U8 alpha,
         const float        degrees)
     {
-        const auto hue = sf::base::positiveRemainder(blockPalette[paletteIdx].toHSL().hue + degrees, 360.f);
+        const auto hue = zb::positiveRemainder(blockPalette[paletteIdx].toHSL().hue + degrees, 360.f);
         return hueColor(hue, 255u).withAlpha(alpha);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] sf::Color hueColorFromPaletteIdx(const PaletteIdx paletteIdx,
-                                                                                                 const sf::base::U8 alpha)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] za::Color hueColorFromPaletteIdx(const PaletteIdx paletteIdx,
+                                                                                                 const zb::U8 alpha)
     {
         return hueColorFromPaletteIdxRotated(paletteIdx, alpha, 0.f);
     }
 
 
     ////////////////////////////////////////////////////////////
-    sf::Rect2f drawBlock(const Block& block, const sf::Vec2f position, const DrawBlockOptions& options = {})
+    za::Rect2f drawBlock(const Block& block, const za::Vec2f position, const DrawBlockOptions& options = {})
     {
         const float timerProgress = block.getTimerProgress();
 
-        sf::Vec2f mins{9999.f, 9999.f};
-        sf::Vec2f maxs{-9999.f, -9999.f};
+        za::Vec2f mins{9999.f, 9999.f};
+        za::Vec2f maxs{-9999.f, -9999.f};
 
         float yOffset = 0.f;
 
@@ -1043,9 +1043,9 @@ private:
 
             const auto gridPos = toGridCoordinates(position);
 
-            if (gridPos.y >= 0 && static_cast<sf::base::SizeT>(gridPos.y) < m_rowYOffsets.size())
+            if (gridPos.y >= 0 && static_cast<zb::SizeT>(gridPos.y) < m_rowYOffsets.size())
             {
-                const float initialOffset = m_rowYOffsets[static_cast<sf::base::SizeT>(gridPos.y)];
+                const float initialOffset = m_rowYOffsets[static_cast<zb::SizeT>(gridPos.y)];
                 yOffset += initialOffset * (1.f - easeInBack(progress));
             }
         }
@@ -1055,7 +1055,7 @@ private:
             yOffset += -(m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue());
         }
 
-        const auto alpha = static_cast<sf::base::U8>(options.opacity * 255.f);
+        const auto alpha = static_cast<zb::U8>(options.opacity * 255.f);
 
         float finalSquishMult = 1.f + options.squishMult;
         if (const auto* it = m_blockEffects.find(block.blockId); it != m_blockEffects.end())
@@ -1066,15 +1066,15 @@ private:
             finalSquishMult += easeInOutSine(bounce(progress)) * 0.5f;
         }
 
-        const sf::DrawTextureSettings commonDrawParams{
+        const za::DrawTextureSettings commonDrawParams{
             .position = position.addY(yOffset).componentWiseFloor().addX(1.f).addY(1.f),
-            .scale    = sf::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
+            .scale    = za::Vec2f{finalSquishMult, finalSquishMult} * options.scale,
             .origin   = (drawBlockSize / 2.f).componentWiseFloor(),
             .color    = hueColorFromPaletteIdx(block.paletteIdx, alpha),
         };
 
         {
-            const auto transform = sf::Transform::fromPositionScaleOriginRotation(commonDrawParams.position,
+            const auto transform = za::Transform::fromPositionScaleOriginRotation(commonDrawParams.position,
                                                                                   commonDrawParams.scale,
                                                                                   commonDrawParams.origin,
                                                                                   commonDrawParams.rotation);
@@ -1101,7 +1101,7 @@ private:
                           .position    = commonDrawParams.position + shake,
                           .scale       = commonDrawParams.scale,
                           .origin      = commonDrawParams.origin,
-                          .rotation    = sf::degrees(options.rotation),
+                          .rotation    = za::degrees(options.rotation),
                           .textureRect = txr,
                           .color       = commonDrawParams.color,
                       },
@@ -1141,20 +1141,20 @@ private:
 
         if (block.health > 1u && options.drawText)
         {
-            sf::Text text{m_fontMago2,
+            za::Text text{m_fontMago2,
                           {
                               .origin        = (drawBlockSize / 2.f).componentWiseFloor(),
-                              .string        = sf::base::toString(static_cast<unsigned int>(block.health - 1u)),
+                              .string        = zb::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
-                              .fillColor     = sf::Color::blackWithAlpha(alpha),
+                              .fillColor     = za::Color::blackWithAlpha(alpha),
                           }};
 
-            text.setGlobalCenter((position.addY(yOffset) + sf::Vec2f{2.f, 3.f}).componentWiseFloor());
+            text.setGlobalCenter((position.addY(yOffset) + za::Vec2f{2.f, 3.f}).componentWiseFloor());
             m_rtGame.draw(text, {.view = m_worldView});
 
-            text.setFillColor(sf::Color::whiteWithAlpha(alpha));
+            text.setFillColor(za::Color::whiteWithAlpha(alpha));
 
-            text.setGlobalCenter(position.addY(yOffset).componentWiseFloor() + sf::Vec2f{2.f, 2.f});
+            text.setGlobalCenter(position.addY(yOffset).componentWiseFloor() + za::Vec2f{2.f, 2.f});
             m_rtGame.draw(text, {.view = m_worldView});
         }
 
@@ -1162,21 +1162,21 @@ private:
         {
             const bool timerDirection = block.powerup == BlockPowerup::None;
 
-            const float progress0 = sf::base::clamp(timerProgress * 4.f, 0.f, 1.f);
-            const float progress1 = sf::base::clamp((timerProgress - 0.25f) * 4.f, 0.f, 1.f);
-            const float progress2 = sf::base::clamp((timerProgress - 0.5f) * 4.f, 0.f, 1.f);
-            const float progress3 = sf::base::clamp((timerProgress - 0.75f) * 4.f, 0.f, 1.f);
+            const float progress0 = zb::clamp(timerProgress * 4.f, 0.f, 1.f);
+            const float progress1 = zb::clamp((timerProgress - 0.25f) * 4.f, 0.f, 1.f);
+            const float progress2 = zb::clamp((timerProgress - 0.5f) * 4.f, 0.f, 1.f);
+            const float progress3 = zb::clamp((timerProgress - 0.75f) * 4.f, 0.f, 1.f);
 
             const float p0 = timerDirection ? progress0 : (1.f - progress3);
             const float p1 = timerDirection ? progress1 : (1.f - progress2);
             const float p2 = timerDirection ? progress2 : (1.f - progress1);
             const float p3 = timerDirection ? progress3 : (1.f - progress0);
 
-            sf::RectangleShapeData timerLine{
+            za::RectangleShapeData timerLine{
                 .scale       = commonDrawParams.scale,
                 .origin      = commonDrawParams.origin,
                 .textureRect = m_txrWhiteDot,
-                .fillColor   = sf::Color::White,
+                .fillColor   = za::Color::White,
             };
 
             const auto drawTimerLines = [&](const float embed)
@@ -1185,26 +1185,26 @@ private:
                     {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
                 // top line
-                timerLine.position = commonDrawParams.position + sf::Vec2f{embed, embed};
-                timerLine.rotation = sf::degrees(0.f);
+                timerLine.position = commonDrawParams.position + za::Vec2f{embed, embed};
+                timerLine.rotation = za::degrees(0.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p0, 1.f};
                 drawCtx.draw(timerLine);
 
                 // right line
-                timerLine.position = commonDrawParams.position + sf::Vec2f{drawBlockSize.x - embed - 1.f, embed};
-                timerLine.rotation = sf::degrees(0.f);
+                timerLine.position = commonDrawParams.position + za::Vec2f{drawBlockSize.x - embed - 1.f, embed};
+                timerLine.rotation = za::degrees(0.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p1};
                 drawCtx.draw(timerLine);
 
                 // bottom line
-                timerLine.position = commonDrawParams.position + sf::Vec2f{1.f - embed, 1.f - embed};
-                timerLine.rotation = sf::degrees(180.f);
+                timerLine.position = commonDrawParams.position + za::Vec2f{1.f - embed, 1.f - embed};
+                timerLine.rotation = za::degrees(180.f);
                 timerLine.size     = {(drawBlockSize.x - embed * 2.f) * p2, 1.f};
                 drawCtx.draw(timerLine);
 
                 // left line
-                timerLine.position = commonDrawParams.position + sf::Vec2f{-drawBlockSize.x + embed + 2.f, 1.f - embed};
-                timerLine.rotation = sf::degrees(180.f);
+                timerLine.position = commonDrawParams.position + za::Vec2f{-drawBlockSize.x + embed + 2.f, 1.f - embed};
+                timerLine.rotation = za::degrees(180.f);
                 timerLine.size     = {1.f, (drawBlockSize.y - embed * 2.f) * p3};
                 drawCtx.draw(timerLine);
             };
@@ -1213,16 +1213,16 @@ private:
             {
                 timerLine.textureRect = m_txrWhiteDot;
 
-                timerLine.fillColor = sf::Color::White;
+                timerLine.fillColor = za::Color::White;
                 drawTimerLines(0.f);
 
-                timerLine.fillColor = sf::Color::DarkGray;
+                timerLine.fillColor = za::Color::DarkGray;
                 drawTimerLines(1.f);
             }
             else
             {
                 timerLine.textureRect = m_txrRedDot;
-                timerLine.fillColor   = useDamagedTexture ? sf::Color::White
+                timerLine.fillColor   = useDamagedTexture ? za::Color::White
                                                           : hueColorFromPaletteIdxRotated(block.paletteIdx, 255u, 90.f);
 
                 drawTimerLines(0.f);
@@ -1234,39 +1234,39 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    sf::Rect2f drawTetramino(const BlockMatrix& shape, const sf::Vec2f centerPosition, const DrawBlockOptions& options = {})
+    za::Rect2f drawTetramino(const BlockMatrix& shape, const za::Vec2f centerPosition, const DrawBlockOptions& options = {})
     {
-        sf::Vec2f mins{9999.f, 9999.f};
-        sf::Vec2f maxs{-9999.f, -9999.f};
+        za::Vec2f mins{9999.f, 9999.f};
+        za::Vec2f maxs{-9999.f, -9999.f};
 
         const float     scale    = options.scale;
         constexpr float rotation = 0.f;
 
         // 1. Define the pivot point in the tetramino's local, unscaled coordinate space.
         // This is the center of the 4x4 grid.
-        const sf::Vec2f localPivot = ((drawBlockSize * static_cast<float>(shapeDimension)) / 2.f).componentWiseFloor();
+        const za::Vec2f localPivot = ((drawBlockSize * static_cast<float>(shapeDimension)) / 2.f).componentWiseFloor();
 
-        for (sf::base::SizeT y = 0u; y < shapeDimension; ++y)
-            for (sf::base::SizeT x = 0u; x < shapeDimension; ++x)
+        for (zb::SizeT y = 0u; y < shapeDimension; ++y)
+            for (zb::SizeT x = 0u; x < shapeDimension; ++x)
             {
-                const sf::base::Optional<Block>& optBlock = shape.at(x, y);
+                const zb::Optional<Block>& optBlock = shape.at(x, y);
 
                 if (!optBlock.hasValue())
                     continue;
 
                 // 2. Calculate this block's local center position, relative to the top-left corner.
-                const sf::Vec2f localBlockCenter = sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize) +
+                const za::Vec2f localBlockCenter = za::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize) +
                                                    (drawBlockSize / 2.f).componentWiseFloor();
 
                 // 3. Get the block's position vector relative to the central pivot.
-                sf::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
+                za::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
 
                 // 4. Scale and rotate this relative vector.
                 positionRelativeToPivot = positionRelativeToPivot.componentWiseMul({scale, scale});
-                positionRelativeToPivot = positionRelativeToPivot.rotatedBy(sf::degrees(rotation));
+                positionRelativeToPivot = positionRelativeToPivot.rotatedBy(za::degrees(rotation));
 
                 // 5. The final screen position is the tetramino's center plus the transformed relative vector.
-                const sf::Vec2f finalDrawPosition = (centerPosition + positionRelativeToPivot).componentWiseFloor();
+                const za::Vec2f finalDrawPosition = (centerPosition + positionRelativeToPivot).componentWiseFloor();
 
                 // 6. Call drawBlock, passing all the necessary transform properties.
                 const auto [pos,
@@ -1283,10 +1283,10 @@ private:
                                                   .drawTimer        = options.drawTimer,
                                               });
 
-                mins.x = sf::base::min(mins.x, pos.x);
-                mins.y = sf::base::min(mins.y, pos.y);
-                maxs.x = sf::base::max(maxs.x, pos.x + size.x);
-                maxs.y = sf::base::max(maxs.y, pos.y + size.y);
+                mins.x = zb::min(mins.x, pos.x);
+                mins.y = zb::min(mins.y, pos.y);
+                maxs.x = zb::max(maxs.x, pos.x + size.x);
+                maxs.y = zb::max(maxs.y, pos.y + size.y);
             }
 
         return {mins, maxs - mins};
@@ -1294,7 +1294,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void moveTetramino(Tetramino& tetramino, const sf::Vec2i delta)
+    void moveTetramino(Tetramino& tetramino, const za::Vec2i delta)
     {
         const auto newPosition = tetramino.position + delta;
 
@@ -1311,7 +1311,7 @@ private:
     {
         const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1u : 3u)) % 4u);
 
-        const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<sf::base::SizeT>(tetramino.tetraminoType)][nextRotationState];
+        const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<zb::SizeT>(tetramino.tetraminoType)][nextRotationState];
 
         // Create the new stateful shape by re-mapping the blocks
         const BlockMatrix rotatedShape = mapBlocksToNewShape(tetramino, targetShapeTemplate);
@@ -1321,9 +1321,9 @@ private:
         int kickTableIndex = clockwise ? tetramino.rotationState : nextRotationState;
         kickTableIndex     = kickTableIndex * 2 + (clockwise ? 0 : 1);
 
-        for (const sf::Vec2i offset : kickTable[static_cast<sf::base::SizeT>(kickTableIndex)])
+        for (const za::Vec2i offset : kickTable[static_cast<zb::SizeT>(kickTableIndex)])
         {
-            const sf::Vec2i testPosition = tetramino.position + offset;
+            const za::Vec2i testPosition = tetramino.position + offset;
 
             if (!m_world.blockGrid.isValidMove(rotatedShape, testPosition))
                 continue;
@@ -1339,7 +1339,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void moveCurrentTetraminoBy(const sf::Vec2i delta)
+    void moveCurrentTetraminoBy(const za::Vec2i delta)
     {
         if (m_world.currentTetramino.hasValue())
             moveTetramino(*m_world.currentTetramino, delta);
@@ -1360,7 +1360,7 @@ private:
     ////////////////////////////////////////////////////////////
     void resetAndRedrawCurrentTetramino(const bool usedHold)
     {
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+        ZB_ASSERT(m_world.currentTetramino.hasValue());
 
         m_world.currentTetramino.reset();
         m_world.holdUsedThisTurn = usedHold;
@@ -1376,7 +1376,7 @@ private:
         if (m_world.holdUsedThisTurn)
             return;
 
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+        ZB_ASSERT(m_world.currentTetramino.hasValue());
 
         playSound(m_sounds.hold);
         resetAndRedrawCurrentTetramino(/* usedHold */ true);
@@ -1389,7 +1389,7 @@ private:
         if (m_world.holdUsedThisTurn)
             return;
 
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+        ZB_ASSERT(m_world.currentTetramino.hasValue());
 
         playSound(m_sounds.hold);
 
@@ -1399,7 +1399,7 @@ private:
         if (temp.hasValue())
         {
             m_world.currentTetramino = temp;
-            m_world.currentTetramino->position = sf::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i();
+            m_world.currentTetramino->position = za::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i();
 
             m_world.holdUsedThisTurn = true;
         }
@@ -1415,13 +1415,13 @@ private:
     {
         AnimClearLines::RowVector fullRows;
 
-        for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
+        for (zb::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
         {
             bool isFull = true;
 
-            for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+            for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
-                if (!m_world.blockGrid.at(sf::Vec2uz{x, y}).hasValue())
+                if (!m_world.blockGrid.at(za::Vec2uz{x, y}).hasValue())
                 {
                     isFull = false;
                     break;
@@ -1449,14 +1449,14 @@ private:
             return downmostBlocksXY;
         }
 
-        return findHorizontalBlocks(tetramino.shape, static_cast<sf::base::SizeT>(m_world.perkDrill[direction]->coverage));
+        return findHorizontalBlocks(tetramino.shape, static_cast<zb::SizeT>(m_world.perkDrill[direction]->coverage));
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] ShapeBlockPositionVector findLaserBlocks(const Tetramino& tetramino, const LaserDirection::Enum direction) const
     {
-        const auto outOfBoundsOrEmpty = [&](const sf::base::SizeT x, const sf::base::SizeT y) -> bool
+        const auto outOfBoundsOrEmpty = [&](const zb::SizeT x, const zb::SizeT y) -> bool
         { return !tetramino.shape.isInBounds(x, y) || !tetramino.shape.at(x, y).hasValue(); };
 
         ShapeBlockPositionVector result;
@@ -1504,33 +1504,33 @@ private:
     struct [[nodiscard]] BlockAndPosition // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         Block*     block;
-        sf::Vec2uz position;
+        za::Vec2uz position;
     };
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Vector<BlockAndPosition> findDrillTargetBlocks(const Tetramino&           tetramino,
+    [[nodiscard]] zb::Vector<BlockAndPosition> findDrillTargetBlocks(const Tetramino&           tetramino,
                                                                            const DrillDirection::Enum direction)
     {
-        sf::base::Vector<BlockAndPosition> result;
+        zb::Vector<BlockAndPosition> result;
 
         // 1. Guard Clause: Exit early if this drill perk isn't active.
         if (!m_world.perkDrill[direction].hasValue())
             return result;
 
         // 2. Get the number of blocks to penetrate.
-        auto nToHit = static_cast<sf::base::SizeT>(m_world.perkDrill[direction]->maxPenetration);
+        auto nToHit = static_cast<zb::SizeT>(m_world.perkDrill[direction]->maxPenetration);
         if (nToHit == 0)
             return result;
 
         // 3. Determine the iteration step based on direction.
-        const sf::Vec2i step = drillDirectionToVec2i(direction);
+        const za::Vec2i step = drillDirectionToVec2i(direction);
 
         // 4. Iterate over the source blocks on the current tetramino.
         for (const auto bPos : findDrillBlocks(tetramino, direction))
         {
             // 5. Start probing from the block adjacent to the source block.
-            sf::Vec2i probePos = tetramino.position + bPos.toVec2i() + step;
+            za::Vec2i probePos = tetramino.position + bPos.toVec2i() + step;
 
             // 6. Traverse the grid in the given direction until we hit a boundary.
             while (m_world.blockGrid.isInBounds(probePos))
@@ -1566,7 +1566,7 @@ private:
     ////////////////////////////////////////////////////////////
     void handleEffects()
     {
-        const auto visitor = sf::base::OverloadSet{
+        const auto visitor = zb::OverloadSet{
             [&](const EffectGainXP& e) { addXP(e.amount); },
         };
 
@@ -1590,14 +1590,14 @@ private:
 
         if (m_world.perkXPPerTetraminoPlaced > 0)
         {
-            addXP(static_cast<sf::base::U64>(m_world.perkXPPerTetraminoPlaced));
+            addXP(static_cast<zb::U64>(m_world.perkXPPerTetraminoPlaced));
 
             const auto downmostBlocksXY = findDownmostBlocks(tetramino.shape);
 
             for (const auto& bPos : downmostBlocksXY)
             {
-                const sf::base::Optional<Block>& optBlock = tetramino.shape.at(bPos.x, bPos.y);
-                SFML_BASE_ASSERT(optBlock.hasValue());
+                const zb::Optional<Block>& optBlock = tetramino.shape.at(bPos.x, bPos.y);
+                ZB_ASSERT(optBlock.hasValue());
 
                 spawnXPEarnedParticle(toDrawCoordinates(tetramino.position + bPos.toVec2i()), optBlock->paletteIdx);
             }
@@ -1634,7 +1634,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void handleTriggerLinesCleared(const sf::base::SizeT nLinesCleared)
+    void handleTriggerLinesCleared(const zb::SizeT nLinesCleared)
     {
         for (auto& dp : m_dynamicPerks)
             dp.onLinesCleared(nLinesCleared);
@@ -1644,7 +1644,7 @@ private:
         if (m_world.perkRndHitOnClear > 0)
         {
             m_animationTimelineP0.addInstantaneous(
-                AnimLightningStrike{.numStrikes = static_cast<sf::base::SizeT>(m_world.perkRndHitOnClear)});
+                AnimLightningStrike{.numStrikes = static_cast<zb::SizeT>(m_world.perkRndHitOnClear)});
         }
     }
 
@@ -1686,7 +1686,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void handleTriggerBlockDamaged(const sf::Vec2uz position, Block& block)
+    void handleTriggerBlockDamaged(const za::Vec2uz position, Block& block)
     {
         for (auto& dp : m_dynamicPerks)
             dp.onBlockDamaged(position, block);
@@ -1695,7 +1695,7 @@ private:
 
         if (m_world.perkXPPerBlockDamaged > 0)
         {
-            addXP(static_cast<sf::base::U64>(m_world.perkXPPerBlockDamaged));
+            addXP(static_cast<zb::U64>(m_world.perkXPPerBlockDamaged));
             playSound(m_sounds.exp);
 
             spawnXPEarnedParticle(toDrawCoordinates(position) + drawBlockSize / 2.f, block.paletteIdx);
@@ -1762,7 +1762,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void addXP(const sf::base::U64 amount)
+    void addXP(const zb::U64 amount)
     {
         m_world.currentXP += amount;
 
@@ -1796,16 +1796,16 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void handleMenuKeyPressedEvent(const sf::Event::KeyPressed& eKeyPressed)
+    void handleMenuKeyPressedEvent(const za::Event::KeyPressed& eKeyPressed)
     {
-        SFML_BASE_ASSERT(m_inLevelUpScreen);
+        ZB_ASSERT(m_inLevelUpScreen);
 
         if (m_menuDelayProgress < 1.f)
             return;
 
         const auto nPerks = m_perkIndicesSelectedThisLevel.size();
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Down)
+        if (eKeyPressed.code == za::Keyboard::Key::Down)
         {
             ++m_selectedPerk;
 
@@ -1814,7 +1814,7 @@ private:
 
             playSound(m_sounds.menuSelect);
         }
-        else if (eKeyPressed.code == sf::Keyboard::Key::Up)
+        else if (eKeyPressed.code == za::Keyboard::Key::Up)
         {
             --m_selectedPerk;
 
@@ -1823,7 +1823,7 @@ private:
 
             playSound(m_sounds.menuSelect);
         }
-        else if (eKeyPressed.code == sf::Keyboard::Key::Enter || eKeyPressed.code == sf::Keyboard::Key::Space)
+        else if (eKeyPressed.code == za::Keyboard::Key::Enter || eKeyPressed.code == za::Keyboard::Key::Space)
         {
             m_inLevelUpScreen = false;
 
@@ -1834,7 +1834,7 @@ private:
 
             playSound(m_sounds.menuConfirm);
         }
-        else if (m_rerollsLeftThisLevel > 0 && eKeyPressed.code == sf::Keyboard::Key::LShift)
+        else if (m_rerollsLeftThisLevel > 0 && eKeyPressed.code == za::Keyboard::Key::LShift)
         {
             --m_rerollsLeftThisLevel;
 
@@ -1847,9 +1847,9 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void handleKeyPressedEvent(const sf::Event::KeyPressed& eKeyPressed)
+    void handleKeyPressedEvent(const za::Event::KeyPressed& eKeyPressed)
     {
-        SFML_BASE_ASSERT(!m_inLevelUpScreen);
+        ZB_ASSERT(!m_inLevelUpScreen);
 
         const bool isP0TimelineBusy = m_animationTimelineP0.anyAnimationPlaying() &&
                                       !m_animationTimelineP0.isPlaying<AnimFadeAttachments>(); // skippable
@@ -1864,13 +1864,13 @@ private:
 
         const bool inAnimation = isP0TimelineBusy || isP1TimelineBusy || isP2TimelineBusy;
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Right)
+        if (eKeyPressed.code == za::Keyboard::Key::Right)
         {
             moveCurrentTetraminoBy({1, 0});
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Down)
+        if (eKeyPressed.code == za::Keyboard::Key::Down)
         {
             if (inAnimation)
             {
@@ -1882,31 +1882,31 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Left)
+        if (eKeyPressed.code == za::Keyboard::Key::Left)
         {
             moveCurrentTetraminoBy({-1, 0});
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Up)
+        if (eKeyPressed.code == za::Keyboard::Key::Up)
         {
             rotateCurrentTetramino(/* clockwise */ true);
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Z)
+        if (eKeyPressed.code == za::Keyboard::Key::Z)
         {
             rotateCurrentTetramino(/* clockwise */ false);
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::X)
+        if (eKeyPressed.code == za::Keyboard::Key::X)
         {
             rotateCurrentTetramino(/* clockwise */ true);
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Space)
+        if (eKeyPressed.code == za::Keyboard::Key::Space)
         {
             if (inAnimation)
             {
@@ -1926,7 +1926,7 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::LShift)
+        if (eKeyPressed.code == za::Keyboard::Key::LShift)
         {
             if (inAnimation)
             {
@@ -1942,7 +1942,7 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::R)
+        if (eKeyPressed.code == za::Keyboard::Key::R)
         {
             if (inAnimation)
             {
@@ -1954,19 +1954,19 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Q)
+        if (eKeyPressed.code == za::Keyboard::Key::Q)
         {
             ++m_world.playerLevel;
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::W)
+        if (eKeyPressed.code == za::Keyboard::Key::W)
         {
             m_animationTimelineP0.addInstantaneous(AnimLightningStrike{.numStrikes = 1u});
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::E)
+        if (eKeyPressed.code == za::Keyboard::Key::E)
         {
             m_world.tick += 2000;
             m_world.blockMatrixBag.clear();
@@ -1975,7 +1975,7 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Num1)
+        if (eKeyPressed.code == za::Keyboard::Key::Num1)
         {
             if (auto* b = pickRandomBlock())
             {
@@ -1988,20 +1988,20 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Num2)
+        if (eKeyPressed.code == za::Keyboard::Key::Num2)
         {
             if (auto* b = pickRandomBlock())
             {
                 b->health          = 1u;
                 b->tickTimer       = 0u;
-                b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(10.f));
+                b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(10.f));
                 b->powerup         = BlockPowerup::None;
             }
 
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Num3)
+        if (eKeyPressed.code == za::Keyboard::Key::Num3)
         {
             if (auto* b = pickRandomBlock())
             {
@@ -2014,7 +2014,7 @@ private:
             return;
         }
 
-        if (eKeyPressed.code == sf::Keyboard::Key::Num4)
+        if (eKeyPressed.code == za::Keyboard::Key::Num4)
         {
             if (auto* b = pickRandomBlock())
             {
@@ -2032,15 +2032,15 @@ private:
     /////////////////////////////////////////////////////////////
     void initializeCurrentTetraminoFromBag()
     {
-        SFML_BASE_ASSERT(!m_world.currentTetramino.hasValue());
-        SFML_BASE_ASSERT(!m_world.blockMatrixBag.empty());
+        ZB_ASSERT(!m_world.currentTetramino.hasValue());
+        ZB_ASSERT(!m_world.blockMatrixBag.empty());
 
         const TaggedBlockMatrix taggedBlockMatrix = m_world.blockMatrixBag.front();
         m_world.blockMatrixBag.eraseAt(0u);
 
         m_world.currentTetramino.emplace(Tetramino{
             .shape         = taggedBlockMatrix.blockMatrix,
-            .position      = sf::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i(),
+            .position      = za::Vec2uz{(m_world.blockGrid.getWidth() - shapeDimension) / 2u, 0u}.toVec2i(),
             .tetraminoType = taggedBlockMatrix.tetraminoType,
             .rotationState = RotationState{0u},
         });
@@ -2053,17 +2053,17 @@ private:
     /////////////////////////////////////////////////////////////
     [[nodiscard]] ControlFlow eventStep()
     {
-        while (sf::base::Optional event = m_window.pollEvent())
+        while (zb::Optional event = m_window.pollEvent())
         {
             m_imGuiContext.processEvent(m_window, *event);
 
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return ControlFlow::Break;
 
             if (handleNonScalingResize(*event, resolution, m_windowView))
                 continue;
 
-            if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
+            if (auto* eKeyPressed = event->getIf<za::Event::KeyPressed>())
             {
                 if (m_inLevelUpScreen)
                     handleMenuKeyPressedEvent(*eKeyPressed);
@@ -2077,12 +2077,12 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void damageBlock(const sf::Vec2uz position, Block& block)
+    void damageBlock(const za::Vec2uz position, Block& block)
     {
         if (block.health == 2u && block.isArmored())
         {
             m_fixedColorSpriteParticles.emplaceBack(SpriteParticleData{
-                .position      = toDrawCoordinates(position) + sf::Vec2f{-2.f, 1.f},
+                .position      = toDrawCoordinates(position) + za::Vec2f{-2.f, 1.f},
                 .origin        = drawBlockSize / 2.f,
                 .velocity      = m_rngFast.getVec2f({-0.95f, -2.15f}, {-0.15f, -1.25f}) * 0.065f,
                 .scale         = 1.f,
@@ -2096,7 +2096,7 @@ private:
             });
 
             m_fixedColorSpriteParticles.emplaceBack(SpriteParticleData{
-                .position      = toDrawCoordinates(position).addX(drawBlockSize.x / 2.f) + sf::Vec2f{-1.f, 1.f},
+                .position      = toDrawCoordinates(position).addX(drawBlockSize.x / 2.f) + za::Vec2f{-1.f, 1.f},
                 .origin        = drawBlockSize / 2.f,
                 .velocity      = m_rngFast.getVec2f({0.15f, -2.15f}, {0.95f, -1.25f}) * 0.065f,
                 .scale         = 1.f,
@@ -2125,13 +2125,13 @@ private:
     {
         m_perkIndicesSelectedThisLevel.clear();
 
-        for (sf::base::SizeT i = 0u; i < m_perks.size(); ++i)
+        for (zb::SizeT i = 0u; i < m_perks.size(); ++i)
             if (m_perks[i]->meetsPrerequisites(m_world))
                 m_perkIndicesSelectedThisLevel.pushBack(i);
 
         while (m_perkIndicesSelectedThisLevel.size() > m_world.nPerkChoicesPerLevel)
         {
-            const auto removeIdx = m_rngFast.getI<sf::base::SizeT>(0u, m_perkIndicesSelectedThisLevel.size() - 1u);
+            const auto removeIdx = m_rngFast.getI<zb::SizeT>(0u, m_perkIndicesSelectedThisLevel.size() - 1u);
             m_perkIndicesSelectedThisLevel.eraseAt(removeIdx);
         }
 
@@ -2140,14 +2140,14 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void spawnXPEarnedParticle(const sf::Vec2f startPosition, const PaletteIdx paletteIdx)
+    void spawnXPEarnedParticle(const za::Vec2f startPosition, const PaletteIdx paletteIdx)
     {
         m_earnedXPParticles.pushBack(EarnedXPParticle{
             .startPosition  = startPosition,
-            .targetPosition = sf::Vec2f{430.f, 64.f} + m_rngFast.getVec2f({-16.f, -16.f}, {16.f, 16.f}),
+            .targetPosition = za::Vec2f{430.f, 64.f} + m_rngFast.getVec2f({-16.f, -16.f}, {16.f, 16.f}),
             .paletteIdx     = paletteIdx,
             .delay          = m_rngFast.getF(0.f, 0.2f),
-            .startRotation  = m_rngFast.getF(0.f, sf::base::tau),
+            .startRotation  = m_rngFast.getF(0.f, zb::tau),
         });
     }
 
@@ -2155,7 +2155,7 @@ private:
     struct [[nodiscard]] EligibleBlock // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         Block*     block;
-        sf::Vec2uz position;
+        za::Vec2uz position;
     };
 
 
@@ -2170,7 +2170,7 @@ private:
     /////////////////////////////////////////////////////////////
     [[nodiscard]] Block* pickRandomBlockMatching(auto&& predicate)
     {
-        sf::base::SizeT count    = 0u;
+        zb::SizeT count    = 0u;
         Block*          selected = nullptr;
 
         for (auto& optBlock : m_world.blockGrid.getBlocks())
@@ -2184,7 +2184,7 @@ private:
             ++count;
 
             // Select the current bubble with probability `1/count` (reservoir sampling)
-            if (m_rngFast.getI<sf::base::SizeT>(0, count - 1) == 0)
+            if (m_rngFast.getI<zb::SizeT>(0, count - 1) == 0)
                 selected = optBlock.asPtr();
         }
 
@@ -2207,7 +2207,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepQuakeEffect(const sf::Time deltaTime)
+    void updateStepQuakeEffect(const za::Time deltaTime)
     {
         m_quakeSinEffectLineClear.update(deltaTime);
         m_quakeSinEffectHardDrop.update(deltaTime);
@@ -2215,7 +2215,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepScreenShake(const sf::Time deltaTime)
+    void updateStepScreenShake(const za::Time deltaTime)
     {
         if (m_screenShakeTimer <= 0.f)
             return;
@@ -2252,14 +2252,14 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepInterpolateVisualTetraminoPosition(const sf::base::Optional<Tetramino>& optTetramino,
-                                                      sf::Vec2f&                           visualCenter,
-                                                      const sf::Time                       deltaTime)
+    void updateStepInterpolateVisualTetraminoPosition(const zb::Optional<Tetramino>& optTetramino,
+                                                      za::Vec2f&                           visualCenter,
+                                                      const za::Time                       deltaTime)
     {
         if (!optTetramino.hasValue())
             return;
 
-        const sf::Vec2f targetPosition = getTetraminoCenterDrawPosition(optTetramino->position);
+        const za::Vec2f targetPosition = getTetraminoCenterDrawPosition(optTetramino->position);
 
         const float interpolationTime = 25.f;
         const auto  deltaTimeMs       = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
@@ -2269,7 +2269,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepAnimations(const sf::Time deltaTime)
+    void updateStepAnimations(const za::Time deltaTime)
     {
         if (m_inLevelUpScreen)
             return;
@@ -2279,7 +2279,7 @@ private:
             auto& anim = timeline.commands.front();
 
             auto visitor = [&]<typename T>(T& innerAnim)
-                requires(!sf::base::isConst<T>) { return updateAnimation(timeline, innerAnim); };
+                requires(!zb::isConst<T>) { return updateAnimation(timeline, innerAnim); };
 
             if (anim.data.linearVisit(visitor))
             {
@@ -2356,7 +2356,7 @@ private:
                 const auto startPos                   = tetramino.position + bPos.toVec2i();
                 const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, direction);
 
-                maxDrilledBlocks = sf::base::max(maxDrilledBlocks, nDrillableBlocks);
+                maxDrilledBlocks = zb::max(maxDrilledBlocks, nDrillableBlocks);
             }
 
             m_animationTimelineP0.add(0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
@@ -2371,7 +2371,7 @@ private:
             if (!m_world.perkLaser[direction].hasValue())
                 return;
 
-            const auto maxPenetration = static_cast<sf::base::SizeT>(m_world.perkLaser[direction]->maxPenetration);
+            const auto maxPenetration = static_cast<zb::SizeT>(m_world.perkLaser[direction]->maxPenetration);
 
             for (const auto bPos : findLaserBlocks(tetramino, direction))
             {
@@ -2446,26 +2446,26 @@ private:
     {
         AnimClearLines::RowVector         trulyClearedRows;
         AnimFadeBlocks::FadingBlockVector fadingBlocks;
-        sf::base::Vector<sf::Vec2uz>      columnClearPositions;
+        zb::Vector<za::Vec2uz>      columnClearPositions;
 
-        const auto addRowIfNotExistent = [&](const sf::base::SizeT row)
+        const auto addRowIfNotExistent = [&](const zb::SizeT row)
         {
-            if (sf::base::find(trulyClearedRows.begin(), trulyClearedRows.end(), row) == trulyClearedRows.end())
+            if (zb::find(trulyClearedRows.begin(), trulyClearedRows.end(), row) == trulyClearedRows.end())
                 trulyClearedRows.pushBack(row);
         };
 
-        for (sf::base::SizeT y : clearLines.rows)
+        for (zb::SizeT y : clearLines.rows)
         {
             bool rowIsFullyCleared = true;
 
-            for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+            for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
-                if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{x, y}); optBlock.hasValue())
+                if (auto& optBlock = m_world.blockGrid.at(za::Vec2uz{x, y}); optBlock.hasValue())
                 {
                     // TODO: powerup
                     if (!clearLines.forceClear && optBlock->isArmored())
                     {
-                        damageBlock(sf::Vec2uz{x, y}, *optBlock);
+                        damageBlock(za::Vec2uz{x, y}, *optBlock);
                         rowIsFullyCleared = false;
                     }
                     else
@@ -2483,7 +2483,7 @@ private:
                             addXP(5u * m_world.playerLevel);
                             playSound(m_sounds.bonus);
 
-                            spawnXPEarnedParticle(toDrawCoordinates(sf::Vec2uz{x, y}), optBlock->paletteIdx);
+                            spawnXPEarnedParticle(toDrawCoordinates(za::Vec2uz{x, y}), optBlock->paletteIdx);
                         }
                         else if (optBlock->powerup == BlockPowerup::ColumnDrill)
                         {
@@ -2519,13 +2519,13 @@ private:
         {
             playSound(m_sounds.single);
 
-            const sf::base::SizeT numCleared = trulyClearedRows.size();
+            const zb::SizeT numCleared = trulyClearedRows.size();
 
             if (clearLines.awardXP)
             {
                 m_world.linesCleared += numCleared;
 
-                const sf::base::U64 amount = [&]
+                const zb::U64 amount = [&]
                 {
                     if (numCleared == 1)
                         return 10u;
@@ -2547,7 +2547,7 @@ private:
                 addXP(amount);
                 playSound(m_sounds.exp);
 
-                for (sf::base::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
+                for (zb::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
                 {
                     const auto& block = fadingBlocks[i % fadingBlocks.size()];
 
@@ -2558,26 +2558,26 @@ private:
                 }
             }
 
-            sf::base::quickSort(trulyClearedRows.begin(),
+            zb::quickSort(trulyClearedRows.begin(),
                                 trulyClearedRows.end(),
-                                [](const sf::base::SizeT a, const sf::base::SizeT b) { return a < b; });
+                                [](const zb::SizeT a, const zb::SizeT b) { return a < b; });
 
             const auto height = m_world.blockGrid.getHeight();
             m_rowYOffsets.resize(height);
 
-            for (sf::base::SizeT y = 0u; y < height; ++y)
+            for (zb::SizeT y = 0u; y < height; ++y)
                 m_rowYOffsets[y] = 0.f;
 
-            sf::base::SizeT dropAmount = 0;
+            zb::SizeT dropAmount = 0;
 
             // Iterate from the bottom of the grid upwards to calculate offsets.
             // This calculates the correct offset for each row's FINAL position.
             for (int y = static_cast<int>(height) - 1; y >= 0; --y)
             {
                 // Check if the current row 'y' (from the original grid) is being cleared.
-                const bool isCleared = sf::base::find(trulyClearedRows.begin(),
+                const bool isCleared = zb::find(trulyClearedRows.begin(),
                                                       trulyClearedRows.end(),
-                                                      static_cast<sf::base::SizeT>(y)) != trulyClearedRows.end();
+                                                      static_cast<zb::SizeT>(y)) != trulyClearedRows.end();
 
                 if (isCleared)
                 {
@@ -2588,7 +2588,7 @@ private:
                 {
                     // If this row is being kept, the row that lands at its *new* position
                     // (which is y + dropAmount) needs an initial offset.
-                    const sf::base::SizeT finalY = static_cast<sf::base::SizeT>(y) + dropAmount;
+                    const zb::SizeT finalY = static_cast<zb::SizeT>(y) + dropAmount;
                     if (finalY < height)
                         m_rowYOffsets[finalY] = -static_cast<float>(dropAmount) * drawBlockSize.y;
                 }
@@ -2606,7 +2606,7 @@ private:
         {
             const auto numPartiallyCleared = clearLines.rows.size();
 
-            const sf::base::U64 amount = [&]
+            const zb::U64 amount = [&]
             {
                 if (numPartiallyCleared == 1)
                     return 4u;
@@ -2623,7 +2623,7 @@ private:
             addXP(amount);
             playSound(m_sounds.exp);
 
-            for (sf::base::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
+            for (zb::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
             {
                 const auto& block = fadingBlocks[i % fadingBlocks.size()];
 
@@ -2700,9 +2700,9 @@ private:
             playSound(m_sounds.laser);
 
             const auto dir      = laserDirectionToVec2i(laser.direction).toVec2f();
-            const auto startPos = toDrawCoordinates(laser.gridStartPos) + dir * 8.f + sf::Vec2f{0, 2.f};
+            const auto startPos = toDrawCoordinates(laser.gridStartPos) + dir * 8.f + za::Vec2f{0, 2.f};
 
-            SFML_BASE_ASSERT(!m_optLaserBeam.hasValue());
+            ZB_ASSERT(!m_optLaserBeam.hasValue());
             m_optLaserBeam.emplace(startPos, startPos, blockPalette[getTetraminoPaletteIdx(laser.tetramino)]);
         }
 
@@ -2714,7 +2714,7 @@ private:
 
         if (!laser.onlyVisual)
         {
-            SFML_BASE_ASSERT(optBlock.hasValue());
+            ZB_ASSERT(optBlock.hasValue());
             damageBlock(laser.gridTargetPos.toVec2uz(), *optBlock);
 
             handleTriggerLaserHit();
@@ -2724,7 +2724,7 @@ private:
             playSound(m_sounds.bounce);
         }
 
-        SFML_BASE_ASSERT(m_optLaserBeam.hasValue());
+        ZB_ASSERT(m_optLaserBeam.hasValue());
         m_optLaserBeam.reset();
 
         return true;
@@ -2746,12 +2746,12 @@ private:
 
         AnimFadeBlocks::FadingBlockVector fadingBlocks;
 
-        for (sf::base::SizeT y = columnClear.position.y; y < m_world.blockGrid.getHeight(); ++y)
-            if (auto& optBlock = m_world.blockGrid.at(sf::Vec2uz{columnClear.position.x, y}); optBlock.hasValue())
+        for (zb::SizeT y = columnClear.position.y; y < m_world.blockGrid.getHeight(); ++y)
+            if (auto& optBlock = m_world.blockGrid.at(za::Vec2uz{columnClear.position.x, y}); optBlock.hasValue())
             {
                 fadingBlocks.pushBack(AnimFadeBlocks::FadingBlock{
                     .block    = *optBlock,
-                    .position = sf::Vec2uz{columnClear.position.x, y},
+                    .position = za::Vec2uz{columnClear.position.x, y},
                 });
 
                 optBlock.reset();
@@ -2770,9 +2770,9 @@ private:
         if (timeline.getProgress() < 1.f)
             return false;
 
-        sf::base::Vector<EligibleBlock> eligibleBlocks;
+        zb::Vector<EligibleBlock> eligibleBlocks;
 
-        m_world.blockGrid.forBlocks([&](Block& block, const sf::Vec2uz position)
+        m_world.blockGrid.forBlocks([&](Block& block, const za::Vec2uz position)
         {
             if (block.isDamageable())
                 eligibleBlocks.pushBack({&block, position});
@@ -2786,7 +2786,7 @@ private:
         const auto blockInfo = eligibleBlocks[0];
 
         m_lightningBolts.emplaceBack(m_rngFast,
-                                     sf::Vec2f{9.f + m_rngFast.getF(0.f,
+                                     za::Vec2f{9.f + m_rngFast.getF(0.f,
                                                                     drawBlockSize.x *
                                                                         static_cast<float>(m_world.blockGrid.getWidth())),
                                                0.f},
@@ -2802,9 +2802,9 @@ private:
                 .accelerationY = 0.0004f,
                 .opacity       = 0.75f,
                 .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
-                .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                .rotation      = m_rngFast.getF(0.f, zb::tau),
                 .torque        = m_rngFast.getF(-0.001f, 0.001f),
-                .color         = sf::Color::White,
+                .color         = za::Color::White,
                 .radius        = m_rngFast.getF(9.f, 16.f),
                 .pointCount    = 5u,
             });
@@ -2817,9 +2817,9 @@ private:
                 .accelerationY = 0.0004f,
                 .opacity       = 0.75f,
                 .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
-                .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                .rotation      = m_rngFast.getF(0.f, zb::tau),
                 .torque        = m_rngFast.getF(-0.001f, 0.001f),
-                .color         = sf::Color::LightYellow,
+                .color         = za::Color::LightYellow,
                 .radius        = m_rngFast.getF(8.f, 14.f),
                 .pointCount    = 5u,
             });
@@ -2843,7 +2843,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepBlockEffects(const sf::Time deltaTime)
+    void updateStepBlockEffects(const za::Time deltaTime)
     {
         for (auto* it = m_blockEffects.begin(); it != m_blockEffects.end();)
         {
@@ -2861,7 +2861,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepEarnedXPParticles(const sf::Time deltaTime)
+    void updateStepEarnedXPParticles(const za::Time deltaTime)
     {
         const auto deltaTimeMs = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
@@ -2876,12 +2876,12 @@ private:
             (void)particle.progress.advance(deltaTimeMs * 0.0015f);
         }
 
-        sf::base::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
+        zb::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepParticleData(auto& vec, const sf::Time deltaTime)
+    void updateStepParticleData(auto& vec, const za::Time deltaTime)
     {
         const auto deltaTimeMs = static_cast<float>(deltaTime.asMicroseconds()) / 1000.f;
 
@@ -2891,13 +2891,13 @@ private:
             p.position += p.velocity * deltaTimeMs;
 
             p.rotation += p.torque * deltaTimeMs;
-            p.rotation = sf::base::positiveRemainder(p.rotation, sf::base::tau);
+            p.rotation = zb::positiveRemainder(p.rotation, zb::tau);
 
-            p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-            p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
+            p.opacity = zb::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+            p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
         }
 
-        sf::base::vectorEraseIf(vec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
+        zb::vectorEraseIf(vec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
     }
 
 
@@ -2909,7 +2909,7 @@ private:
 
         const auto oldBagSize = m_world.blockMatrixBag.size();
 
-        constexpr sf::base::SizeT bagMult = 2u;
+        constexpr zb::SizeT bagMult = 2u;
 
         const auto addToBag = [&](const TetraminoType j)
         {
@@ -2925,22 +2925,22 @@ private:
             };
 
             auto& [blockMatrix, tetraminoType] = m_world.blockMatrixBag.pushBack({
-                .blockMatrix = shapeMatrixToBlockMatrix(srsTetraminoShapes[static_cast<sf::base::SizeT>(j) /* pieceType */][0],
+                .blockMatrix = shapeMatrixToBlockMatrix(srsTetraminoShapes[static_cast<zb::SizeT>(j) /* pieceType */][0],
                                                         block),
                 .tetraminoType = j,
             });
 
             const auto healthDist = generateTetraminoHealthDistribution(getDifficultyFactor(m_world.tick), m_rngFast);
-            sf::base::SizeT nextHealthDistIdx = 0u;
+            zb::SizeT nextHealthDistIdx = 0u;
 
-            for (sf::base::Optional<Block>& b : blockMatrix.data)
+            for (zb::Optional<Block>& b : blockMatrix.data)
             {
                 if (!b.hasValue())
                     continue;
 
                 b->blockId = m_world.nextBlockId++;
 
-                const auto blockType = static_cast<sf::base::U8>(healthDist[nextHealthDistIdx++]);
+                const auto blockType = static_cast<zb::U8>(healthDist[nextHealthDistIdx++]);
 
                 if (blockType > 2)
                 {
@@ -2948,7 +2948,7 @@ private:
                 }
                 else if (blockType == 2)
                 {
-                    b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(20.f));
+                    b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(20.f));
                 }
                 else if (roll100(1))
                 {
@@ -2957,19 +2957,19 @@ private:
                     if (roll100(25))
                     {
                         b->powerup         = BlockPowerup::ThreeRowDrill;
-                        b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(10.f));
+                        b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(10.f));
                     }
                     else
                     {
                         b->powerup         = BlockPowerup::XPBonus;
-                        b->tickTimerTarget = static_cast<sf::base::U32>(secondsToTicks(20.f));
+                        b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(20.f));
                     }
                 }
             }
         };
 
-        for (sf::base::SizeT i = 0u; i < bagMult; ++i)
-            for (sf::base::U8 j = 0u; j < static_cast<sf::base::U8>(tetraminoShapeCount); ++j)
+        for (zb::SizeT i = 0u; i < bagMult; ++i)
+            for (zb::U8 j = 0u; j < static_cast<zb::U8>(tetraminoShapeCount); ++j)
                 addToBag(static_cast<TetraminoType>(j));
 
         for (int i = 0; i < m_world.perkExtraLinePiecesInPool; ++i)
@@ -2983,7 +2983,7 @@ private:
     /////////////////////////////////////////////////////////////
     void applyGravityToCurrentTetramino()
     {
-        SFML_BASE_ASSERT(m_world.currentTetramino.hasValue());
+        ZB_ASSERT(m_world.currentTetramino.hasValue());
 
         const auto newPosition = m_world.currentTetramino->position.addY(1);
 
@@ -3016,8 +3016,8 @@ private:
 
             ++m_world.tick;
 
-            SFML_BASE_ASSERT(m_world.dropTickAccumulator < m_world.dropTickTarget);
-            SFML_BASE_ASSERT(m_world.dropTickTarget > 0u);
+            ZB_ASSERT(m_world.dropTickAccumulator < m_world.dropTickTarget);
+            ZB_ASSERT(m_world.dropTickTarget > 0u);
 
             ++m_world.dropTickAccumulator;
 
@@ -3063,17 +3063,17 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepLightningBolts(const sf::Time deltaTime)
+    void updateStepLightningBolts(const za::Time deltaTime)
     {
         for (auto& lb : m_lightningBolts)
             lb.update(deltaTime);
 
-        sf::base::vectorEraseIf(m_lightningBolts, [](const LightningBolt& lb) { return lb.isFinished(); });
+        zb::vectorEraseIf(m_lightningBolts, [](const LightningBolt& lb) { return lb.isFinished(); });
     }
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepLaserBeam(const sf::Time deltaTime)
+    void updateStepLaserBeam(const za::Time deltaTime)
     {
         if (m_optLaserBeam.hasValue())
             m_optLaserBeam->update(deltaTime);
@@ -3081,7 +3081,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStep(const sf::Time deltaTime, const float xTicksPerSecond)
+    void updateStep(const za::Time deltaTime, const float xTicksPerSecond)
     {
         SFEX_PROFILE_SCOPE("update");
 
@@ -3106,7 +3106,7 @@ private:
         if (m_menuDelayProgress < 1.f)
         {
             m_menuDelayProgress += deltaTime.asSeconds();
-            m_menuDelayProgress = sf::base::min(m_menuDelayProgress, 1.f);
+            m_menuDelayProgress = zb::min(m_menuDelayProgress, 1.f);
         }
     }
 
@@ -3151,19 +3151,19 @@ private:
         if (!m_inLevelUpScreen)
             return;
 
-        SFML_BASE_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
+        ZB_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
 
-        const auto darkenAlpha = static_cast<sf::base::U8>((0.65f * m_menuDelayProgress) * 255.f);
+        const auto darkenAlpha = static_cast<zb::U8>((0.65f * m_menuDelayProgress) * 255.f);
 
         m_rtGame.draw(
-            sf::RectangleShapeData{
+            za::RectangleShapeData{
                 .position  = {0.f, 0.f},
-                .fillColor = sf::Color::blackWithAlpha(darkenAlpha),
+                .fillColor = za::Color::blackWithAlpha(darkenAlpha),
                 .size      = resolution,
             },
             {.view = m_worldView});
 
-        sf::Vec2f shopSize{280.f, 161.f};
+        za::Vec2f shopSize{280.f, 161.f};
 
         if (m_perkIndicesSelectedThisLevel.size() == 4u)
             shopSize.y += 53.f;
@@ -3173,12 +3173,12 @@ private:
         const float menuScale = easeInOutBack(m_menuDelayProgress);
 
         // The offset seems to fix rendering corruption on Surface
-        const auto menuTransform = sf::Transform::fromPositionScaleOrigin(centeredShopPos + sf::Vec2f{0.1f, 0.1f},
+        const auto menuTransform = za::Transform::fromPositionScaleOrigin(centeredShopPos + za::Vec2f{0.1f, 0.1f},
                                                                           {menuScale, menuScale},
                                                                           shopSize * 0.5f);
 
         m_rtGame.draw(
-            sf::RectangleShapeData{
+            za::RectangleShapeData{
                 .position         = {0.f, 0.f},
                 .origin           = {0.f, 0.f},
                 .fillColor        = {0, 0, 0},
@@ -3191,10 +3191,10 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        sf::base::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
+        zb::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
 
         if (m_rerollsLeftThisLevel > 0u)
-            levelUpString += sf::base::fmtToString("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
+            levelUpString += zb::fmtToString("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
                                                    m_rerollsLeftThisLevel);
 
         const BitmapTextToVerticesOptions titleOpts = {
@@ -3203,29 +3203,29 @@ private:
             .bitmapFont      = m_bitmapFontMinogram,
             .fontTextureRect = m_txrBFMinogram6x10,
             .alignment       = BitmapTextAlignment::Center,
-            .baseColor       = sf::Color::White,
+            .baseColor       = za::Color::White,
             .time            = m_totalTime,
             .string          = levelUpString,
         };
 
         auto            bounds       = bitmapTextToVertices<true>(titleOpts);
-        const sf::Vec2f textPosition = {(shopSize.x - bounds.x) * 0.5f, -8.f};
+        const za::Vec2f textPosition = {(shopSize.x - bounds.x) * 0.5f, -8.f};
 
         const auto titleGlobalBounds = bitmapTextToVerticesPretransformed(titleOpts,
-                                                                          sf::Transform::fromPosition(textPosition));
+                                                                          za::Transform::fromPosition(textPosition));
 
-        m_rtGame.draw(sf::RectangleShapeData{.position         = titleGlobalBounds.position - sf::Vec2f{8.f, 5.f},
+        m_rtGame.draw(za::RectangleShapeData{.position         = titleGlobalBounds.position - za::Vec2f{8.f, 5.f},
                                              .origin           = {0.f, 0.f},
                                              .fillColor        = {0, 0, 0},
                                              .outlineColor     = {135, 135, 135},
                                              .outlineThickness = 1.f,
-                                             .size             = titleGlobalBounds.size + sf::Vec2f{16.f, 8.f}},
+                                             .size             = titleGlobalBounds.size + za::Vec2f{16.f, 8.f}},
                       {.transform = menuTransform, .view = m_worldView});
 
         /*
 
         m_rtGame.draw(
-            sf::RectangleShapeData{
+            za::RectangleShapeData{
                 .position  = {4.f, titleGlobalBounds.getBottom() + 4.f},
                 .origin    = {0.f, 0.f},
                 .fillColor = {135, 135, 135},
@@ -3235,23 +3235,23 @@ private:
 
         */
 
-        auto perkDrawPos = sf::Vec2f{48.f, titleGlobalBounds.getBottom() + 8.f};
+        auto perkDrawPos = za::Vec2f{48.f, titleGlobalBounds.getBottom() + 8.f};
 
-        sf::base::SizeT iPerk = 0u;
+        zb::SizeT iPerk = 0u;
 
-        for (const sf::base::SizeT psIndex : m_perkIndicesSelectedThisLevel)
+        for (const zb::SizeT psIndex : m_perkIndicesSelectedThisLevel)
         {
             const Perk& perk = *(m_perks[psIndex]);
 
-            sf::base::String perkName        = perk.getName();
-            sf::base::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
-            sf::base::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
+            zb::String perkName        = perk.getName();
+            zb::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
+            zb::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
 
-            const auto perkStr = sf::base::fmtToString("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^",
+            const auto perkStr = zb::fmtToString("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^",
                                                        perkName,
                                                        perkDescription);
 
-            const auto transform = sf::Transform::fromPosition(perkDrawPos);
+            const auto transform = za::Transform::fromPosition(perkDrawPos);
 
             const auto globalBounds = bitmapTextToVerticesPretransformed(
                 {
@@ -3260,44 +3260,44 @@ private:
                     .bitmapFont      = m_bitmapFontMinogram,
                     .fontTextureRect = m_txrBFMinogram6x10,
                     .alignment       = BitmapTextAlignment::Left,
-                    .baseColor       = sf::Color::White,
+                    .baseColor       = za::Color::White,
                     .time            = m_totalTime,
                     .string          = perkStr,
                 },
                 transform);
 
-            m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position.withX(8),
+            m_rtGame.draw(za::RectangleShapeData{.position  = globalBounds.position.withX(8),
                                                  .origin    = {0.f, 0.f},
-                                                 .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
+                                                 .fillColor = za::Color::VeryDarkBrown.withAlpha(100),
                                                  .size      = {32.f, 32.f}},
                           {.transform = menuTransform, .view = m_worldView});
 
-            m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position - sf::Vec2f{1.f, 1.f},
+            m_rtGame.draw(za::RectangleShapeData{.position  = globalBounds.position - za::Vec2f{1.f, 1.f},
                                                  .origin    = {0.f, 0.f},
-                                                 .fillColor = sf::Color::VeryDarkBrown.withAlpha(100),
-                                                 .size = globalBounds.size.withY(sf::base::max(40.f, globalBounds.size.y)) +
-                                                         sf::Vec2f{2.f, 2.f}},
+                                                 .fillColor = za::Color::VeryDarkBrown.withAlpha(100),
+                                                 .size = globalBounds.size.withY(zb::max(40.f, globalBounds.size.y)) +
+                                                         za::Vec2f{2.f, 2.f}},
                           {.transform = menuTransform, .view = m_worldView});
 
             if (m_selectedPerk == iPerk)
             {
-                m_rtGame.draw(sf::RectangleShapeData{.position  = globalBounds.position - sf::Vec2f{1.f, 1.f},
+                m_rtGame.draw(za::RectangleShapeData{.position  = globalBounds.position - za::Vec2f{1.f, 1.f},
                                                      .origin    = {0.f, 0.f},
-                                                     .fillColor = sf::Color::VeryDarkGreen,
-                                                     .size      = globalBounds.size + sf::Vec2f{2.f, 2.f}},
+                                                     .fillColor = za::Color::VeryDarkGreen,
+                                                     .size      = globalBounds.size + za::Vec2f{2.f, 2.f}},
                               {.transform = menuTransform, .view = m_worldView});
             }
 
-            perkDrawPos.y += sf::base::max(40.f, globalBounds.size.y) + 12.f;
+            perkDrawPos.y += zb::max(40.f, globalBounds.size.y) + 12.f;
 
             ++iPerk;
         }
 
         m_rtGame.drawIndexedVertices(
-            sf::DrawIndexedVerticesSettings{
+            za::DrawIndexedVerticesSettings{
                 .vertexSpan    = m_textVerticesBuffer,
                 .indexSpan     = m_textIndicesBuffer,
-                .primitiveType = sf::PrimitiveType::Triangles,
+                .primitiveType = za::PrimitiveType::Triangles,
             },
             {
                 .transform = menuTransform,
@@ -3308,7 +3308,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void imguiStep(const sf::Time deltaTime)
+    void imguiStep(const za::Time deltaTime)
     {
         SFEX_PROFILE_SCOPE("imgui");
 
@@ -3376,7 +3376,7 @@ private:
 
         const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * scale / 2.f); };
 
-        const auto textCentered = [&](const sf::base::String& text)
+        const auto textCentered = [&](const zb::String& text)
         {
             const auto windowWidth = ImGui::GetWindowSize().x;
             const auto textWidth   = ImGui::CalcTextSize(text.cStr()).x;
@@ -3387,7 +3387,7 @@ private:
 
         if (m_inLevelUpScreen)
         {
-            SFML_BASE_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
+            ZB_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
 
             ImGui::SetNextWindowBgAlpha(0.95f);
             ImGui::PushFont(m_imguiFont);
@@ -3415,13 +3415,13 @@ private:
             static int  selectedPerk = -1;
             static bool sep          = false;
 
-            for (const sf::base::SizeT psIndex : m_perkIndicesSelectedThisLevel)
+            for (const zb::SizeT psIndex : m_perkIndicesSelectedThisLevel)
             {
                 const Perk& perk = *(m_perks[psIndex]);
 
-                sf::base::String perkName        = perk.getName();
-                sf::base::String perkDescription = perk.getDescription(m_world);
-                sf::base::String perkProgression = perk.getProgressionStr(m_world);
+                zb::String perkName        = perk.getName();
+                zb::String perkDescription = perk.getDescription(m_world);
+                zb::String perkProgression = perk.getProgressionStr(m_world);
 
                 if (sep)
                     ImGui::Separator();
@@ -3476,7 +3476,7 @@ private:
 
                     ++m_world.committedPlayerLevel;
 
-                    m_perks[static_cast<sf::base::SizeT>(selectedPerk)]->apply(m_world);
+                    m_perks[static_cast<zb::SizeT>(selectedPerk)]->apply(m_world);
                 }
 
                 if (selectedPerk == -1)
@@ -3496,11 +3496,11 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        const sf::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
+        const za::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
 
         m_rtGame.draw(
-            sf::RectangleShapeData{
-                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}),
+            za::RectangleShapeData{
+                .position         = toDrawCoordinates(za::Vec2uz{0, gridGraceY}),
                 .origin           = (drawBlockSize / 2.f).componentWiseFloor(),
                 .fillColor        = {30, 30, 30},
                 .outlineColor     = {35, 35, 35},
@@ -3509,15 +3509,15 @@ private:
             },
             {.view = m_worldView});
 
-        const auto dividerStartPos = toDrawCoordinates(sf::Vec2uz{0, gridGraceY});
+        const auto dividerStartPos = toDrawCoordinates(za::Vec2uz{0, gridGraceY});
 
-        for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth() + 1u; ++x)
-            for (sf::base::SizeT y = 0u; y < m_world.blockGrid.getHeight() - gridGraceY + 1u; ++y)
+        for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth() + 1u; ++x)
+            for (zb::SizeT y = 0u; y < m_world.blockGrid.getHeight() - gridGraceY + 1u; ++y)
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
-                                  .position    = dividerStartPos - drawBlockSize + sf::Vec2f{3.f, 3.f} +
-                                                 sf::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
+                                  .position    = dividerStartPos - drawBlockSize + za::Vec2f{3.f, 3.f} +
+                                                 za::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize),
                                   .textureRect = m_txrDivider,
                               },
                               {
@@ -3527,10 +3527,10 @@ private:
             }
 
         m_rtGame.draw(
-            sf::RectangleShapeData{
-                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f},
+            za::RectangleShapeData{
+                .position         = toDrawCoordinates(za::Vec2uz{0, gridGraceY}) - za::Vec2f{1.f, 1.f},
                 .origin           = (drawBlockSize / 2.f).componentWiseFloor(),
-                .fillColor        = sf::Color::Transparent,
+                .fillColor        = za::Color::Transparent,
                 .outlineColor     = {35, 35, 35},
                 .outlineThickness = 1.f,
                 .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f),
@@ -3538,10 +3538,10 @@ private:
             {.view = m_worldView});
 
         m_rtGame.draw(
-            sf::RectangleShapeData{
-                .position         = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{3.f, 3.f},
+            za::RectangleShapeData{
+                .position         = toDrawCoordinates(za::Vec2uz{0, gridGraceY}) - za::Vec2f{3.f, 3.f},
                 .origin           = (drawBlockSize / 2.f).componentWiseFloor(),
-                .fillColor        = sf::Color::Transparent,
+                .fillColor        = za::Color::Transparent,
                 .outlineColor     = {135, 135, 135},
                 .outlineThickness = 1.f,
                 .size             = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(8.f).addY(8.f),
@@ -3555,10 +3555,10 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        for (sf::base::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
-            for (sf::base::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+        for (zb::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
+            for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
-                const sf::Vec2uz gridPosition{x, y};
+                const za::Vec2uz gridPosition{x, y};
                 const auto&      optBlock = m_world.blockGrid.at(gridPosition);
 
                 if (!optBlock.hasValue())
@@ -3608,7 +3608,7 @@ private:
             if (b.hasValue())
                 return b->paletteIdx;
 
-        SFML_BASE_UNREACHABLE();
+        ZB_UNREACHABLE();
     }
 
 
@@ -3616,12 +3616,12 @@ private:
     struct [[nodiscard]] DrillableBlocksInfo
     {
         int       count;
-        sf::Vec2i endPos;
+        za::Vec2i endPos;
     };
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] DrillableBlocksInfo countDrillableBlocks(const sf::Vec2i startPos, const DrillDirection::Enum direction)
+    [[nodiscard]] DrillableBlocksInfo countDrillableBlocks(const za::Vec2i startPos, const DrillDirection::Enum direction)
     {
         DrillableBlocksInfo info{
             .count  = 0,
@@ -3630,7 +3630,7 @@ private:
 
         const auto horizontalIteration = [&](const int iX) -> ControlFlow
         {
-            auto& optBlock = m_world.blockGrid.at(sf::Vec2i{iX, info.endPos.y});
+            auto& optBlock = m_world.blockGrid.at(za::Vec2i{iX, info.endPos.y});
 
             if (!optBlock.hasValue())
                 return ControlFlow::Break;
@@ -3648,7 +3648,7 @@ private:
 
         if (direction == DrillDirection::Left)
         {
-            info.endPos.x = sf::base::max(info.endPos.x, 0);
+            info.endPos.x = zb::max(info.endPos.x, 0);
 
             for (int iX = info.endPos.x; iX >= 0; --iX)
                 if (horizontalIteration(iX) == ControlFlow::Break)
@@ -3657,7 +3657,7 @@ private:
         else if (direction == DrillDirection::Right)
         {
             const auto gridWidth = static_cast<int>(m_world.blockGrid.getWidth());
-            info.endPos.x        = sf::base::min(info.endPos.x, gridWidth - 1);
+            info.endPos.x        = zb::min(info.endPos.x, gridWidth - 1);
 
             for (int iX = info.endPos.x; iX < gridWidth; ++iX)
                 if (horizontalIteration(iX) == ControlFlow::Break)
@@ -3666,11 +3666,11 @@ private:
         else if (direction == DrillDirection::Down)
         {
             const auto gridHeight = static_cast<int>(m_world.blockGrid.getHeight());
-            info.endPos.y         = sf::base::min(info.endPos.y, gridHeight - 1);
+            info.endPos.y         = zb::min(info.endPos.y, gridHeight - 1);
 
             for (int iY = info.endPos.y; iY < gridHeight; ++iY)
             {
-                auto& optBlock = m_world.blockGrid.at(sf::Vec2i{info.endPos.x, iY});
+                auto& optBlock = m_world.blockGrid.at(za::Vec2i{info.endPos.x, iY});
 
                 if (!optBlock.hasValue())
                     break;
@@ -3690,12 +3690,12 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] LaserableBlocksInfo findLaserableBlocks(const sf::Vec2i startPos, const LaserDirection::Enum direction)
+    [[nodiscard]] LaserableBlocksInfo findLaserableBlocks(const za::Vec2i startPos, const LaserDirection::Enum direction)
     {
         LaserableBlocksInfo result;
 
         const auto dir = laserDirectionToVec2i(direction);
-        sf::Vec2i  pos = startPos + dir;
+        za::Vec2i  pos = startPos + dir;
 
         while (m_world.blockGrid.isInBounds(pos))
         {
@@ -3709,9 +3709,9 @@ private:
 
         if (m_world.perkLaser[direction]->bounce)
         {
-            const auto bounceDir = sf::Vec2i{-dir.x, dir.y};
+            const auto bounceDir = za::Vec2i{-dir.x, dir.y};
 
-            pos += sf::Vec2i{-dir.x, 0};
+            pos += za::Vec2i{-dir.x, 0};
             result.bouncePos = pos;
             pos += bounceDir;
 
@@ -3748,20 +3748,20 @@ private:
             .drawGhost     = false,
         });
 
-        const sf::Vec2f offsetByDirection[] = {
+        const za::Vec2f offsetByDirection[] = {
             {-drawBlockSize.x / 2.f - 3.f + 2.f, 1.f}, // Left
             {drawBlockSize.x - 1.f, 2.f},              // Right
             {1.f, drawBlockSize.y - 1.f},              // Down
         };
 
-        const sf::Angle arrayByDirection[] = {
-            sf::degrees(90.f),  // Left
-            sf::degrees(270.f), // Right
-            sf::degrees(0.f),   // Down
+        const za::Angle arrayByDirection[] = {
+            za::degrees(90.f),  // Left
+            za::degrees(270.f), // Right
+            za::degrees(0.f),   // Down
         };
 
-        const auto drillDrawOffset = offsetByDirection[static_cast<sf::base::SizeT>(drillAnim->direction)];
-        const auto rotation        = arrayByDirection[static_cast<sf::base::SizeT>(drillAnim->direction)];
+        const auto drillDrawOffset = offsetByDirection[static_cast<zb::SizeT>(drillAnim->direction)];
+        const auto rotation        = arrayByDirection[static_cast<zb::SizeT>(drillAnim->direction)];
 
         const auto& tetramino = drillAnim->tetramino;
 
@@ -3797,8 +3797,8 @@ private:
 
             const auto lastDrawPos = getDrawPosition(nDrills - 1);
             const auto lastGridPos = toGridCoordinates(
-                                         (lastDrawPos + sf::Vec2f{radius / 2.f, radius / 2.f}).componentWiseFloor())
-                                         .componentWiseClamp({0, 0}, sf::Vec2uz{gridWidth - 1, gridHeight - 1}.toVec2i());
+                                         (lastDrawPos + za::Vec2f{radius / 2.f, radius / 2.f}).componentWiseFloor())
+                                         .componentWiseClamp({0, 0}, za::Vec2uz{gridWidth - 1, gridHeight - 1}.toVec2i());
 
             const auto& optBlock = m_world.blockGrid.at(lastGridPos);
 
@@ -3816,7 +3816,7 @@ private:
                         .accelerationY = 0.0004f,
                         .opacity       = 0.95f,
                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.5f,
-                        .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                        .rotation      = m_rngFast.getF(0.f, zb::tau),
                         .torque        = m_rngFast.getF(-0.001f, 0.001f),
                         .color         = hueColorFromPaletteIdx(optBlock->paletteIdx, 255u),
                         .radius        = m_rngFast.getF(6.f, 12.f),
@@ -3829,7 +3829,7 @@ private:
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
                                   .position    = getDrawPosition(i).componentWiseFloor(),
-                                  .origin      = sf::Vec2f{radius / 2.f, radius / 2.f}.componentWiseFloor(),
+                                  .origin      = za::Vec2f{radius / 2.f, radius / 2.f}.componentWiseFloor(),
                                   .rotation    = rotation,
                                   .textureRect = m_txrDrill,
                                   .color       = hueColorFromPaletteIdx(paletteIdx, 255u),
@@ -3876,7 +3876,7 @@ private:
                 .accelerationY = 0.0004f,
                 .opacity       = 0.75f,
                 .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
-                .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                .rotation      = m_rngFast.getF(0.f, zb::tau),
                 .torque        = m_rngFast.getF(-0.001f, 0.001f),
                 .color         = blockPalette[getTetraminoPaletteIdx(laserAnim->tetramino)],
                 .radius        = m_rngFast.getF(4.f, 7.f),
@@ -3906,15 +3906,15 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    static inline constexpr sf::Vec2f tetraminoVisualCenterOffset = (drawBlockSize * static_cast<float>(shapeDimension)) / 2.f;
+    static inline constexpr za::Vec2f tetraminoVisualCenterOffset = (drawBlockSize * static_cast<float>(shapeDimension)) / 2.f;
 
 
     /////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] sf::Vec2f getTetraminoCenterDrawPosition(const sf::Vec2<T> tetraminoGridPosition) const
+    [[nodiscard]] za::Vec2f getTetraminoCenterDrawPosition(const za::Vec2<T> tetraminoGridPosition) const
     {
         // 1. Get the screen position of the top-left corner of the tetramino's grid cell.
-        const sf::Vec2f topLeftDrawPosition = toDrawCoordinates(tetraminoGridPosition);
+        const za::Vec2f topLeftDrawPosition = toDrawCoordinates(tetraminoGridPosition);
 
         // 2. The pivot is the center of the 4x4 shape. Find the offset from the top-left to this pivot.
         // 3. The final center is the top-left position plus the offset.
@@ -3924,18 +3924,18 @@ private:
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard]] sf::Vec2f getDrawPositionOfLocalBlock(const sf::Vec2<T>& localBlockGridPos,
-                                                        const sf::Vec2f    tetraminoCenter) const
+    [[nodiscard]] za::Vec2f getDrawPositionOfLocalBlock(const za::Vec2<T>& localBlockGridPos,
+                                                        const za::Vec2f    tetraminoCenter) const
     {
         // 1. The pivot is the center of the 4x4 shape in its own local space.
-        const sf::Vec2f localPivot = tetraminoVisualCenterOffset;
+        const za::Vec2f localPivot = tetraminoVisualCenterOffset;
 
         // 2. Find the center of the specific block in local space.
-        const sf::Vec2f localBlockCenter = localBlockGridPos.toVec2f().componentWiseMul(drawBlockSize) +
+        const za::Vec2f localBlockCenter = localBlockGridPos.toVec2f().componentWiseMul(drawBlockSize) +
                                            (drawBlockSize / 2.f);
 
         // 3. Get the block's position vector relative to the tetramino's pivot.
-        const sf::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
+        const za::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
 
         // 4. The final world position is the tetramino's world center plus this relative vector.
         return (tetraminoCenter + positionRelativeToPivot).componentWiseFloor();
@@ -3945,11 +3945,11 @@ private:
     ////////////////////////////////////////////////////////////
     void drawDrillSpikesForPerk(
         const ShapeBlockPositionVector& localBlockPositions,
-        const sf::Vec2f                 offset,
-        const sf::Color                 color,
-        const sf::Angle                 rotation,
-        const sf::Vec2f                 mainTetraminoCenter,
-        const sf::Vec2f                 ghostTetraminoCenter,
+        const za::Vec2f                 offset,
+        const za::Color                 color,
+        const za::Angle                 rotation,
+        const za::Vec2f                 mainTetraminoCenter,
+        const za::Vec2f                 ghostTetraminoCenter,
         const bool                      drawGhost,
         const float                     squishMult)
     {
@@ -3958,28 +3958,28 @@ private:
 
         float finalSquishMult = 1.f + squishMult;
 
-        sf::Sprite spike{
-            .scale       = sf::Vec2f{finalSquishMult, finalSquishMult},
-            .origin      = sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f}.componentWiseFloor(),
+        za::Sprite spike{
+            .scale       = za::Vec2f{finalSquishMult, finalSquishMult},
+            .origin      = za::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f}.componentWiseFloor(),
             .rotation    = rotation,
             .textureRect = m_txrDrill,
         };
 
         for (const auto& bPos : localBlockPositions)
         {
-            const sf::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
-            const sf::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
+            const za::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
+            const za::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
             // Draw main spike
-            spike.position = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
+            spike.position = (offset + mainBlockDrawPos.addX(zb::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
             spike.color = mainColor;
             m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             // Draw ghost spike
             if (drawGhost)
             {
-                spike.position = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
-                                 sf::Vec2f{1.f, 1.f};
+                spike.position = (offset + ghostBlockDrawPos.addY(zb::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
+                                 za::Vec2f{1.f, 1.f};
                 spike.color = ghostColor;
                 m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
             }
@@ -3988,17 +3988,17 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f calculateLaserGridIntersection(const sf::Vec2f startPos, const LaserDirection::Enum direction) const
+    [[nodiscard]] za::Vec2f calculateLaserGridIntersection(const za::Vec2f startPos, const LaserDirection::Enum direction) const
     {
         // 1. Define grid boundaries in draw coordinates. The playable grid area starts below gridGraceY.
-        const float left  = toDrawCoordinates(sf::Vec2f{0.f, 0.f}).x;
-        const float right = toDrawCoordinates(sf::Vec2f{static_cast<float>(m_world.blockGrid.getWidth() - 1), 0.f}).x;
-        const float top   = toDrawCoordinates(sf::Vec2f{0.f, static_cast<float>(gridGraceY)}).y;
-        const float bottom = toDrawCoordinates(sf::Vec2f{0.f, static_cast<float>(m_world.blockGrid.getHeight() - 1)}).y + 1.f;
+        const float left  = toDrawCoordinates(za::Vec2f{0.f, 0.f}).x;
+        const float right = toDrawCoordinates(za::Vec2f{static_cast<float>(m_world.blockGrid.getWidth() - 1), 0.f}).x;
+        const float top   = toDrawCoordinates(za::Vec2f{0.f, static_cast<float>(gridGraceY)}).y;
+        const float bottom = toDrawCoordinates(za::Vec2f{0.f, static_cast<float>(m_world.blockGrid.getHeight() - 1)}).y + 1.f;
 
         // 2. Define the ray using its starting position and direction vector in draw space.
-        const sf::Vec2f rayDirGrid = laserDirectionToVec2i(direction).toVec2f();
-        const sf::Vec2f rayDirDraw = rayDirGrid.componentWiseMul(drawBlockSize);
+        const za::Vec2f rayDirGrid = laserDirectionToVec2i(direction).toVec2f();
+        const za::Vec2f rayDirDraw = rayDirGrid.componentWiseMul(drawBlockSize);
 
         // Avoid division by zero if direction is a zero vector.
         if (rayDirDraw.x == 0.f && rayDirDraw.y == 0.f)
@@ -4020,7 +4020,7 @@ private:
                 {
                     const float y = startPos.y + tLeft * rayDirDraw.y;
                     if (y >= top && y <= bottom)
-                        minT = sf::base::min(minT, tLeft);
+                        minT = zb::min(minT, tLeft);
                 }
             }
             else
@@ -4030,7 +4030,7 @@ private:
                 {
                     const float y = startPos.y + tRight * rayDirDraw.y;
                     if (y >= top && y <= bottom)
-                        minT = sf::base::min(minT, tRight);
+                        minT = zb::min(minT, tRight);
                 }
             }
         }
@@ -4043,7 +4043,7 @@ private:
             {
                 const float x = startPos.x + tBottom * rayDirDraw.x;
                 if (x >= left && x <= right)
-                    minT = sf::base::min(minT, tBottom);
+                    minT = zb::min(minT, tBottom);
             }
         }
 
@@ -4060,32 +4060,32 @@ private:
     ////////////////////////////////////////////////////////////
     void drawLaserEmittersForPerk(
         const ShapeBlockPositionVector& localBlockPositions,
-        const sf::Vec2f                 offset,
-        const sf::Color                 color,
-        const sf::Angle                 rotation,
-        const sf::Vec2f                 mainTetraminoCenter,
-        const sf::Vec2f                 ghostTetraminoCenter,
+        const za::Vec2f                 offset,
+        const za::Color                 color,
+        const za::Angle                 rotation,
+        const za::Vec2f                 mainTetraminoCenter,
+        const za::Vec2f                 ghostTetraminoCenter,
         const bool                      drawGhost,
         const float                     squishMult)
     {
         const auto mainColor  = color;
         const auto ghostColor = mainColor.withAlpha(64);
 
-        const auto laserDirection = rotation == sf::degrees(45.f) ? LaserDirection::Left : LaserDirection::Right;
+        const auto laserDirection = rotation == za::degrees(45.f) ? LaserDirection::Left : LaserDirection::Right;
         const auto laserDir       = laserDirectionToVec2i(laserDirection);
 
         float finalSquishMult = 1.f + squishMult;
 
-        sf::Sprite spike{
-            .scale = sf::Vec2f{finalSquishMult, finalSquishMult},
-            .origin = (sf::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - sf::Vec2f{2.f, 2.f}).componentWiseFloor(),
-            .rotation    = rotation + sf::degrees(180.f + 45.f),
+        za::Sprite spike{
+            .scale = za::Vec2f{finalSquishMult, finalSquishMult},
+            .origin = (za::Vec2f{drawBlockSize.x / 2.f, drawBlockSize.y / 2.f} - za::Vec2f{2.f, 2.f}).componentWiseFloor(),
+            .rotation    = rotation + za::degrees(180.f + 45.f),
             .textureRect = m_txrEmitter,
         };
 
-        const auto drawGuide = [this, &mainColor](const sf::Vec2f            startPos,
+        const auto drawGuide = [this, &mainColor](const za::Vec2f            startPos,
                                                   const LaserDirection::Enum guideLaserDirection,
-                                                  const sf::Angle            guideRotation)
+                                                  const za::Angle            guideRotation)
         {
             const auto guideLaserDir = laserDirectionToVec2i(guideLaserDirection);
             const auto guideOffset   = guideLaserDir.toVec2f() * 2.f;
@@ -4096,14 +4096,14 @@ private:
             if (guideLaserDirection == LaserDirection::Right)
                 endPos += guideLaserDir.toVec2f() * 3.f;
 
-            sf::RectangleShape guide{{
+            za::RectangleShape guide{{
                 .rotation    = guideRotation.wrapUnsigned(),
                 .textureRect = m_txrRedDot,
-                .size        = sf::Vec2f{1.f, (endPos - startPos).length()},
+                .size        = za::Vec2f{1.f, (endPos - startPos).length()},
             }};
 
-            const auto guideAnchorPoint = guideLaserDirection == LaserDirection::Left ? sf::Vec2f{1.f, 0.f} // top-right
-                                                                                      : sf::Vec2f{0.f, 0.f}; // top-left
+            const auto guideAnchorPoint = guideLaserDirection == LaserDirection::Left ? za::Vec2f{1.f, 0.f} // top-right
+                                                                                      : za::Vec2f{0.f, 0.f}; // top-left
 
             guide.setFillColor(mainColor.withAlpha(32));
             guide.setSize({1.f, (endPos - startPos).length()});
@@ -4120,10 +4120,10 @@ private:
 
         for (const auto& bPos : localBlockPositions)
         {
-            const sf::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
-            const sf::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
+            const za::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
+            const za::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
-            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(sf::base::floor(-drawBlockSize.x / 2.f)))
+            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(zb::floor(-drawBlockSize.x / 2.f)))
                                           .componentWiseFloor();
 
             // Draw main spike
@@ -4134,9 +4134,9 @@ private:
             if (!drawGhost)
                 continue;
 
-            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(sf::base::floor(drawBlockSize.y / 2.f)))
+            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(zb::floor(drawBlockSize.y / 2.f)))
                                            .componentWiseFloor() -
-                                       sf::Vec2f{1.f, 1.f};
+                                       za::Vec2f{1.f, 1.f};
 
             // Draw ghost spike
             spike.position = ghostSpikePos + (laserDir * 4).toVec2f();
@@ -4147,12 +4147,12 @@ private:
 
             if (m_world.perkLaser[laserDirection]->bounce)
             {
-                const auto bounceOffset = laserDirection == LaserDirection::Left ? sf::Vec2f{-4.f, -2.f}
-                                                                                 : sf::Vec2f{4.f, -2.f};
+                const auto bounceOffset = laserDirection == LaserDirection::Left ? za::Vec2f{-4.f, -2.f}
+                                                                                 : za::Vec2f{4.f, -2.f};
 
                 (void)drawGuide(endPos + bounceOffset,
                                 laserDirection == LaserDirection::Left ? LaserDirection::Right : LaserDirection::Left,
-                                sf::degrees(180.f) - rotation);
+                                za::degrees(180.f) - rotation);
             }
         }
     }
@@ -4212,7 +4212,7 @@ private:
     struct [[nodiscard]] DrawActiveTetraminoOptions // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         Tetramino& tetramino;
-        sf::Vec2f  visualCenter;
+        za::Vec2f  visualCenter;
         float      squishMult;
         bool       drawTetramino;
         bool       drawGhost;
@@ -4226,21 +4226,21 @@ private:
 
         const auto color = hueColorFromPaletteIdx(getTetraminoPaletteIdx(tetramino), 255u);
 
-        auto tetraminoDrawPosition = (visualCenter - drawBlockSize / 2.f).componentWiseFloor() + sf::Vec2f{1, 1};
+        auto tetraminoDrawPosition = (visualCenter - drawBlockSize / 2.f).componentWiseFloor() + za::Vec2f{1, 1};
 
-        const sf::Vec2f ghostGridPosition = tetramino.position.toVec2f().withY(
+        const za::Vec2f ghostGridPosition = tetramino.position.toVec2f().withY(
             static_cast<float>(calculateGhostY(tetramino)));
 
-        const sf::Vec2f ghostCenterDrawPosition = getTetraminoCenterDrawPosition(ghostGridPosition)
+        const za::Vec2f ghostCenterDrawPosition = getTetraminoCenterDrawPosition(ghostGridPosition)
                                                       .withX(tetraminoDrawPosition.x)
                                                       .addY(-drawBlockSize.y / 2.f)
                                                       .addY(1.f);
 
         if (m_world.perkDrill[DrillDirection::Down].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Down),
-                                   sf::Vec2f{0.f + 2.f, drawBlockSize.y / 2.f + 2.f}.componentWiseFloor(),
+                                   za::Vec2f{0.f + 2.f, drawBlockSize.y / 2.f + 2.f}.componentWiseFloor(),
                                    color,
-                                   sf::degrees(0.f),
+                                   za::degrees(0.f),
                                    visualCenter,
                                    ghostCenterDrawPosition,
                                    mustDrawGhost,
@@ -4248,9 +4248,9 @@ private:
 
         if (m_world.perkDrill[DrillDirection::Left].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Left),
-                                   sf::Vec2f{-drawBlockSize.x / 2.f - 2.f, -drawBlockSize.y / 2.f + 2.f}.componentWiseFloor(),
+                                   za::Vec2f{-drawBlockSize.x / 2.f - 2.f, -drawBlockSize.y / 2.f + 2.f}.componentWiseFloor(),
                                    color,
-                                   sf::degrees(90.f),
+                                   za::degrees(90.f),
                                    visualCenter,
                                    ghostCenterDrawPosition,
                                    mustDrawGhost,
@@ -4258,9 +4258,9 @@ private:
 
         if (m_world.perkDrill[DrillDirection::Right].hasValue())
             drawDrillSpikesForPerk(findDrillBlocks(tetramino, DrillDirection::Right),
-                                   sf::Vec2f{drawBlockSize.x + 2.f, -1.f - 2.f}.componentWiseFloor(),
+                                   za::Vec2f{drawBlockSize.x + 2.f, -1.f - 2.f}.componentWiseFloor(),
                                    color,
-                                   sf::degrees(270.f),
+                                   za::degrees(270.f),
                                    visualCenter,
                                    ghostCenterDrawPosition,
                                    mustDrawGhost,
@@ -4288,7 +4288,7 @@ private:
             drawLaserEmittersForPerk(findLaserBlocks(tetramino, LaserDirection::Left),
                                      {0.f, -1.f},
                                      color,
-                                     sf::degrees(45.f),
+                                     za::degrees(45.f),
                                      visualCenter,
                                      ghostCenterDrawPosition,
                                      mustDrawGhost,
@@ -4296,9 +4296,9 @@ private:
 
         if (m_world.perkLaser[LaserDirection::Right].hasValue())
             drawLaserEmittersForPerk(findLaserBlocks(tetramino, LaserDirection::Right),
-                                     sf::Vec2f{drawBlockSize.x / 2.f, -1.f}.componentWiseFloor(),
+                                     za::Vec2f{drawBlockSize.x / 2.f, -1.f}.componentWiseFloor(),
                                      color,
-                                     sf::degrees(315.f),
+                                     za::degrees(315.f),
                                      visualCenter,
                                      ghostCenterDrawPosition,
                                      mustDrawGhost,
@@ -4311,16 +4311,16 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        const sf::base::SizeT nPeek = sf::base::min(static_cast<sf::base::SizeT>(m_world.perkNPeek),
+        const zb::SizeT nPeek = zb::min(static_cast<zb::SizeT>(m_world.perkNPeek),
                                                     m_world.blockMatrixBag.size());
 
         constexpr float uiTetraminoScale = 9.f / drawBlockSize.x;
 
         const auto hudPos = getHudPos();
 
-        sf::Vec2f uiBoxCenter = sf::Vec2f{hudPos.x + 12.f, hudPos.y + 68.f + 24.f} + sf::Vec2f{16.f, 16.f};
+        za::Vec2f uiBoxCenter = za::Vec2f{hudPos.x + 12.f, hudPos.y + 68.f + 24.f} + za::Vec2f{16.f, 16.f};
 
-        for (sf::base::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
+        for (zb::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
         {
             const auto& shape = m_world.blockMatrixBag[iPeek].blockMatrix;
 
@@ -4351,9 +4351,9 @@ private:
 
         const auto&     shape       = m_world.heldTetramino->shape;
         const auto      hudPos      = getHudPos();
-        const sf::Vec2f uiBoxCenter = {hudPos.x + 128.f + 10.f, hudPos.y};
+        const za::Vec2f uiBoxCenter = {hudPos.x + 128.f + 10.f, hudPos.y};
 
-        (void)drawTetramino(shape, uiBoxCenter + sf::Vec2f{20.f, 48.f});
+        (void)drawTetramino(shape, uiBoxCenter + za::Vec2f{20.f, 48.f});
     }
 
 
@@ -4363,12 +4363,12 @@ private:
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
         for (auto& lb : m_lightningBolts)
-            lb.draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
+            lb.draw(m_rtGame, {.blendMode = za::BlendAdd, .view = m_worldView});
 
         if (m_optLaserBeam.hasValue())
         {
-            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
-            m_optLaserBeam->draw(m_rtGame, {.blendMode = sf::BlendAdd, .view = m_worldView});
+            m_optLaserBeam->draw(m_rtGame, {.blendMode = za::BlendAdd, .view = m_worldView});
+            m_optLaserBeam->draw(m_rtGame, {.blendMode = za::BlendAdd, .view = m_worldView});
         }
     }
 
@@ -4378,9 +4378,9 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
+        const auto bezier = [](const za::Vec2f start, const za::Vec2f end, const float t)
         {
-            const sf::Vec2f control(start.x, end.y);
+            const za::Vec2f control(start.x, end.y);
             const float     u = 1.f - t;
 
             return u * u * start + 2.f * u * t * control + t * t * end;
@@ -4394,16 +4394,16 @@ private:
                                         particle.targetPosition,
                                         easeInOutBack(particle.progress.value));
 
-            const auto alpha = static_cast<sf::base::U8>((particle.progress.remapBouncedEased(easeInOutQuint, 64.f, 255.f)));
+            const auto alpha = static_cast<zb::U8>((particle.progress.remapBouncedEased(easeInOutQuint, 64.f, 255.f)));
 
             m_rtGame.draw(
-                sf::CircleShapeData{
+                za::CircleShapeData{
                     .position = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
-                    .scale    = sf::Vec2f{0.25f, 0.25f} * particle.progress.remapBounced(0.6f, 2.f),
+                    .scale    = za::Vec2f{0.25f, 0.25f} * particle.progress.remapBounced(0.6f, 2.f),
                     .origin   = {12.f, 12.f},
-                    .rotation = sf::radians(
-                        sf::base::fmod(particle.startRotation + particle.progress.remap(0.f, sf::base::tau * 2.f),
-                                       sf::base::tau)),
+                    .rotation = za::radians(
+                        zb::fmod(particle.startRotation + particle.progress.remap(0.f, zb::tau * 2.f),
+                                       zb::tau)),
                     .textureRect = m_txrRedDot,
                     .fillColor   = hueColorFromPaletteIdx(particle.paletteIdx, alpha),
                     .radius      = 12.f,
@@ -4436,13 +4436,13 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vec2f getHudPos()
+    [[nodiscard]] za::Vec2f getHudPos()
     {
-        const sf::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
-        const auto       bgPosition = toDrawCoordinates(sf::Vec2uz{0, gridGraceY}) - sf::Vec2f{1.f, 1.f};
+        const za::Vec2uz gridSize{m_world.blockGrid.getWidth(), m_world.blockGrid.getHeight() - gridGraceY};
+        const auto       bgPosition = toDrawCoordinates(za::Vec2uz{0, gridGraceY}) - za::Vec2f{1.f, 1.f};
         const auto       bgSize     = gridSize.toVec2f().componentWiseMul(drawBlockSize).addX(4.f).addY(4.f);
 
-        const auto hudStart = bgPosition + sf::Vec2f{bgSize.x + 4.f, -11.f};
+        const auto hudStart = bgPosition + za::Vec2f{bgSize.x + 4.f, -11.f};
 
         return hudStart;
     }
@@ -4453,9 +4453,9 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        sf::RectangleShape statsBorder{{
+        za::RectangleShape statsBorder{{
             .position         = getHudPos().addY(4.f).addX(-1.f),
-            .fillColor        = sf::Color::Transparent,
+            .fillColor        = za::Color::Transparent,
             .outlineColor     = {135, 135, 135},
             .outlineThickness = 1.f,
             .size             = {128.f, 64.f},
@@ -4466,7 +4466,7 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        auto statsStr = sf::base::fmtToString(
+        auto statsStr = zb::fmtToString(
             "^bold[](Level)^: {}\n"
             "^bold[](XP)^: {} / {}\n"
             "^bold[](Clock)^: {}s\n"
@@ -4490,17 +4490,17 @@ private:
                 .bitmapFont      = m_bitmapFontMinogram,
                 .fontTextureRect = m_txrBFMinogram6x10,
                 .alignment       = BitmapTextAlignment::Left,
-                .baseColor       = sf::Color::White,
+                .baseColor       = za::Color::White,
                 .time            = m_totalTime,
                 .string          = statsStr,
             },
-            sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
+            za::Transform::fromPosition(statsBorder.getGlobalTopLeft() + za::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices(
-            sf::DrawIndexedVerticesSettings{
+            za::DrawIndexedVerticesSettings{
                 .vertexSpan    = m_textVerticesBuffer,
                 .indexSpan     = m_textIndicesBuffer,
-                .primitiveType = sf::PrimitiveType::Triangles,
+                .primitiveType = za::PrimitiveType::Triangles,
             },
             {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
@@ -4511,9 +4511,9 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        sf::RectangleShape statsBorder{{
+        za::RectangleShape statsBorder{{
             .position         = getHudPos().addY(168.f - 48.f).addX(-1.f),
-            .fillColor        = sf::Color::Transparent,
+            .fillColor        = za::Color::Transparent,
             .outlineColor     = {135, 135, 135},
             .outlineThickness = 1.f,
             .size             = {184.f, 64.f + 48.f},
@@ -4521,11 +4521,11 @@ private:
 
         m_rtGame.draw(statsBorder, {.view = m_worldView});
 
-        sf::base::String perksStr;
+        zb::String perksStr;
 
         for (const auto& perk : m_perks)
             if (perk->isActive(m_world))
-                perksStr += sf::base::fmtToString("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
+                perksStr += zb::fmtToString("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -4537,17 +4537,17 @@ private:
                 .bitmapFont      = m_bitmapFontTiny5,
                 .fontTextureRect = m_txrBFTiny5,
                 .alignment       = BitmapTextAlignment::Left,
-                .baseColor       = sf::Color::White,
+                .baseColor       = za::Color::White,
                 .time            = m_totalTime,
                 .string          = perksStr,
             },
-            sf::Transform::fromPosition(statsBorder.getGlobalTopLeft() + sf::Vec2f{4.f, 2.f}));
+            za::Transform::fromPosition(statsBorder.getGlobalTopLeft() + za::Vec2f{4.f, 2.f}));
 
         m_rtGame.drawIndexedVertices(
-            sf::DrawIndexedVerticesSettings{
+            za::DrawIndexedVerticesSettings{
                 .vertexSpan    = m_textVerticesBuffer,
                 .indexSpan     = m_textIndicesBuffer,
-                .primitiveType = sf::PrimitiveType::Triangles,
+                .primitiveType = za::PrimitiveType::Triangles,
             },
             {.view = m_worldView, .texture = &m_textureAtlas.getTexture()});
     }
@@ -4600,21 +4600,21 @@ private:
 
             if (m_world.perkNPeek > 0)
                 m_rtGame.draw(m_font,
-                              sf::TextData{
+                              za::TextData{
                                   .position      = getHudPos().addY(68.f).addX(4.f),
                                   .string        = "Next:",
                                   .characterSize = 16u,
-                                  .outlineColor  = sf::Color::White,
+                                  .outlineColor  = za::Color::White,
                               },
                               {.view = m_worldView});
 
             if (m_world.perkCanHoldTetramino == 1)
                 m_rtGame.draw(m_font,
-                              sf::TextData{
+                              za::TextData{
                                   .position      = getHudPos().addX(128.f + 10.f),
                                   .string        = "Held:",
                                   .characterSize = 16u,
-                                  .outlineColor  = sf::Color::White,
+                                  .outlineColor  = za::Color::White,
                               },
                               {.view = m_worldView});
 
@@ -4634,23 +4634,23 @@ private:
 
         // figure out scale that fits in the window (pixel-perfect)
         {
-            const sf::Vec2f windowSize = m_window.getSize().toVec2f();
-            const sf::Vec2f rtGameSize = m_rtGame.getSize().toVec2f();
+            const za::Vec2f windowSize = m_window.getSize().toVec2f();
+            const za::Vec2f rtGameSize = m_rtGame.getSize().toVec2f();
 
-            scale = sf::base::floor(sf::base::min(windowSize.x / rtGameSize.x, windowSize.y / rtGameSize.y));
+            scale = zb::floor(zb::min(windowSize.x / rtGameSize.x, windowSize.y / rtGameSize.y));
         }
 
         // figure out position to center the rtGame texture in the window
-        const sf::Vec2f windowSize = m_window.getSize().toVec2f();
-        const sf::Vec2f rtGameSize = m_rtGame.getSize().toVec2f() * scale;
+        const za::Vec2f windowSize = m_window.getSize().toVec2f();
+        const za::Vec2f rtGameSize = m_rtGame.getSize().toVec2f() * scale;
 
         if (m_rtPostProcess.getSize() != rtGameSize.toVec2u())
-            m_rtPostProcess = sf::RenderTexture::create(rtGameSize.toVec2u()).value();
+            m_rtPostProcess = za::RenderTexture::create(rtGameSize.toVec2u()).value();
 
         {
             SFEX_PROFILE_SCOPE("postprocess");
 
-            const auto postProcessInternalView = sf::View::fromScreenSize(m_rtGame.getSize().toVec2f());
+            const auto postProcessInternalView = za::View::fromScreenSize(m_rtGame.getSize().toVec2f());
 
             m_rtPostProcess.flush();
 
@@ -4663,9 +4663,9 @@ private:
             m_rtPostProcess.display();
         }
 
-        const sf::Vec2f centeredPosition = (windowSize - rtGameSize) / 2.f;
+        const za::Vec2f centeredPosition = (windowSize - rtGameSize) / 2.f;
         const float     quakeYOffset     = m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue();
-        const sf::Vec2f finalPosition    = (centeredPosition + screenShake.addY(quakeYOffset)).componentWiseFloor();
+        const za::Vec2f finalPosition    = (centeredPosition + screenShake.addY(quakeYOffset)).componentWiseFloor();
 
         {
             SFEX_PROFILE_SCOPE("final draw");
@@ -4700,7 +4700,7 @@ public:
 
         m_window.setSize((resolution * scale).toVec2u());
         m_window.setPosition(
-            (sf::VideoModeUtils::getDesktopMode().size / 2u - (resolution * (scale * 0.5f)).toVec2u()).toVec2i());
+            (za::VideoModeUtils::getDesktopMode().size / 2u - (resolution * (scale * 0.5f)).toVec2u()).toVec2i());
 
         restartGame();
     }
@@ -4736,10 +4736,10 @@ public:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    auto audioContext    = sf::AudioContext::create().value();
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto audioContext    = za::AudioContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    auto game = sf::base::makeUnique<tsurv::Game>();
+    auto game = zb::makeUnique<tsurv::Game>();
 
     if (!game->run())
         return 1;

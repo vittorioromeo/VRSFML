@@ -1,13 +1,13 @@
 #pragma once
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ParticleData
 {
-    sf::Vec2f position;
-    sf::Vec2f velocity;
+    za::Vec2f position;
+    za::Vec2f velocity;
 
     float scale; // TODO P2: consider optimizing memory layout
     float scaleDecay;

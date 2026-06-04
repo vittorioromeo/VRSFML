@@ -5,8 +5,8 @@ Please make sure you are targetting the correct branch. No more features are pla
 
 Before creating the pull request, we ask you to check the following boxes: (For small changes not everything needs to ticked, but the more the better!)
 
--   [ ] Has this change been discussed on [the forum](https://en.sfml-dev.org/forums/index.php#c3) or in an issue before?
--   [ ] Does the code follow the SFML [Code Style Guide](https://www.sfml-dev.org/style.php)?
+-   [ ] Has this change been discussed on [the forum](https://en.zancle-dev.org/forums/index.php#c3) or in an issue before?
+-   [ ] Does the code follow the SFML [Code Style Guide](https://www.zancle-dev.org/style.php)?
 -   [ ] Have you provided some example/test code for your changes?
 -   [ ] If you have additional steps which need to be performed, please list them as tasks!
 -->
@@ -32,23 +32,23 @@ This PR is related to the issue #
 <!-- Please provide a [minimal, complete and verifiable example](https://stackoverflow.com/help/mcve) if possible, you can use the following template as a start: -->
 
 ```cpp
-#include "SFML/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Optional.hpp"
 
 int main()
 {
-    sf::RenderWindow window(
+    za::RenderWindow window(
         {.size{1280u, 720u}, .title = "Minimal, complete and verifiable example", .framerateLimit = 60});
 
     while (true)
     {
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (event->is<sf::Event::Closed>())
+            if (event->is<za::Event::Closed>())
                 return 0;
         }
 

@@ -8,24 +8,24 @@
 #include "UIState.hpp"
 #include "Version.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Math/Lround.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Math/Lround.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Vector.hpp"
 
 namespace
 {
@@ -35,20 +35,20 @@ void clampDemoPlaythrough(Main& main)
         return;
 
     const auto clampNPurchases = [](auto& psv)
-    { psv.nPurchases = sf::base::min(psv.nPurchases, psv.data->nMaxPurchases); };
+    { psv.nPurchases = zb::min(psv.nPurchases, psv.data->nMaxPurchases); };
 
     clampNPurchases(main.pt->psvMapExtension);
     clampNPurchases(main.pt->psvShrineActivation);
     clampNPurchases(main.pt->psvBubbleValue);
 
-    sf::base::vectorEraseIf(main.pt->cats, [](const Cat& cat) {
+    zb::vectorEraseIf(main.pt->cats, [](const Cat& cat) {
         return cat.type >= CatType::Mouse && cat.type <= CatType::Duck;
     });
 }
 
-[[nodiscard]] sf::base::Vector<sf::Vec2f> collectDownFingers(const Main& main)
+[[nodiscard]] zb::Vector<za::Vec2f> collectDownFingers(const Main& main)
 {
-    sf::base::Vector<sf::Vec2f> downFingers;
+    zb::Vector<za::Vec2f> downFingers;
 
     for (const auto maybeFinger : main.playerInputState.fingerPositions)
         if (maybeFinger.hasValue())
@@ -57,42 +57,42 @@ void clampDemoPlaythrough(Main& main)
     return downFingers;
 }
 
-void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::base::Vector<sf::Vec2f>& downFingers)
+void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers)
 {
     if (!main.pt->mapPurchased)
         return;
 
-    if (main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::Home))
+    if (main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::Home))
         main.playerInputState.scroll = 0.f;
-    else if (main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::End))
+    else if (main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::End))
         main.playerInputState.scroll = static_cast<float>(main.pt->getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
 
-    const auto currentScrollScreenIndex = static_cast<sf::base::SizeT>(
-        sf::base::lround(main.playerInputState.scroll / (gameScreenSize.x * 0.5f)));
+    const auto currentScrollScreenIndex = static_cast<zb::SizeT>(
+        zb::lround(main.playerInputState.scroll / (gameScreenSize.x * 0.5f)));
 
-    if (main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageDown) ||
-        main.inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra2))
+    if (main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::PageDown) ||
+        main.inputHelper.wasMouseButtonJustPressed(za::Mouse::Button::Extra2))
     {
-        const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, main.pt->getMapLimitIncreases());
+        const auto nextScrollScreenIndex = zb::min(currentScrollScreenIndex + 1u, main.pt->getMapLimitIncreases());
         main.playerInputState.scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
     }
-    else if ((main.inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageUp) ||
-              main.inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra1)) &&
+    else if ((main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::PageUp) ||
+              main.inputHelper.wasMouseButtonJustPressed(za::Mouse::Button::Extra1)) &&
              currentScrollScreenIndex > 0u)
     {
-        const auto nextScrollScreenIndex = sf::base::max(static_cast<sf::base::SizeT>(0u), currentScrollScreenIndex - 1u);
+        const auto nextScrollScreenIndex = zb::max(static_cast<zb::SizeT>(0u), currentScrollScreenIndex - 1u);
 
         main.playerInputState.scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
     }
 
-    const float scrollMult = main.keyDown(sf::Keyboard::Key::LShift) ? 4.f : 2.f;
+    const float scrollMult = main.keyDown(za::Keyboard::Key::LShift) ? 4.f : 2.f;
 
-    if (main.keyDown(sf::Keyboard::Key::Left) || main.keyDown(sf::Keyboard::Key::A))
+    if (main.keyDown(za::Keyboard::Key::Left) || main.keyDown(za::Keyboard::Key::A))
     {
         main.playerInputState.dragPosition.reset();
         main.playerInputState.scroll -= scrollMult * deltaTimeMs;
     }
-    else if (main.keyDown(sf::Keyboard::Key::Right) || main.keyDown(sf::Keyboard::Key::D))
+    else if (main.keyDown(za::Keyboard::Key::Right) || main.keyDown(za::Keyboard::Key::D))
     {
         main.playerInputState.dragPosition.reset();
         main.playerInputState.scroll += scrollMult * deltaTimeMs;
@@ -117,13 +117,13 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::ba
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Main::gameLoopHandleEvents(FrameInput& frameInput, const bool shouldDrawUI)
 {
-    while (const sf::base::Optional event = window.pollEvent())
+    while (const zb::Optional event = window.pollEvent())
     {
         inputHelper.applyEvent(*event);
         imGuiContext.processEvent(window, *event);
 
-        if (shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
-            event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
+        if (shouldDrawUI && event->is<za::Event::KeyPressed>() &&
+            event->getIf<za::Event::KeyPressed>()->code == za::Keyboard::Key::Escape)
         {
             if (!playerInputState.escWasPressed)
             {
@@ -132,37 +132,37 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::ba
             }
         }
 
-        if (isDebugModeEnabled() && event->is<sf::Event::KeyPressed>() &&
-            event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::F8)
+        if (isDebugModeEnabled() && event->is<za::Event::KeyPressed>() &&
+            event->getIf<za::Event::KeyPressed>()->code == za::Keyboard::Key::F8)
         {
             uiState.debugWindowVisible = !uiState.debugWindowVisible;
             playSound(sounds.uitab);
         }
 
-        if (event->is<sf::Event::Closed>())
+        if (event->is<za::Event::Closed>())
             return false;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
-        if (const auto* e0 = event->getIf<sf::Event::TouchBegan>())
+        if (const auto* e0 = event->getIf<za::Event::TouchBegan>())
         {
             playerInputState.fingerPositions[e0->finger].emplace(e0->position.toVec2f());
 
             if (!frameInput.clickPosition.hasValue())
                 frameInput.clickPosition.emplace(e0->position.toVec2f());
         }
-        else if (const auto* e1 = event->getIf<sf::Event::TouchEnded>())
+        else if (const auto* e1 = event->getIf<za::Event::TouchEnded>())
         {
             playerInputState.fingerPositions[e1->finger].reset();
         }
-        else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
+        else if (const auto* e2 = event->getIf<za::Event::TouchMoved>())
         {
             playerInputState.fingerPositions[e2->finger].emplace(e2->position.toVec2f());
 
             if (pt->laserPopEnabled && !frameInput.clickPosition.hasValue())
                 frameInput.clickPosition.emplace(e2->position.toVec2f());
         }
-        else if (const auto* e3 = event->getIf<sf::Event::MouseButtonPressed>())
+        else if (const auto* e3 = event->getIf<za::Event::MouseButtonPressed>())
         {
             if (e3->button == getLMB())
                 frameInput.clickPosition.emplace(e3->position.toVec2f());
@@ -175,17 +175,17 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::ba
                 playerInputState.dragPosition->x += playerInputState.scroll;
             }
         }
-        else if (const auto* e4 = event->getIf<sf::Event::MouseButtonReleased>())
+        else if (const auto* e4 = event->getIf<za::Event::MouseButtonReleased>())
         {
             if (e4->button == getRMB())
                 playerInputState.dragPosition.reset();
         }
-        else if (const auto* e5 = event->getIf<sf::Event::MouseMoved>())
+        else if (const auto* e5 = event->getIf<za::Event::MouseMoved>())
         {
             if (pt->mapPurchased && playerInputState.dragPosition.hasValue())
                 playerInputState.scroll = playerInputState.dragPosition->x - static_cast<float>(e5->position.x);
         }
-        else if (const auto* e6 = event->getIf<sf::Event::Resized>())
+        else if (const auto* e6 = event->getIf<za::Event::Resized>())
         {
             recreateBackgroundRenderTexture(getExpandedGameViewSize(gameScreenSize, e6->size.toVec2f()).toVec2u());
             recreateImGuiRenderTexture(e6->size);
@@ -194,14 +194,14 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const sf::ba
             hudTopParticles.clear();
             hudBottomParticles.clear();
         }
-        else if (const auto* e7 = event->getIf<sf::Event::KeyPressed>())
+        else if (const auto* e7 = event->getIf<za::Event::KeyPressed>())
         {
-            if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X || e7->code == sf::Keyboard::Key::Y)
-                frameInput.clickPosition.emplace(sf::Mouse::getPosition(window).toVec2f());
+            if (e7->code == za::Keyboard::Key::Z || e7->code == za::Keyboard::Key::X || e7->code == za::Keyboard::Key::Y)
+                frameInput.clickPosition.emplace(za::Mouse::getPosition(window).toVec2f());
         }
-        else if (const auto* e8 = event->getIf<sf::Event::MouseWheelScrolled>())
+        else if (const auto* e8 = event->getIf<za::Event::MouseWheelScrolled>())
         {
-            const float scrollMult = keyDown(sf::Keyboard::Key::LShift) ? 200.f : 100.f;
+            const float scrollMult = keyDown(za::Keyboard::Key::LShift) ? 200.f : 100.f;
 
             if (!ImGui::GetIO().WantCaptureMouse)
                 playerInputState.scroll += e8->delta * scrollMult;
@@ -222,11 +222,11 @@ void Main::gameLoopPrepareInput(FrameInput& frameInput, const float deltaTimeMs)
     clampDemoPlaythrough(*this);
 
     if (pt->laserPopEnabled)
-        if (keyDown(sf::Keyboard::Key::Z) || keyDown(sf::Keyboard::Key::X) || keyDown(sf::Keyboard::Key::Y) ||
+        if (keyDown(za::Keyboard::Key::Z) || keyDown(za::Keyboard::Key::X) || keyDown(za::Keyboard::Key::Y) ||
             mBtnDown(getLMB(), /* penetrateUI */ false))
         {
             if (!frameInput.clickPosition.hasValue())
-                frameInput.clickPosition.emplace(sf::Mouse::getPosition(window).toVec2f());
+                frameInput.clickPosition.emplace(za::Mouse::getPosition(window).toVec2f());
         }
 
     frameInput.downFingers = collectDownFingers(*this);
@@ -234,7 +234,7 @@ void Main::gameLoopPrepareInput(FrameInput& frameInput, const float deltaTimeMs)
     gameLoopUpdateScrolling(deltaTimeMs, frameInput.downFingers);
 
     frameInput.windowSpaceMouseOrFingerPos = frameInput.downFingers.size() == 1u ? frameInput.downFingers[0].toVec2i()
-                                                                                 : sf::Mouse::getPosition(window);
+                                                                                 : za::Mouse::getPosition(window);
 
     if (frameInput.clickPosition.hasValue() && pt->mapPurchased)
     {
@@ -245,7 +245,7 @@ void Main::gameLoopPrepareInput(FrameInput& frameInput, const float deltaTimeMs)
             frameInput.clickPosition.reset();
     }
 
-    const sf::Vec2f resolution = getResolution();
+    const za::Vec2f resolution = getResolution();
     hudCullingBoundaries       = {0.f, resolution.x, 0.f, resolution.y};
     particleCullingBoundaries  = getViewCullingBoundaries(/* offset */ 0.f);
     bubbleCullingBoundaries    = getViewCullingBoundaries(/* offset */ -64.f);

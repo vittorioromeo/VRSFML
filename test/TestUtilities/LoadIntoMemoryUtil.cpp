@@ -1,17 +1,17 @@
 #include "LoadIntoMemoryUtil.hpp"
 
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/Assert.hpp"
+#include "ZancleBase/Assert.hpp"
 
 
-sf::base::Vector<char> loadIntoMemory(const char* path)
+zb::Vector<char> loadIntoMemory(const char* path)
 {
-    sf::base::Vector<char> buffer;
+    zb::Vector<char> buffer;
 
-    [[maybe_unused]] const bool ok = sf::readFromFile(sf::Path{path}, buffer);
-    SFML_BASE_ASSERT(ok);
+    [[maybe_unused]] const bool ok = za::readFromFile(za::Path{path}, buffer);
+    ZB_ASSERT(ok);
 
     return buffer;
 }

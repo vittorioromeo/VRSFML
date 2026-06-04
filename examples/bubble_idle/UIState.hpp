@@ -2,18 +2,18 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/AnkerlUnorderedDense.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/AnkerlUnorderedDense.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct PurchaseUnlockedEffect
 {
-    sf::base::String widgetLabel;
+    zb::String widgetLabel;
     Countdown        countdown;
     Countdown        arrowCountdown;
     float            hue;
@@ -37,17 +37,17 @@ struct UIState
     float        uiMenuRevealT   = 1.f;
     float        uiMenuHideTimer = 0.75f;
     bool         uiMenuLocked    = false;
-    sf::Vec2f    uiMenuLastDrawPos{};
-    sf::Vec2f    uiMenuLastDrawSize{425.f, 0.f};
+    za::Vec2f    uiMenuLastDrawPos{};
+    za::Vec2f    uiMenuLastDrawSize{425.f, 0.f};
 
-    ankerl::unordered_dense::map<sf::base::String, float> uiLabelToY;
+    ankerl::unordered_dense::map<zb::String, float> uiLabelToY;
 
-    sf::Rect2f minimapRect;
-    sf::Rect2f minimapZoomButtonsRect;
+    za::Rect2f minimapRect;
+    za::Rect2f minimapZoomButtonsRect;
     Countdown  scrollArrowCountdown;
 
-    sf::base::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
-    ankerl::unordered_dense::map<sf::base::String, bool> btnWasDisabled;
+    zb::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
+    ankerl::unordered_dense::map<zb::String, bool> btnWasDisabled;
     bool                                                 debugHideUI        = false;
     bool                                                 debugWindowVisible = true;
 

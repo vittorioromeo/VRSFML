@@ -6,17 +6,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Span.hpp"
-#include "SFML/Base/StringView.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Span.hpp"
+#include "ZancleBase/StringView.hpp"
 
 
-namespace sf::profiler
+namespace za::profiler
 {
 ////////////////////////////////////////////////////////////
 struct ScopeInfo
@@ -29,10 +29,10 @@ struct ScopeInfo
     base::I64 timeUs;
 };
 
-} // namespace sf::profiler
+} // namespace za::profiler
 
 
-namespace sf::profiler::priv
+namespace za::profiler::priv
 {
 ////////////////////////////////////////////////////////////
 inline constexpr base::SizeT maxNodes = 128u;
@@ -52,7 +52,7 @@ struct [[nodiscard]] Database
                                       const base::StringView line)
     {
         const base::SizeT id = nextNodeId++;
-        SFML_BASE_ASSERT(id < priv::maxNodes);
+        ZB_ASSERT(id < priv::maxNodes);
 
         nodes[id] = ScopeInfo{
             .label  = label,
@@ -69,10 +69,10 @@ struct [[nodiscard]] Database
 ////////////////////////////////////////////////////////////
 inline thread_local Database tlDatabase;
 
-} // namespace sf::profiler::priv
+} // namespace za::profiler::priv
 
 
-namespace sf::profiler
+namespace za::profiler
 {
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ScopeGuard
@@ -95,10 +95,10 @@ struct [[nodiscard]] ScopeGuard
     }
 };
 
-} // namespace sf::profiler
+} // namespace za::profiler
 
 
-namespace sf::profiler
+namespace za::profiler
 {
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline base::Span<const ScopeInfo> getScopeInfos()
@@ -106,35 +106,35 @@ namespace sf::profiler
     return base::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
 }
 
-} // namespace sf::profiler
+} // namespace za::profiler
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_SYSTEM_PRIV_STRINGIZE(x)  SFML_SYSTEM_PRIV_STRINGIZE2(x)
-#define SFML_SYSTEM_PRIV_STRINGIZE2(x) #x
-#define SFML_SYSTEM_PRIV_LINE_STRING   SFML_SYSTEM_PRIV_STRINGIZE(__LINE__)
+#define ZA_SYSTEM_PRIV_STRINGIZE(x)  ZA_SYSTEM_PRIV_STRINGIZE2(x)
+#define ZA_SYSTEM_PRIV_STRINGIZE2(x) #x
+#define ZA_SYSTEM_PRIV_LINE_STRING   ZA_SYSTEM_PRIV_STRINGIZE(__LINE__)
 
 ////////////////////////////////////////////////////////////
-#define SFML_SYSTEM_PRIV_CONCAT_TOKENS_IMPL(a, b) a##b
+#define ZA_SYSTEM_PRIV_CONCAT_TOKENS_IMPL(a, b) a##b
 
 ////////////////////////////////////////////////////////////
-#define SFML_SYSTEM_PRIV_CONCAT_TOKENS(a, b) SFML_SYSTEM_PRIV_CONCAT_TOKENS_IMPL(a, b)
+#define ZA_SYSTEM_PRIV_CONCAT_TOKENS(a, b) ZA_SYSTEM_PRIV_CONCAT_TOKENS_IMPL(a, b)
 
 ////////////////////////////////////////////////////////////
-#define SFML_SYSTEM_PRIV_UNIQUE_NAME(name) SFML_SYSTEM_PRIV_CONCAT_TOKENS(name, __LINE__)
+#define ZA_SYSTEM_PRIV_UNIQUE_NAME(name) ZA_SYSTEM_PRIV_CONCAT_TOKENS(name, __LINE__)
 
 ////////////////////////////////////////////////////////////
-#define SFML_SYSTEM_PROFILER_SCOPE(label)                                                                                            \
+#define ZA_SYSTEM_PROFILER_SCOPE(label)                                                                                            \
                                                                                                                                      \
-    static thread_local auto& SFML_SYSTEM_PRIV_UNIQUE_NAME(                                                                          \
-        sfProfilerScopeInfo) = ::sf::profiler::priv::tlDatabase.initNode((label), __FILE__, __func__, SFML_SYSTEM_PRIV_LINE_STRING); \
+    static thread_local auto& ZA_SYSTEM_PRIV_UNIQUE_NAME(                                                                          \
+        sfProfilerScopeInfo) = ::za::profiler::priv::tlDatabase.initNode((label), __FILE__, __func__, ZA_SYSTEM_PRIV_LINE_STRING); \
                                                                                                                                      \
-    const ::sf::profiler::ScopeGuard SFML_SYSTEM_PRIV_UNIQUE_NAME(sfProfilerScopeGuard)(                                             \
-        SFML_SYSTEM_PRIV_UNIQUE_NAME(sfProfilerScopeInfo))
+    const ::za::profiler::ScopeGuard ZA_SYSTEM_PRIV_UNIQUE_NAME(sfProfilerScopeGuard)(                                             \
+        ZA_SYSTEM_PRIV_UNIQUE_NAME(sfProfilerScopeInfo))
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Profiler
+/// \class za::Profiler
 /// \ingroup system
 ///
 /// TODO P1: docs

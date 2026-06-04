@@ -2,24 +2,24 @@
 
 #include "ShowcaseExample.hpp"
 
-#include "SFML/Graphics/ArrowShapeData.hpp"
-#include "SFML/Graphics/ChevronShapeData.hpp"
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/CogShapeData.hpp"
-#include "SFML/Graphics/CrossShapeData.hpp"
-#include "SFML/Graphics/CurvedArrowShapeData.hpp"
-#include "SFML/Graphics/EllipseShapeData.hpp"
-#include "SFML/Graphics/HeartShapeData.hpp"
-#include "SFML/Graphics/PieSliceShapeData.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RingPieSliceShapeData.hpp"
-#include "SFML/Graphics/RingShapeData.hpp"
-#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
-#include "SFML/Graphics/StarShapeData.hpp"
-#include "SFML/Graphics/TrapezoidShapeData.hpp"
+#include "Zancle/Graphics/ArrowShapeData.hpp"
+#include "Zancle/Graphics/ChevronShapeData.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/CogShapeData.hpp"
+#include "Zancle/Graphics/CrossShapeData.hpp"
+#include "Zancle/Graphics/CurvedArrowShapeData.hpp"
+#include "Zancle/Graphics/EllipseShapeData.hpp"
+#include "Zancle/Graphics/HeartShapeData.hpp"
+#include "Zancle/Graphics/PieSliceShapeData.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RingPieSliceShapeData.hpp"
+#include "Zancle/Graphics/RingShapeData.hpp"
+#include "Zancle/Graphics/RoundedRectangleShapeData.hpp"
+#include "Zancle/Graphics/StarShapeData.hpp"
+#include "Zancle/Graphics/TrapezoidShapeData.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -34,21 +34,21 @@ private:
     float m_phase = 0.f;
 
     ///////////////////////////////////////////////////////////
-    sf::ArrowShapeData            m_sdArrow;
-    sf::ChevronShapeData          m_sdChevron;
-    sf::CircleShapeData           m_sdCircle;
-    sf::CogShapeData              m_sdCog;
-    sf::CrossShapeData            m_sdCross;
-    sf::CurvedArrowShapeData      m_sdCurvedArrow;
-    sf::EllipseShapeData          m_sdEllipse;
-    sf::HeartShapeData            m_sdHeart;
-    sf::PieSliceShapeData         m_sdPieSlice;
-    sf::RectangleShapeData        m_sdRectangle;
-    sf::RingShapeData             m_sdRingShape;
-    sf::RingPieSliceShapeData     m_sdRingPieSlice;
-    sf::RoundedRectangleShapeData m_sdRoundedRectangle;
-    sf::StarShapeData             m_sdStar;
-    sf::TrapezoidShapeData        m_sdTrapezoid;
+    za::ArrowShapeData            m_sdArrow;
+    za::ChevronShapeData          m_sdChevron;
+    za::CircleShapeData           m_sdCircle;
+    za::CogShapeData              m_sdCog;
+    za::CrossShapeData            m_sdCross;
+    za::CurvedArrowShapeData      m_sdCurvedArrow;
+    za::EllipseShapeData          m_sdEllipse;
+    za::HeartShapeData            m_sdHeart;
+    za::PieSliceShapeData         m_sdPieSlice;
+    za::RectangleShapeData        m_sdRectangle;
+    za::RingShapeData             m_sdRingShape;
+    za::RingPieSliceShapeData     m_sdRingPieSlice;
+    za::RoundedRectangleShapeData m_sdRoundedRectangle;
+    za::StarShapeData             m_sdStar;
+    za::TrapezoidShapeData        m_sdTrapezoid;
 
     ////////////////////////////////////////////////////////////
     bool m_showPositionOrigin = false;
@@ -57,10 +57,10 @@ private:
     int  m_shapeIndex         = 0;
 
     ////////////////////////////////////////////////////////////
-    sf::Vec2f m_position{256.f, 256.f};
-    sf::Vec2f m_origin;
-    sf::Angle m_rotation;
-    sf::Vec2f m_scale{1.f, 1.f};
+    za::Vec2f m_position{256.f, 256.f};
+    za::Vec2f m_origin;
+    za::Angle m_rotation;
+    za::Vec2f m_scale{1.f, 1.f};
     float     m_outlineThickness = 4.f;
     float     m_miterLimit       = 4.f;
 

@@ -1,9 +1,9 @@
 #include "BubbleIdleMain.hpp"
 #include "MainAtlasRects.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/String.hpp"
 
 void Main::uiTabBarShop()
 {
@@ -14,7 +14,7 @@ void Main::uiTabBarShop()
     uiShopDrawSpecialCats();
     uiShopDrawUniqueCatBonuses();
 
-    const sf::base::String nextGoalsText = uiShopBuildNextGoalsText();
+    const zb::String nextGoalsText = uiShopBuildNextGoalsText();
 
     ImGui::Columns(1);
 

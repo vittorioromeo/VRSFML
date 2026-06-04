@@ -2,13 +2,13 @@
 
 #include "RNGSeedType.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Math/Sqrt.hpp"
+#include "ZancleBase/AssertAndAssume.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Math/Sqrt.hpp"
 
 #include <random>
 
@@ -54,43 +54,43 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline T getI(const T min, const T max)
     {
-        SFML_BASE_ASSERT_AND_ASSUME(min <= max);
+        ZB_ASSERT_AND_ASSUME(min <= max);
         return std::uniform_int_distribution<T>{min, max}(m_engine);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getF(const float min, const float max)
     {
-        SFML_BASE_ASSERT_AND_ASSUME(min <= max);
+        ZB_ASSERT_AND_ASSUME(min <= max);
         return std::uniform_real_distribution<float>{min, max}(m_engine);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getVec2f(const sf::Vec2f mins, const sf::Vec2f maxs)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getVec2f(const za::Vec2f mins, const za::Vec2f maxs)
     {
         return {getF(mins.x, maxs.x), getF(mins.y, maxs.y)};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getVec2f(const sf::Vec2f maxs)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getVec2f(const za::Vec2f maxs)
     {
         return {getF(0.f, maxs.x), getF(0.f, maxs.y)};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getPointInCircle(const sf::Vec2f center, const float radius)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getPointInCircle(const za::Vec2f center, const float radius)
     {
-        const float angle    = getF(0.f, sf::base::tau);
-        const float distance = radius * sf::base::sqrt(getF(0.f, 1.f));
+        const float angle    = getF(0.f, zb::tau);
+        const float distance = radius * zb::sqrt(getF(0.f, 1.f));
 
         // Compute the point's coordinates using polar-to-Cartesian conversion.
-        return {center.x + distance * sf::base::cos(angle), center.y + distance * sf::base::sin(angle)};
+        return {center.x + distance * zb::cos(angle), center.y + distance * zb::sin(angle)};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getDirVec2f()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getDirVec2f()
     {
-        const float angle = getF(0.f, sf::base::tau);
-        return {sf::base::cos(angle), sf::base::sin(angle)};
+        const float angle = getF(0.f, zb::tau);
+        return {zb::cos(angle), zb::sin(angle)};
     }
 };

@@ -9,7 +9,7 @@
 
 find_path(EGL_INCLUDE_DIR EGL/egl.h)
 
-if (SFML_OS_EMSCRIPTEN)
+if (ZA_OS_EMSCRIPTEN)
     set(EGL_LIBRARY EGL)
 else()
     find_library(EGL_LIBRARY NAMES EGL)
@@ -18,7 +18,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(EGL DEFAULT_MSG EGL_LIBRARY EGL_INCLUDE_DIR)
 
-if (SFML_OS_EMSCRIPTEN)
+if (ZA_OS_EMSCRIPTEN)
     add_library(EGL::EGL INTERFACE IMPORTED)
     target_link_libraries(EGL::EGL INTERFACE ${EGL_LIBRARY})
 else()

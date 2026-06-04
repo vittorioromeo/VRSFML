@@ -7,15 +7,15 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
 
-#include "SFML/System/Time.hpp"
+#include "Zancle/System/Time.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Clamp.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Clamp.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate)
@@ -48,7 +48,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
         constexpr float dragOutSpeed = 2.5f;
 
         const float dragDelta = isCatBeingDragged(cat) ? deltaTimeMs * dragInSpeed : -deltaTimeMs * dragOutSpeed;
-        cat.dragTime          = sf::base::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
+        cat.dragTime          = zb::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
     }
 
     gameLoopUpdateCatDragging(deltaTimeMs, frameInput.downFingers.size(), frameInput.mousePos);
@@ -67,7 +67,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
         if (delayCountdown.tick(deltaTimeMs) == TickResult::JustFinished)
             func();
 
-    sf::base::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
+    zb::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
         return delayedAction.delayCountdown.isDone();
     });
 
@@ -92,7 +92,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
 }
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateFrameUi(const sf::Time deltaTime, const float deltaTimeMs, const FrameInput& frameInput)
+void Main::gameLoopUpdateFrameUi(const za::Time deltaTime, const float deltaTimeMs, const FrameInput& frameInput)
 {
     imGuiContext.update(window, deltaTime);
 

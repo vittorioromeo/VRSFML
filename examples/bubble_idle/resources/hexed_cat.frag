@@ -1,9 +1,9 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 uniform float u_time;
 uniform float u_seed;
@@ -35,7 +35,7 @@ void main()
     const vec2 flagTarget = vec2(1.0 / 255.0);
     const vec2 epsilon    = vec2(0.001);
 
-    vec2 localUv = sf_v_texCoord;
+    vec2 localUv = za_v_texCoord;
     vec2 centeredUv = localUv * 2.0 - 1.0;
     float radius = length(centeredUv);
 
@@ -47,24 +47,24 @@ void main()
     vec2 distortion = vec2(wave0 + wave2 * 0.55, wave1 - wave2 * 0.45) *
                       (0.0075 * u_distortionStrength) * edgeMask;
 
-    vec4 texColor = texture(sf_u_texture, clamp(localUv + distortion, vec2(0.0), vec2(1.0)));
+    vec4 texColor = texture(za_u_texture, clamp(localUv + distortion, vec2(0.0), vec2(1.0)));
 
     if (texColor.a < 0.01)
         discard;
 
-    bool hueDriven = all(lessThanEqual(abs(sf_v_color.rg - flagTarget), epsilon));
+    bool hueDriven = all(lessThanEqual(abs(za_v_color.rg - flagTarget), epsilon));
 
     vec3 finalColor;
     float alpha;
 
     if (hueDriven)
     {
-        finalColor = rotateHueRGB(texColor.rgb, float(sf_v_color.b) * 360.0);
-        alpha      = sf_v_color.a * texColor.a;
+        finalColor = rotateHueRGB(texColor.rgb, float(za_v_color.b) * 360.0);
+        alpha      = za_v_color.a * texColor.a;
     }
     else
     {
-        vec4 shaded = sf_v_color * texColor;
+        vec4 shaded = za_v_color * texColor;
         finalColor  = shaded.rgb;
         alpha       = shaded.a;
     }
@@ -93,5 +93,5 @@ void main()
     if (alpha < 0.01)
         discard;
 
-    sf_fragColor = vec4(clamp(finalColor, 0.0, 1.0), alpha);
+    za_fragColor = vec4(clamp(finalColor, 0.0, 1.0), alpha);
 }

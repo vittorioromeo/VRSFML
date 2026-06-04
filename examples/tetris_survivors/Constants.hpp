@@ -4,17 +4,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-inline constexpr sf::Vec2f       resolution{320.f, 240.f};
+inline constexpr za::Vec2f       resolution{320.f, 240.f};
 inline constexpr float           ticksPerSecond = 120.f;
-inline constexpr sf::base::SizeT gridGraceY     = 4u;
+inline constexpr zb::SizeT gridGraceY     = 4u;
 
 
 ////////////////////////////////////////////////////////////

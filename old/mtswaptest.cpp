@@ -3,25 +3,25 @@
 //
 //
 // Get hardware constants
-inline const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
-inline constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
+inline const auto     nMaxWorkers   = static_cast<zb::U64>(zb::ThreadPool::getHardwareWorkerCount());
+inline constexpr auto cacheLineSize = static_cast<zb::SizeT>(zb::hardwareDestructiveInterferenceSize);
 
-sf::base::U64 nWorkers = nMaxWorkers;
+zb::U64 nWorkers = nMaxWorkers;
 
-sf::base::ThreadPool pool(nMaxWorkers);
+zb::ThreadPool pool(nMaxWorkers);
 
-void doInBatches(const sf::base::SizeT nParticlesTotal, auto&& f)
+void doInBatches(const zb::SizeT nParticlesTotal, auto&& f)
 {
-    const sf::base::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
+    const zb::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
 
-    std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
+    std::latch latch{static_cast<zb::PtrDiffT>(nWorkers)};
 
-    for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
+    for (zb::SizeT i = 0u; i < nWorkers; ++i)
     {
         pool.post([&, i]
         {
-            const sf::base::SizeT batchStartIdx = i * particlesPerBatch;
-            const sf::base::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+            const zb::SizeT batchStartIdx = i * particlesPerBatch;
+            const zb::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
 
             f(i, batchStartIdx, batchEndIdx);
 
@@ -33,7 +33,7 @@ void doInBatches(const sf::base::SizeT nParticlesTotal, auto&& f)
 };
 
     ////////////////////////////////////////////////////////////
-    template <sf::base::SizeT... Js>
+    template <zb::SizeT... Js>
     void eraseIfBySwappingTestMT(auto& latch, auto& pool, auto&& f)
     {
         const auto  s    = getSize();
@@ -41,8 +41,8 @@ void doInBatches(const sf::base::SizeT nParticlesTotal, auto&& f)
 
         auto g = [this, s, f, &latch, &pred](auto& base)
         {
-            sf::base::SizeT n = s;
-            sf::base::SizeT i = 0u;
+            zb::SizeT n = s;
+            zb::SizeT i = 0u;
 
             // Process elements, swapping out removed ones.
             while (i < n)
@@ -58,8 +58,8 @@ void doInBatches(const sf::base::SizeT nParticlesTotal, auto&& f)
                 {
                     --n;
                 } while (n > i && f(pred[n]));
-                // (..., sf::base::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n]));
-                (base.data[i] = SFML_BASE_MOVE(base.data[n]));
+                // (..., zb::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n]));
+                (base.data[i] = ZB_MOVE(base.data[n]));
 
                 // Do not increment `i`; check the new element at `i`.
                 ++i;

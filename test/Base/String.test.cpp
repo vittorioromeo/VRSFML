@@ -2,30 +2,30 @@
 #include "StringifyStringViewUtil.hpp"   // IWYU pragma: keep
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/String.hpp"
 
-#include "SFML/Base/Algorithm/Copy.hpp"
-#include "SFML/Base/Fmt/FmtAppendMixin.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/StringViewSplits.hpp" // IWYU pragma: keep
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Algorithm/Copy.hpp"
+#include "ZancleBase/Fmt/FmtAppendMixin.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/StringViewSplits.hpp" // IWYU pragma: keep
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
 {
 
-sf::base::String makeLongString(const sf::base::StringView& base)
+zb::String makeLongString(const zb::StringView& base)
 {
-    sf::base::String result;
+    zb::String result;
     result.reserve(base.size() * 2 + 30);
     result.append(base);
     return result;
@@ -38,33 +38,33 @@ TEST_CASE("[Base] Base/String.hpp")
 {
     // A string guaranteed to be longer than the SSO buffer
     const char*    longStringLiteral = "This is a long string that will definitely not fit in SSO.";
-    constexpr auto maxSsoSize        = sf::base::String::maxSsoSize;
+    constexpr auto maxSsoSize        = zb::String::maxSsoSize;
 
     SECTION("Type traits")
     {
         // String has manual resource management, so it should not be trivial.
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::String));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::String));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::String));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::String));
 
         // But it should be fully copyable and movable.
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::String));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::String));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::String));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::String));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(zb::String));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(zb::String));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::String));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::String));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::String));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::String));
     }
 
     SECTION("Constexpr")
     {
-        constexpr sf::base::String emptyStr;
+        constexpr zb::String emptyStr;
     }
 
     SECTION("Constructors")
     {
         SUBCASE("Default constructor")
         {
-            constexpr sf::base::String str;
+            constexpr zb::String str;
             STATIC_CHECK(str.isSso());
             STATIC_CHECK(str.size() == 0);
             STATIC_CHECK(str.capacity() == maxSsoSize);
@@ -72,72 +72,72 @@ TEST_CASE("[Base] Base/String.hpp")
             STATIC_CHECK(str[0] == '\0');
 
             // Default constructor is non-explicit: must work in copy-list-init contexts.
-            constexpr sf::base::String copyListInit = {};
+            constexpr zb::String copyListInit = {};
             STATIC_CHECK(copyListInit.isSso());
             STATIC_CHECK(copyListInit.empty());
 
-            const auto returnsEmpty = []() -> sf::base::String { return {}; };
+            const auto returnsEmpty = []() -> zb::String { return {}; };
             CHECK(returnsEmpty().empty());
         }
 
         SUBCASE("From const char*")
         {
-            sf::base::String ssoStr("Short");
+            zb::String ssoStr("Short");
             CHECK(ssoStr.isSso());
             CHECK(ssoStr.size() == 5);
             CHECK(ssoStr.capacity() == maxSsoSize);
             CHECK(ssoStr == "Short");
 
-            sf::base::String heapStr(longStringLiteral);
+            zb::String heapStr(longStringLiteral);
             CHECK(!heapStr.isSso());
-            CHECK(heapStr.size() == sf::base::StringView(longStringLiteral).size());
+            CHECK(heapStr.size() == zb::StringView(longStringLiteral).size());
             CHECK(heapStr.capacity() >= heapStr.size());
             CHECK(heapStr == longStringLiteral);
         }
 
         SUBCASE("From const char* and count")
         {
-            sf::base::String ssoStr("Short", 3);
+            zb::String ssoStr("Short", 3);
             CHECK(ssoStr.isSso());
             CHECK(ssoStr.size() == 3);
             CHECK(ssoStr == "Sho");
 
-            sf::base::String heapStr(longStringLiteral, maxSsoSize + 5);
+            zb::String heapStr(longStringLiteral, maxSsoSize + 5);
             CHECK(!heapStr.isSso());
             CHECK(heapStr.size() == maxSsoSize + 5);
-            CHECK(sf::base::StringView(heapStr) == sf::base::StringView(longStringLiteral, maxSsoSize + 5));
+            CHECK(zb::StringView(heapStr) == zb::StringView(longStringLiteral, maxSsoSize + 5));
         }
 
         SUBCASE("From StringView")
         {
-            sf::base::StringView ssoView("Short");
-            sf::base::String     ssoStr(ssoView);
+            zb::StringView ssoView("Short");
+            zb::String     ssoStr(ssoView);
             CHECK(ssoStr.size() == 5);
             CHECK(ssoStr == "Short");
 
-            sf::base::StringView heapView(longStringLiteral);
-            sf::base::String     heapStr(heapView);
+            zb::StringView heapView(longStringLiteral);
+            zb::String     heapStr(heapView);
             CHECK(heapStr.size() == heapView.size());
             CHECK(heapStr == longStringLiteral);
         }
 
         SUBCASE("Copy constructor")
         {
-            sf::base::String ssoOrig("Short");
+            zb::String ssoOrig("Short");
             CHECK(ssoOrig.isSso());
             CHECK(ssoOrig.size() == 5);
             CHECK(ssoOrig == "Short");
 
-            sf::base::String ssoCopy(ssoOrig); // NOLINT(performance-unnecessary-copy-initialization)
+            zb::String ssoCopy(ssoOrig); // NOLINT(performance-unnecessary-copy-initialization)
             CHECK(ssoCopy.isSso());
             CHECK(ssoCopy.size() == 5);
             CHECK(ssoCopy == "Short");
 
-            sf::base::String heapOrig(longStringLiteral);
+            zb::String heapOrig(longStringLiteral);
             CHECK(!heapOrig.isSso());
             CHECK(heapOrig == longStringLiteral);
 
-            sf::base::String heapCopy(heapOrig);
+            zb::String heapCopy(heapOrig);
             CHECK(!heapCopy.isSso());
             CHECK(heapCopy == longStringLiteral);
             CHECK(heapCopy.size() == heapOrig.size());
@@ -146,28 +146,28 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("Move constructor")
         {
-            sf::base::String ssoOrig("Short");
+            zb::String ssoOrig("Short");
             CHECK(ssoOrig.isSso());
             CHECK(ssoOrig.size() == 5);
             CHECK(ssoOrig == "Short");
 
-            sf::base::String ssoMoved(SFML_BASE_MOVE(ssoOrig));
+            zb::String ssoMoved(ZB_MOVE(ssoOrig));
             CHECK(ssoMoved.size() == 5);
             CHECK(ssoMoved == "Short");
 
             // Source must be sso to avoid double-free
             CHECK(ssoOrig.isSso());
 
-            sf::base::String heapOrig(longStringLiteral);
+            zb::String heapOrig(longStringLiteral);
             CHECK(!heapOrig.isSso());
             CHECK(heapOrig == longStringLiteral);
 
             const char* origPtr = heapOrig.data();
 
-            sf::base::String heapMoved(SFML_BASE_MOVE(heapOrig));
+            zb::String heapMoved(ZB_MOVE(heapOrig));
             CHECK(!heapMoved.isSso());
             CHECK(heapMoved == longStringLiteral);
-            CHECK(heapMoved.size() == sf::base::StringView(longStringLiteral).size());
+            CHECK(heapMoved.size() == zb::StringView(longStringLiteral).size());
             CHECK(heapMoved == longStringLiteral);
             CHECK(heapMoved.data() == origPtr); // Pointer must be stolen
 
@@ -181,16 +181,16 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SUBCASE("Copy assignment")
         {
-            sf::base::String ssoStr("SSO");
+            zb::String ssoStr("SSO");
             CHECK(ssoStr.isSso());
             CHECK(ssoStr.size() == 3);
             CHECK(ssoStr == "SSO");
 
-            sf::base::String heapStr(longStringLiteral);
+            zb::String heapStr(longStringLiteral);
             CHECK(!heapStr.isSso());
             CHECK(heapStr == longStringLiteral);
 
-            sf::base::String dest;
+            zb::String dest;
             CHECK(dest.isSso());
             CHECK(dest.empty());
 
@@ -221,41 +221,41 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("Move assignment")
         {
-            sf::base::String ssoStr("SSO");
+            zb::String ssoStr("SSO");
             CHECK(ssoStr.isSso());
             CHECK(ssoStr.size() == 3);
             CHECK(ssoStr == "SSO");
 
-            sf::base::String heapStr(longStringLiteral);
+            zb::String heapStr(longStringLiteral);
             CHECK(!heapStr.isSso());
             CHECK(heapStr == longStringLiteral);
 
             auto* origPtr = heapStr.data();
 
-            sf::base::String dest;
+            zb::String dest;
             CHECK(dest.isSso());
             CHECK(dest.empty());
 
-            dest = SFML_BASE_MOVE(ssoStr); // SSO -> empty
+            dest = ZB_MOVE(ssoStr); // SSO -> empty
             CHECK(dest.isSso());
             CHECK(dest == "SSO");
             CHECK(ssoStr.isSso()); // Source must be sso to avoid double-free
 
-            dest = SFML_BASE_MOVE(heapStr); // Heap -> SSO
+            dest = ZB_MOVE(heapStr); // Heap -> SSO
             CHECK(dest == longStringLiteral);
             CHECK(heapStr.isSso());
             CHECK(heapStr.empty());
 
             CHECK(!dest.isSso());
             CHECK(dest == longStringLiteral);
-            CHECK(dest.size() == sf::base::StringView(longStringLiteral).size());
+            CHECK(dest.size() == zb::StringView(longStringLiteral).size());
             CHECK(dest == longStringLiteral);
             CHECK(dest.data() == origPtr); // Pointer must be stolen
         }
 
         SUBCASE("C-string and StringView assignment")
         {
-            sf::base::String str;
+            zb::String str;
             str = "From C-string";
             CHECK(str == "From C-string");
 
@@ -271,7 +271,7 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SUBCASE("clear")
         {
-            sf::base::String ssoStr("sso");
+            zb::String ssoStr("sso");
             CHECK(ssoStr.isSso());
             CHECK(ssoStr.size() == 3);
             CHECK(ssoStr == "sso");
@@ -282,7 +282,7 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(ssoStr.size() == 0);
             CHECK(ssoStr.capacity() == maxSsoSize); // Capacity is preserved
 
-            sf::base::String heapStr(longStringLiteral);
+            zb::String heapStr(longStringLiteral);
             CHECK(!heapStr.isSso());
             CHECK(heapStr == longStringLiteral);
 
@@ -297,7 +297,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SUBCASE("pushBack")
         {
-            sf::base::String str;
+            zb::String str;
             CHECK(str.isSso());
             CHECK(str.empty());
             CHECK(str == "");
@@ -306,10 +306,10 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(str.isSso());
             CHECK(str.size() == 1);
             CHECK(str == "A");
-            CHECK(sf::base::StringView(str) == "A");
+            CHECK(zb::StringView(str) == "A");
 
             // Fill up to SSO limit
-            for (sf::base::SizeT i = 1; i < maxSsoSize; ++i)
+            for (zb::SizeT i = 1; i < maxSsoSize; ++i)
                 str.pushBack('B');
 
             CHECK(str.isSso());
@@ -333,7 +333,7 @@ TEST_CASE("[Base] Base/String.hpp")
         SUBCASE("popBack")
         {
             // Pop on SSO string
-            sf::base::String ssoStr("abc");
+            zb::String ssoStr("abc");
             CHECK(ssoStr.isSso());
             CHECK(ssoStr.size() == 3);
 
@@ -354,7 +354,7 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(ssoStr.cStr()[0] == '\0');
 
             // Pop on heap string preserves capacity and heap-ness
-            sf::base::String heapStr(longStringLiteral);
+            zb::String heapStr(longStringLiteral);
             CHECK(!heapStr.isSso());
 
             const auto origCap  = heapStr.capacity();
@@ -365,7 +365,7 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(heapStr.size() == origSize - 1);
             CHECK(heapStr.capacity() == origCap);
             CHECK(heapStr.cStr()[heapStr.size()] == '\0');
-            CHECK(sf::base::StringView(heapStr) == sf::base::StringView(longStringLiteral, origSize - 1));
+            CHECK(zb::StringView(heapStr) == zb::StringView(longStringLiteral, origSize - 1));
 
             // Pop down to one character on heap (stays heap, capacity unchanged)
             while (heapStr.size() > 1)
@@ -382,8 +382,8 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(heapStr.capacity() == origCap);
 
             // pushBack/popBack round-trip on a freshly-grown heap string
-            sf::base::String roundTrip;
-            for (sf::base::SizeT i = 0; i < maxSsoSize + 5; ++i)
+            zb::String roundTrip;
+            for (zb::SizeT i = 0; i < maxSsoSize + 5; ++i)
                 roundTrip.pushBack(static_cast<char>('a' + (i % 26)));
 
             CHECK(!roundTrip.isSso());
@@ -402,31 +402,31 @@ TEST_CASE("[Base] Base/String.hpp")
         SUBCASE("append")
         {
             // Build a string via two appends that stays within SSO
-            const sf::base::String partA(longStringLiteral, maxSsoSize / 3);
-            const sf::base::String partB(longStringLiteral, maxSsoSize / 3);
-            const sf::base::String partC(longStringLiteral, maxSsoSize / 3);
+            const zb::String partA(longStringLiteral, maxSsoSize / 3);
+            const zb::String partB(longStringLiteral, maxSsoSize / 3);
+            const zb::String partC(longStringLiteral, maxSsoSize / 3);
 
-            sf::base::String str(partA);
+            zb::String str(partA);
             CHECK(str.isSso());
 
-            str.append(sf::base::StringView(partB));
+            str.append(zb::StringView(partB));
             CHECK(str.isSso());
 
-            str.append(sf::base::StringView(partC));
+            str.append(zb::StringView(partC));
             CHECK(str.isSso());
 
             const auto prefixSize = str.size();
 
-            sf::base::String finalPart(longStringLiteral);
+            zb::String finalPart(longStringLiteral);
             str.append(finalPart);
             CHECK(!str.isSso());
             CHECK(str.size() == prefixSize + finalPart.size());
-            CHECK(sf::base::StringView(str).substrByPosLen(prefixSize) == longStringLiteral);
+            CHECK(zb::StringView(str).substrByPosLen(prefixSize) == longStringLiteral);
         }
 
         SUBCASE("append2")
         {
-            sf::base::String str;
+            zb::String str;
             CHECK(str.isSso());
             CHECK(str.empty());
 
@@ -446,11 +446,11 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("Iterators")
     {
-        sf::base::String       str("abc");
-        const sf::base::String cStr("xyz");
+        zb::String       str("abc");
+        const zb::String cStr("xyz");
 
         // Basic iteration
-        sf::base::String result;
+        zb::String result;
         for (char c : str)
             result += c;
 
@@ -465,18 +465,18 @@ TEST_CASE("[Base] Base/String.hpp")
 
         // Algorithm compatibility
         char buffer[4] = {};
-        sf::base::copy(str.begin(), str.end(), buffer);
-        CHECK(sf::base::StringView(buffer, 3) == "abc");
+        zb::copy(str.begin(), str.end(), buffer);
+        CHECK(zb::StringView(buffer, 3) == "abc");
     }
 
     SECTION("Comparison")
     {
-        sf::base::String sso1("abc");
-        sf::base::String sso2("abc");
-        sf::base::String sso3("def");
-        sf::base::String heap1(longStringLiteral);
-        sf::base::String heap2(longStringLiteral);
-        sf::base::String heap3("A different long string for comparison");
+        zb::String sso1("abc");
+        zb::String sso2("abc");
+        zb::String sso3("def");
+        zb::String heap1(longStringLiteral);
+        zb::String heap2(longStringLiteral);
+        zb::String heap3("A different long string for comparison");
 
         CHECK(sso1 == sso2);
         CHECK(sso1 != sso3);
@@ -488,37 +488,37 @@ TEST_CASE("[Base] Base/String.hpp")
         CHECK("abc" == sso1);
         CHECK(sso1 != "def");
         CHECK(heap1 == longStringLiteral);
-        CHECK(sf::base::StringView("abc") == sso1);
+        CHECK(zb::StringView("abc") == sso1);
     }
 
     SECTION("Swap")
     {
         SUBCASE("SSO with SSO")
         {
-            sf::base::String a("A");
-            sf::base::String b("B");
+            zb::String a("A");
+            zb::String b("B");
             swap(a, b);
-            CHECK(sf::base::StringView(a) == "B");
-            CHECK(sf::base::StringView(b) == "A");
+            CHECK(zb::StringView(a) == "B");
+            CHECK(zb::StringView(b) == "A");
         }
 
         SUBCASE("SSO with Heap")
         {
-            sf::base::String a("Short");
-            sf::base::String b(longStringLiteral);
+            zb::String a("Short");
+            zb::String b(longStringLiteral);
             const char*      bPtr = b.data();
 
             swap(a, b);
 
-            CHECK(sf::base::StringView(a) == longStringLiteral);
+            CHECK(zb::StringView(a) == longStringLiteral);
             CHECK(a.data() == bPtr); // Pointer must be swapped
-            CHECK(sf::base::StringView(b) == "Short");
+            CHECK(zb::StringView(b) == "Short");
         }
 
         SUBCASE("Heap with Heap")
         {
-            sf::base::String a(longStringLiteral);
-            sf::base::String b("Another long string that is also on the heap");
+            zb::String a(longStringLiteral);
+            zb::String b("Another long string that is also on the heap");
             const char*      aPtr = a.data();
             const char*      bPtr = b.data();
 
@@ -531,11 +531,11 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("Move from heap string")
     {
-        sf::base::String heapStr(longStringLiteral);
+        zb::String heapStr(longStringLiteral);
         CHECK(!heapStr.isSso());
         CHECK(heapStr == longStringLiteral);
 
-        sf::base::String dest = SFML_BASE_MOVE(heapStr); // Heap -> empty
+        zb::String dest = ZB_MOVE(heapStr); // Heap -> empty
         CHECK(!dest.isSso());
         CHECK(dest == longStringLiteral);
         CHECK(heapStr.isSso());
@@ -543,7 +543,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("Self-append")
     {
-        sf::base::String str("Hello");
+        zb::String str("Hello");
 
         str.append(str);
         CHECK(str == "HelloHello");
@@ -561,7 +561,7 @@ TEST_CASE("[Base] Base/String.hpp")
     SECTION("SsoSelfAppend")
     {
         // Small string: should be SSO and appending itself should produce "abcabc"
-        sf::base::String s("abc");
+        zb::String s("abc");
         CHECK(s.size() == 3u);
         s.append(s); // append itself
         CHECK(s.size() == 6u);
@@ -571,27 +571,27 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("InPlaceSelfAppend_NoRealloc_UsesMemmovePath")
     {
-        const auto makePattern = [](const sf::base::SizeT n)
+        const auto makePattern = [](const zb::SizeT n)
         {
-            sf::base::String s;
+            zb::String s;
             s.reserve(n);
 
-            for (sf::base::SizeT i = 0u; i < n; ++i)
+            for (zb::SizeT i = 0u; i < n; ++i)
                 s.pushBack(char('a' + (i % 26)));
 
             return s;
         };
 
         // Prepare a reasonably large string so it uses heap storage
-        const sf::base::SizeT initialSize = 128;
+        const zb::SizeT initialSize = 128;
         const auto            pattern     = makePattern(initialSize);
 
-        // Construct our sf::base::String on the heap
-        sf::base::String s(pattern.cStr(), static_cast<sf::base::SizeT>(pattern.size()));
-        CHECK(s.size() == static_cast<sf::base::SizeT>(initialSize));
+        // Construct our zb::String on the heap
+        zb::String s(pattern.cStr(), static_cast<zb::SizeT>(pattern.size()));
+        CHECK(s.size() == static_cast<zb::SizeT>(initialSize));
 
         // Ensure capacity is large enough to fit the result of appending itself
-        const auto needed = static_cast<sf::base::SizeT>(initialSize * 2);
+        const auto needed = static_cast<zb::SizeT>(initialSize * 2);
         s.reserve(needed);
 
         // Sanity: capacity must be >= needed (so append won't reallocate)
@@ -611,18 +611,18 @@ TEST_CASE("[Base] Base/String.hpp")
         CHECK(s.size() == needed);
 
         // First half equals original
-        CHECK(sf::base::StringView{s.cStr(), initialSize} == sf::base::StringView{pattern.cStr(), initialSize});
+        CHECK(zb::StringView{s.cStr(), initialSize} == zb::StringView{pattern.cStr(), initialSize});
 
         // Second half equals original
-        CHECK(sf::base::StringView{s.cStr() + initialSize, initialSize} ==
-              sf::base::StringView{pattern.cStr(), initialSize});
+        CHECK(zb::StringView{s.cStr() + initialSize, initialSize} ==
+              zb::StringView{pattern.cStr(), initialSize});
     }
 
     SECTION("Self-Assignment")
     {
         SECTION("s = s with SSO string")
         {
-            sf::base::String s = "hello sso";
+            zb::String s = "hello sso";
             CHECK(s.isSso());
             const char* originalData = s.data();
 
@@ -635,7 +635,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("s = s with Heap string")
         {
-            sf::base::String s = makeLongString("this is a long string definitely on the heap");
+            zb::String s = makeLongString("this is a long string definitely on the heap");
             CHECK(!s.isSso());
             const char* originalData = s.data();
             const auto  originalCap  = s.capacity();
@@ -650,7 +650,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("s = s.toStringView() with SSO string")
         {
-            sf::base::String s            = "sso view";
+            zb::String s            = "sso view";
             const char*      originalData = s.data();
 
             s = s.toStringView();
@@ -661,7 +661,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("s = s.toStringView() with Heap string")
         {
-            sf::base::String s            = makeLongString("heap view assignment");
+            zb::String s            = makeLongString("heap view assignment");
             const char*      originalData = s.data();
 
             s = s.toStringView();
@@ -673,20 +673,20 @@ TEST_CASE("[Base] Base/String.hpp")
         SECTION("Assigning an overlapping substring (tests memmove)")
         {
             // Case 1: Initial string is SSO
-            sf::base::String s1 = "abcdefgh";
+            zb::String s1 = "abcdefgh";
             CHECK(s1.isSso());
 
             // Assign a substring of itself: s1 should become "cdef"
-            s1 = sf::base::StringView(s1.data() + 2, 4);
+            s1 = zb::StringView(s1.data() + 2, 4);
 
             CHECK(s1 == "cdef");
 
             // Case 2: Initial string is on the heap
-            sf::base::String s2 = makeLongString("This is a long string for testing overlap");
+            zb::String s2 = makeLongString("This is a long string for testing overlap");
             CHECK(!s2.isSso());
 
             // Assign a substring of itself: s2 should become "long"
-            s2 = sf::base::StringView(s2.data() + 10, 4);
+            s2 = zb::StringView(s2.data() + 10, 4);
             CHECK(s2 == "long");
         }
     }
@@ -697,11 +697,11 @@ TEST_CASE("[Base] Base/String.hpp")
         {
             // Choose a size that fits SSO but when doubled exceeds maxSsoSize.
             const auto       len = (maxSsoSize / 2) + 1;
-            sf::base::String s(longStringLiteral, len);
+            zb::String s(longStringLiteral, len);
             CHECK(s.size() == len);
             CHECK(s.isSso());
 
-            const sf::base::String expected = s + sf::base::StringView(s);
+            const zb::String expected = s + zb::StringView(s);
             s += s; // Self-append, should trigger grow() and use-after-free bug
 
             CHECK(s.size() == len * 2);
@@ -712,14 +712,14 @@ TEST_CASE("[Base] Base/String.hpp")
         SECTION("s += s with Heap string (forcing reallocation)")
         {
             // Create a heap string with little to no spare capacity
-            sf::base::String original = "a long string that will force a reallocation upon self-append";
-            sf::base::String s        = original;
+            zb::String original = "a long string that will force a reallocation upon self-append";
+            zb::String s        = original;
             CHECK(!s.isSso());
             CHECK(s.capacity() - s.size() < s.size()); // Ensure it *must* reallocate
 
             s += s; // Self-append that reallocates heap buffer
 
-            sf::base::String expected = original;
+            zb::String expected = original;
             expected.append(original);
 
             CHECK(s == expected);
@@ -728,7 +728,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("s += s with Heap string (with enough capacity)")
         {
-            sf::base::String s = "pre-reserved";
+            zb::String s = "pre-reserved";
             // Reserve enough space so no reallocation occurs
             s.reserve(s.size() * 2 + 10);
             CHECK(!s.isSso());
@@ -742,11 +742,11 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Appending a substring of itself")
         {
-            sf::base::String s = "12345";
+            zb::String s = "12345";
             CHECK(s.isSso());
 
             // Append a view of its own beginning
-            s.append(sf::base::StringView(s.data(), 3)); // Append "123"
+            s.append(zb::StringView(s.data(), 3)); // Append "123"
 
             CHECK(s == "12345123");
         }
@@ -756,7 +756,7 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("insert with overlapping source and no reallocation")
         {
-            sf::base::String s("abcdef");
+            zb::String s("abcdef");
             s.reserve(12);
 
             const char* const originalData = s.data();
@@ -771,14 +771,14 @@ TEST_CASE("[Base] Base/String.hpp")
             // Build a string that fits SSO but after insert(3, cStr()+2)
             // produces a result of length (2*len - 2) that exceeds maxSsoSize.
             const auto       len = (maxSsoSize / 2) + 2; // guarantees 2*len - 2 > maxSsoSize
-            sf::base::String s(longStringLiteral, len);
+            zb::String s(longStringLiteral, len);
             CHECK(s.isSso());
 
             // Build the expected result: s[0..3] + s[2..] + s[3..]
-            sf::base::String expected;
-            expected.append(sf::base::StringView(s).substrByPosLen(0, 3));
-            expected.append(sf::base::StringView(s).substrByPosLen(2));
-            expected.append(sf::base::StringView(s).substrByPosLen(3));
+            zb::String expected;
+            expected.append(zb::StringView(s).substrByPosLen(0, 3));
+            expected.append(zb::StringView(s).substrByPosLen(2));
+            expected.append(zb::StringView(s).substrByPosLen(3));
 
             s.insert(3, s.cStr() + 2);
 
@@ -789,7 +789,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("Resize")
     {
-        sf::base::String s = "Hello";
+        zb::String s = "Hello";
         CHECK(s.isSso());
         CHECK(s.size() == 5);
 
@@ -809,7 +809,7 @@ TEST_CASE("[Base] Base/String.hpp")
         CHECK(s[1] == 'e');
         CHECK(s[2] == 'l');
 
-        for (sf::base::SizeT i = 3; i < 50; ++i)
+        for (zb::SizeT i = 3; i < 50; ++i)
             CHECK(s[i] == '\0');
 
         CHECK(!s.isSso());
@@ -819,15 +819,15 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("Grow from SSO into heap, op fills the whole buffer")
         {
-            sf::base::String s = "abc";
+            zb::String s = "abc";
             CHECK(s.isSso());
             CHECK(s.size() == 3);
 
-            constexpr sf::base::SizeT requested = 100u; // > maxSsoSize
+            constexpr zb::SizeT requested = 100u; // > maxSsoSize
             s.resizeAndOverwrite(requested,
-                                 [](char* buf, sf::base::SizeT n) -> sf::base::SizeT
+                                 [](char* buf, zb::SizeT n) -> zb::SizeT
             {
-                for (sf::base::SizeT i = 0; i < n; ++i)
+                for (zb::SizeT i = 0; i < n; ++i)
                     buf[i] = static_cast<char>('a' + (i % 26));
                 return n;
             });
@@ -844,9 +844,9 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Returning a smaller size truncates")
         {
-            sf::base::String s;
+            zb::String s;
             s.resizeAndOverwrite(20u,
-                                 [](char* buf, sf::base::SizeT) -> sf::base::SizeT
+                                 [](char* buf, zb::SizeT) -> zb::SizeT
             {
                 buf[0] = 'h';
                 buf[1] = 'i';
@@ -860,8 +860,8 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Returning zero clears the string")
         {
-            sf::base::String s = "previous";
-            s.resizeAndOverwrite(50u, [](char*, sf::base::SizeT) -> sf::base::SizeT { return 0u; });
+            zb::String s = "previous";
+            s.resizeAndOverwrite(50u, [](char*, zb::SizeT) -> zb::SizeT { return 0u; });
 
             CHECK(s.empty());
             CHECK(s.size() == 0u);
@@ -872,11 +872,11 @@ TEST_CASE("[Base] Base/String.hpp")
         {
             // Matches std::string::resize_and_overwrite semantics: bytes up to
             // the lesser of old and new size keep their values when op runs.
-            sf::base::String s = "Hello";
+            zb::String s = "Hello";
             CHECK(s.isSso());
 
             s.resizeAndOverwrite(8u,
-                                 [](char* buf, sf::base::SizeT n) -> sf::base::SizeT
+                                 [](char* buf, zb::SizeT n) -> zb::SizeT
             {
                 // First 5 bytes are still "Hello"; only fill the new tail.
                 CHECK(buf[0] == 'H');
@@ -895,9 +895,9 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Shrinking via newSize < size() keeps prefix and truncates")
         {
-            sf::base::String s = "abcdefghij";
+            zb::String s = "abcdefghij";
             s.resizeAndOverwrite(3u,
-                                 [](char* buf, sf::base::SizeT n) -> sf::base::SizeT
+                                 [](char* buf, zb::SizeT n) -> zb::SizeT
             {
                 CHECK(buf[0] == 'a');
                 CHECK(buf[1] == 'b');
@@ -911,8 +911,8 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("newSize == 0 with empty string is a no-op")
         {
-            sf::base::String s;
-            s.resizeAndOverwrite(0u, [](char*, sf::base::SizeT n) -> sf::base::SizeT { return n; });
+            zb::String s;
+            s.resizeAndOverwrite(0u, [](char*, zb::SizeT n) -> zb::SizeT { return n; });
 
             CHECK(s.empty());
             CHECK(s.cStr()[0] == '\0');
@@ -923,7 +923,7 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("Same-length replacement (no shift)")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             s.replace(7, 5, "WORLD");
             CHECK(s == "Hello, WORLD!");
             CHECK(s.size() == 13u);
@@ -931,7 +931,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Shorter replacement (tail shifts left)")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             s.replace(7, 5, "you");
             CHECK(s == "Hello, you!");
             CHECK(s.size() == 11u);
@@ -939,7 +939,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Longer replacement (tail shifts right)")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             s.replace(7, 5, "everybody");
             CHECK(s == "Hello, everybody!");
             CHECK(s.size() == 17u);
@@ -947,7 +947,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Empty replacement acts as erase")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             s.replace(5, 7, "");
             CHECK(s == "Hello!");
             CHECK(s.size() == 6u);
@@ -955,7 +955,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Zero count acts as insert")
         {
-            sf::base::String s = "Hello!";
+            zb::String s = "Hello!";
             s.replace(5, 0, ", world");
             CHECK(s == "Hello, world!");
             CHECK(s.size() == 13u);
@@ -963,42 +963,42 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Replace at beginning")
         {
-            sf::base::String s = "abcdef";
+            zb::String s = "abcdef";
             s.replace(0, 3, "XYZW");
             CHECK(s == "XYZWdef");
         }
 
         SECTION("Replace at end (pos == size)")
         {
-            sf::base::String s = "abc";
+            zb::String s = "abc";
             s.replace(3, 0, "def");
             CHECK(s == "abcdef");
         }
 
         SECTION("count == nPos clamps to end")
         {
-            sf::base::String s = "Hello, world!";
-            s.replace(7, sf::base::String::nPos, "EVERYONE");
+            zb::String s = "Hello, world!";
+            s.replace(7, zb::String::nPos, "EVERYONE");
             CHECK(s == "Hello, EVERYONE");
         }
 
         SECTION("count past end clamps to end")
         {
-            sf::base::String s = "abcdef";
+            zb::String s = "abcdef";
             s.replace(2, 100u, "XYZ");
             CHECK(s == "abXYZ");
         }
 
         SECTION("Replace whole string")
         {
-            sf::base::String s = "abc";
+            zb::String s = "abc";
             s.replace(0, s.size(), "abcdefghij");
             CHECK(s == "abcdefghij");
         }
 
         SECTION("Replace then content fits in original capacity (no realloc)")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             s.reserve(64);
             const char* const originalData = s.data();
 
@@ -1010,7 +1010,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Replace forces growth out of SSO")
         {
-            sf::base::String s = "abc";
+            zb::String s = "abc";
             CHECK(s.isSso());
 
             s.replace(0, s.size(), longStringLiteral);
@@ -1024,8 +1024,8 @@ TEST_CASE("[Base] Base/String.hpp")
             // Replace [7..12) ("world") with the substring "Hello" already
             // sitting at [0..5). The implementation must copy the source first
             // before shifting the tail, otherwise the read would race the move.
-            sf::base::String s = "Hello, world!";
-            s.replace(7, 5, sf::base::StringView{s}.substrByPosLen(0, 5));
+            zb::String s = "Hello, world!";
+            s.replace(7, 5, zb::StringView{s}.substrByPosLen(0, 5));
 
             CHECK(s == "Hello, Hello!");
         }
@@ -1034,8 +1034,8 @@ TEST_CASE("[Base] Base/String.hpp")
         {
             // Source overlaps the destination: replace [3..6) with the
             // substring at [4..7). Self-aliasing path must copy first.
-            sf::base::String s = "abcdefghij";
-            s.replace(3, 3, sf::base::StringView{s}.substrByPosLen(4, 3));
+            zb::String s = "abcdefghij";
+            s.replace(3, 3, zb::StringView{s}.substrByPosLen(4, 3));
 
             CHECK(s == "abcefgghij");
         }
@@ -1044,11 +1044,11 @@ TEST_CASE("[Base] Base/String.hpp")
         {
             // Long string that's already on the heap; replace with a tail of
             // itself that, after substitution, exceeds current capacity.
-            sf::base::String s(longStringLiteral);
+            zb::String s(longStringLiteral);
             CHECK(!s.isSso());
 
-            const auto             tailView = sf::base::StringView{s}.substrByPosLen(s.size() / 2);
-            const sf::base::String expected = sf::base::String{longStringLiteral} + sf::base::String{tailView};
+            const auto             tailView = zb::StringView{s}.substrByPosLen(s.size() / 2);
+            const zb::String expected = zb::String{longStringLiteral} + zb::String{tailView};
 
             // Replace zero chars at end with our own tail -> doubles the data.
             s.replace(s.size(), 0, tailView);
@@ -1058,14 +1058,14 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Replace with empty replacement on empty string is a no-op")
         {
-            sf::base::String s;
+            zb::String s;
             s.replace(0, 0, "");
             CHECK(s.empty());
         }
 
         SECTION("Replace preserves null terminator")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             s.replace(7, 5, "you");
             // `cStr()` must still produce a valid C-string at the new size.
             CHECK(s.cStr()[s.size()] == '\0');
@@ -1073,12 +1073,12 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Replace accepts String, StringView, const char* via implicit conversions")
         {
-            sf::base::String s1 = "abc";
-            sf::base::String s2 = "abc";
-            sf::base::String s3 = "abc";
+            zb::String s1 = "abc";
+            zb::String s2 = "abc";
+            zb::String s3 = "abc";
 
-            const sf::base::String     replString = "XX";
-            const sf::base::StringView replView   = "YY";
+            const zb::String     replString = "XX";
+            const zb::StringView replView   = "YY";
 
             s1.replace(1, 1, replString);
             s2.replace(1, 1, replView);
@@ -1094,64 +1094,64 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("Found")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             CHECK(s.replaceFirstOccurrence("world", "everybody"));
             CHECK(s == "Hello, everybody!");
         }
 
         SECTION("Not found leaves string unchanged")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             CHECK_FALSE(s.replaceFirstOccurrence("xyz", "ABC"));
             CHECK(s == "Hello, world!");
         }
 
         SECTION("Only first match is replaced")
         {
-            sf::base::String s = "abc abc abc";
+            zb::String s = "abc abc abc";
             CHECK(s.replaceFirstOccurrence("abc", "XYZ"));
             CHECK(s == "XYZ abc abc");
         }
 
         SECTION("Empty target returns false and leaves string unchanged")
         {
-            sf::base::String s = "Hello";
+            zb::String s = "Hello";
             CHECK_FALSE(s.replaceFirstOccurrence("", "X"));
             CHECK(s == "Hello");
         }
 
         SECTION("Empty replacement acts as erase")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             CHECK(s.replaceFirstOccurrence(", world", ""));
             CHECK(s == "Hello!");
         }
 
         SECTION("Replace at very start")
         {
-            sf::base::String s = "abcabc";
+            zb::String s = "abcabc";
             CHECK(s.replaceFirstOccurrence("abc", "XX"));
             CHECK(s == "XXabc");
         }
 
         SECTION("Replace at very end")
         {
-            sf::base::String s = "abcabc";
+            zb::String s = "abcabc";
             CHECK(s.replaceFirstOccurrence("bc", "XYZ"));
             CHECK(s == "aXYZabc"); // first "bc" at index 1
         }
 
         SECTION("Empty target on empty string returns false")
         {
-            sf::base::String s;
+            zb::String s;
             CHECK_FALSE(s.replaceFirstOccurrence("", "X"));
             CHECK(s.empty());
         }
 
         SECTION("Self-aliasing target view (substring of self)")
         {
-            sf::base::String s   = "abcdef";
-            const auto       sub = sf::base::StringView{s}.substrByPosLen(2, 2); // "cd"
+            zb::String s   = "abcdef";
+            const auto       sub = zb::StringView{s}.substrByPosLen(2, 2); // "cd"
             CHECK(s.replaceFirstOccurrence(sub, "XYZ"));
             CHECK(s == "abXYZef");
         }
@@ -1161,42 +1161,42 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("Multiple matches")
         {
-            sf::base::String s = "abc abc abc";
+            zb::String s = "abc abc abc";
             CHECK(s.replaceAllOccurrences("abc", "X") == 3u);
             CHECK(s == "X X X");
         }
 
         SECTION("No matches leaves string unchanged and returns 0")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             CHECK(s.replaceAllOccurrences("xyz", "ABC") == 0u);
             CHECK(s == "Hello, world!");
         }
 
         SECTION("Single match returns 1")
         {
-            sf::base::String s = "Hello, world!";
+            zb::String s = "Hello, world!";
             CHECK(s.replaceAllOccurrences("world", "everybody") == 1u);
             CHECK(s == "Hello, everybody!");
         }
 
         SECTION("Empty target returns 0 and leaves string unchanged")
         {
-            sf::base::String s = "Hello";
+            zb::String s = "Hello";
             CHECK(s.replaceAllOccurrences("", "X") == 0u);
             CHECK(s == "Hello");
         }
 
         SECTION("Empty replacement removes all occurrences")
         {
-            sf::base::String s = "abXYZabXYZab";
+            zb::String s = "abXYZabXYZab";
             CHECK(s.replaceAllOccurrences("XYZ", "") == 2u);
             CHECK(s == "ababab");
         }
 
         SECTION("Adjacent matches all replaced")
         {
-            sf::base::String s = "aaaa";
+            zb::String s = "aaaa";
             // "aa" "aa" matches at 0 and 2; both get replaced.
             CHECK(s.replaceAllOccurrences("aa", "X") == 2u);
             CHECK(s == "XX");
@@ -1204,7 +1204,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Replacement contains target -- does not infinite-loop")
         {
-            sf::base::String s = "abc";
+            zb::String s = "abc";
             // "a" -> "aa": after replace, advance past it so we don't re-match.
             CHECK(s.replaceAllOccurrences("a", "aa") == 1u);
             CHECK(s == "aabc");
@@ -1212,7 +1212,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Replacement equals target is a no-op (count is reported)")
         {
-            sf::base::String s = "abcabc";
+            zb::String s = "abcabc";
             CHECK(s.replaceAllOccurrences("abc", "abc") == 2u);
             CHECK(s == "abcabc");
         }
@@ -1223,14 +1223,14 @@ TEST_CASE("[Base] Base/String.hpp")
             // We use the non-overlapping convention: jump past each replacement,
             // so positions are 0 and 2 (after first replace -> "aaa"), then 1
             // (after second replace -> "aa"). Two replacements total.
-            sf::base::String s = "aaaa";
+            zb::String s = "aaaa";
             CHECK(s.replaceAllOccurrences("aa", "a") == 2u);
             CHECK(s == "aa");
         }
 
         SECTION("Replacement causes growth out of SSO")
         {
-            sf::base::String s = "aXa";
+            zb::String s = "aXa";
             CHECK(s.isSso());
 
             // Replace each 'X' with the long literal -> result definitely heap.
@@ -1238,7 +1238,7 @@ TEST_CASE("[Base] Base/String.hpp")
             CHECK(count == 1u);
             CHECK(!s.isSso());
 
-            sf::base::String expected = "a";
+            zb::String expected = "a";
             expected.append(longStringLiteral);
             expected.append("a");
             CHECK(s == expected);
@@ -1246,21 +1246,21 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Self-aliasing target view (substring of self)")
         {
-            sf::base::String s = "abcabcabc";
+            zb::String s = "abcabcabc";
             // Take a view of the first "abc" and replace all occurrences of
             // it with "X". The aliasing-detection path must copy the target
             // before the buffer reallocates.
-            const auto needle = sf::base::StringView{s}.substrByPosLen(0, 3);
+            const auto needle = zb::StringView{s}.substrByPosLen(0, 3);
             CHECK(s.replaceAllOccurrences(needle, "X") == 3u);
             CHECK(s == "XXX");
         }
 
         SECTION("Self-aliasing replacement view (substring of self)")
         {
-            sf::base::String s = "ab_cd";
+            zb::String s = "ab_cd";
             // Replace "_" with everything from index 0 to 2 ("ab"). View is
             // taken before mutation; aliasing-detection path must copy it.
-            const auto repl = sf::base::StringView{s}.substrByPosLen(0, 2);
+            const auto repl = zb::StringView{s}.substrByPosLen(0, 2);
             CHECK(s.replaceAllOccurrences("_", repl) == 1u);
             CHECK(s ==
                   "abab"
@@ -1270,14 +1270,14 @@ TEST_CASE("[Base] Base/String.hpp")
         SECTION("Heap string with many matches forces multiple shifts")
         {
             // Build a long string of repeated tokens, then replace them all.
-            sf::base::String s;
+            zb::String s;
             for (int i = 0; i < 100; ++i)
                 s.append("foo,");
 
             const auto count = s.replaceAllOccurrences("foo", "bar");
             CHECK(count == 100u);
 
-            sf::base::String expected;
+            zb::String expected;
             for (int i = 0; i < 100; ++i)
                 expected.append("bar,");
             CHECK(s == expected);
@@ -1285,7 +1285,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("Empty replacement on empty string is a no-op")
         {
-            sf::base::String s;
+            zb::String s;
             CHECK(s.replaceAllOccurrences("x", "") == 0u);
             CHECK(s.empty());
         }
@@ -1295,11 +1295,11 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         SECTION("forSplits is bridged from StringView (B)")
         {
-            sf::base::String s = "alpha,beta,gamma";
+            zb::String s = "alpha,beta,gamma";
 
-            sf::base::SizeT count = 0u;
+            zb::SizeT count = 0u;
             s.forSplits(',',
-                        [&](sf::base::StringView seg)
+                        [&](zb::StringView seg)
             {
                 ++count;
                 if (count == 1u)
@@ -1314,11 +1314,11 @@ TEST_CASE("[Base] Base/String.hpp")
 
         SECTION("forSplits with StringView splitter is bridged from StringView (B)")
         {
-            sf::base::String s = "foo::bar::baz";
+            zb::String s = "foo::bar::baz";
 
-            sf::base::SizeT count = 0u;
+            zb::SizeT count = 0u;
             s.forSplits("::",
-                        [&](sf::base::StringView seg)
+                        [&](zb::StringView seg)
             {
                 ++count;
                 if (count == 1u)
@@ -1337,9 +1337,9 @@ TEST_CASE("[Base] Base/String.hpp")
             // allowed the optimizer to drop calls whose return value isn't used.
             // `forLines` returns void and runs side-effecting user code, so
             // any elision would be observable as a missed counter increment.
-            sf::base::String s    = "a\nb\nc\nd";
-            sf::base::SizeT  hits = 0u;
-            s.forLines([&](sf::base::StringView) { ++hits; });
+            zb::String s    = "a\nb\nc\nd";
+            zb::SizeT  hits = 0u;
+            s.forLines([&](zb::StringView) { ++hits; });
             CHECK(hits == 4u);
         }
     }
@@ -1348,7 +1348,7 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         // `std::string::erase(size())` is allowed and is a no-op (count
         // clamps to 0). Previously this asserted; loosened to `<=`.
-        sf::base::String s = "Hello";
+        zb::String s = "Hello";
 
         s.erase(s.size());
         CHECK(s == "Hello");
@@ -1356,7 +1356,7 @@ TEST_CASE("[Base] Base/String.hpp")
         s.erase(s.size(), 0u);
         CHECK(s == "Hello");
 
-        s.erase(s.size(), sf::base::String::nPos);
+        s.erase(s.size(), zb::String::nPos);
         CHECK(s == "Hello");
 
         // Erasing the entire string still works at index 0.
@@ -1375,8 +1375,8 @@ TEST_CASE("[Base] Base/String.hpp")
         const char raw1[] = {'a', '\0', 'b'};
         const char raw2[] = {'a', '\0', 'c'};
 
-        const sf::base::String s1{raw1, 3};
-        const sf::base::String s2{raw2, 3};
+        const zb::String s1{raw1, 3};
+        const zb::String s2{raw2, 3};
 
         CHECK_FALSE(s1 == s2);
         CHECK(s1 != s2);
@@ -1385,16 +1385,16 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("operator+ lvalue overloads")
     {
-        const sf::base::String a = "foo";
-        const sf::base::String b = "bar";
+        const zb::String a = "foo";
+        const zb::String b = "bar";
 
         CHECK(a + b == "foobar");
         CHECK(a + 'x' == "foox");
         CHECK('x' + a == "xfoo");
         CHECK(a + "bar" == "foobar");
         CHECK("bar" + a == "barfoo");
-        CHECK(a + sf::base::StringView{"bar"} == "foobar");
-        CHECK(sf::base::StringView{"bar"} + a == "barfoo");
+        CHECK(a + zb::StringView{"bar"} == "foobar");
+        CHECK(zb::StringView{"bar"} + a == "barfoo");
 
         // Source operands unaffected.
         CHECK(a == "foo");
@@ -1407,14 +1407,14 @@ TEST_CASE("[Base] Base/String.hpp")
         // append does not reallocate. The result should share the same
         // heap pointer, proving that lhs was moved into the result and
         // appended in-place rather than the impl allocating a fresh buffer.
-        sf::base::String lhs;
+        zb::String lhs;
         lhs.reserve(64u);
         lhs = "abcdefghijklmnopqrstuvwxyz"; // > SSO max, on heap
         REQUIRE(lhs.capacity() >= 28u);
 
         const char* const lhsPtrBefore = lhs.data();
 
-        const sf::base::String result = static_cast<sf::base::String&&>(lhs) + sf::base::String{"!!"};
+        const zb::String result = static_cast<zb::String&&>(lhs) + zb::String{"!!"};
         CHECK(result == "abcdefghijklmnopqrstuvwxyz!!");
         CHECK(result.data() == lhsPtrBefore);
     }
@@ -1423,16 +1423,16 @@ TEST_CASE("[Base] Base/String.hpp")
     {
         auto makeHeap = []
         {
-            sf::base::String s;
+            zb::String s;
             s.reserve(64u);
             s = "abcdefghijklmnopqrstuvwxyz";
             return s;
         };
 
-        CHECK(makeHeap() + sf::base::String{"!"} == "abcdefghijklmnopqrstuvwxyz!");
+        CHECK(makeHeap() + zb::String{"!"} == "abcdefghijklmnopqrstuvwxyz!");
         CHECK(makeHeap() + '!' == "abcdefghijklmnopqrstuvwxyz!");
         CHECK(makeHeap() + "!!" == "abcdefghijklmnopqrstuvwxyz!!");
-        CHECK(makeHeap() + sf::base::StringView{"!!!"} == "abcdefghijklmnopqrstuvwxyz!!!");
+        CHECK(makeHeap() + zb::StringView{"!!!"} == "abcdefghijklmnopqrstuvwxyz!!!");
     }
 
     SECTION("operator+ chained expressions feed the rvalue overload")
@@ -1441,45 +1441,45 @@ TEST_CASE("[Base] Base/String.hpp")
         // an rvalue lhs and reuse the buffer instead of reallocating.
         // The buffer-reuse property is verified in the prior section;
         // here we only check the result.
-        const sf::base::String a = "Hello, ";
-        const sf::base::String b = "beautiful ";
-        const sf::base::String c = "world";
-        const sf::base::String d = "!";
+        const zb::String a = "Hello, ";
+        const zb::String b = "beautiful ";
+        const zb::String c = "world";
+        const zb::String d = "!";
 
         CHECK(a + b + c + d == "Hello, beautiful world!");
     }
 
     SECTION("appendFmt (FmtAppendMixin) on empty string")
     {
-        sf::base::String s;
+        zb::String s;
         s.appendFmt("hello");
         CHECK(s == "hello");
     }
 
     SECTION("appendFmt with single placeholder")
     {
-        sf::base::String s;
+        zb::String s;
         s.appendFmt("answer = {}", 42);
         CHECK(s == "answer = 42");
     }
 
     SECTION("appendFmt with multiple heterogeneous placeholders")
     {
-        sf::base::String s;
-        s.appendFmt("{}-{}-{}", 1, 'x', sf::base::StringView{"end"});
+        zb::String s;
+        s.appendFmt("{}-{}-{}", 1, 'x', zb::StringView{"end"});
         CHECK(s == "1-x-end");
     }
 
     SECTION("appendFmt with width / precision / type-tag spec")
     {
-        sf::base::String s;
+        zb::String s;
         s.appendFmt("[{:5}][{:x}][{:.3}]", 7, 255, 3.14159);
         CHECK(s == "[    7][ff][3.142]");
     }
 
     SECTION("appendFmt is genuinely appending (not replacing)")
     {
-        sf::base::String s = "prefix:";
+        zb::String s = "prefix:";
         s.appendFmt(" v={}", 7);
         CHECK(s == "prefix: v=7");
 
@@ -1490,7 +1490,7 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("appendFmt grows an SSO buffer onto the heap when needed")
     {
-        sf::base::String s = "abc";
+        zb::String s = "abc";
         // Long format expansion forces growth beyond SSO.
         s.appendFmt("-{}-{}-{}-{}-{}-{}-{}-{}", "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta");
         CHECK(s == "abc-alpha-beta-gamma-delta-epsilon-zeta-eta-theta");
@@ -1498,20 +1498,20 @@ TEST_CASE("[Base] Base/String.hpp")
 
     SECTION("appendArg appends a single value with no spec")
     {
-        sf::base::String s = "n=";
+        zb::String s = "n=";
         s.appendArg(42);
         CHECK(s == "n=42");
 
         s.appendArg(',' /*char*/);
         CHECK(s == "n=42,");
 
-        s.appendArg(sf::base::StringView{"tail"});
+        s.appendArg(zb::StringView{"tail"});
         CHECK(s == "n=42,tail");
     }
 
     SECTION("appendArg with float renders default precision")
     {
-        sf::base::String s;
+        zb::String s;
         s.appendArg(3.14159);
         // `defaultFloatPrecision == 6` ({:.6f}).
         CHECK(s == "3.141590");

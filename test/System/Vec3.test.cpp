@@ -1,42 +1,42 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/System/Vec3.hpp"
+#include "Zancle/System/Vec3.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsSame.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsSame.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
-TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
+TEMPLATE_TEST_CASE("[System] za::Vec3", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vec3<TestType>));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Vec3<TestType>)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Vec3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Vec3<TestType>, sf::Vec3<TestType>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Vec3<TestType>)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_AGGREGATE(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Vec3<TestType>, za::Vec3<TestType>));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Vec3<TestType> vec;
+            constexpr za::Vec3<TestType> vec;
             STATIC_CHECK(vec.x == 0);
             STATIC_CHECK(vec.y == 0);
             STATIC_CHECK(vec.z == 0);
@@ -44,7 +44,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
         SECTION("(x, y, z) coordinate constructor")
         {
-            constexpr sf::Vec3<TestType> vec(1, 2, 3);
+            constexpr za::Vec3<TestType> vec(1, 2, 3);
             STATIC_CHECK(vec.x == 1);
             STATIC_CHECK(vec.y == 2);
             STATIC_CHECK(vec.z == 3);
@@ -55,8 +55,8 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
     {
         SECTION("-vec")
         {
-            constexpr sf::Vec3<TestType> vec(1, 2, 3);
-            constexpr sf::Vec3<TestType> negatedVec = -vec;
+            constexpr za::Vec3<TestType> vec(1, 2, 3);
+            constexpr za::Vec3<TestType> negatedVec = -vec;
 
             STATIC_CHECK(negatedVec.x == -1);
             STATIC_CHECK(negatedVec.y == -2);
@@ -66,8 +66,8 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
     SECTION("Arithmetic operations between two vecs")
     {
-        sf::Vec3<TestType>           firstVec(2, 5, 6);
-        constexpr sf::Vec3<TestType> secondVec(8, 3, 7);
+        za::Vec3<TestType>           firstVec(2, 5, 6);
+        constexpr za::Vec3<TestType> secondVec(8, 3, 7);
 
         SECTION("vec += vec")
         {
@@ -89,7 +89,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
         SECTION("vec + vec")
         {
-            const sf::Vec3<TestType> result = firstVec + secondVec;
+            const za::Vec3<TestType> result = firstVec + secondVec;
 
             CHECK(result.x == 10);
             CHECK(result.y == 8);
@@ -98,7 +98,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
         SECTION("vec - vec")
         {
-            const sf::Vec3<TestType> result = firstVec - secondVec;
+            const za::Vec3<TestType> result = firstVec - secondVec;
 
             CHECK(result.x == -6);
             CHECK(result.y == 2);
@@ -108,12 +108,12 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
     SECTION("Arithmetic operations between vec and scalar value")
     {
-        sf::Vec3<TestType> vec(26, 12, 6);
+        za::Vec3<TestType> vec(26, 12, 6);
         constexpr TestType scalar = 2;
 
         SECTION("vec * scalar")
         {
-            const sf::Vec3<TestType> result = vec * scalar;
+            const za::Vec3<TestType> result = vec * scalar;
 
             CHECK(result.x == 52);
             CHECK(result.y == 24);
@@ -122,7 +122,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
         SECTION("scalar * vec")
         {
-            const sf::Vec3<TestType> result = scalar * vec;
+            const za::Vec3<TestType> result = scalar * vec;
 
             CHECK(result.x == 52);
             CHECK(result.y == 24);
@@ -140,7 +140,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
         SECTION("vec / scalar")
         {
-            const sf::Vec3<TestType> result = vec / scalar;
+            const za::Vec3<TestType> result = vec / scalar;
 
             CHECK(result.x == 13);
             CHECK(result.y == 6);
@@ -159,9 +159,9 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
     SECTION("Comparison operations (two equal and one different vec)")
     {
-        constexpr sf::Vec3<TestType> firstEqualVec(1, 5, 6);
-        constexpr sf::Vec3<TestType> secondEqualVec(1, 5, 6);
-        constexpr sf::Vec3<TestType> differentVec(6, 9, 7);
+        constexpr za::Vec3<TestType> firstEqualVec(1, 5, 6);
+        constexpr za::Vec3<TestType> secondEqualVec(1, 5, 6);
+        constexpr za::Vec3<TestType> differentVec(6, 9, 7);
 
         SECTION("vec == vec")
         {
@@ -178,7 +178,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
     SECTION("Structured bindings")
     {
-        sf::Vec3<TestType> vec(1, 2, 3); // NOLINT(misc-const-correctness)
+        za::Vec3<TestType> vec(1, 2, 3); // NOLINT(misc-const-correctness)
 
         SECTION("destructure by value")
         {
@@ -188,7 +188,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
             CHECK(y == 2);
             CHECK(z == 3);
 
-            STATIC_CHECK(SFML_BASE_IS_SAME(decltype(x), decltype(vec.x)));
+            STATIC_CHECK(ZB_IS_SAME(decltype(x), decltype(vec.x)));
 
             x = 3;
 
@@ -204,7 +204,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
             CHECK(y == 2);
             CHECK(z == 3);
 
-            STATIC_CHECK(SFML_BASE_IS_SAME(decltype(x), decltype(vec.x)));
+            STATIC_CHECK(ZB_IS_SAME(decltype(x), decltype(vec.x)));
 
             x = 3;
 
@@ -215,27 +215,27 @@ TEMPLATE_TEST_CASE("[System] sf::Vec3", "", int, float)
 
     SECTION("Length and normalization")
     {
-        constexpr sf::Vec3f v(2.4f, 3.f, 5.2f);
+        constexpr za::Vec3f v(2.4f, 3.f, 5.2f);
 
         CHECK(v.length() == Approx(6.46529f));
         CHECK(v.lengthSquared() == Approx(41.79997f));
-        CHECK(v.normalized() == Approx(sf::Vec3f(0.37121f, 0.46401f, 0.80429f)));
+        CHECK(v.normalized() == Approx(za::Vec3f(0.37121f, 0.46401f, 0.80429f)));
     }
 
     SECTION("Products and quotients")
     {
-        constexpr sf::Vec3f v(2.4f, 3.f, 5.2f);
-        constexpr sf::Vec3f w(-0.7f, -2.2f, -4.8f);
+        constexpr za::Vec3f v(2.4f, 3.f, 5.2f);
+        constexpr za::Vec3f w(-0.7f, -2.2f, -4.8f);
 
         CHECK(v.dot(w) == Approx(-33.24f));
         CHECK(w.dot(v) == Approx(-33.24f));
 
-        CHECK(v.cross(w) == Approx(sf::Vec3f(-2.96f, 7.88f, -3.18f)));
-        CHECK(w.cross(v) == Approx(sf::Vec3f(2.96f, -7.88f, 3.18f)));
+        CHECK(v.cross(w) == Approx(za::Vec3f(-2.96f, 7.88f, -3.18f)));
+        CHECK(w.cross(v) == Approx(za::Vec3f(2.96f, -7.88f, 3.18f)));
 
-        CHECK(v.componentWiseMul(w) == Approx(sf::Vec3f(-1.68f, -6.6f, -24.96f)));
-        CHECK(w.componentWiseMul(v) == Approx(sf::Vec3f(-1.68f, -6.6f, -24.96f)));
-        CHECK(v.componentWiseDiv(w) == Approx(sf::Vec3f(-3.428571f, -1.363636f, -1.0833333f)));
-        CHECK(w.componentWiseDiv(v) == Approx(sf::Vec3f(-0.291666f, -0.733333f, -0.9230769f)));
+        CHECK(v.componentWiseMul(w) == Approx(za::Vec3f(-1.68f, -6.6f, -24.96f)));
+        CHECK(w.componentWiseMul(v) == Approx(za::Vec3f(-1.68f, -6.6f, -24.96f)));
+        CHECK(v.componentWiseDiv(w) == Approx(za::Vec3f(-3.428571f, -1.363636f, -1.0833333f)));
+        CHECK(w.componentWiseDiv(v) == Approx(za::Vec3f(-0.291666f, -0.733333f, -0.9230769f)));
     }
 }

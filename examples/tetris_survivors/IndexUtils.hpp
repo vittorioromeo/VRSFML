@@ -4,13 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::base::SizeT getIndex2Dto1D(const sf::Vec2uz position, const sf::base::SizeT width)
+[[nodiscard]] inline zb::SizeT getIndex2Dto1D(const za::Vec2uz position, const zb::SizeT width)
 {
     return position.y * width + position.x;
 }

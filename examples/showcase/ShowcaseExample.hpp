@@ -1,31 +1,31 @@
 #pragma once
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
 class Font;
 class RenderTarget;
 class RenderWindow;
 struct View;
-} // namespace sf
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
-constexpr sf::Vec2f resolution{1016.f, 1016.f};
+constexpr za::Vec2f resolution{1016.f, 1016.f};
 
 
 ////////////////////////////////////////////////////////////
 struct GameDependencies
 {
-    sf::RenderWindow* window;
-    sf::RenderTarget* rtGame;
-    const sf::View*   view;
-    const sf::Font*   font;
+    za::RenderWindow* window;
+    za::RenderTarget* rtGame;
+    const za::View*   view;
+    const za::Font*   font;
 };
 
 

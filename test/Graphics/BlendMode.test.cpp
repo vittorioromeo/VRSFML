@@ -1,81 +1,81 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::BlendMode")
+TEST_CASE("[Graphics] za::BlendMode")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::BlendMode));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::BlendMode));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::BlendMode, sf::BlendMode));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(za::BlendMode));
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::BlendMode));
+        STATIC_CHECK(ZB_IS_AGGREGATE(za::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::BlendMode));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::BlendMode, za::BlendMode));
 
-        STATIC_CHECK(sizeof(sf::BlendMode) <= 4); // should be packed via bitfields
+        STATIC_CHECK(sizeof(za::BlendMode) <= 4); // should be packed via bitfields
     }
 
     SECTION("Construction")
     {
         SECTION("Combined color and alpha constructor using default parameter")
         {
-            const auto blendMode = sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::SrcColor);
+            const auto blendMode = za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::SrcColor);
 
-            CHECK(blendMode.colorSrcFactor == sf::BlendMode::Factor::Zero);
-            CHECK(blendMode.colorDstFactor == sf::BlendMode::Factor::SrcColor);
-            CHECK(blendMode.colorEquation == sf::BlendMode::Equation::Add);
-            CHECK(blendMode.alphaSrcFactor == sf::BlendMode::Factor::Zero);
-            CHECK(blendMode.alphaDstFactor == sf::BlendMode::Factor::SrcColor);
-            CHECK(blendMode.alphaEquation == sf::BlendMode::Equation::Add);
+            CHECK(blendMode.colorSrcFactor == za::BlendMode::Factor::Zero);
+            CHECK(blendMode.colorDstFactor == za::BlendMode::Factor::SrcColor);
+            CHECK(blendMode.colorEquation == za::BlendMode::Equation::Add);
+            CHECK(blendMode.alphaSrcFactor == za::BlendMode::Factor::Zero);
+            CHECK(blendMode.alphaDstFactor == za::BlendMode::Factor::SrcColor);
+            CHECK(blendMode.alphaEquation == za::BlendMode::Equation::Add);
         }
 
         SECTION("Combined color and alpha constructor")
         {
-            const auto blendMode = sf::BlendMode::from(sf::BlendMode::Factor::Zero,
-                                                       sf::BlendMode::Factor::SrcColor,
-                                                       sf::BlendMode::Equation::ReverseSubtract);
+            const auto blendMode = za::BlendMode::from(za::BlendMode::Factor::Zero,
+                                                       za::BlendMode::Factor::SrcColor,
+                                                       za::BlendMode::Equation::ReverseSubtract);
 
-            CHECK(blendMode.colorSrcFactor == sf::BlendMode::Factor::Zero);
-            CHECK(blendMode.colorDstFactor == sf::BlendMode::Factor::SrcColor);
-            CHECK(blendMode.colorEquation == sf::BlendMode::Equation::ReverseSubtract);
-            CHECK(blendMode.alphaSrcFactor == sf::BlendMode::Factor::Zero);
-            CHECK(blendMode.alphaDstFactor == sf::BlendMode::Factor::SrcColor);
-            CHECK(blendMode.alphaEquation == sf::BlendMode::Equation::ReverseSubtract);
+            CHECK(blendMode.colorSrcFactor == za::BlendMode::Factor::Zero);
+            CHECK(blendMode.colorDstFactor == za::BlendMode::Factor::SrcColor);
+            CHECK(blendMode.colorEquation == za::BlendMode::Equation::ReverseSubtract);
+            CHECK(blendMode.alphaSrcFactor == za::BlendMode::Factor::Zero);
+            CHECK(blendMode.alphaDstFactor == za::BlendMode::Factor::SrcColor);
+            CHECK(blendMode.alphaEquation == za::BlendMode::Equation::ReverseSubtract);
         }
 
         SECTION("Separate color and alpha constructor")
         {
-            const sf::BlendMode blendMode(sf::BlendMode::Factor::Zero,
-                                          sf::BlendMode::Factor::SrcColor,
-                                          sf::BlendMode::Equation::ReverseSubtract,
-                                          sf::BlendMode::Factor::OneMinusDstAlpha,
-                                          sf::BlendMode::Factor::DstAlpha,
-                                          sf::BlendMode::Equation::Max);
-            CHECK(blendMode.colorSrcFactor == sf::BlendMode::Factor::Zero);
-            CHECK(blendMode.colorDstFactor == sf::BlendMode::Factor::SrcColor);
-            CHECK(blendMode.colorEquation == sf::BlendMode::Equation::ReverseSubtract);
-            CHECK(blendMode.alphaSrcFactor == sf::BlendMode::Factor::OneMinusDstAlpha);
-            CHECK(blendMode.alphaDstFactor == sf::BlendMode::Factor::DstAlpha);
-            CHECK(blendMode.alphaEquation == sf::BlendMode::Equation::Max);
+            const za::BlendMode blendMode(za::BlendMode::Factor::Zero,
+                                          za::BlendMode::Factor::SrcColor,
+                                          za::BlendMode::Equation::ReverseSubtract,
+                                          za::BlendMode::Factor::OneMinusDstAlpha,
+                                          za::BlendMode::Factor::DstAlpha,
+                                          za::BlendMode::Equation::Max);
+            CHECK(blendMode.colorSrcFactor == za::BlendMode::Factor::Zero);
+            CHECK(blendMode.colorDstFactor == za::BlendMode::Factor::SrcColor);
+            CHECK(blendMode.colorEquation == za::BlendMode::Equation::ReverseSubtract);
+            CHECK(blendMode.alphaSrcFactor == za::BlendMode::Factor::OneMinusDstAlpha);
+            CHECK(blendMode.alphaDstFactor == za::BlendMode::Factor::DstAlpha);
+            CHECK(blendMode.alphaEquation == za::BlendMode::Equation::Max);
         }
     }
 
@@ -83,122 +83,122 @@ TEST_CASE("[Graphics] sf::BlendMode")
     {
         SECTION("operator==")
         {
-            CHECK(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
-                  sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
-            CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero,
-                                sf::BlendMode::Factor::SrcColor,
-                                sf::BlendMode::Equation::ReverseSubtract,
-                                sf::BlendMode::Factor::OneMinusDstAlpha,
-                                sf::BlendMode::Factor::DstAlpha,
-                                sf::BlendMode::Equation::Max) ==
-                  sf::BlendMode(sf::BlendMode::Factor::Zero,
-                                sf::BlendMode::Factor::SrcColor,
-                                sf::BlendMode::Equation::ReverseSubtract,
-                                sf::BlendMode::Factor::OneMinusDstAlpha,
-                                sf::BlendMode::Factor::DstAlpha,
-                                sf::BlendMode::Equation::Max));
+            CHECK(za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::One) ==
+                  za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::One));
+            CHECK(za::BlendMode(za::BlendMode::Factor::Zero,
+                                za::BlendMode::Factor::SrcColor,
+                                za::BlendMode::Equation::ReverseSubtract,
+                                za::BlendMode::Factor::OneMinusDstAlpha,
+                                za::BlendMode::Factor::DstAlpha,
+                                za::BlendMode::Equation::Max) ==
+                  za::BlendMode(za::BlendMode::Factor::Zero,
+                                za::BlendMode::Factor::SrcColor,
+                                za::BlendMode::Equation::ReverseSubtract,
+                                za::BlendMode::Factor::OneMinusDstAlpha,
+                                za::BlendMode::Factor::DstAlpha,
+                                za::BlendMode::Equation::Max));
 
-            CHECK_FALSE(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
-                        sf::BlendMode::from(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
+            CHECK_FALSE(za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::One) ==
+                        za::BlendMode::from(za::BlendMode::Factor::One, za::BlendMode::Factor::Zero));
             CHECK_FALSE(
-                sf::BlendMode(sf::BlendMode::Factor::Zero,
-                              sf::BlendMode::Factor::SrcColor,
-                              sf::BlendMode::Equation::ReverseSubtract,
-                              sf::BlendMode::Factor::OneMinusDstAlpha,
-                              sf::BlendMode::Factor::DstAlpha,
-                              sf::BlendMode::Equation::Max) ==
-                sf::BlendMode(sf::BlendMode::Factor::One,
-                              sf::BlendMode::Factor::SrcColor,
-                              sf::BlendMode::Equation::ReverseSubtract,
-                              sf::BlendMode::Factor::OneMinusDstAlpha,
-                              sf::BlendMode::Factor::DstAlpha,
-                              sf::BlendMode::Equation::Max));
+                za::BlendMode(za::BlendMode::Factor::Zero,
+                              za::BlendMode::Factor::SrcColor,
+                              za::BlendMode::Equation::ReverseSubtract,
+                              za::BlendMode::Factor::OneMinusDstAlpha,
+                              za::BlendMode::Factor::DstAlpha,
+                              za::BlendMode::Equation::Max) ==
+                za::BlendMode(za::BlendMode::Factor::One,
+                              za::BlendMode::Factor::SrcColor,
+                              za::BlendMode::Equation::ReverseSubtract,
+                              za::BlendMode::Factor::OneMinusDstAlpha,
+                              za::BlendMode::Factor::DstAlpha,
+                              za::BlendMode::Equation::Max));
         }
 
         SECTION("operator!=")
         {
-            CHECK_FALSE(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
-                        sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
+            CHECK_FALSE(za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::One) !=
+                        za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::One));
             CHECK_FALSE(
-                sf::BlendMode(sf::BlendMode::Factor::Zero,
-                              sf::BlendMode::Factor::SrcColor,
-                              sf::BlendMode::Equation::ReverseSubtract,
-                              sf::BlendMode::Factor::OneMinusDstAlpha,
-                              sf::BlendMode::Factor::DstAlpha,
-                              sf::BlendMode::Equation::Max) !=
-                sf::BlendMode(sf::BlendMode::Factor::Zero,
-                              sf::BlendMode::Factor::SrcColor,
-                              sf::BlendMode::Equation::ReverseSubtract,
-                              sf::BlendMode::Factor::OneMinusDstAlpha,
-                              sf::BlendMode::Factor::DstAlpha,
-                              sf::BlendMode::Equation::Max));
+                za::BlendMode(za::BlendMode::Factor::Zero,
+                              za::BlendMode::Factor::SrcColor,
+                              za::BlendMode::Equation::ReverseSubtract,
+                              za::BlendMode::Factor::OneMinusDstAlpha,
+                              za::BlendMode::Factor::DstAlpha,
+                              za::BlendMode::Equation::Max) !=
+                za::BlendMode(za::BlendMode::Factor::Zero,
+                              za::BlendMode::Factor::SrcColor,
+                              za::BlendMode::Equation::ReverseSubtract,
+                              za::BlendMode::Factor::OneMinusDstAlpha,
+                              za::BlendMode::Factor::DstAlpha,
+                              za::BlendMode::Equation::Max));
 
-            CHECK(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
-                  sf::BlendMode::from(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
-            CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero,
-                                sf::BlendMode::Factor::SrcColor,
-                                sf::BlendMode::Equation::ReverseSubtract,
-                                sf::BlendMode::Factor::OneMinusDstAlpha,
-                                sf::BlendMode::Factor::DstAlpha,
-                                sf::BlendMode::Equation::Max) !=
-                  sf::BlendMode(sf::BlendMode::Factor::One,
-                                sf::BlendMode::Factor::SrcColor,
-                                sf::BlendMode::Equation::ReverseSubtract,
-                                sf::BlendMode::Factor::OneMinusDstAlpha,
-                                sf::BlendMode::Factor::DstAlpha,
-                                sf::BlendMode::Equation::Max));
+            CHECK(za::BlendMode::from(za::BlendMode::Factor::Zero, za::BlendMode::Factor::One) !=
+                  za::BlendMode::from(za::BlendMode::Factor::One, za::BlendMode::Factor::Zero));
+            CHECK(za::BlendMode(za::BlendMode::Factor::Zero,
+                                za::BlendMode::Factor::SrcColor,
+                                za::BlendMode::Equation::ReverseSubtract,
+                                za::BlendMode::Factor::OneMinusDstAlpha,
+                                za::BlendMode::Factor::DstAlpha,
+                                za::BlendMode::Equation::Max) !=
+                  za::BlendMode(za::BlendMode::Factor::One,
+                                za::BlendMode::Factor::SrcColor,
+                                za::BlendMode::Equation::ReverseSubtract,
+                                za::BlendMode::Factor::OneMinusDstAlpha,
+                                za::BlendMode::Factor::DstAlpha,
+                                za::BlendMode::Equation::Max));
         }
     }
 
     SECTION("Static constants")
     {
-        CHECK(sf::BlendMode{}.colorSrcFactor == sf::BlendMode::Factor::SrcAlpha);
-        CHECK(sf::BlendMode{}.colorDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
-        CHECK(sf::BlendMode{}.colorEquation == sf::BlendMode::Equation::Add);
-        CHECK(sf::BlendMode{}.alphaSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMode{}.alphaDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
-        CHECK(sf::BlendMode{}.alphaEquation == sf::BlendMode::Equation::Add);
+        CHECK(za::BlendMode{}.colorSrcFactor == za::BlendMode::Factor::SrcAlpha);
+        CHECK(za::BlendMode{}.colorDstFactor == za::BlendMode::Factor::OneMinusSrcAlpha);
+        CHECK(za::BlendMode{}.colorEquation == za::BlendMode::Equation::Add);
+        CHECK(za::BlendMode{}.alphaSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMode{}.alphaDstFactor == za::BlendMode::Factor::OneMinusSrcAlpha);
+        CHECK(za::BlendMode{}.alphaEquation == za::BlendMode::Equation::Add);
 
-        CHECK(sf::BlendAlpha.colorSrcFactor == sf::BlendMode::Factor::SrcAlpha);
-        CHECK(sf::BlendAlpha.colorDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
-        CHECK(sf::BlendAlpha.colorEquation == sf::BlendMode::Equation::Add);
-        CHECK(sf::BlendAlpha.alphaSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendAlpha.alphaDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
-        CHECK(sf::BlendAlpha.alphaEquation == sf::BlendMode::Equation::Add);
+        CHECK(za::BlendAlpha.colorSrcFactor == za::BlendMode::Factor::SrcAlpha);
+        CHECK(za::BlendAlpha.colorDstFactor == za::BlendMode::Factor::OneMinusSrcAlpha);
+        CHECK(za::BlendAlpha.colorEquation == za::BlendMode::Equation::Add);
+        CHECK(za::BlendAlpha.alphaSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendAlpha.alphaDstFactor == za::BlendMode::Factor::OneMinusSrcAlpha);
+        CHECK(za::BlendAlpha.alphaEquation == za::BlendMode::Equation::Add);
 
-        CHECK(sf::BlendAdd.colorSrcFactor == sf::BlendMode::Factor::SrcAlpha);
-        CHECK(sf::BlendAdd.colorDstFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendAdd.colorEquation == sf::BlendMode::Equation::Add);
-        CHECK(sf::BlendAdd.alphaSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendAdd.alphaDstFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendAdd.alphaEquation == sf::BlendMode::Equation::Add);
+        CHECK(za::BlendAdd.colorSrcFactor == za::BlendMode::Factor::SrcAlpha);
+        CHECK(za::BlendAdd.colorDstFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendAdd.colorEquation == za::BlendMode::Equation::Add);
+        CHECK(za::BlendAdd.alphaSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendAdd.alphaDstFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendAdd.alphaEquation == za::BlendMode::Equation::Add);
 
-        CHECK(sf::BlendMultiply.colorSrcFactor == sf::BlendMode::Factor::DstColor);
-        CHECK(sf::BlendMultiply.colorDstFactor == sf::BlendMode::Factor::Zero);
-        CHECK(sf::BlendMultiply.colorEquation == sf::BlendMode::Equation::Add);
-        CHECK(sf::BlendMultiply.alphaSrcFactor == sf::BlendMode::Factor::DstColor);
-        CHECK(sf::BlendMultiply.alphaDstFactor == sf::BlendMode::Factor::Zero);
-        CHECK(sf::BlendMultiply.alphaEquation == sf::BlendMode::Equation::Add);
+        CHECK(za::BlendMultiply.colorSrcFactor == za::BlendMode::Factor::DstColor);
+        CHECK(za::BlendMultiply.colorDstFactor == za::BlendMode::Factor::Zero);
+        CHECK(za::BlendMultiply.colorEquation == za::BlendMode::Equation::Add);
+        CHECK(za::BlendMultiply.alphaSrcFactor == za::BlendMode::Factor::DstColor);
+        CHECK(za::BlendMultiply.alphaDstFactor == za::BlendMode::Factor::Zero);
+        CHECK(za::BlendMultiply.alphaEquation == za::BlendMode::Equation::Add);
 
-        CHECK(sf::BlendMin.colorSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMin.colorDstFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMin.colorEquation == sf::BlendMode::Equation::Min);
-        CHECK(sf::BlendMin.alphaSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMin.alphaDstFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMin.alphaEquation == sf::BlendMode::Equation::Min);
+        CHECK(za::BlendMin.colorSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMin.colorDstFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMin.colorEquation == za::BlendMode::Equation::Min);
+        CHECK(za::BlendMin.alphaSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMin.alphaDstFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMin.alphaEquation == za::BlendMode::Equation::Min);
 
-        CHECK(sf::BlendMax.colorSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMax.colorDstFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMax.colorEquation == sf::BlendMode::Equation::Max);
-        CHECK(sf::BlendMax.alphaSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMax.alphaDstFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendMax.alphaEquation == sf::BlendMode::Equation::Max);
+        CHECK(za::BlendMax.colorSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMax.colorDstFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMax.colorEquation == za::BlendMode::Equation::Max);
+        CHECK(za::BlendMax.alphaSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMax.alphaDstFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendMax.alphaEquation == za::BlendMode::Equation::Max);
 
-        CHECK(sf::BlendNone.colorSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendNone.colorDstFactor == sf::BlendMode::Factor::Zero);
-        CHECK(sf::BlendNone.colorEquation == sf::BlendMode::Equation::Add);
-        CHECK(sf::BlendNone.alphaSrcFactor == sf::BlendMode::Factor::One);
-        CHECK(sf::BlendNone.alphaDstFactor == sf::BlendMode::Factor::Zero);
-        CHECK(sf::BlendNone.alphaEquation == sf::BlendMode::Equation::Add);
+        CHECK(za::BlendNone.colorSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendNone.colorDstFactor == za::BlendMode::Factor::Zero);
+        CHECK(za::BlendNone.colorEquation == za::BlendMode::Equation::Add);
+        CHECK(za::BlendNone.alphaSrcFactor == za::BlendMode::Factor::One);
+        CHECK(za::BlendNone.alphaDstFactor == za::BlendMode::Factor::Zero);
+        CHECK(za::BlendNone.alphaEquation == za::BlendMode::Equation::Add);
     }
 }

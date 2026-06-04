@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 // Forward declarations
-namespace sf
+namespace za
 {
 class Angle;
 class AutoWrapAngle;
@@ -25,7 +25,7 @@ struct Vec3;
 
 template <typename>
 class Rect2;
-} // namespace sf
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
@@ -45,10 +45,10 @@ struct Approx
 };
 
 bool operator==(const float& lhs, const Approx<float>& rhs);
-bool operator==(sf::Vec2<float> lhs, const Approx<sf::Vec2<float>>& rhs);
-bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
-bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
-bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs);
+bool operator==(za::Vec2<float> lhs, const Approx<za::Vec2<float>>& rhs);
+bool operator==(const za::Vec3<float>& lhs, const Approx<za::Vec3<float>>& rhs);
+bool operator==(const za::Angle& lhs, const Approx<za::Angle>& rhs);
+bool operator==(const za::Rect2<float>& lhs, const Approx<za::Rect2<float>>& rhs);
 
 
 ////////////////////////////////////////////////////////////
@@ -56,13 +56,13 @@ bool operator==(const sf::Rect2<float>& lhs, const Approx<sf::Rect2<float>>& rhs
 // rendering for a failed assertion. (`Vec2`/`Vec3`/`Rect2` are rendered
 // by the framework itself, see `Tst/Detail/StringifyValue.hpp`.)
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Angle& angle) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const AutoWrapAngle& angle) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Utf8String& string) noexcept;
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Time& time) noexcept;
-} // namespace sf
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Angle& angle) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const AutoWrapAngle& angle) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Utf8String& string) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Time& time) noexcept;
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
@@ -70,4 +70,4 @@ sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const Time& time)
 // through the same dispatch for its nested value.
 ////////////////////////////////////////////////////////////
 template <typename T>
-sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const ::Approx<T>& approx) noexcept;
+zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const ::Approx<T>& approx) noexcept;

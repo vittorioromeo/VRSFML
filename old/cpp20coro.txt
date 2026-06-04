@@ -202,12 +202,12 @@ CutsceneTask cutscene(World& world)
 
     for (int paceIdx = 0; paceIdx < 3; ++paceIdx)
     {
-        const sf::Vec2f paceStartPos = world.villainPos;
+        const za::Vec2f paceStartPos = world.villainPos;
         float           t            = 0.f;
 
         while (t < 1.f)
         {
-            t                  = sf::base::min(t + world.dt * 3.f, 1.f);
+            t                  = zb::min(t + world.dt * 3.f, 1.f);
             world.villainPos.x = paceStartPos.x - 100.f * t;
 
             co_await nextFrame();
@@ -223,12 +223,12 @@ CutsceneTask cutscene(World& world)
     co_await wait(0.3f);
 
     {
-        const sf::Vec2f paceStartPos = world.heroPos;
+        const za::Vec2f paceStartPos = world.heroPos;
         float           t            = 0.f;
 
         while (t < 1.f)
         {
-            t               = sf::base::min(t + world.dt * 3.f, 1.f);
+            t               = zb::min(t + world.dt * 3.f, 1.f);
             world.heroPos.x = paceStartPos.x - 60.f * t;
 
             co_await nextFrame();

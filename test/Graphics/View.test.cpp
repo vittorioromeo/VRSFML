@@ -2,222 +2,222 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-TEST_CASE("[Graphics] sf::View")
+TEST_CASE("[Graphics] za::View")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::View));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::View, sf::View));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(za::View));
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::View));
+        STATIC_CHECK(ZB_IS_AGGREGATE(za::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::View));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::View, za::View));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            const sf::View view{};
-            CHECK(view.center == sf::Vec2f{});
-            CHECK(view.size == sf::Vec2f{});
-            CHECK(view.rotation == sf::Angle::Zero);
-            CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
+            const za::View view{};
+            CHECK(view.center == za::Vec2f{});
+            CHECK(view.size == za::Vec2f{});
+            CHECK(view.rotation == za::Angle::Zero);
+            CHECK(view.viewport == za::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.scissor == za::Rect2f({0, 0}, {1, 1}));
         }
 
         SECTION("Rectangle factory function")
         {
-            const auto view = sf::View::fromRect({{10, 20}, {400, 600}});
-            CHECK(view.center == sf::Vec2f{210, 320});
-            CHECK(view.size == sf::Vec2f{400, 600});
-            CHECK(view.rotation == sf::Angle::Zero);
-            CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(view.getTransform() == Approx(sf::Transform(0.005f, 0, -1.05f, 0, -0.00333333f, 1.06667f)));
-            CHECK(view.getInverseTransform() == Approx(sf::Transform(200, 0, 210, 0, -300, 320)));
+            const auto view = za::View::fromRect({{10, 20}, {400, 600}});
+            CHECK(view.center == za::Vec2f{210, 320});
+            CHECK(view.size == za::Vec2f{400, 600});
+            CHECK(view.rotation == za::Angle::Zero);
+            CHECK(view.viewport == za::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.scissor == za::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.getTransform() == Approx(za::Transform(0.005f, 0, -1.05f, 0, -0.00333333f, 1.06667f)));
+            CHECK(view.getInverseTransform() == Approx(za::Transform(200, 0, 210, 0, -300, 320)));
         }
 
         SECTION("Center + size constructor")
         {
-            const sf::View view{.center = {520, 960}, .size = {1080, 1920}};
-            CHECK(view.center == sf::Vec2f{520, 960});
-            CHECK(view.size == sf::Vec2f{1080, 1920});
-            CHECK(view.rotation == sf::Angle::Zero);
-            CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
-            CHECK(view.getTransform() == Approx(sf::Transform(0.00185185f, 0, -0.962963f, 0, -0.00104167f, 1)));
-            CHECK(view.getInverseTransform() == Approx(sf::Transform(540, 0, 520, 0, -960, 960)));
+            const za::View view{.center = {520, 960}, .size = {1080, 1920}};
+            CHECK(view.center == za::Vec2f{520, 960});
+            CHECK(view.size == za::Vec2f{1080, 1920});
+            CHECK(view.rotation == za::Angle::Zero);
+            CHECK(view.viewport == za::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.scissor == za::Rect2f({0, 0}, {1, 1}));
+            CHECK(view.getTransform() == Approx(za::Transform(0.00185185f, 0, -0.962963f, 0, -0.00104167f, 1)));
+            CHECK(view.getInverseTransform() == Approx(za::Transform(540, 0, 520, 0, -960, 960)));
         }
     }
 
     SECTION("Set/get center")
     {
-        const sf::View view{
+        const za::View view{
             .center = {3.14f, 4.2f},
             .size   = {1000, 1000},
         };
 
-        CHECK(view.center == sf::Vec2f(3.14f, 4.2f));
-        CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -0.00628f, 0, -0.002f, 0.0084f)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 3.14f, 0, -500, 4.2f)));
+        CHECK(view.center == za::Vec2f(3.14f, 4.2f));
+        CHECK(view.getTransform() == Approx(za::Transform(0.002f, 0, -0.00628f, 0, -0.002f, 0.0084f)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(500, 0, 3.14f, 0, -500, 4.2f)));
     }
 
     SECTION("Set/get size")
     {
-        const sf::View view{
+        const za::View view{
             .center = {500, 500},
             .size   = {600, 900},
         };
 
-        CHECK(view.size == sf::Vec2f{600, 900});
-        CHECK(view.getTransform() == Approx(sf::Transform(0.00333333f, 0, -1.66667f, 0, -0.00222222f, 1.11111f)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(300, 0, 500, 0, -450, 500)));
+        CHECK(view.size == za::Vec2f{600, 900});
+        CHECK(view.getTransform() == Approx(za::Transform(0.00333333f, 0, -1.66667f, 0, -0.00222222f, 1.11111f)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(300, 0, 500, 0, -450, 500)));
     }
 
     SECTION("Set/get rotation")
     {
-        sf::View view{
+        za::View view{
             .center   = {500, 500},
             .size     = {1000, 1000},
-            .rotation = sf::degrees(-345),
+            .rotation = za::degrees(-345),
         };
 
-        CHECK(view.rotation == Approx(sf::degrees(15)));
+        CHECK(view.rotation == Approx(za::degrees(15)));
         CHECK(view.getTransform() ==
-              Approx(sf::Transform(0.00193185f, 0.000517638f, -1.22474f, 0.000517638f, -0.00193185f, 0.707107f)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(482.963f, 129.41f, 500, 129.41f, -482.963f, 500)));
+              Approx(za::Transform(0.00193185f, 0.000517638f, -1.22474f, 0.000517638f, -0.00193185f, 0.707107f)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(482.963f, 129.41f, 500, 129.41f, -482.963f, 500)));
 
-        view.rotation = sf::degrees(400);
-        CHECK(view.rotation == Approx(sf::degrees(40)));
+        view.rotation = za::degrees(400);
+        CHECK(view.rotation == Approx(za::degrees(40)));
         CHECK(view.getTransform() ==
-              Approx(sf::Transform(0.00153209f, 0.00128558f, -1.40883f, 0.00128558f, -0.00153209f, 0.123257f)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(383.022f, 321.394f, 500, 321.394f, -383.022f, 500)));
+              Approx(za::Transform(0.00153209f, 0.00128558f, -1.40883f, 0.00128558f, -0.00153209f, 0.123257f)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(383.022f, 321.394f, 500, 321.394f, -383.022f, 500)));
     }
 
     SECTION("Set/get viewport")
     {
-        const sf::View view{
+        const za::View view{
             .center   = {500, 500},
             .size     = {1000, 1000},
             .viewport = {{150, 250}, {500, 750}},
         };
 
-        CHECK(view.viewport == sf::Rect2f({150, 250}, {500, 750}));
-        CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -1, 0, -0.002f, 1)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 500, 0, -500, 500)));
-        CHECK(view.scissor == sf::Rect2f({0, 0}, {1, 1}));
+        CHECK(view.viewport == za::Rect2f({150, 250}, {500, 750}));
+        CHECK(view.getTransform() == Approx(za::Transform(0.002f, 0, -1, 0, -0.002f, 1)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(500, 0, 500, 0, -500, 500)));
+        CHECK(view.scissor == za::Rect2f({0, 0}, {1, 1}));
     }
 
     SECTION("Set/get scissor")
     {
-        sf::View view;
-        view.scissor = sf::Rect2f{{0, 0}, {0.5f, 1}};
-        CHECK(view.scissor == sf::Rect2f({0, 0}, {0.5, 1}));
-        CHECK(view.viewport == sf::Rect2f({0, 0}, {1, 1}));
+        za::View view;
+        view.scissor = za::Rect2f{{0, 0}, {0.5f, 1}};
+        CHECK(view.scissor == za::Rect2f({0, 0}, {0.5, 1}));
+        CHECK(view.viewport == za::Rect2f({0, 0}, {1, 1}));
     }
 
     SECTION("rotate()")
     {
-        sf::View view{
+        za::View view{
             .center   = {500, 500},
             .size     = {1000, 1000},
-            .rotation = sf::degrees(45),
+            .rotation = za::degrees(45),
         };
 
-        view.rotation += sf::degrees(-15);
+        view.rotation += za::degrees(-15);
 
-        CHECK(view.rotation == Approx(sf::degrees(30)));
+        CHECK(view.rotation == Approx(za::degrees(30)));
         CHECK(view.getTransform() ==
-              Approx(sf::Transform(0.00173205f, 0.001f, -1.36603f, 0.001f, -0.00173205f, 0.366025f)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(433.013f, 250, 500, 250, -433.013f, 500)));
+              Approx(za::Transform(0.00173205f, 0.001f, -1.36603f, 0.001f, -0.00173205f, 0.366025f)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(433.013f, 250, 500, 250, -433.013f, 500)));
     }
 
     SECTION("zoom()")
     {
-        sf::View view{
+        za::View view{
             .center = {500, 500},
             .size   = {25, 25},
         };
 
         view.size *= 4.f;
 
-        CHECK(view.size == sf::Vec2f(100, 100));
-        CHECK(view.getTransform() == Approx(sf::Transform(0.02f, 0, -10, 0, -0.02f, 10)));
-        CHECK(view.getInverseTransform() == Approx(sf::Transform(50, 0, 500, 0, -50, 500)));
+        CHECK(view.size == za::Vec2f(100, 100));
+        CHECK(view.getTransform() == Approx(za::Transform(0.02f, 0, -10, 0, -0.02f, 10)));
+        CHECK(view.getInverseTransform() == Approx(za::Transform(50, 0, 500, 0, -50, 500)));
     }
 
     SECTION("computePixelViewport")
     {
-        CHECK(sf::View{
+        CHECK(za::View{
                   .center   = {},
                   .size     = {},
                   .viewport = {{0, 0}, {1, 1}},
               }
-                  .computePixelViewport({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
+                  .computePixelViewport({640, 480}) == za::Rect2i({0, 0}, {640, 480}));
 
-        CHECK(sf::View{
+        CHECK(za::View{
                   .center   = {},
                   .size     = {},
                   .viewport = {{1, 1}, {.5f, .25f}},
               }
-                  .computePixelViewport({640, 480}) == sf::Rect2i({640, 480}, {320, 120}));
+                  .computePixelViewport({640, 480}) == za::Rect2i({640, 480}, {320, 120}));
 
-        CHECK(sf::View{
+        CHECK(za::View{
                   .center   = {},
                   .size     = {},
                   .viewport = {{.5f, .5f}, {.25f, .75f}},
               }
-                  .computePixelViewport({640, 480}) == sf::Rect2i({320, 240}, {160, 360}));
+                  .computePixelViewport({640, 480}) == za::Rect2i({320, 240}, {160, 360}));
     }
 
     SECTION("computePixelScissor")
     {
-        CHECK(sf::View{
+        CHECK(za::View{
                   .center  = {},
                   .size    = {},
                   .scissor = {{0, 0}, {1, 1}},
               }
-                  .computePixelScissor({640, 480}) == sf::Rect2i({0, 0}, {640, 480}));
+                  .computePixelScissor({640, 480}) == za::Rect2i({0, 0}, {640, 480}));
 
-        CHECK(sf::View{
+        CHECK(za::View{
                   .center  = {},
                   .size    = {},
                   .scissor = {{.5f, .5f}, {.25f, .25f}},
               }
-                  .computePixelScissor({640, 480}) == sf::Rect2i({320, 240}, {160, 120}));
+                  .computePixelScissor({640, 480}) == za::Rect2i({320, 240}, {160, 120}));
     }
 
     SECTION("screenToWorld")
     {
-        auto view = sf::View::fromScreenSize({1000.f, 1000.f});
-        auto size = sf::Vec2f{640, 480};
+        auto view = za::View::fromScreenSize({1000.f, 1000.f});
+        auto size = za::Vec2f{640, 480};
 
         view.center += {5, 5};
-        view.viewport = sf::Rect2f({0, 0}, {.5f, 1});
+        view.viewport = za::Rect2f({0, 0}, {.5f, 1});
 
         const auto [x1, y1] = view.screenToWorld({0, 0}, size);
         CHECK_THAT(x1, tst::Matchers::WithinRel(5, 1e-4));
@@ -234,11 +234,11 @@ TEST_CASE("[Graphics] sf::View")
 
     SECTION("project")
     {
-        auto view = sf::View::fromScreenSize({1000.f, 1000.f});
-        auto size = sf::Vec2f{640, 480};
+        auto view = za::View::fromScreenSize({1000.f, 1000.f});
+        auto size = za::Vec2f{640, 480};
 
         view.center += {5, 5};
-        view.viewport = sf::Rect2f({.25f, 0}, {1, 1});
+        view.viewport = za::Rect2f({.25f, 0}, {1, 1});
 
         const auto [x1, y1] = view.worldToScreen({0, 0}, size);
         CHECK_THAT(x1, tst::Matchers::WithinRel(156.8, 1e-2));

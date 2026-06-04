@@ -5,10 +5,10 @@
 
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/Span.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/Span.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -191,26 +191,26 @@ inline constexpr const char* duckCatNames[] = {
 
 ////////////////////////////////////////////////////////////
 inline constexpr EXACT_ARRAY(
-    sf::base::Span<const char* const>,
+    zb::Span<const char* const>,
     catNamesPerType,
     nCatTypes,
     {
-        {normalCatNames, sf::base::getArraySize(normalCatNames)}, // Normal
-        {uniCatNames, sf::base::getArraySize(uniCatNames)},       // Uni
-        {devilCatNames, sf::base::getArraySize(devilCatNames)},   // Devil
-        {astroCatNames, sf::base::getArraySize(astroCatNames)},   // Astro
-        {wardenCatNames, sf::base::getArraySize(wardenCatNames)}, // Warden
+        {normalCatNames, zb::getArraySize(normalCatNames)}, // Normal
+        {uniCatNames, zb::getArraySize(uniCatNames)},       // Uni
+        {devilCatNames, zb::getArraySize(devilCatNames)},   // Devil
+        {astroCatNames, zb::getArraySize(astroCatNames)},   // Astro
+        {wardenCatNames, zb::getArraySize(wardenCatNames)}, // Warden
 
-        {witchCatNames, sf::base::getArraySize(witchCatNames)},       // Witch
-        {wizardCatNames, sf::base::getArraySize(wizardCatNames)},     // Wizard
-        {mouseCatNames, sf::base::getArraySize(mouseCatNames)},       // Mouse
-        {engiCatNames, sf::base::getArraySize(engiCatNames)},         // Engi
-        {repulsoCatNames, sf::base::getArraySize(repulsoCatNames)},   // Repulso
-        {attractoCatNames, sf::base::getArraySize(attractoCatNames)}, // Attracto
-        {copyCatNames, sf::base::getArraySize(copyCatNames)},         // Copy
-        {duckCatNames, sf::base::getArraySize(duckCatNames)},         // Duck
+        {witchCatNames, zb::getArraySize(witchCatNames)},       // Witch
+        {wizardCatNames, zb::getArraySize(wizardCatNames)},     // Wizard
+        {mouseCatNames, zb::getArraySize(mouseCatNames)},       // Mouse
+        {engiCatNames, zb::getArraySize(engiCatNames)},         // Engi
+        {repulsoCatNames, zb::getArraySize(repulsoCatNames)},   // Repulso
+        {attractoCatNames, zb::getArraySize(attractoCatNames)}, // Attracto
+        {copyCatNames, zb::getArraySize(copyCatNames)},         // Copy
+        {duckCatNames, zb::getArraySize(duckCatNames)},         // Duck
     });
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Vector<sf::base::StringView> getShuffledCatNames(CatType catType, RNGFast& rng);
+[[nodiscard]] zb::Vector<zb::StringView> getShuffledCatNames(CatType catType, RNGFast& rng);

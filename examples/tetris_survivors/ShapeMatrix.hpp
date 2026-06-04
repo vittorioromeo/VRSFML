@@ -7,12 +7,12 @@
 #include "ShapeBlockSequence.hpp"
 #include "ShapeDimension.hpp"
 
-#include "SFML/Base/Array.hpp"
+#include "ZancleBase/Array.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-using ShapeMatrix = sf::base::Array<ShapeBlockSequence, shapeDimension * shapeDimension>;
+using ShapeMatrix = zb::Array<ShapeBlockSequence, shapeDimension * shapeDimension>;
 
 } // namespace tsurv

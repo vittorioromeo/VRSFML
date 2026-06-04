@@ -1,11 +1,11 @@
 #include "default_uniforms.glsl"
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 
-layout(location = 0) out vec4 sf_fragColor;
+layout(location = 0) out vec4 za_fragColor;
 
 void main()
 {
-    sf_fragColor = texture(sf_u_texture, sf_v_texCoord);
+    za_fragColor = texture(za_u_texture, za_v_texCoord);
 }

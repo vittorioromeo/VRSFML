@@ -4,30 +4,30 @@
 
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/VAOHandle.hpp"
-#include "SFML/Graphics/VBOHandle.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/VAOHandle.hpp"
+#include "Zancle/Graphics/VBOHandle.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
 class TextureAtlas;
-} // namespace sf
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
@@ -37,9 +37,9 @@ private:
     ////////////////////////////////////////////////////////////
     struct Bunny
     {
-        sf::Vec2f position;
-        sf::Vec2f velocity;
-        sf::Angle rotation;
+        za::Vec2f position;
+        za::Vec2f velocity;
+        za::Angle rotation;
         float     scale{};
     };
 
@@ -48,11 +48,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct BunnyInstanceData // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        sf::Vec2f position;
+        za::Vec2f position;
         float     scale;
         float     rotation;
-        sf::Vec2f texRectPos;
-        sf::Vec2f texRectSize;
+        za::Vec2f texRectPos;
+        za::Vec2f texRectSize;
     };
 
     ////////////////////////////////////////////////////////////
@@ -64,19 +64,19 @@ private:
 
     ////////////////////////////////////////////////////////////
     GameDependencies  m_deps;
-    sf::TextureAtlas& m_textureAtlas;
+    za::TextureAtlas& m_textureAtlas;
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f m_bunnyTextureRects[8];
+    const za::Rect2f m_bunnyTextureRects[8];
 
     ////////////////////////////////////////////////////////////
     float m_time = 0.f;
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<Bunny>             m_bunnies;
-    sf::base::Vector<sf::Sprite>        m_sprites;
-    sf::base::Vector<BunnyInstanceData> m_instanceData;
-    sf::base::SizeT                     m_bunnyTargetCount = 100'000u;
+    zb::Vector<Bunny>             m_bunnies;
+    zb::Vector<za::Sprite>        m_sprites;
+    zb::Vector<BunnyInstanceData> m_instanceData;
+    zb::SizeT                     m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast  m_rng{/* seed */ 1234};
@@ -86,21 +86,21 @@ private:
     ////////////////////////////////////////////////////////////
     // Instanced rendering resources
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<sf::Shader>                  m_instancedShader;
-    sf::base::Optional<sf::Shader::UniformLocation> m_ulInvTexSize;
-    sf::VAOHandle                                   m_vaoHandle;
-    sf::VBOHandle                                   m_instanceVBO;
+    zb::Optional<za::Shader>                  m_instancedShader;
+    zb::Optional<za::Shader::UniformLocation> m_ulInvTexSize;
+    za::VAOHandle                                   m_vaoHandle;
+    za::VBOHandle                                   m_instanceVBO;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Rect2f              addImgToAtlasWithRotatedHue(const sf::Path& path, float hueDegrees);
-    [[nodiscard]] static sf::base::String toDigitSeparatedString(sf::base::SizeT value);
+    [[nodiscard]] za::Rect2f              addImgToAtlasWithRotatedHue(const za::Path& path, float hueDegrees);
+    [[nodiscard]] static zb::String toDigitSeparatedString(zb::SizeT value);
 
     ////////////////////////////////////////////////////////////
     void drawInstanced();
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit ExampleBunnyMark(const GameDependencies& deps, sf::TextureAtlas& textureAtlas);
+    explicit ExampleBunnyMark(const GameDependencies& deps, za::TextureAtlas& textureAtlas);
 
     ////////////////////////////////////////////////////////////
     void update(float deltaTimeMs) override;

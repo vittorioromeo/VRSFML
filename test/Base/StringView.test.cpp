@@ -2,50 +2,50 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/StringView.hpp"
+#include "ZancleBase/StringView.hpp"
 
-#include "SFML/Base/Builtin/Strlen.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringViewSplits.hpp" // IWYU pragma: keep
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Builtin/Strlen.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringViewSplits.hpp" // IWYU pragma: keep
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 TEST_CASE("[Base] Base/StringView.hpp")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::StringView));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::StringView));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::StringView));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::StringView));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::StringView)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::base::StringView));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::base::StringView));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::StringView));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::StringView));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::StringView, sf::base::StringView));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::StringView)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::StringView));
+        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(zb::StringView, zb::StringView));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::StringView));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::StringView));
     }
 
     //----------------------------------------------------------------------------
 
     SECTION("Structured bindings")
     {
-        sf::base::StringView span{nullptr, 0u};
+        zb::StringView span{nullptr, 0u};
 
         auto [data, size] = span;
 
@@ -57,7 +57,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Default constructor")
     {
-        sf::base::StringView view;
+        zb::StringView view;
 
         REQUIRE(view.empty());
         REQUIRE(view.size() == 0);
@@ -66,10 +66,10 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     //----------------------------------------------------------------------------
 
-    SECTION("Constructor with sf::base::String")
+    SECTION("Constructor with zb::String")
     {
-        sf::base::String     str  = "Hello xyz";
-        sf::base::StringView view = str;
+        zb::String     str  = "Hello xyz";
+        zb::StringView view = str;
 
         REQUIRE_FALSE(view.empty());
         REQUIRE(view.size() != 0);
@@ -84,27 +84,27 @@ TEST_CASE("[Base] Base/StringView.hpp")
         const char* nonEmptyStr = "Hello World";
 
         {
-            sf::base::StringView view = emptyStr;
+            zb::StringView view = emptyStr;
             REQUIRE(view.empty());
         }
 
         {
-            sf::base::StringView view = nonEmptyStr;
+            zb::StringView view = nonEmptyStr;
             REQUIRE_FALSE(view.empty());
         }
 
         {
-            sf::base::StringView view = emptyStr;
+            zb::StringView view = emptyStr;
             REQUIRE(view.size() == 0);
         }
 
         {
-            sf::base::StringView view = nonEmptyStr;
+            zb::StringView view = nonEmptyStr;
             REQUIRE(view.size() != 0);
         }
 
         {
-            sf::base::StringView view = nonEmptyStr;
+            zb::StringView view = nonEmptyStr;
             REQUIRE(view.data() == nonEmptyStr);
         }
     }
@@ -113,8 +113,8 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Constructor with const char array")
     {
-        sf::base::StringView empty = "";
-        sf::base::StringView view  = "Hello xyz";
+        zb::StringView empty = "";
+        zb::StringView view  = "Hello xyz";
 
         REQUIRE(empty.empty());
         REQUIRE_FALSE(view.empty());
@@ -129,11 +129,11 @@ TEST_CASE("[Base] Base/StringView.hpp")
     SECTION("Size method")
     {
         const char*          str  = "Hello World";
-        sf::base::StringView view = str;
+        zb::StringView view = str;
 
         SECTION("Non-zero size")
         {
-            REQUIRE(view.size() == SFML_BASE_STRLEN(str));
+            REQUIRE(view.size() == ZB_STRLEN(str));
         }
 
         SECTION("Zero size")
@@ -149,7 +149,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
     SECTION("Empty method")
     {
         const char*          str  = "Hello World";
-        sf::base::StringView view = str;
+        zb::StringView view = str;
 
         SECTION("Non-empty string")
         {
@@ -171,7 +171,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
     SECTION("Data method")
     {
         const char*          str  = "Hello World";
-        sf::base::StringView view = str;
+        zb::StringView view = str;
 
         REQUIRE(view.data() == str);
     }
@@ -181,14 +181,14 @@ TEST_CASE("[Base] Base/StringView.hpp")
     SECTION("Operator[] method")
     {
         const char*          str  = "Hello World";
-        sf::base::StringView view = str;
+        zb::StringView view = str;
 
         REQUIRE(view.data() == str);
     }
 
     SECTION("Substring method")
     {
-        sf::base::StringView view = "Abcde Fghil";
+        zb::StringView view = "Abcde Fghil";
 
         REQUIRE(view.substrByPosLen() == "Abcde Fghil");
         REQUIRE(view.substrByPosLen(6) == "Fghil");
@@ -198,14 +198,14 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("Prefix removal method")
     {
-        sf::base::StringView view = "AbcdeXFghil";
+        zb::StringView view = "AbcdeXFghil";
         view.removePrefix(6);
         REQUIRE(view == "Fghil");
     }
 
     SECTION("Suffix removal method")
     {
-        sf::base::StringView view = "AbcdeXFghil";
+        zb::StringView view = "AbcdeXFghil";
         view.removeSuffix(6);
         REQUIRE(view == "Abcde");
     }
@@ -216,7 +216,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
     {
         SECTION("Empty view")
         {
-            const auto sv = sf::base::StringView{""};
+            const auto sv = zb::StringView{""};
 
             SECTION("Empty argument")
             {
@@ -229,14 +229,14 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 SECTION("Offset out of bounds")
                 {
                     const auto res = sv.find("hello", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    REQUIRE(res == zb::StringView::nPos);
                 }
             }
         }
 
         SECTION("Non-empty view")
         {
-            const auto sv = sf::base::StringView{"hello hello xyz"};
+            const auto sv = zb::StringView{"hello hello xyz"};
             SECTION("Empty argument")
             {
                 SECTION("Offset in bounds")
@@ -248,7 +248,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 SECTION("Offset out of bounds")
                 {
                     const auto res = sv.find("", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    REQUIRE(res == zb::StringView::nPos);
                 }
             }
 
@@ -287,20 +287,20 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
             SECTION("Argument is string, offset in bounds, no match")
             {
-                sf::base::StringView s1 = "01234567890ABCDEFGHIJ";
-                sf::base::StringView s2 = "01";
+                zb::StringView s1 = "01234567890ABCDEFGHIJ";
+                zb::StringView s2 = "01";
 
                 auto res = s1.find(s2);
                 SECTION("Prefix find")
                 {
-                    REQUIRE(res != sf::base::StringView::nPos);
+                    REQUIRE(res != zb::StringView::nPos);
                     REQUIRE(s1.size() > 10);
                 }
 
                 auto res1 = s1.find(s2, 10);
                 SECTION("Non-matching substring")
                 {
-                    REQUIRE(res1 == sf::base::StringView::nPos);
+                    REQUIRE(res1 == zb::StringView::nPos);
                 }
             }
         }
@@ -310,7 +310,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
     {
         SECTION("Empty view")
         {
-            const auto sv = sf::base::StringView{""};
+            const auto sv = zb::StringView{""};
             SECTION("Empty argument")
             {
                 const auto res = sv.rfind("");
@@ -322,14 +322,14 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 SECTION("Offset out of bounds")
                 {
                     const auto res = sv.rfind("hello", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    REQUIRE(res == zb::StringView::nPos);
                 }
             }
         }
 
         SECTION("Non-empty view")
         {
-            const auto sv = sf::base::StringView{"hello xyz xyz"};
+            const auto sv = zb::StringView{"hello xyz xyz"};
             SECTION("Empty argument")
             {
                 SECTION("Offset in bounds")
@@ -381,17 +381,17 @@ TEST_CASE("[Base] Base/StringView.hpp")
             SECTION("Other Tests")
             {
                 {
-                    const sf::base::StringView xsv{" () abc.def.x () "};
+                    const zb::StringView xsv{" () abc.def.x () "};
                     REQUIRE(xsv.rfind(".") == 11);
                 }
 
                 {
-                    const sf::base::StringView xsv{
-                        "auto sf::base::minipfr::priv::nameOfFieldImpl() [MsvcWorkaround = (anonymous namespace)::S1, "
+                    const zb::StringView xsv{
+                        "auto zb::minipfr::priv::nameOfFieldImpl() [MsvcWorkaround = (anonymous namespace)::S1, "
                         "ptr = ClangWrapper<const int *>{&fakeObjectImpl.value.i}]"};
 
-                    const sf::base::StringView untilRuntime{"."};
-                    REQUIRE(xsv.rfind(untilRuntime) != sf::base::StringView::nPos);
+                    const zb::StringView untilRuntime{"."};
+                    REQUIRE(xsv.rfind(untilRuntime) != zb::StringView::nPos);
                 }
             }
         }
@@ -400,31 +400,31 @@ TEST_CASE("[Base] Base/StringView.hpp")
         {
             SECTION("Empty view")
             {
-                const auto sv = sf::base::StringView{""};
+                const auto sv = zb::StringView{""};
                 SECTION("Empty characters")
                 {
                     SECTION("Out-of-bounds position")
                     {
                         const auto res = sv.findFirstOf("", 100);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
 
                     SECTION("In-bounds position")
                     {
                         const auto res = sv.findFirstOf("", 0);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
                 }
             }
 
             SECTION("Non-empty view")
             {
-                const auto sv = sf::base::StringView{"Hello xyz"};
+                const auto sv = zb::StringView{"Hello xyz"};
 
                 SECTION("Empty characters")
                 {
-                    REQUIRE(sv.findFirstOf("", 100) == sf::base::StringView::nPos);
-                    REQUIRE(sv.findFirstOf("", 5) == sf::base::StringView::nPos);
+                    REQUIRE(sv.findFirstOf("", 100) == zb::StringView::nPos);
+                    REQUIRE(sv.findFirstOf("", 5) == zb::StringView::nPos);
                 }
 
                 SECTION("Non-empty characters")
@@ -435,7 +435,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
                     REQUIRE(sv.findFirstOf("5 2_") == 5u);
                     REQUIRE(sv.findFirstOf("l15") == 2u);
 
-                    REQUIRE(sv.findFirstOf("12-09'") == sf::base::StringView::nPos);
+                    REQUIRE(sv.findFirstOf("12-09'") == zb::StringView::nPos);
                 }
             }
         }
@@ -444,31 +444,31 @@ TEST_CASE("[Base] Base/StringView.hpp")
         {
             SECTION("Empty view")
             {
-                const auto sv = sf::base::StringView{""};
+                const auto sv = zb::StringView{""};
                 SECTION("Empty characters")
                 {
                     SECTION("Out-of-bounds position")
                     {
                         const auto res = sv.findFirstNotOf("", 100);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
 
                     SECTION("In-bounds position")
                     {
                         const auto res = sv.findFirstNotOf("", 0);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
                 }
             }
 
             SECTION("Non-empty view")
             {
-                const auto sv = sf::base::StringView{"Hello xyz"};
+                const auto sv = zb::StringView{"Hello xyz"};
 
                 SECTION("Empty characters")
                 {
                     REQUIRE(sv.findFirstOf("y", 5) == 7u);
-                    REQUIRE(sv.findFirstNotOf("", 100) == sf::base::StringView::nPos);
+                    REQUIRE(sv.findFirstNotOf("", 100) == zb::StringView::nPos);
                     REQUIRE(sv.findFirstNotOf("", 5) == 5u);
                 }
 
@@ -491,39 +491,39 @@ TEST_CASE("[Base] Base/StringView.hpp")
         {
             SECTION("Empty view")
             {
-                const auto sv = sf::base::StringView{""};
+                const auto sv = zb::StringView{""};
                 SECTION("Empty characters")
                 {
                     SECTION("Out-of-bounds position")
                     {
                         const auto res = sv.findLastOf("", 100);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
 
                     SECTION("In-bounds position")
                     {
                         const auto res = sv.findLastOf("", 0);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
                 }
             }
 
             SECTION("Non-empty view")
             {
-                const auto sv = sf::base::StringView{"Hello xyz"};
+                const auto sv = zb::StringView{"Hello xyz"};
 
                 SECTION("Empty characters")
                 {
                     SECTION("Out-of-bounds position")
                     {
                         const auto res = sv.findLastOf("", 100);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
 
                     SECTION("In-bounds position")
                     {
                         const auto res = sv.findLastOf("", 5);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
                 }
 
@@ -565,7 +565,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
                     SECTION("Characters not in string")
                     {
                         const auto res = sv.findLastOf("12-09'");
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
                 }
             }
@@ -575,26 +575,26 @@ TEST_CASE("[Base] Base/StringView.hpp")
         {
             SECTION("Empty view")
             {
-                const auto sv = sf::base::StringView{""};
+                const auto sv = zb::StringView{""};
                 SECTION("Empty characters")
                 {
                     SECTION("Out-of-bounds position")
                     {
                         const auto res = sv.findLastNotOf("", 100);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
 
                     SECTION("In-bounds position")
                     {
                         const auto res = sv.findLastNotOf("", 0);
-                        REQUIRE(res == sf::base::StringView::nPos);
+                        REQUIRE(res == zb::StringView::nPos);
                     }
                 }
             }
 
             SECTION("Non-empty view")
             {
-                const auto sv = sf::base::StringView{"Hello xyz"};
+                const auto sv = zb::StringView{"Hello xyz"};
 
                 SECTION("Empty characters")
                 {
@@ -632,12 +632,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Equality operator")
         {
-            sf::base::StringView view = "Abcdef";
+            zb::StringView view = "Abcdef";
 
             SECTION("Equal cases")
             {
                 {
-                    sf::base::StringView view2 = "Abcdef";
+                    zb::StringView view2 = "Abcdef";
                     REQUIRE(view == view2);
                 }
 
@@ -655,12 +655,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    sf::base::String str = "Abcdef";
+                    zb::String str = "Abcdef";
                     REQUIRE(str == view);
                 }
 
                 {
-                    sf::base::String str = "Abcdef";
+                    zb::String str = "Abcdef";
                     REQUIRE(view == str);
                 }
             }
@@ -668,7 +668,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
             SECTION("Not equal cases")
             {
                 {
-                    sf::base::StringView view2 = "Xyzw";
+                    zb::StringView view2 = "Xyzw";
                     REQUIRE_FALSE(view == view2);
                 }
 
@@ -686,12 +686,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    sf::base::String str = "Xyzw";
+                    zb::String str = "Xyzw";
                     REQUIRE_FALSE(str == view);
                 }
 
                 {
-                    sf::base::String str = "Xyzw";
+                    zb::String str = "Xyzw";
                     REQUIRE_FALSE(view == str);
                 }
             }
@@ -701,12 +701,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Inequality operator")
         {
-            sf::base::StringView view = "Abcdef";
+            zb::StringView view = "Abcdef";
 
             SECTION("Equal cases")
             {
                 {
-                    sf::base::StringView view2 = "Abcdef";
+                    zb::StringView view2 = "Abcdef";
                     REQUIRE_FALSE(view != view2);
                 }
 
@@ -724,12 +724,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    sf::base::String str = "Abcdef";
+                    zb::String str = "Abcdef";
                     REQUIRE_FALSE(str != view);
                 }
 
                 {
-                    sf::base::String str = "Abcdef";
+                    zb::String str = "Abcdef";
                     REQUIRE_FALSE(view != str);
                 }
             }
@@ -737,7 +737,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
             SECTION("Not equal cases")
             {
                 {
-                    sf::base::StringView view2 = "Xyzw";
+                    zb::StringView view2 = "Xyzw";
                     REQUIRE(view != view2);
                 }
 
@@ -755,12 +755,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 }
 
                 {
-                    sf::base::String str = "Xyzw";
+                    zb::String str = "Xyzw";
                     REQUIRE(str != view);
                 }
 
                 {
-                    sf::base::String str = "Xyzw";
+                    zb::String str = "Xyzw";
                     REQUIRE(view != str);
                 }
             }
@@ -771,10 +771,10 @@ TEST_CASE("[Base] Base/StringView.hpp")
     {
         SECTION("Empty view")
         {
-            const auto sv = sf::base::StringView{""};
+            const auto sv = zb::StringView{""};
 
-            CHECK(sv.startsWith(sf::base::StringView{""}));
-            CHECK_FALSE(sv.startsWith(sf::base::StringView{"a"}));
+            CHECK(sv.startsWith(zb::StringView{""}));
+            CHECK_FALSE(sv.startsWith(zb::StringView{"a"}));
             CHECK_FALSE(sv.startsWith('a'));
             CHECK(sv.startsWith(""));
             CHECK_FALSE(sv.startsWith("hello"));
@@ -782,17 +782,17 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Non-empty view")
         {
-            const auto sv = sf::base::StringView{"Hello, world!"};
+            const auto sv = zb::StringView{"Hello, world!"};
 
             SECTION("StringView prefix")
             {
-                CHECK(sv.startsWith(sf::base::StringView{""}));
-                CHECK(sv.startsWith(sf::base::StringView{"H"}));
-                CHECK(sv.startsWith(sf::base::StringView{"Hello"}));
-                CHECK(sv.startsWith(sf::base::StringView{"Hello, world!"}));
-                CHECK_FALSE(sv.startsWith(sf::base::StringView{"hello"})); // case-sensitive
-                CHECK_FALSE(sv.startsWith(sf::base::StringView{"world"}));
-                CHECK_FALSE(sv.startsWith(sf::base::StringView{"Hello, world!!"})); // longer than view
+                CHECK(sv.startsWith(zb::StringView{""}));
+                CHECK(sv.startsWith(zb::StringView{"H"}));
+                CHECK(sv.startsWith(zb::StringView{"Hello"}));
+                CHECK(sv.startsWith(zb::StringView{"Hello, world!"}));
+                CHECK_FALSE(sv.startsWith(zb::StringView{"hello"})); // case-sensitive
+                CHECK_FALSE(sv.startsWith(zb::StringView{"world"}));
+                CHECK_FALSE(sv.startsWith(zb::StringView{"Hello, world!!"})); // longer than view
             }
 
             SECTION("char prefix")
@@ -816,10 +816,10 @@ TEST_CASE("[Base] Base/StringView.hpp")
     {
         SECTION("Empty view")
         {
-            const auto sv = sf::base::StringView{""};
+            const auto sv = zb::StringView{""};
 
-            CHECK(sv.endsWith(sf::base::StringView{""}));
-            CHECK_FALSE(sv.endsWith(sf::base::StringView{"a"}));
+            CHECK(sv.endsWith(zb::StringView{""}));
+            CHECK_FALSE(sv.endsWith(zb::StringView{"a"}));
             CHECK_FALSE(sv.endsWith('a'));
             CHECK(sv.endsWith(""));
             CHECK_FALSE(sv.endsWith("hello"));
@@ -827,17 +827,17 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Non-empty view")
         {
-            const auto sv = sf::base::StringView{"Hello, world!"};
+            const auto sv = zb::StringView{"Hello, world!"};
 
             SECTION("StringView suffix")
             {
-                CHECK(sv.endsWith(sf::base::StringView{""}));
-                CHECK(sv.endsWith(sf::base::StringView{"!"}));
-                CHECK(sv.endsWith(sf::base::StringView{"world!"}));
-                CHECK(sv.endsWith(sf::base::StringView{"Hello, world!"}));
-                CHECK_FALSE(sv.endsWith(sf::base::StringView{"World!"}));         // case-sensitive
-                CHECK_FALSE(sv.endsWith(sf::base::StringView{"Hello"}));          // not a suffix
-                CHECK_FALSE(sv.endsWith(sf::base::StringView{"!Hello, world!"})); // longer than view
+                CHECK(sv.endsWith(zb::StringView{""}));
+                CHECK(sv.endsWith(zb::StringView{"!"}));
+                CHECK(sv.endsWith(zb::StringView{"world!"}));
+                CHECK(sv.endsWith(zb::StringView{"Hello, world!"}));
+                CHECK_FALSE(sv.endsWith(zb::StringView{"World!"}));         // case-sensitive
+                CHECK_FALSE(sv.endsWith(zb::StringView{"Hello"}));          // not a suffix
+                CHECK_FALSE(sv.endsWith(zb::StringView{"!Hello, world!"})); // longer than view
             }
 
             SECTION("char suffix")
@@ -861,10 +861,10 @@ TEST_CASE("[Base] Base/StringView.hpp")
     {
         SECTION("Empty view")
         {
-            const auto sv = sf::base::StringView{""};
+            const auto sv = zb::StringView{""};
 
-            CHECK(sv.contains(sf::base::StringView{""})); // empty needle in empty view
-            CHECK_FALSE(sv.contains(sf::base::StringView{"a"}));
+            CHECK(sv.contains(zb::StringView{""})); // empty needle in empty view
+            CHECK_FALSE(sv.contains(zb::StringView{"a"}));
             CHECK_FALSE(sv.contains('a'));
             CHECK(sv.contains(""));
             CHECK_FALSE(sv.contains("hello"));
@@ -872,18 +872,18 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Non-empty view")
         {
-            const auto sv = sf::base::StringView{"Hello, world!"};
+            const auto sv = zb::StringView{"Hello, world!"};
 
             SECTION("StringView needle")
             {
-                CHECK(sv.contains(sf::base::StringView{""}));
-                CHECK(sv.contains(sf::base::StringView{"Hello"}));         // start
-                CHECK(sv.contains(sf::base::StringView{", "}));            // middle
-                CHECK(sv.contains(sf::base::StringView{"world!"}));        // end
-                CHECK(sv.contains(sf::base::StringView{"Hello, world!"})); // exact
-                CHECK_FALSE(sv.contains(sf::base::StringView{"World"}));   // case-sensitive
-                CHECK_FALSE(sv.contains(sf::base::StringView{"foo"}));
-                CHECK_FALSE(sv.contains(sf::base::StringView{"Hello, world!!"})); // longer than view
+                CHECK(sv.contains(zb::StringView{""}));
+                CHECK(sv.contains(zb::StringView{"Hello"}));         // start
+                CHECK(sv.contains(zb::StringView{", "}));            // middle
+                CHECK(sv.contains(zb::StringView{"world!"}));        // end
+                CHECK(sv.contains(zb::StringView{"Hello, world!"})); // exact
+                CHECK_FALSE(sv.contains(zb::StringView{"World"}));   // case-sensitive
+                CHECK_FALSE(sv.contains(zb::StringView{"foo"}));
+                CHECK_FALSE(sv.contains(zb::StringView{"Hello, world!!"})); // longer than view
             }
 
             SECTION("char needle")
@@ -906,20 +906,20 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("contains is consistent with find")
         {
-            const auto sv = sf::base::StringView{"foobarbaz"};
+            const auto sv = zb::StringView{"foobarbaz"};
 
             CHECK(sv.contains("bar"));
-            CHECK(sv.find("bar") != sf::base::StringView::nPos);
+            CHECK(sv.find("bar") != zb::StringView::nPos);
 
             CHECK_FALSE(sv.contains("qux"));
-            CHECK(sv.find("qux") == sf::base::StringView::nPos);
+            CHECK(sv.find("qux") == zb::StringView::nPos);
         }
     }
 
     SECTION("constexpr evaluation of startsWith / endsWith / contains")
     {
         // Ensure the new methods are usable in constant expressions.
-        constexpr sf::base::StringView sv = "Hello";
+        constexpr zb::StringView sv = "Hello";
         STATIC_CHECK(sv.startsWith("He"));
         STATIC_CHECK(sv.startsWith('H'));
         STATIC_CHECK(sv.endsWith("lo"));
@@ -933,36 +933,36 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("forLines method")
     {
-        const auto collect = [](sf::base::StringView sv)
+        const auto collect = [](zb::StringView sv)
         {
-            sf::base::Vector<sf::base::String> out;
-            sv.forLines([&](sf::base::StringView line) { out.emplaceBack(line); });
+            zb::Vector<zb::String> out;
+            sv.forLines([&](zb::StringView line) { out.emplaceBack(line); });
             return out;
         };
 
         SECTION("Empty view yields no lines")
         {
-            const auto lines = collect(sf::base::StringView{""});
+            const auto lines = collect(zb::StringView{""});
             CHECK(lines.empty());
         }
 
         SECTION("Single line without trailing newline")
         {
-            const auto lines = collect(sf::base::StringView{"hello"});
+            const auto lines = collect(zb::StringView{"hello"});
             REQUIRE(lines.size() == 1u);
             CHECK(lines[0] == "hello");
         }
 
         SECTION("Single line with trailing newline -- no extra empty line")
         {
-            const auto lines = collect(sf::base::StringView{"hello\n"});
+            const auto lines = collect(zb::StringView{"hello\n"});
             REQUIRE(lines.size() == 1u);
             CHECK(lines[0] == "hello");
         }
 
         SECTION("Multiple lines without trailing newline")
         {
-            const auto lines = collect(sf::base::StringView{"alpha\nbeta\ngamma"});
+            const auto lines = collect(zb::StringView{"alpha\nbeta\ngamma"});
             REQUIRE(lines.size() == 3u);
             CHECK(lines[0] == "alpha");
             CHECK(lines[1] == "beta");
@@ -971,7 +971,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Multiple lines with trailing newline")
         {
-            const auto lines = collect(sf::base::StringView{"alpha\nbeta\ngamma\n"});
+            const auto lines = collect(zb::StringView{"alpha\nbeta\ngamma\n"});
             REQUIRE(lines.size() == 3u);
             CHECK(lines[0] == "alpha");
             CHECK(lines[1] == "beta");
@@ -980,7 +980,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Leading newline produces empty first line")
         {
-            const auto lines = collect(sf::base::StringView{"\nbeta"});
+            const auto lines = collect(zb::StringView{"\nbeta"});
             REQUIRE(lines.size() == 2u);
             CHECK(lines[0].empty());
             CHECK(lines[1] == "beta");
@@ -988,7 +988,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Consecutive newlines preserve empty middle lines")
         {
-            const auto lines = collect(sf::base::StringView{"alpha\n\ngamma"});
+            const auto lines = collect(zb::StringView{"alpha\n\ngamma"});
             REQUIRE(lines.size() == 3u);
             CHECK(lines[0] == "alpha");
             CHECK(lines[1].empty());
@@ -997,14 +997,14 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Single newline yields one empty line")
         {
-            const auto lines = collect(sf::base::StringView{"\n"});
+            const auto lines = collect(zb::StringView{"\n"});
             REQUIRE(lines.size() == 1u);
             CHECK(lines[0].empty());
         }
 
         SECTION("Two newlines yield two empty lines")
         {
-            const auto lines = collect(sf::base::StringView{"\n\n"});
+            const auto lines = collect(zb::StringView{"\n\n"});
             REQUIRE(lines.size() == 2u);
             CHECK(lines[0].empty());
             CHECK(lines[1].empty());
@@ -1013,7 +1013,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
         SECTION("CRLF line endings keep the \\r in the line view")
         {
             // Documents the deliberate "split on \\n, do not strip \\r" choice.
-            const auto lines = collect(sf::base::StringView{"alpha\r\nbeta"});
+            const auto lines = collect(zb::StringView{"alpha\r\nbeta"});
             REQUIRE(lines.size() == 2u);
             CHECK(lines[0] == "alpha\r");
             CHECK(lines[1] == "beta");
@@ -1022,10 +1022,10 @@ TEST_CASE("[Base] Base/StringView.hpp")
         SECTION("Lines view into the original buffer (no allocation)")
         {
             const char                 source[] = "first\nsecond\nthird";
-            const sf::base::StringView sv{source, sizeof(source) - 1};
+            const zb::StringView sv{source, sizeof(source) - 1};
 
-            sf::base::SizeT count = 0u;
-            sv.forLines([&](sf::base::StringView line)
+            zb::SizeT count = 0u;
+            sv.forLines([&](zb::StringView line)
             {
                 // Each `line.data()` must be a pointer into `source`.
                 CHECK(line.data() >= source);
@@ -1037,18 +1037,18 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Forwards mutable lambda")
         {
-            sf::base::SizeT total = 0u;
-            sf::base::StringView{"a\nbb\nccc"}.forLines([&](sf::base::StringView line) mutable { total += line.size(); });
+            zb::SizeT total = 0u;
+            zb::StringView{"a\nbb\nccc"}.forLines([&](zb::StringView line) mutable { total += line.size(); });
             CHECK(total == 6u);
         }
     }
 
     SECTION("forSplits method")
     {
-        const auto collect = [](sf::base::StringView sv, sf::base::StringView splitter)
+        const auto collect = [](zb::StringView sv, zb::StringView splitter)
         {
-            sf::base::Vector<sf::base::String> out;
-            sv.forSplits(splitter, [&](sf::base::StringView seg) { out.emplaceBack(seg); });
+            zb::Vector<zb::String> out;
+            sv.forSplits(splitter, [&](zb::StringView seg) { out.emplaceBack(seg); });
             return out;
         };
 
@@ -1137,26 +1137,26 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("forLines is consistent with forSplits(\"\\n\")")
         {
-            const sf::base::StringView input{"alpha\nbeta\n\ngamma"};
+            const zb::StringView input{"alpha\nbeta\n\ngamma"};
 
-            sf::base::Vector<sf::base::String> viaLines;
-            input.forLines([&](sf::base::StringView l) { viaLines.emplaceBack(l); });
+            zb::Vector<zb::String> viaLines;
+            input.forLines([&](zb::StringView l) { viaLines.emplaceBack(l); });
 
             const auto viaSplits = collect(input, "\n");
 
             REQUIRE(viaLines.size() == viaSplits.size());
-            for (sf::base::SizeT i = 0u; i < viaLines.size(); ++i)
+            for (zb::SizeT i = 0u; i < viaLines.size(); ++i)
                 CHECK(viaLines[i] == viaSplits[i]);
         }
 
         SECTION("Segments view into the original buffer (no allocation)")
         {
             const char                 source[] = "alpha::beta::gamma";
-            const sf::base::StringView sv{source, sizeof(source) - 1};
+            const zb::StringView sv{source, sizeof(source) - 1};
 
-            sf::base::SizeT count = 0u;
+            zb::SizeT count = 0u;
             sv.forSplits("::",
-                         [&](sf::base::StringView seg)
+                         [&](zb::StringView seg)
             {
                 CHECK(seg.data() >= source);
                 CHECK(seg.data() <= source + sizeof(source));
@@ -1168,10 +1168,10 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
     SECTION("forSplits method (char overload)")
     {
-        const auto collect = [](sf::base::StringView sv, char splitter)
+        const auto collect = [](zb::StringView sv, char splitter)
         {
-            sf::base::Vector<sf::base::String> out;
-            sv.forSplits(splitter, [&](sf::base::StringView seg) { out.emplaceBack(seg); });
+            zb::Vector<zb::String> out;
+            sv.forSplits(splitter, [&](zb::StringView seg) { out.emplaceBack(seg); });
             return out;
         };
 
@@ -1233,16 +1233,16 @@ TEST_CASE("[Base] Base/StringView.hpp")
         {
             // Cross-check: both overloads must produce identical output for
             // a single-character splitter.
-            const sf::base::StringView input{"alpha,,beta,gamma,"};
+            const zb::StringView input{"alpha,,beta,gamma,"};
 
-            sf::base::Vector<sf::base::String> viaChar;
-            input.forSplits(',', [&](sf::base::StringView s) { viaChar.emplaceBack(s); });
+            zb::Vector<zb::String> viaChar;
+            input.forSplits(',', [&](zb::StringView s) { viaChar.emplaceBack(s); });
 
-            sf::base::Vector<sf::base::String> viaView;
-            input.forSplits(",", [&](sf::base::StringView s) { viaView.emplaceBack(s); });
+            zb::Vector<zb::String> viaView;
+            input.forSplits(",", [&](zb::StringView s) { viaView.emplaceBack(s); });
 
             REQUIRE(viaChar.size() == viaView.size());
-            for (sf::base::SizeT i = 0u; i < viaChar.size(); ++i)
+            for (zb::SizeT i = 0u; i < viaChar.size(); ++i)
                 CHECK(viaChar[i] == viaView[i]);
         }
 
@@ -1250,15 +1250,15 @@ TEST_CASE("[Base] Base/StringView.hpp")
         {
             // Just a smoke test that the char-based forLines path still matches
             // the StringView-splitter behavior on a typical input.
-            const sf::base::StringView input{"alpha\nbeta\n\ngamma"};
+            const zb::StringView input{"alpha\nbeta\n\ngamma"};
 
-            sf::base::Vector<sf::base::String> viaLines;
-            input.forLines([&](sf::base::StringView l) { viaLines.emplaceBack(l); });
+            zb::Vector<zb::String> viaLines;
+            input.forLines([&](zb::StringView l) { viaLines.emplaceBack(l); });
 
             const auto viaCharSplit = collect(input, '\n');
 
             REQUIRE(viaLines.size() == viaCharSplit.size());
-            for (sf::base::SizeT i = 0u; i < viaLines.size(); ++i)
+            for (zb::SizeT i = 0u; i < viaLines.size(); ++i)
                 CHECK(viaLines[i] == viaCharSplit[i]);
         }
     }
@@ -1272,8 +1272,8 @@ TEST_CASE("[Base] Base/StringView.hpp")
         const char raw1[] = {'a', '\0', 'b'};
         const char raw2[] = {'a', '\0', 'c'};
 
-        const sf::base::StringView v1{raw1, 3};
-        const sf::base::StringView v2{raw2, 3};
+        const zb::StringView v1{raw1, 3};
+        const zb::StringView v2{raw2, 3};
 
         SECTION("operator== distinguishes bytes past NUL")
         {
@@ -1299,24 +1299,24 @@ TEST_CASE("[Base] Base/StringView.hpp")
         SECTION("find finds the right offset across NULs")
         {
             const char                 haystack[] = {'x', 'a', '\0', 'b', 'y', 'a', '\0', 'c', 'z'};
-            const sf::base::StringView hv{haystack, 9};
+            const zb::StringView hv{haystack, 9};
 
             const char needle1[] = {'a', '\0', 'b'};
             const char needle2[] = {'a', '\0', 'c'};
 
-            CHECK(hv.find(sf::base::StringView{needle1, 3}) == 1u);
-            CHECK(hv.find(sf::base::StringView{needle2, 3}) == 5u);
+            CHECK(hv.find(zb::StringView{needle1, 3}) == 1u);
+            CHECK(hv.find(zb::StringView{needle2, 3}) == 5u);
             // The wrong needle must NOT be found at the other position.
-            CHECK(hv.find(sf::base::StringView{needle1, 3}, 2u) == sf::base::StringView::nPos);
+            CHECK(hv.find(zb::StringView{needle1, 3}, 2u) == zb::StringView::nPos);
         }
 
         SECTION("rfind honours bytes past NUL")
         {
             const char                 haystack[] = {'x', 'a', '\0', 'b', 'y', 'a', '\0', 'b', 'z'};
-            const sf::base::StringView hv{haystack, 9};
+            const zb::StringView hv{haystack, 9};
 
             const char needle[] = {'a', '\0', 'b'};
-            CHECK(hv.rfind(sf::base::StringView{needle, 3}) == 5u);
+            CHECK(hv.rfind(zb::StringView{needle, 3}) == 5u);
         }
 
         SECTION("startsWith honours bytes past NUL")
@@ -1324,8 +1324,8 @@ TEST_CASE("[Base] Base/StringView.hpp")
             const char prefix1[] = {'a', '\0', 'b'};
             const char prefix2[] = {'a', '\0', 'c'};
 
-            CHECK(v1.startsWith(sf::base::StringView{prefix1, 3}));
-            CHECK_FALSE(v1.startsWith(sf::base::StringView{prefix2, 3}));
+            CHECK(v1.startsWith(zb::StringView{prefix1, 3}));
+            CHECK_FALSE(v1.startsWith(zb::StringView{prefix2, 3}));
         }
 
         SECTION("endsWith honours bytes past NUL")
@@ -1333,20 +1333,20 @@ TEST_CASE("[Base] Base/StringView.hpp")
             const char suffix1[] = {'\0', 'b'};
             const char suffix2[] = {'\0', 'c'};
 
-            CHECK(v1.endsWith(sf::base::StringView{suffix1, 2}));
-            CHECK_FALSE(v1.endsWith(sf::base::StringView{suffix2, 2}));
+            CHECK(v1.endsWith(zb::StringView{suffix1, 2}));
+            CHECK_FALSE(v1.endsWith(zb::StringView{suffix2, 2}));
         }
 
         SECTION("contains honours bytes past NUL")
         {
             const char                 haystack[] = {'x', 'a', '\0', 'c', 'y'};
-            const sf::base::StringView hv{haystack, 5};
+            const zb::StringView hv{haystack, 5};
 
             const char needle1[] = {'a', '\0', 'b'};
             const char needle2[] = {'a', '\0', 'c'};
 
-            CHECK_FALSE(hv.contains(sf::base::StringView{needle1, 3}));
-            CHECK(hv.contains(sf::base::StringView{needle2, 3}));
+            CHECK_FALSE(hv.contains(zb::StringView{needle1, 3}));
+            CHECK(hv.contains(zb::StringView{needle2, 3}));
         }
 
         SECTION("compare empty operands does not deref null pointers")
@@ -1354,12 +1354,12 @@ TEST_CASE("[Base] Base/StringView.hpp")
             // Default-constructed views have `theData == nullptr`; the
             // explicit `minSize == 0` short-circuit in `compare` keeps memcmp
             // from being called with null.
-            const sf::base::StringView empty1;
-            const sf::base::StringView empty2;
+            const zb::StringView empty1;
+            const zb::StringView empty2;
             CHECK(empty1.compare(empty2) == 0);
             CHECK(empty1 == empty2);
 
-            const sf::base::StringView nonEmpty = "x";
+            const zb::StringView nonEmpty = "x";
             CHECK(empty1.compare(nonEmpty) < 0);
             CHECK(nonEmpty.compare(empty1) > 0);
         }
@@ -1369,8 +1369,8 @@ TEST_CASE("[Base] Base/StringView.hpp")
     {
         SECTION("Swaps two non-empty views")
         {
-            sf::base::StringView a = "alpha";
-            sf::base::StringView b = "betacarotene";
+            zb::StringView a = "alpha";
+            zb::StringView b = "betacarotene";
 
             const auto* const aOldData = a.data();
             const auto* const bOldData = b.data();
@@ -1387,8 +1387,8 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Swap with default-constructed view")
         {
-            sf::base::StringView a = "hello";
-            sf::base::StringView b;
+            zb::StringView a = "hello";
+            zb::StringView b;
 
             swap(a, b); // ADL-found friend
 
@@ -1398,7 +1398,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
         SECTION("Self-swap is a no-op")
         {
-            sf::base::StringView a = "stable";
+            zb::StringView a = "stable";
             const auto* const    p = a.data();
             const auto           s = a.size();
 

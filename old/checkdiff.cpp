@@ -1,5 +1,5 @@
 
-namespace sf::base
+namespace zb
 {
 ////////////////////////////////////////////////////////////
 inline constexpr float pi = 3.141592654f;
@@ -9384,7 +9384,7 @@ enum : unsigned int
 };
 
 
-inline constexpr float radToIndex = static_cast<float>(sinCount) / sf::base::tau;
+inline constexpr float radToIndex = static_cast<float>(sinCount) / zb::tau;
 
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr unsigned int fastSinIdx(float radians) noexcept
 {
@@ -9393,17 +9393,17 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / sf::base::tau
 
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr unsigned int fastCosIdx(float radians) noexcept
 {
-    return static_cast<unsigned int>((radians + sf::base::halfPi) * radToIndex);
+    return static_cast<unsigned int>((radians + zb::halfPi) * radToIndex);
 }
 
-} // namespace sf::base
+} // namespace zb
 
 #include <iostream>
 
 int main()
 {
-    using namespace sf::base;
+    using namespace zb;
 
-    for (float i = 0; i < sf::base::tau; i += 0.01f)
+    for (float i = 0; i < zb::tau; i += 0.01f)
         std::cout << fastCosIdx(i) << " - " << fastSinIdx(i) << " = " << (fastCosIdx(i) - fastSinIdx(i)) << '\n';
 }

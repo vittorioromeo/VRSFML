@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@ZA_RELATIVE_INSTALL_LIBDIR@
+includedir=${prefix}/include
+
+Name: SFML-network
+Description: The Simple and Fast Multimedia Library, network module.
+URL: http://www.zancle-dev.org
+Version: @PROJECT_VERSION@
+Requires: zancle-system
+Libs: -L${libdir} -lzancle-network
+Cflags: -I${includedir}

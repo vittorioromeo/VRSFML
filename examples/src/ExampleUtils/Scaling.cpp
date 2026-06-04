@@ -7,37 +7,37 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderTextureCreateSettings.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/WindowSettings.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Floor.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Floor.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
-sf::Rect2f getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f originalSize)
+za::Rect2f getAspectRatioAwareViewport(const za::Vec2f newSize, const za::Vec2f originalSize)
 {
-    SFML_BASE_ASSERT(newSize.x > 0.f && newSize.y > 0.f);
-    SFML_BASE_ASSERT(originalSize.x > 0.f && originalSize.y > 0.f);
+    ZB_ASSERT(newSize.x > 0.f && newSize.y > 0.f);
+    ZB_ASSERT(originalSize.x > 0.f && originalSize.y > 0.f);
 
     const float contentAspectRatio = originalSize.x / originalSize.y; // Assume old size has correct ratio
     const float windowAspectRatio  = newSize.x / newSize.y;
 
-    if (SFML_BASE_MATH_FABSF(windowAspectRatio - contentAspectRatio) < 0.01f)
+    if (ZB_MATH_FABSF(windowAspectRatio - contentAspectRatio) < 0.01f)
     {
         // Aspect ratios match, viewport covers the whole window
         return {{0.f, 0.f}, {1.f, 1.f}};
@@ -59,21 +59,21 @@ sf::Rect2f getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f 
 
 
 ////////////////////////////////////////////////////////////
-float getPixelPerfectScale(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+float getPixelPerfectScale(const za::Vec2f windowSize, const za::Vec2f nativeResolution)
 {
-    SFML_BASE_ASSERT(windowSize.x > 0.f && windowSize.y > 0.f);
-    SFML_BASE_ASSERT(nativeResolution.x > 0.f && nativeResolution.y > 0.f);
+    ZB_ASSERT(windowSize.x > 0.f && windowSize.y > 0.f);
+    ZB_ASSERT(nativeResolution.x > 0.f && nativeResolution.y > 0.f);
 
     const auto scaleRatio = windowSize.componentWiseDiv(nativeResolution);
 
     // The final scale is the smaller of the two, floored to the nearest integer
     // This ensures that the scaled content fits entirely within the window
-    return sf::base::max(1.f, sf::base::floor(sf::base::min(scaleRatio.x, scaleRatio.y)));
+    return zb::max(1.f, zb::floor(zb::min(scaleRatio.x, scaleRatio.y)));
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+za::Rect2f getPixelPerfectViewport(const za::Vec2f windowSize, const za::Vec2f nativeResolution)
 {
     const float scale = getPixelPerfectScale(windowSize, nativeResolution);
 
@@ -92,7 +92,7 @@ sf::Rect2f getPixelPerfectViewport(const sf::Vec2f windowSize, const sf::Vec2f n
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::View computeViewImpl(const sf::Vec2f windowSize, const sf::Vec2f originalSize, auto&& fnViewport)
+[[nodiscard]] za::View computeViewImpl(const za::Vec2f windowSize, const za::Vec2f originalSize, auto&& fnViewport)
 {
     return {
         .center   = originalSize / 2.f,
@@ -103,9 +103,9 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool handleResizeImpl(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view, auto&& fnViewport)
+[[nodiscard]] bool handleResizeImpl(const za::Event& event, const za::Vec2f originalSize, za::View& view, auto&& fnViewport)
 {
-    const auto* eResized = event.getIf<sf::Event::Resized>();
+    const auto* eResized = event.getIf<za::Event::Resized>();
     if (eResized == nullptr)
         return false;
 
@@ -125,23 +125,23 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-sf::View computeAspectRatioAwareView(const sf::Vec2f windowSize, const sf::Vec2f originalSize)
+za::View computeAspectRatioAwareView(const za::Vec2f windowSize, const za::Vec2f originalSize)
 {
     return computeViewImpl(windowSize, originalSize, &getAspectRatioAwareViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::View computePixelPerfectView(const sf::Vec2f windowSize, const sf::Vec2f nativeResolution)
+za::View computePixelPerfectView(const za::Vec2f windowSize, const za::Vec2f nativeResolution)
 {
     return computeViewImpl(windowSize, nativeResolution, &getPixelPerfectViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] const sf::Vec2f originalSize, sf::View& view)
+bool handleNonScalingResize(const za::Event& event, [[maybe_unused]] const za::Vec2f originalSize, za::View& view)
 {
-    const auto* eResized = event.getIf<sf::Event::Resized>();
+    const auto* eResized = event.getIf<za::Event::Resized>();
     if (eResized == nullptr)
         return false;
 
@@ -158,46 +158,46 @@ bool handleNonScalingResize(const sf::Event& event, [[maybe_unused]] const sf::V
 
 
 ////////////////////////////////////////////////////////////
-bool handleAspectRatioAwareResize(const sf::Event& event, const sf::Vec2f originalSize, sf::View& view)
+bool handleAspectRatioAwareResize(const za::Event& event, const za::Vec2f originalSize, za::View& view)
 {
     return handleResizeImpl(event, originalSize, view, &getAspectRatioAwareViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool handlePixelPerfectResize(const sf::Event& event, const sf::Vec2f nativeResolution, sf::View& view)
+bool handlePixelPerfectResize(const za::Event& event, const za::Vec2f nativeResolution, za::View& view)
 {
     return handleResizeImpl(event, nativeResolution, view, &getPixelPerfectViewport);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<sf::RenderWindow> makeDPIScaledRenderWindow(const sf::WindowSettings& windowSettings)
+zb::Optional<za::RenderWindow> makeDPIScaledRenderWindow(const za::WindowSettings& windowSettings)
 {
     const auto  fSize                      = windowSettings.size.toVec2f();
-    const float primaryDisplayContentScale = sf::VideoModeUtils::getPrimaryDisplayContentScale();
+    const float primaryDisplayContentScale = za::VideoModeUtils::getPrimaryDisplayContentScale();
 
     auto adjustedWindowSettings = windowSettings;
     adjustedWindowSettings.size = (fSize * primaryDisplayContentScale).toVec2u();
 
-    return sf::RenderWindow::create(adjustedWindowSettings);
+    return za::RenderWindow::create(adjustedWindowSettings);
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::Optional<sf::RenderTexture> makeAARenderTexture(const sf::Vec2u                 resolution,
-                                                          sf::RenderTextureCreateSettings rtCreateSettings)
+zb::Optional<za::RenderTexture> makeAARenderTexture(const za::Vec2u                 resolution,
+                                                          za::RenderTextureCreateSettings rtCreateSettings)
 {
-    const auto maxAALevel = sf::RenderTexture::getMaximumAntiAliasingLevel();
+    const auto maxAALevel = za::RenderTexture::getMaximumAntiAliasingLevel();
 
     if (rtCreateSettings.antiAliasingLevel > maxAALevel)
     {
-        sf::base::printLn("Desired AA level {} higher than supported {}, falling back to maximum",
+        zb::printLn("Desired AA level {} higher than supported {}, falling back to maximum",
                           rtCreateSettings.antiAliasingLevel,
                           maxAALevel);
 
         rtCreateSettings.antiAliasingLevel = maxAALevel;
     }
 
-    return sf::RenderTexture::create(resolution.toVec2u(), rtCreateSettings);
+    return za::RenderTexture::create(resolution.toVec2u(), rtCreateSettings);
 }

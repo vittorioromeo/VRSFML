@@ -1,22 +1,22 @@
 
-#include "SFML/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowContext.hpp"
 
 // Other 1st party headers
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
+#include "Zancle/Window/ContextSettings.hpp"
 
-#include "SFML/System/Err.hpp"
+#include "Zancle/System/Err.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/UniquePtr.hpp"
 
-#if defined(SFML_SYSTEM_WINDOWS)
+#if defined(ZA_SYSTEM_WINDOWS)
     #define GLAPI __stdcall
 #else
     #define GLAPI
@@ -30,23 +30,23 @@
 
 struct TestContext
 {
-    decltype(sf::WindowContext::createGlContext(sf::ContextSettings{})) glContext;
+    decltype(za::WindowContext::createGlContext(za::ContextSettings{})) glContext;
 
-    TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
+    TestContext() : glContext(za::WindowContext::createGlContext(za::ContextSettings{}))
     {
         if (!setActive(true))
-            sf::priv::errMsg("Failed to set context as active during construction");
+            za::priv::errMsg("Failed to set context as active during construction");
     }
 
     ~TestContext()
     {
         if (glContext != nullptr && !setActive(false))
-            sf::priv::errMsg("Failed to set context as inactive during destruction");
+            za::priv::errMsg("Failed to set context as inactive during destruction");
     }
 
     [[nodiscard]] bool setActive(bool active) const
     {
-        return sf::WindowContext::setActiveThreadLocalGlContext(*glContext, active);
+        return za::WindowContext::setActiveThreadLocalGlContext(*glContext, active);
     }
 
     TestContext(const TestContext&) = delete;
@@ -57,52 +57,52 @@ struct TestContext
 
     TestContext& operator=(TestContext&& rhs) noexcept = default;
 
-    [[nodiscard]] const sf::ContextSettings& getSettings() const
+    [[nodiscard]] const za::ContextSettings& getSettings() const
     {
         return glContext->getSettings();
     }
 
     [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId()
     {
-        return sf::WindowContext::getActiveThreadLocalGlContextId();
+        return za::WindowContext::getActiveThreadLocalGlContextId();
     }
 
     [[nodiscard]] static bool hasActiveThreadLocalGlContext()
     {
-        return sf::WindowContext::hasActiveThreadLocalGlContext();
+        return za::WindowContext::hasActiveThreadLocalGlContext();
     }
 
     [[nodiscard]] static bool isActiveGlContextSharedContext()
     {
-        return sf::WindowContext::isActiveGlContextSharedContext();
+        return za::WindowContext::isActiveGlContextSharedContext();
     }
 
     [[nodiscard]] static bool isExtensionAvailable(const char* name)
     {
-        return sf::WindowContext::isExtensionAvailable(name);
+        return za::WindowContext::isExtensionAvailable(name);
     }
 
     [[nodiscard]] static auto getFunction(const char* name)
     {
-        return sf::WindowContext::getFunction(name);
+        return za::WindowContext::getFunction(name);
     }
 };
 
 TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
 {
     {
-        CHECK(!sf::WindowContext::isInstalled());
-        auto windowContext = sf::WindowContext::create().value();
-        CHECK(sf::WindowContext::isInstalled());
+        CHECK(!za::WindowContext::isInstalled());
+        auto windowContext = za::WindowContext::create().value();
+        CHECK(za::WindowContext::isInstalled());
         CHECK(TestContext::hasActiveThreadLocalGlContext());
         CHECK(TestContext::isActiveGlContextSharedContext());
 
         SECTION("Type traits")
         {
-            STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(TestContext));
-            STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(TestContext));
-            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
-            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
+            STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(TestContext));
+            STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(TestContext));
+            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
+            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
         }
 
         SECTION("Construction")
@@ -125,7 +125,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
                 SECTION("From active context")
                 {
                     TestContext       movedContext;
-                    const TestContext context(SFML_BASE_MOVE(movedContext));
+                    const TestContext context(ZB_MOVE(movedContext));
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
                     CHECK(TestContext::hasActiveThreadLocalGlContext());
@@ -138,7 +138,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
                     CHECK(TestContext::isActiveGlContextSharedContext());
 
-                    const TestContext context(SFML_BASE_MOVE(movedContext));
+                    const TestContext context(ZB_MOVE(movedContext));
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
                     CHECK(TestContext::isActiveGlContextSharedContext());
@@ -155,7 +155,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == movedContext.glContext->getId());
                     CHECK(TestContext::hasActiveThreadLocalGlContext());
 
-                    context = SFML_BASE_MOVE(movedContext);
+                    context = ZB_MOVE(movedContext);
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
                     CHECK(TestContext::hasActiveThreadLocalGlContext());
@@ -169,7 +169,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
 
                     TestContext context;
                     CHECK(context.setActive(false));
-                    context = SFML_BASE_MOVE(movedContext);
+                    context = ZB_MOVE(movedContext);
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::isActiveGlContextSharedContext());
                 }
@@ -270,5 +270,5 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
         }
     }
 
-    CHECK(!sf::WindowContext::isInstalled());
+    CHECK(!za::WindowContext::isInstalled());
 }

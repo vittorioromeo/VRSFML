@@ -1,23 +1,23 @@
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <Zancle/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/SDLLayer.hpp"
-#include "SFML/Window/Unix/Display.hpp"
-#include "SFML/Window/Unix/KeyboardImpl.hpp"
-#include "SFML/Window/WindowBase.hpp"
-#include "SFML/Window/WindowHandle.hpp"
+#include "Zancle/Window/InputImpl.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/Unix/Display.hpp"
+#include "Zancle/Window/Unix/KeyboardImpl.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+#include "Zancle/Window/WindowHandle.hpp"
 
-#include "SFML/System/String.hpp"
+#include "Zancle/System/String.hpp"
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
 
-namespace sf::priv::InputImpl
+namespace za::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
 bool isKeyPressed(const Keyboard::Key key)
@@ -31,7 +31,7 @@ bool isKeyPressed(const Keyboard::Key key)
 bool isKeyPressed(const Keyboard::Scancode code)
 {
     const bool* keyboardState = SDL_GetKeyboardState(nullptr);
-    SFML_BASE_ASSERT(keyboardState != nullptr);
+    ZB_ASSERT(keyboardState != nullptr);
 
     return keyboardState[mapSFMLScancodeToSDL(code)];
 }
@@ -194,4 +194,4 @@ Vector2i getTouchPosition(unsigned int /* finger */, const WindowBase& /* relati
     return {};
 }
 
-} // namespace sf::priv::InputImpl
+} // namespace za::priv::InputImpl

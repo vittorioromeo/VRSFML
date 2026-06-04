@@ -1,0 +1,31 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+#if __has_builtin(__is_union)
+
+    ////////////////////////////////////////////////////////////
+    #define ZB_IS_UNION(...) __is_union(__VA_ARGS__)
+
+#else
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+    #include <type_traits>
+
+
+    ////////////////////////////////////////////////////////////
+    #define ZB_IS_UNION(...) ::std::is_union_v<__VA_ARGS__>
+
+#endif
+
+
+namespace zb
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isUnion = ZB_IS_UNION(T);
+
+} // namespace zb

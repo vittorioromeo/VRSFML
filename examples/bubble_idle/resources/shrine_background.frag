@@ -1,10 +1,10 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform sampler2D za_u_texture;
 
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
+in vec4 za_v_color;
+in vec2 za_v_texCoord;
 in vec2 v_worldPos;
 
-out vec4 sf_fragColor;
+out vec4 za_fragColor;
 
 uniform float u_time;
 uniform vec2 u_shrineCenter;
@@ -37,19 +37,19 @@ void main()
     float ripple1 = cos(v_worldPos.x * 0.05 - u_time * 1.9);
     float ripple2 = sin((v_worldPos.x + v_worldPos.y) * 0.04 + u_time * 2.7);
 
-    vec2 texel = 1.0 / vec2(textureSize(sf_u_texture, 0));
+    vec2 texel = 1.0 / vec2(textureSize(za_u_texture, 0));
     vec2 distortionDir = dir * (0.65 + 0.35 * ripple0) + tangent * (ripple1 + swirl * 1.35);
     vec2 distortion = distortionDir * (u_distortionStrength * texel * radialMask * effectStrength);
     vec2 shimmerOffset = tangent * texel * (6.0 + 10.0 * swirl) * radialMask * effectStrength;
 
-    vec4 baseColor = texture(sf_u_texture, sf_v_texCoord);
-    vec2 uv0 = clamp(sf_v_texCoord + distortion, vec2(0.0), vec2(1.0));
-    vec2 uv1 = clamp(sf_v_texCoord + distortion * 1.45 + shimmerOffset, vec2(0.0), vec2(1.0));
-    vec2 uv2 = clamp(sf_v_texCoord - distortion * 1.15 - shimmerOffset * 0.75, vec2(0.0), vec2(1.0));
+    vec4 baseColor = texture(za_u_texture, za_v_texCoord);
+    vec2 uv0 = clamp(za_v_texCoord + distortion, vec2(0.0), vec2(1.0));
+    vec2 uv1 = clamp(za_v_texCoord + distortion * 1.45 + shimmerOffset, vec2(0.0), vec2(1.0));
+    vec2 uv2 = clamp(za_v_texCoord - distortion * 1.15 - shimmerOffset * 0.75, vec2(0.0), vec2(1.0));
 
-    vec3 distortedColor = vec3(texture(sf_u_texture, uv1).r,
-                               texture(sf_u_texture, uv0).g,
-                               texture(sf_u_texture, uv2).b);
+    vec3 distortedColor = vec3(texture(za_u_texture, uv1).r,
+                               texture(za_u_texture, uv0).g,
+                               texture(za_u_texture, uv2).b);
 
     vec3 tint = vec3(u_shrineTintR, u_shrineTintG, u_shrineTintB);
     float tintMask = radialMask * effectStrength * (0.55 + 0.45 * swirl);
@@ -61,5 +61,5 @@ void main()
     phasedColor = mix(phasedColor, phasedColor * 0.45 + tint * 1.9, u_tintStrength * tintMask);
     phasedColor += tint * 0.08 * shimmer * radialMask;
 
-    sf_fragColor = mix(vec4(tint, u_shrineTintA), vec4(phasedColor, radialMask * effectStrength * 0.95), 0.75);
+    za_fragColor = mix(vec4(tint, u_shrineTintA), vec4(phasedColor, radialMask * effectStrength * 0.95), 0.75);
 }

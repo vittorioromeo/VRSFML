@@ -1,159 +1,159 @@
-#include "SFML/Audio/SoundFileFactory.hpp"
+#include "Zancle/Audio/SoundFileFactory.hpp"
 
 // Other 1st party headers
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/SoundFileReader.hpp"
-#include "SFML/Audio/SoundFileWriter.hpp"
+#include "Zancle/Audio/ChannelMap.hpp"
+#include "Zancle/Audio/SoundFileReader.hpp"
+#include "Zancle/Audio/SoundFileWriter.hpp"
 
-#include "SFML/System/FileInputStream.hpp"
-#include "SFML/System/InputStream.hpp"
-#include "SFML/System/Path.hpp"
+#include "Zancle/System/FileInputStream.hpp"
+#include "Zancle/System/InputStream.hpp"
+#include "Zancle/System/Path.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
 
 namespace
 {
 
-struct NoopSoundFileReader : sf::SoundFileReader
+struct NoopSoundFileReader : za::SoundFileReader
 {
-    static bool check(sf::InputStream&)
+    static bool check(za::InputStream&)
     {
         return false;
     }
 
-    sf::base::Optional<Info> open(sf::InputStream&) override
+    zb::Optional<Info> open(za::InputStream&) override
     {
-        return sf::base::nullOpt;
+        return zb::nullOpt;
     }
 
-    void seek(sf::base::U64) override
+    void seek(zb::U64) override
     {
     }
 
-    sf::base::U64 read(sf::base::I16*, sf::base::U64) override
+    zb::U64 read(zb::I16*, zb::U64) override
     {
         return 0;
     }
 };
 
-struct NoopSoundFileWriter : sf::SoundFileWriter
+struct NoopSoundFileWriter : za::SoundFileWriter
 {
-    static bool check(const sf::Path&)
+    static bool check(const za::Path&)
     {
         return false;
     }
 
-    bool open(const sf::Path&, unsigned int, unsigned int, const sf::ChannelMap&) override
+    bool open(const za::Path&, unsigned int, unsigned int, const za::ChannelMap&) override
     {
         return false;
     }
 
-    void write(const sf::base::I16*, sf::base::U64) override
+    void write(const zb::I16*, zb::U64) override
     {
     }
 };
 
 } // namespace
 
-TEST_CASE("[Audio] sf::SoundFileFactory")
+TEST_CASE("[Audio] za::SoundFileFactory")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::SoundFileFactory));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::SoundFileFactory));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::SoundFileFactory));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::SoundFileFactory));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::SoundFileFactory));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::SoundFileFactory));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::SoundFileFactory));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::SoundFileFactory));
     }
 
     SECTION("isReaderRegistered()")
     {
-        CHECK(!sf::SoundFileFactory::isReaderRegistered<NoopSoundFileReader>());
+        CHECK(!za::SoundFileFactory::isReaderRegistered<NoopSoundFileReader>());
 
-        sf::SoundFileFactory::registerReader<NoopSoundFileReader>();
-        CHECK(sf::SoundFileFactory::isReaderRegistered<NoopSoundFileReader>());
+        za::SoundFileFactory::registerReader<NoopSoundFileReader>();
+        CHECK(za::SoundFileFactory::isReaderRegistered<NoopSoundFileReader>());
 
-        sf::SoundFileFactory::unregisterReader<NoopSoundFileReader>();
-        CHECK(!sf::SoundFileFactory::isReaderRegistered<NoopSoundFileReader>());
+        za::SoundFileFactory::unregisterReader<NoopSoundFileReader>();
+        CHECK(!za::SoundFileFactory::isReaderRegistered<NoopSoundFileReader>());
     }
 
     SECTION("isWriterRegistered()")
     {
-        CHECK(!sf::SoundFileFactory::isWriterRegistered<NoopSoundFileWriter>());
+        CHECK(!za::SoundFileFactory::isWriterRegistered<NoopSoundFileWriter>());
 
-        sf::SoundFileFactory::registerWriter<NoopSoundFileWriter>();
-        CHECK(sf::SoundFileFactory::isWriterRegistered<NoopSoundFileWriter>());
+        za::SoundFileFactory::registerWriter<NoopSoundFileWriter>();
+        CHECK(za::SoundFileFactory::isWriterRegistered<NoopSoundFileWriter>());
 
-        sf::SoundFileFactory::unregisterWriter<NoopSoundFileWriter>();
-        CHECK(!sf::SoundFileFactory::isWriterRegistered<NoopSoundFileWriter>());
+        za::SoundFileFactory::unregisterWriter<NoopSoundFileWriter>();
+        CHECK(!za::SoundFileFactory::isWriterRegistered<NoopSoundFileWriter>());
     }
 
     SECTION("createReaderFromFilename()")
     {
         SECTION("Missing file")
         {
-            CHECK((sf::SoundFileFactory::createReaderFromFilename("does/not/exist.wav") == nullptr));
+            CHECK((za::SoundFileFactory::createReaderFromFilename("does/not/exist.wav") == nullptr));
         }
 
         SECTION("Valid file")
         {
-            CHECK((sf::SoundFileFactory::createReaderFromFilename("ding.flac") != nullptr));
-            CHECK((sf::SoundFileFactory::createReaderFromFilename("ding.mp3") != nullptr));
-            CHECK((sf::SoundFileFactory::createReaderFromFilename("doodle_pop.ogg") != nullptr));
-            CHECK((sf::SoundFileFactory::createReaderFromFilename("killdeer.wav") != nullptr));
+            CHECK((za::SoundFileFactory::createReaderFromFilename("ding.flac") != nullptr));
+            CHECK((za::SoundFileFactory::createReaderFromFilename("ding.mp3") != nullptr));
+            CHECK((za::SoundFileFactory::createReaderFromFilename("doodle_pop.ogg") != nullptr));
+            CHECK((za::SoundFileFactory::createReaderFromFilename("killdeer.wav") != nullptr));
         }
     }
 
     SECTION("createReaderFromStream()")
     {
-        sf::base::Optional<sf::FileInputStream> stream;
+        zb::Optional<za::FileInputStream> stream;
 
         SECTION("flac")
         {
-            stream = sf::FileInputStream::open("ding.flac");
+            stream = za::FileInputStream::open("ding.flac");
         }
 
         SECTION("mp3")
         {
-            stream = sf::FileInputStream::open("ding.mp3");
+            stream = za::FileInputStream::open("ding.mp3");
         }
 
         SECTION("ogg")
         {
-            stream = sf::FileInputStream::open("doodle_pop.ogg");
+            stream = za::FileInputStream::open("doodle_pop.ogg");
         }
 
         SECTION("wav")
         {
-            stream = sf::FileInputStream::open("killdeer.wav");
+            stream = za::FileInputStream::open("killdeer.wav");
         }
 
         REQUIRE(stream.hasValue());
-        CHECK((sf::SoundFileFactory::createReaderFromStream(*stream) != nullptr));
+        CHECK((za::SoundFileFactory::createReaderFromStream(*stream) != nullptr));
     }
 
     SECTION("createWriterFromFilename()")
     {
         SECTION("Invalid extension")
         {
-            CHECK((sf::SoundFileFactory::createWriterFromFilename("cannot/write/to.txt") == nullptr));
+            CHECK((za::SoundFileFactory::createWriterFromFilename("cannot/write/to.txt") == nullptr));
         }
 
         SECTION("Valid extension")
         {
-            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.flac") != nullptr));
-            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.mp3") == nullptr)); // Mp3 writing not yet implemented
-            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.ogg") != nullptr));
-            CHECK((sf::SoundFileFactory::createWriterFromFilename("file.wav") != nullptr));
+            CHECK((za::SoundFileFactory::createWriterFromFilename("file.flac") != nullptr));
+            CHECK((za::SoundFileFactory::createWriterFromFilename("file.mp3") == nullptr)); // Mp3 writing not yet implemented
+            CHECK((za::SoundFileFactory::createWriterFromFilename("file.ogg") != nullptr));
+            CHECK((za::SoundFileFactory::createWriterFromFilename("file.wav") != nullptr));
         }
     }
 }

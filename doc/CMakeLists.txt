@@ -1,5 +1,5 @@
 # find doxygen
-if(SFML_OS_MACOS)
+if(ZA_OS_MACOS)
     # Add some path to search doxygen in more directories.
     set(ADDITIONAL_PATHS
         /Developer/Applications/Doxygen.app/Contents/Resources
@@ -17,7 +17,7 @@ find_package(Doxygen REQUIRED)
 # see if we can generate the CHM documentation
 set(DOXYGEN_HHC_PROGRAM)
 set(DOXYGEN_GENERATE_HTMLHELP NO)
-if(SFML_OS_WINDOWS)
+if(ZA_OS_WINDOWS)
     # if HHC is found, we can generate the CHM (compressed HTML) output
     find_program(DOXYGEN_HHC_PROGRAM
                  NAMES hhc.exe
@@ -48,7 +48,7 @@ add_custom_target(doc
                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # setup install rules
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SFML.tag
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Zancle.tag
         DESTINATION ${CMAKE_INSTALL_DOCDIR}
         COMPONENT doc)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html

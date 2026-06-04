@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Array.hpp"
+#include "ZancleBase/Array.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ struct [[nodiscard]] NinePatchBorders
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr sf::base::Array<float, 3> makeNinePatchSlices(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr zb::Array<float, 3> makeNinePatchSlices(
     const float total,
     const float start,
     const float end) noexcept
@@ -70,9 +70,9 @@ struct [[nodiscard]] NinePatchBorders
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr sf::base::Array<float, 3> makeNinePatchPositions(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr zb::Array<float, 3> makeNinePatchPositions(
     const float                      origin,
-    const sf::base::Array<float, 3>& slices) noexcept
+    const zb::Array<float, 3>& slices) noexcept
 {
     return {origin, origin + slices[0], origin + slices[0] + slices[1]};
 }

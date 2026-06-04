@@ -8,19 +8,19 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/NinePatchUtils.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Priv/TransformableMacros.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TransformableMixin.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Priv/TransformableMacros.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TransformableMixin.hpp"
 
-#include "SFML/System/GlobalAnchorPointMixin.hpp"
-#include "SFML/System/LocalAnchorPointMixin.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/GlobalAnchorPointMixin.hpp"
+#include "Zancle/System/LocalAnchorPointMixin.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -31,40 +31,40 @@
 /// center stretches on both axes.
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] NinePatchRect : sf::TransformableMixin, sf::GlobalAnchorPointMixin, sf::LocalAnchorPointMixin
+struct [[nodiscard]] NinePatchRect : za::TransformableMixin, za::GlobalAnchorPointMixin, za::LocalAnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+    ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
 
 
     ////////////////////////////////////////////////////////////
-    sf::Vec2f        size{};
-    sf::Rect2f       textureRect{};
+    za::Vec2f        size{};
+    za::Rect2f       textureRect{};
     NinePatchBorders borders{};
-    sf::Color        color{sf::Color::White};
+    za::Color        color{za::Color::White};
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr sf::Rect2f getLocalBounds() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr za::Rect2f getLocalBounds() const
     {
         return {{0.f, 0.f}, size};
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::Rect2f getGlobalBounds() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline za::Rect2f getGlobalBounds() const
     {
         return getTransform().transformRect(getLocalBounds());
     }
 
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& target, const sf::Texture& texture, sf::RenderStates states = {}) const
+    void draw(za::RenderTarget& target, const za::Texture& texture, za::RenderStates states = {}) const
     {
         if (size.x <= 0.f || size.y <= 0.f)
             return;
 
-        const sf::Rect2f sourceRect = (textureRect == sf::Rect2f{}) ? texture.getRect() : textureRect;
+        const za::Rect2f sourceRect = (textureRect == za::Rect2f{}) ? texture.getRect() : textureRect;
 
         if (sourceRect.size.x <= 0.f || sourceRect.size.y <= 0.f)
             return;
@@ -80,9 +80,9 @@ struct [[nodiscard]] NinePatchRect : sf::TransformableMixin, sf::GlobalAnchorPoi
 
         states.transform *= getTransform();
 
-        for (sf::base::SizeT iy = 0; iy < 3u; ++iy)
+        for (zb::SizeT iy = 0; iy < 3u; ++iy)
         {
-            for (sf::base::SizeT ix = 0; ix < 3u; ++ix)
+            for (zb::SizeT ix = 0; ix < 3u; ++ix)
             {
                 drawPatch(target,
                           texture,
@@ -95,11 +95,11 @@ struct [[nodiscard]] NinePatchRect : sf::TransformableMixin, sf::GlobalAnchorPoi
 
 private:
     ////////////////////////////////////////////////////////////
-    void drawPatch(sf::RenderTarget&       target,
-                   const sf::Texture&      texture,
-                   const sf::RenderStates& states,
-                   const sf::Rect2f        source,
-                   const sf::Rect2f        destination) const
+    void drawPatch(za::RenderTarget&       target,
+                   const za::Texture&      texture,
+                   const za::RenderStates& states,
+                   const za::Rect2f        source,
+                   const za::Rect2f        destination) const
     {
         if (source.size.x <= 0.f || source.size.y <= 0.f || destination.size.x <= 0.f || destination.size.y <= 0.f)
             return;

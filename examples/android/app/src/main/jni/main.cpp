@@ -1,19 +1,19 @@
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Thread.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Thread.hpp"
 
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Optional.hpp"
 
 // Do we want to showcase direct JNI/NDK interaction?
 // Undefine this to get real cross-platform code.
@@ -27,13 +27,13 @@
 
     // Since we want to get the native activity from SFML, we'll have to use an
     // extra header here:
-    #include "SFML/System/NativeActivity.hpp"
+    #include "Zancle/System/NativeActivity.hpp"
 
 // NDK/JNI sub example - call Java code from native code
-int vibrate(sf::Time duration)
+int vibrate(za::Time duration)
 {
     // First we'll need the native activity handle
-    ANativeActivity& activity = *sf::getNativeActivity();
+    ANativeActivity& activity = *za::getNativeActivity();
 
     // Retrieve the JVM and JNI environment
     JavaVM& vm  = *activity.vm;
@@ -89,28 +89,28 @@ int vibrate(sf::Time duration)
 int main(int, char**)
 {
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
+    const auto [size, bitsPerPixel] = za::VideoModeUtils::getDesktopMode();
 
-    auto window = sf::RenderWindow::create({.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30}).value();
+    auto window = za::RenderWindow::create({.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30}).value();
     const auto defaultView = window.getView();
 
-    const auto texture = sf::Texture::loadFromFile("image.png").value();
+    const auto texture = za::Texture::loadFromFile("image.png").value();
 
-    sf::Sprite image{.textureRect = texture.getRect()};
+    za::Sprite image{.textureRect = texture.getRect()};
     image.position = size.toVec2f() / 2.f;
     image.origin   = texture.getSize().toVec2f() / 2.f;
 
-    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("tuffy.ttf").value();
 
-    sf::Text text(font, {.string = "Tap anywhere to move the logo.", .characterSize = 64u});
-    text.setFillColor(sf::Color::Black);
+    za::Text text(font, {.string = "Tap anywhere to move the logo.", .characterSize = 64u});
+    text.setFillColor(za::Color::Black);
     text.position = {10, 10};
 
-    sf::View view = defaultView;
+    za::View view = defaultView;
 
-    sf::Color background = sf::Color::White;
+    za::Color background = za::Color::White;
 
     // We shouldn't try drawing to the screen while in background
     // so we'll have to track that. You can do minor background
@@ -119,43 +119,43 @@ int main(int, char**)
 
     while (true)
     {
-        while (const sf::base::Optional event = active ? window.pollEvent() : window.waitEvent())
+        while (const zb::Optional event = active ? window.pollEvent() : window.waitEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (const auto* resized = event->getIf<sf::Event::Resized>())
+            if (const auto* resized = event->getIf<za::Event::Resized>())
             {
                 const auto fSize = resized->size.toVec2f();
                 view.size        = fSize;
                 view.center      = fSize / 2.f;
                 window.setView(view);
             }
-            else if (event->is<sf::Event::FocusLost>())
+            else if (event->is<za::Event::FocusLost>())
             {
-                background = sf::Color::Black;
+                background = za::Color::Black;
             }
-            else if (event->is<sf::Event::FocusGained>())
+            else if (event->is<za::Event::FocusGained>())
             {
-                background = sf::Color::White;
+                background = za::Color::White;
             }
             // On Android MouseLeft/MouseEntered are (for now) triggered,
             // whenever the app loses or gains focus.
-            else if (event->is<sf::Event::MouseLeft>())
+            else if (event->is<za::Event::MouseLeft>())
             {
                 active = false;
             }
-            else if (event->is<sf::Event::MouseEntered>())
+            else if (event->is<za::Event::MouseEntered>())
             {
                 active = true;
             }
-            else if (const auto* touchBegan = event->getIf<sf::Event::TouchBegan>())
+            else if (const auto* touchBegan = event->getIf<za::Event::TouchBegan>())
             {
                 if (touchBegan->finger == 0)
                 {
                     image.position = touchBegan->position.toVec2f();
 #if defined(USE_JNI)
-                    vibrate(sf::milliseconds(10));
+                    vibrate(za::milliseconds(10));
 #endif
                 }
             }
@@ -170,7 +170,7 @@ int main(int, char**)
         }
         else
         {
-            sf::ThisThread::sleepFor(sf::milliseconds(100));
+            za::ThisThread::sleepFor(za::milliseconds(100));
         }
     }
 }

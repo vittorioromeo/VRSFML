@@ -1,48 +1,48 @@
 #include "ShowcaseBunnyMark.hpp"
 #include "ShowcaseExample.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DefaultShader.hpp"
-#include "SFML/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/InstanceAttributeBinder.hpp"
-#include "SFML/Graphics/InstancedQuad.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DefaultShader.hpp"
+#include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/InstanceAttributeBinder.hpp"
+#include "Zancle/Graphics/InstancedQuad.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/VertexSpan.hpp"
 
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Span.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Span.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
 
 
 ////////////////////////////////////////////////////////////
 constexpr const char* bunnyInstancedVertexShader = R"glsl(
 
-layout(location = 0) uniform vec3 sf_u_mvpRow0;
-layout(location = 1) uniform vec3 sf_u_mvpRow1;
-layout(location = 2) uniform sampler2D sf_u_texture;
-layout(location = 3) uniform vec2 sf_u_invTextureSize;
+layout(location = 0) uniform vec3 za_u_mvpRow0;
+layout(location = 1) uniform vec3 za_u_mvpRow1;
+layout(location = 2) uniform sampler2D za_u_texture;
+layout(location = 3) uniform vec2 za_u_invTextureSize;
 
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
+layout(location = 0) in vec2 za_a_position;
+layout(location = 1) in vec4 za_a_color;
+layout(location = 2) in vec2 za_a_texCoord;
 
 // Per-instance attributes
 layout(location = 3) in vec2 instance_position;
@@ -51,12 +51,12 @@ layout(location = 5) in float instance_rotation;
 layout(location = 6) in vec2 instance_texRectPos;
 layout(location = 7) in vec2 instance_texRectSize;
 
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
+out vec4 za_v_color;
+out vec2 za_v_texCoord;
 
 void main()
 {
-    vec2 local = sf_a_position * instance_texRectSize;
+    vec2 local = za_a_position * instance_texRectSize;
 
     float c = cos(instance_rotation);
     float s = sin(instance_rotation);
@@ -64,41 +64,41 @@ void main()
     float y = local.x * s + local.y * c;
     vec2 worldPos = instance_position + instance_scale * vec2(x, y);
 
-    gl_Position = vec4(dot(sf_u_mvpRow0, vec3(worldPos, 1.0)),
-                       dot(sf_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
+    gl_Position = vec4(dot(za_u_mvpRow0, vec3(worldPos, 1.0)),
+                       dot(za_u_mvpRow1, vec3(worldPos, 1.0)), 0.0, 1.0);
 
-    sf_v_color = vec4(1.0, 1.0, 1.0, 1.0);
+    za_v_color = vec4(1.0, 1.0, 1.0, 1.0);
 
-    vec2 final_texCoord = instance_texRectPos + (sf_a_texCoord * instance_texRectSize);
-    sf_v_texCoord = final_texCoord * sf_u_invTextureSize;
+    vec2 final_texCoord = instance_texRectPos + (za_a_texCoord * instance_texRectSize);
+    za_v_texCoord = final_texCoord * za_u_invTextureSize;
 }
 
 )glsl";
 
 
 ////////////////////////////////////////////////////////////
-sf::Rect2f ExampleBunnyMark::addImgToAtlasWithRotatedHue(const sf::Path& path, const float hueDegrees)
+za::Rect2f ExampleBunnyMark::addImgToAtlasWithRotatedHue(const za::Path& path, const float hueDegrees)
 {
-    auto img = sf::Image::loadFromFile(path).value();
+    auto img = za::Image::loadFromFile(path).value();
     img.rotateHue(hueDegrees);
     return m_textureAtlas.add(img).value();
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::base::String ExampleBunnyMark::toDigitSeparatedString(const sf::base::SizeT value)
+zb::String ExampleBunnyMark::toDigitSeparatedString(const zb::SizeT value)
 {
-    auto s = sf::base::toString(value);
+    auto s = zb::toString(value);
 
     for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
-        s.insert(static_cast<sf::base::SizeT>(i), ".");
+        s.insert(static_cast<zb::SizeT>(i), ".");
 
     return s;
 }
 
 
 ////////////////////////////////////////////////////////////
-ExampleBunnyMark::ExampleBunnyMark(const GameDependencies& deps, sf::TextureAtlas& textureAtlas) :
+ExampleBunnyMark::ExampleBunnyMark(const GameDependencies& deps, za::TextureAtlas& textureAtlas) :
     ShowcaseExample{"Bunnymark"},
     m_deps{deps},
     m_textureAtlas{textureAtlas},
@@ -114,9 +114,9 @@ ExampleBunnyMark::ExampleBunnyMark(const GameDependencies& deps, sf::TextureAtla
     }
 {
     // Set up instanced rendering shader
-    m_instancedShader.emplace(sf::Shader::loadFromMemory({.vertexCode = bunnyInstancedVertexShader}).value());
+    m_instancedShader.emplace(za::Shader::loadFromMemory({.vertexCode = bunnyInstancedVertexShader}).value());
 
-    m_ulInvTexSize.emplace(m_instancedShader->getUniformLocation("sf_u_invTextureSize").value());
+    m_ulInvTexSize.emplace(m_instancedShader->getUniformLocation("za_u_invTextureSize").value());
     m_instancedShader->setUniform(*m_ulInvTexSize, 1.f / m_textureAtlas.getTexture().getSize().toVec2f());
 }
 
@@ -126,23 +126,23 @@ void ExampleBunnyMark::update(const float deltaTimeMs)
 {
     m_time += deltaTimeMs;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+    if (za::Keyboard::isKeyPressed(za::Keyboard::Key::Right))
         m_bunnyTargetCount += 5000;
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+    else if (za::Keyboard::isKeyPressed(za::Keyboard::Key::Left))
         m_bunnyTargetCount -= 5000;
 
-    m_bunnyTargetCount = sf::base::clamp(m_bunnyTargetCount, sf::base::SizeT{5000}, sf::base::SizeT{2'500'000});
+    m_bunnyTargetCount = zb::clamp(m_bunnyTargetCount, zb::SizeT{5000}, zb::SizeT{2'500'000});
 
     if (m_bunnies.size() < m_bunnyTargetCount)
     {
         m_bunnies.reserve(m_bunnyTargetCount);
 
-        for (sf::base::SizeT i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
+        for (zb::SizeT i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
         {
             m_bunnies.emplaceBack(
                 /* position */ m_rng.getVec2f(resolution),
                 /* velocity */ m_rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}),
-                /* rotation */ sf::radians(m_rng.getF(0.f, sf::base::tau)),
+                /* rotation */ za::radians(m_rng.getF(0.f, zb::tau)),
                 /*    scale */ m_rng.getF(0.25f, 0.5f));
         }
     }
@@ -165,7 +165,7 @@ void ExampleBunnyMark::update(const float deltaTimeMs)
         else if (position.y > resolution.y)
             position.y = 0.f;
 
-        rotation += sf::radians(0.05f * deltaTimeMs);
+        rotation += za::radians(0.05f * deltaTimeMs);
     }
 }
 
@@ -195,7 +195,7 @@ void ExampleBunnyMark::drawInstanced()
 
     m_instanceData.resize(nBunnies);
 
-    for (sf::base::SizeT i = 0u; i < nBunnies; ++i)
+    for (zb::SizeT i = 0u; i < nBunnies; ++i)
     {
         const auto& [position, velocity, rotation, scale] = m_bunnies[i];
         const auto& txr                                   = m_bunnyTextureRects[i % 8u];
@@ -203,7 +203,7 @@ void ExampleBunnyMark::drawInstanced()
         m_instanceData[i] = {position, scale * scaleMul, rotation.asRadians(), txr.position, txr.size};
     }
 
-    auto setupAttribs = [&](sf::InstanceAttributeBinder& binder)
+    auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
     {
         binder.uploadContiguousData(m_instanceVBO, m_instanceData);
 
@@ -217,10 +217,10 @@ void ExampleBunnyMark::drawInstanced()
     m_deps.rtGame->drawInstancedIndexedVertices(
         {
             .vaoHandle     = m_vaoHandle,
-            .vertexSpan    = sf::instancedQuadVertices,
-            .indexSpan     = sf::instancedQuadIndices,
+            .vertexSpan    = za::instancedQuadVertices,
+            .indexSpan     = za::instancedQuadIndices,
             .instanceCount = nBunnies,
-            .primitiveType = sf::PrimitiveType::Triangles,
+            .primitiveType = za::PrimitiveType::Triangles,
         },
         setupAttribs,
         {.view = *m_deps.view, .texture = &m_textureAtlas.getTexture(), .shader = &*m_instancedShader});
@@ -243,7 +243,7 @@ void ExampleBunnyMark::draw()
 
         const float scaleMul = m_scaleMultiplier;
 
-        sf::base::SizeT i = 0;
+        zb::SizeT i = 0;
 
         for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {
@@ -251,7 +251,7 @@ void ExampleBunnyMark::draw()
 
             const float s = scale * scaleMul;
 
-            drawCtx.draw(sf::Sprite{
+            drawCtx.draw(za::Sprite{
                 .position    = position,
                 .scale       = {s, s},
                 .origin      = txr.size / 2.f,
@@ -266,22 +266,22 @@ void ExampleBunnyMark::draw()
     const auto digitSeparatedBunnyCount = toDigitSeparatedString(m_bunnies.size());
 
     const auto vertices = m_deps.rtGame->draw(*m_deps.font,
-                                              sf::TextData{
+                                              za::TextData{
                                                   .position         = {8.f, 8.f},
                                                   .string           = digitSeparatedBunnyCount + " bunnies",
                                                   .characterSize    = 32,
-                                                  .outlineColor     = sf::Color::Black,
+                                                  .outlineColor     = za::Color::Black,
                                                   .outlineThickness = 4.f,
                                               },
                                               {.view = *m_deps.view}); // TODO P1: add a way to prevent flushing
 
-    const auto applyEffect = [&](sf::VertexSpan quads)
+    const auto applyEffect = [&](za::VertexSpan quads)
     {
-        for (sf::base::SizeT j = 0u; j < quads.size(); j += 4u)
+        for (zb::SizeT j = 0u; j < quads.size(); j += 4u)
         {
             if (j >= digitSeparatedBunnyCount.size() * 4u)
             {
-                const float offY = sf::base::sin(m_time) * 1.25f;
+                const float offY = zb::sin(m_time) * 1.25f;
 
                 quads[j + 0].position.y -= offY;
                 quads[j + 1].position.y -= offY;
@@ -295,7 +295,7 @@ void ExampleBunnyMark::draw()
             }
             else
             {
-                const float offY = sf::base::sin(m_time + static_cast<float>(j)) * 1.5f;
+                const float offY = zb::sin(m_time + static_cast<float>(j)) * 1.5f;
 
                 quads[j + 0].position.y += offY;
                 quads[j + 1].position.y += offY;
@@ -309,11 +309,11 @@ void ExampleBunnyMark::draw()
     applyEffect(vertices.fill);
 
     m_deps.rtGame->draw(*m_deps.font,
-                        sf::TextData{
+                        za::TextData{
                             .position         = {8.f, 48.f},
                             .string           = "Change number of bunnies with arrow keys",
                             .characterSize    = 16,
-                            .outlineColor     = sf::Color::Black,
+                            .outlineColor     = za::Color::Black,
                             .outlineThickness = 2.f,
                         },
                         {.view = *m_deps.view});

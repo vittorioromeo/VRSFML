@@ -1,11 +1,11 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/ToChars.hpp"
+#include "ZancleBase/ToChars.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
 
 #include <limits>
 
@@ -15,10 +15,10 @@
     {                                                                                                    \
         char              buffer[64];                                                                    \
         const char* const last = buffer + sizeof(buffer);                                                \
-        const char*       end  = sf::base::toChars(buffer, last, value);                                 \
+        const char*       end  = zb::toChars(buffer, last, value);                                 \
                                                                                                          \
         CHECK(end != nullptr);                                                                           \
-        CHECK(sf::base::StringView(buffer, static_cast<sf::base::SizeT>(end - buffer)) == expected_str); \
+        CHECK(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == expected_str); \
     } while (false)
 
 
@@ -27,10 +27,10 @@
     {                                                                                                    \
         char              buffer[64];                                                                    \
         const char* const last = buffer + sizeof(buffer);                                                \
-        const char*       end  = sf::base::toChars(buffer, last, value, precision);                      \
+        const char*       end  = zb::toChars(buffer, last, value, precision);                      \
                                                                                                          \
         CHECK(end != nullptr);                                                                           \
-        CHECK(sf::base::StringView(buffer, static_cast<sf::base::SizeT>(end - buffer)) == expected_str); \
+        CHECK(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == expected_str); \
     } while (false)
 
 
@@ -41,7 +41,7 @@ TEST_CASE("[Base] ToChars.hpp")
         CHECK_INTEGER_CONVERSION(0u, "0");
         CHECK_INTEGER_CONVERSION(123u, "123");
         CHECK_INTEGER_CONVERSION(std::numeric_limits<unsigned int>::max(), "4294967295");
-        CHECK_INTEGER_CONVERSION(std::numeric_limits<sf::base::U64>::max(), "18446744073709551615");
+        CHECK_INTEGER_CONVERSION(std::numeric_limits<zb::U64>::max(), "18446744073709551615");
     }
 
     SECTION("Signed Integers")
@@ -53,7 +53,7 @@ TEST_CASE("[Base] ToChars.hpp")
 
         // Special case: T_MIN requires correct unsigned handling
         CHECK_INTEGER_CONVERSION(std::numeric_limits<int>::min(), "-2147483648");
-        CHECK_INTEGER_CONVERSION(std::numeric_limits<sf::base::I64>::min(), "-9223372036854775808");
+        CHECK_INTEGER_CONVERSION(std::numeric_limits<zb::I64>::min(), "-9223372036854775808");
     }
 
     SECTION("Narrow signed types (must survive integer promotion of -uValue)")
@@ -141,8 +141,8 @@ TEST_CASE("[Base] ToChars.hpp")
 
     SECTION("u64 / i64 digit-count transitions")
     {
-        using sf::base::I64;
-        using sf::base::U64;
+        using zb::I64;
+        using zb::U64;
 
         // Every 10^N boundary for u64 (digits 10..20)
         CHECK_INTEGER_CONVERSION(static_cast<U64>(9'999'999'999ull), "9999999999");
@@ -180,36 +180,36 @@ TEST_CASE("[Base] ToChars.hpp")
         (void)last;
 
         // 1-digit (worst case for the "tail" branch)
-        REQUIRE(sf::base::toChars(buffer, buffer + 0, 7u) == nullptr);
-        REQUIRE(sf::base::toChars(buffer, buffer + 1, 7u) == buffer + 1);
+        REQUIRE(zb::toChars(buffer, buffer + 0, 7u) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 1, 7u) == buffer + 1);
         CHECK(buffer[0] == '7');
 
         // 2-digit (boundary of the digit-pair lookup)
-        REQUIRE(sf::base::toChars(buffer, buffer + 1, 42u) == nullptr);
-        REQUIRE(sf::base::toChars(buffer, buffer + 2, 42u) == buffer + 2);
-        CHECK(sf::base::StringView(buffer, 2) == "42");
+        REQUIRE(zb::toChars(buffer, buffer + 1, 42u) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 2, 42u) == buffer + 2);
+        CHECK(zb::StringView(buffer, 2) == "42");
 
         // 3-digit (one loop iter + tail)
-        REQUIRE(sf::base::toChars(buffer, buffer + 2, 999u) == nullptr);
-        REQUIRE(sf::base::toChars(buffer, buffer + 3, 999u) == buffer + 3);
-        CHECK(sf::base::StringView(buffer, 3) == "999");
+        REQUIRE(zb::toChars(buffer, buffer + 2, 999u) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 3, 999u) == buffer + 3);
+        CHECK(zb::StringView(buffer, 3) == "999");
 
         // 4-digit (two pair writes via the loop)
-        REQUIRE(sf::base::toChars(buffer, buffer + 3, 1234u) == nullptr);
-        REQUIRE(sf::base::toChars(buffer, buffer + 4, 1234u) == buffer + 4);
-        CHECK(sf::base::StringView(buffer, 4) == "1234");
+        REQUIRE(zb::toChars(buffer, buffer + 3, 1234u) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 4, 1234u) == buffer + 4);
+        CHECK(zb::StringView(buffer, 4) == "1234");
 
         // 20-digit max u64
-        const auto u64Max = std::numeric_limits<sf::base::U64>::max();
-        REQUIRE(sf::base::toChars(buffer, buffer + 19, u64Max) == nullptr);
-        REQUIRE(sf::base::toChars(buffer, buffer + 20, u64Max) == buffer + 20);
-        CHECK(sf::base::StringView(buffer, 20) == "18446744073709551615");
+        const auto u64Max = std::numeric_limits<zb::U64>::max();
+        REQUIRE(zb::toChars(buffer, buffer + 19, u64Max) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 20, u64Max) == buffer + 20);
+        CHECK(zb::StringView(buffer, 20) == "18446744073709551615");
 
         // Negative buffer-overrun (sign char doesn't fit)
-        REQUIRE(sf::base::toChars(buffer, buffer + 0, -1) == nullptr);
-        REQUIRE(sf::base::toChars(buffer, buffer + 1, -1) == nullptr); // '-' fits, digit doesn't
-        REQUIRE(sf::base::toChars(buffer, buffer + 2, -1) == buffer + 2);
-        CHECK(sf::base::StringView(buffer, 2) == "-1");
+        REQUIRE(zb::toChars(buffer, buffer + 0, -1) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 1, -1) == nullptr); // '-' fits, digit doesn't
+        REQUIRE(zb::toChars(buffer, buffer + 2, -1) == buffer + 2);
+        CHECK(zb::StringView(buffer, 2) == "-1");
     }
 
     SECTION("Compile-time evaluation (constexpr)")
@@ -218,15 +218,15 @@ TEST_CASE("[Base] ToChars.hpp")
         constexpr auto fmt = [](auto v)
         {
             char        buf[32]{};
-            char* const end = sf::base::toChars(buf, buf + sizeof(buf), v);
+            char* const end = zb::toChars(buf, buf + sizeof(buf), v);
             return end != nullptr && (end - buf) > 0;
         };
 
         static_assert(fmt(0));
         static_assert(fmt(42u));
         static_assert(fmt(-12'345));
-        static_assert(fmt(std::numeric_limits<sf::base::U64>::max()));
-        static_assert(fmt(std::numeric_limits<sf::base::I64>::min()));
+        static_assert(fmt(std::numeric_limits<zb::U64>::max()));
+        static_assert(fmt(std::numeric_limits<zb::I64>::min()));
     }
 
     SECTION("Buffer Overrun Checks")
@@ -236,26 +236,26 @@ TEST_CASE("[Base] ToChars.hpp")
         char      buffer[10];
 
         // Buffer too small by one
-        REQUIRE(sf::base::toChars(buffer, buffer + 4, val) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 4, val) == nullptr);
 
         // Buffer is exactly the right size
-        const char* end = sf::base::toChars(buffer, buffer + 5, val);
+        const char* end = zb::toChars(buffer, buffer + 5, val);
         REQUIRE(end == buffer + 5);
-        REQUIRE(sf::base::StringView(buffer, static_cast<sf::base::SizeT>(end - buffer)) == "12345");
+        REQUIRE(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == "12345");
 
         // Negative value "-987" requires 4 characters
         const int negVal = -987;
 
         // Buffer too small by one
-        REQUIRE(sf::base::toChars(buffer, buffer + 3, negVal) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 3, negVal) == nullptr);
 
         // Buffer is exactly the right size
-        end = sf::base::toChars(buffer, buffer + 4, negVal);
+        end = zb::toChars(buffer, buffer + 4, negVal);
         REQUIRE(end == buffer + 4);
-        REQUIRE(sf::base::StringView(buffer, static_cast<sf::base::SizeT>(end - buffer)) == "-987");
+        REQUIRE(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == "-987");
 
         // Zero with an empty buffer
-        REQUIRE(sf::base::toChars(buffer, buffer, 0) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer, 0) == nullptr);
     }
 
     SECTION("Basic Conversions with default precision (6)")
@@ -329,11 +329,11 @@ TEST_CASE("[Base] ToChars.hpp")
         const char* const last = buffer + sizeof(buffer);
 
         // Values beyond ~9.2e18 cannot be represented as `long long`.
-        CHECK(sf::base::toChars(buffer, last, 1.0e20, 0) == nullptr);
-        CHECK(sf::base::toChars(buffer, last, std::numeric_limits<double>::max(), 0) == nullptr);
+        CHECK(zb::toChars(buffer, last, 1.0e20, 0) == nullptr);
+        CHECK(zb::toChars(buffer, last, std::numeric_limits<double>::max(), 0) == nullptr);
 
         // At precision = 10, the multiplier is 10^10, so even 1e10 overflows.
-        CHECK(sf::base::toChars(buffer, last, 1.0e10, 10) == nullptr);
+        CHECK(zb::toChars(buffer, last, 1.0e10, 10) == nullptr);
     }
 
     SECTION("Buffer Overrun Checks")
@@ -344,27 +344,27 @@ TEST_CASE("[Base] ToChars.hpp")
         char         buffer[10];
 
         // Buffer too small by one
-        REQUIRE(sf::base::toChars(buffer, buffer + 5, val, prec) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 5, val, prec) == nullptr);
 
         // Buffer is exactly the right size
-        const char* end = sf::base::toChars(buffer, buffer + 6, val, prec);
+        const char* end = zb::toChars(buffer, buffer + 6, val, prec);
         REQUIRE(end == buffer + 6);
-        REQUIRE(sf::base::StringView(buffer, static_cast<sf::base::SizeT>(end - buffer)) == "12.345");
+        REQUIRE(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == "12.345");
 
         // Negative value -1.2 with precision 1 is "-1.2" (4 chars)
         const double negVal  = -1.2;
         const int    negPrec = 1;
 
         // Buffer too small by one
-        REQUIRE(sf::base::toChars(buffer, buffer + 3, negVal, negPrec) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 3, negVal, negPrec) == nullptr);
 
         // Buffer is exactly the right size
-        end = sf::base::toChars(buffer, buffer + 4, negVal, negPrec);
+        end = zb::toChars(buffer, buffer + 4, negVal, negPrec);
         REQUIRE(end == buffer + 4);
-        REQUIRE(sf::base::StringView(buffer, static_cast<sf::base::SizeT>(end - buffer)) == "-1.2");
+        REQUIRE(zb::StringView(buffer, static_cast<zb::SizeT>(end - buffer)) == "-1.2");
 
         // Case where integer part fits but rest does not
         // "123.4" (5 chars), buffer for only "123" (3 chars)
-        REQUIRE(sf::base::toChars(buffer, buffer + 3, 123.4, 1) == nullptr);
+        REQUIRE(zb::toChars(buffer, buffer + 3, 123.4, 1) == nullptr);
     }
 }

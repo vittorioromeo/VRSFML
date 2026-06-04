@@ -2,7 +2,7 @@
 #include "MainShaders.hpp"
 #include "Profile.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 namespace
 {

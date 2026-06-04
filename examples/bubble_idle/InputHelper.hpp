@@ -2,17 +2,17 @@
 
 #include "InputState.hpp"
 
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
-namespace sf
+namespace za
 {
 class Event;
 }
@@ -34,46 +34,46 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    void applyEvent(const sf::Event& event);
+    void applyEvent(const za::Event& event);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] bool isKeyDown(const sf::Keyboard::Key key) const
+    [[nodiscard, gnu::pure]] bool isKeyDown(const za::Keyboard::Key key) const
     {
-        return m_currentInputState.keys[static_cast<sf::base::SizeT>(key)];
+        return m_currentInputState.keys[static_cast<zb::SizeT>(key)];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] bool wasKeyJustPressed(const sf::Keyboard::Key key) const
+    [[nodiscard, gnu::pure]] bool wasKeyJustPressed(const za::Keyboard::Key key) const
     {
-        return m_currentInputState.keys[static_cast<sf::base::SizeT>(key)] &&
-               !m_previousInputState.keys[static_cast<sf::base::SizeT>(key)];
+        return m_currentInputState.keys[static_cast<zb::SizeT>(key)] &&
+               !m_previousInputState.keys[static_cast<zb::SizeT>(key)];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] bool wasKeyJustReleased(const sf::Keyboard::Key key) const
+    [[nodiscard, gnu::pure]] bool wasKeyJustReleased(const za::Keyboard::Key key) const
     {
-        return !m_currentInputState.keys[static_cast<sf::base::SizeT>(key)] &&
-               m_previousInputState.keys[static_cast<sf::base::SizeT>(key)];
+        return !m_currentInputState.keys[static_cast<zb::SizeT>(key)] &&
+               m_previousInputState.keys[static_cast<zb::SizeT>(key)];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] bool isMouseButtonDown(const sf::Mouse::Button button) const
+    [[nodiscard, gnu::pure]] bool isMouseButtonDown(const za::Mouse::Button button) const
     {
-        return m_currentInputState.buttons[static_cast<sf::base::SizeT>(button)];
+        return m_currentInputState.buttons[static_cast<zb::SizeT>(button)];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] bool wasMouseButtonJustPressed(const sf::Mouse::Button button) const
+    [[nodiscard, gnu::pure]] bool wasMouseButtonJustPressed(const za::Mouse::Button button) const
     {
-        return m_currentInputState.buttons[static_cast<sf::base::SizeT>(button)] &&
-               !m_previousInputState.buttons[static_cast<sf::base::SizeT>(button)];
+        return m_currentInputState.buttons[static_cast<zb::SizeT>(button)] &&
+               !m_previousInputState.buttons[static_cast<zb::SizeT>(button)];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] bool wasMouseButtonJustReleased(const sf::Mouse::Button button) const
+    [[nodiscard, gnu::pure]] bool wasMouseButtonJustReleased(const za::Mouse::Button button) const
     {
-        return !m_currentInputState.buttons[static_cast<sf::base::SizeT>(button)] &&
-               m_previousInputState.buttons[static_cast<sf::base::SizeT>(button)];
+        return !m_currentInputState.buttons[static_cast<zb::SizeT>(button)] &&
+               m_previousInputState.buttons[static_cast<zb::SizeT>(button)];
     }
 
     ////////////////////////////////////////////////////////////
@@ -97,20 +97,20 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::Vec2i getFingerPosition(const unsigned int finger) const
+    [[nodiscard, gnu::pure]] za::Vec2i getFingerPosition(const unsigned int finger) const
     {
-        SFML_BASE_ASSERT(m_currentInputState.fingerPositions[finger].hasValue());
+        ZB_ASSERT(m_currentInputState.fingerPositions[finger].hasValue());
         return *m_currentInputState.fingerPositions[finger];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::Vec2i getMousePosition() const
+    [[nodiscard, gnu::pure]] za::Vec2i getMousePosition() const
     {
         return m_currentInputState.mousePosition;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::Vec2i getMousePositionDelta() const
+    [[nodiscard, gnu::pure]] za::Vec2i getMousePositionDelta() const
     {
         return m_currentInputState.mousePosition - m_previousInputState.mousePosition;
     }
@@ -140,14 +140,14 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::base::Optional<unsigned int> getFirstNewlyPressedFinger() const
+    [[nodiscard, gnu::pure]] zb::Optional<unsigned int> getFirstNewlyPressedFinger() const
     {
         for (unsigned int i = 0; i < m_currentInputState.fingerPositions.size(); ++i)
         {
             if (wasFingerJustPressed(i))
-                return sf::base::makeOptional<unsigned int>(i);
+                return zb::makeOptional<unsigned int>(i);
         }
 
-        return sf::base::nullOpt;
+        return zb::nullOpt;
     }
 };

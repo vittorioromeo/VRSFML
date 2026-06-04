@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Base/Variant.hpp"
+#include "ZancleBase/Variant.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -34,4 +34,4 @@ struct [[nodiscard]] EInvincibleBubble
 
 
 ////////////////////////////////////////////////////////////
-using GameEvent = sf::base::Variant<EBubblefall, EInvincibleBubble>;
+using GameEvent = zb::Variant<EBubblefall, EInvincibleBubble>;

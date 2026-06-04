@@ -3,12 +3,12 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
-namespace sf::base
+namespace zb
 {
 class FmtSink;
 class String;
 class StringView;
-} // namespace sf::base
+} // namespace zb
 
 
 namespace tst

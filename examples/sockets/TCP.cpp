@@ -3,33 +3,33 @@
 ////////////////////////////////////////////////////////////
 #include "TCP.hpp"
 
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/IpAddressUtils.hpp"
-#include "SFML/Network/Socket.hpp"
-#include "SFML/Network/TcpListener.hpp"
-#include "SFML/Network/TcpSocket.hpp"
+#include "Zancle/Network/IpAddress.hpp"
+#include "Zancle/Network/IpAddressUtils.hpp"
+#include "Zancle/Network/Socket.hpp"
+#include "Zancle/Network/TcpListener.hpp"
+#include "Zancle/Network/TcpSocket.hpp"
 
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Scn/ScnStdin.hpp"
-#include "SFML/Base/Scn/ScnString.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Scn/ScnStdin.hpp"
+#include "ZancleBase/Scn/ScnString.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::base::StringView commonName = "SFML TLS Example"; // Part of certificate
+constexpr zb::StringView commonName = "SFML TLS Example"; // Part of certificate
 
 
 ////////////////////////////////////////////////////////////
 // Generated with: openssl ecparam -out key.pem -name secp384r1 -genkey
-constexpr sf::base::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
+constexpr zb::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
 BgUrgQQAIg==
 -----END EC PARAMETERS-----
 -----BEGIN EC PRIVATE KEY-----
@@ -49,7 +49,7 @@ ztTSrGCF1rJynnEoGJrIh3trvRAKD0E=
 // Organizational Unit Name (eg, section) []:.
 // Common Name (e.g. server FQDN or YOUR name) []:SFML TLS Example
 // Email Address []:.
-constexpr sf::base::StringView certificate = R"(-----BEGIN CERTIFICATE-----
+constexpr zb::StringView certificate = R"(-----BEGIN CERTIFICATE-----
 MIIByTCCAVCgAwIBAgIUKT3iSj7kJlvzxEGvfK1/yAYzRPcwCgYIKoZIzj0EAwMw
 GzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTAgFw0yNTA4MjMxMjI4MDJaGA8y
 MTI1MDczMDEyMjgwMlowGzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTB2MBAG
@@ -73,47 +73,47 @@ RZlDlROT9eBnJ76WeMDiPMz+7E/oUdvGCAhuZb0=
 void runTcpServer(unsigned short port, const bool tls)
 {
     // Create a server socket that is already listening on `port`
-    auto listenerOpt = sf::TcpListener::create(port, /* isBlocking */ true);
+    auto listenerOpt = za::TcpListener::create(port, /* isBlocking */ true);
     if (!listenerOpt.hasValue())
         return;
 
-    sf::base::printLn("Server is listening to port {}, waiting for connections... ", port);
+    zb::printLn("Server is listening to port {}, waiting for connections... ", port);
 
     // Wait for a connection
     auto acceptResult = listenerOpt->accept();
-    if (acceptResult.status != sf::Socket::Status::Done)
+    if (acceptResult.status != za::Socket::Status::Done)
         return;
 
     auto& socket = *acceptResult.socket;
-    sf::base::printLn("Client connected: {}", sf::IpAddressUtils::toString(socket.getRemoteAddress().value()));
+    zb::printLn("Client connected: {}", za::IpAddressUtils::toString(socket.getRemoteAddress().value()));
 
     if (tls)
     {
         // Setup TLS
-        if (socket.setupTlsServer(certificate, privateKey) != sf::TcpSocket::TlsStatus::HandshakeComplete)
+        if (socket.setupTlsServer(certificate, privateKey) != za::TcpSocket::TlsStatus::HandshakeComplete)
         {
-            sf::base::printLn("TLS handshake could not be completed");
+            zb::printLn("TLS handshake could not be completed");
             return;
         }
 
-        sf::base::printLn("TLS set up");
+        zb::printLn("TLS set up");
 
         if (auto ciphersuite = socket.getCurrentCiphersuiteName(); ciphersuite)
-            sf::base::printLn("Ciphersuite in use: {}", *ciphersuite);
+            zb::printLn("Ciphersuite in use: {}", *ciphersuite);
     }
 
     // Send a message to the connected client
     const char out[] = "Hi, I'm the server";
-    if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
+    if (socket.send(out, sizeof(out)) != za::Socket::Status::Done)
         return;
-    sf::base::printLn("Message sent to the client: \"{}{}", out, '"');
+    zb::printLn("Message sent to the client: \"{}{}", out, '"');
 
     // Receive a message back from the client
     char            in[128];
-    sf::base::SizeT received = 0;
-    if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
+    zb::SizeT received = 0;
+    if (socket.receive(in, sizeof(in), received) != za::Socket::Status::Done)
         return;
-    sf::base::printLn("Answer received from the client: \"{}{}", in, '"');
+    zb::printLn("Answer received from the client: \"{}{}", in, '"');
 }
 
 
@@ -125,50 +125,50 @@ void runTcpServer(unsigned short port, const bool tls)
 void runTcpClient(unsigned short port, const bool tls)
 {
     // Ask for the server address
-    sf::base::Optional<sf::IpAddress> server;
+    zb::Optional<za::IpAddress> server;
     do
     {
-        sf::base::print("Type the address or name of the server to connect to: ");
+        zb::print("Type the address or name of the server to connect to: ");
 
-        sf::base::String addressStr;
-        (void)sf::base::scnStdinInto(addressStr);
-        server = sf::IpAddressUtils::resolve(addressStr);
+        zb::String addressStr;
+        (void)zb::scnStdinInto(addressStr);
+        server = za::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
-    auto socketOpt = sf::TcpSocket::create(/* isBlocking */ true);
+    auto socketOpt = za::TcpSocket::create(/* isBlocking */ true);
     if (!socketOpt.hasValue())
         return;
 
     auto& socket = *socketOpt;
 
     // Connect to the server
-    if (socket.connect(server.value(), port) != sf::Socket::Status::Done)
+    if (socket.connect(server.value(), port) != za::Socket::Status::Done)
         return;
-    sf::base::printLn("Connected to server {}", sf::IpAddressUtils::toString(server.value()));
+    zb::printLn("Connected to server {}", za::IpAddressUtils::toString(server.value()));
 
     if (tls)
     {
         // Setup TLS
-        if (socket.setupTlsClient(commonName.to<sf::base::String>(), certificate) !=
-            sf::TcpSocket::TlsStatus::HandshakeComplete)
+        if (socket.setupTlsClient(commonName.to<zb::String>(), certificate) !=
+            za::TcpSocket::TlsStatus::HandshakeComplete)
             return;
-        sf::base::printLn("TLS set up");
+        zb::printLn("TLS set up");
 
         if (auto ciphersuite = socket.getCurrentCiphersuiteName(); ciphersuite)
-            sf::base::printLn("Ciphersuite in use: {}", *ciphersuite);
+            zb::printLn("Ciphersuite in use: {}", *ciphersuite);
     }
 
     // Receive a message from the server
     char            in[128];
-    sf::base::SizeT received = 0;
-    if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
+    zb::SizeT received = 0;
+    if (socket.receive(in, sizeof(in), received) != za::Socket::Status::Done)
         return;
-    sf::base::printLn("Message received from the server: \"{}{}", in, '"');
+    zb::printLn("Message received from the server: \"{}{}", in, '"');
 
     // Send an answer to the server
     const char out[] = "Hi, I'm a client";
-    if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
+    if (socket.send(out, sizeof(out)) != za::Socket::Status::Done)
         return;
-    sf::base::printLn("Message sent to the server: \"{}{}", out, '"');
+    zb::printLn("Message sent to the server: \"{}{}", out, '"');
 }

@@ -1,6 +1,6 @@
-#include "SFML/Graphics/Shape.hpp"
+#include "Zancle/Graphics/Shape.hpp"
 
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
@@ -8,22 +8,22 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsConstructible.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsConstructible.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
 
 
-class TriangleShape : public sf::Shape
+class TriangleShape : public za::Shape
 {
 public:
-    explicit TriangleShape(sf::Vec2f size) : sf::Shape({}), m_size(size)
+    explicit TriangleShape(za::Vec2f size) : za::Shape({}), m_size(size)
     {
         m_points[0] = {m_size.x / 2, 0};
         m_points[1] = {0, m_size.y};
@@ -33,53 +33,53 @@ public:
     }
 
 private:
-    sf::Vec2f m_size;
-    sf::Vec2f m_points[3];
+    za::Vec2f m_size;
+    za::Vec2f m_points[3];
 };
 
-TEST_CASE("[Graphics] sf::Shape" * tst::skip(skipDisplayTests))
+TEST_CASE("[Graphics] za::Shape" * tst::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape));
-        STATIC_CHECK(SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape, sf::Shape::Data));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Shape));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Shape));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Shape));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Shape));
-        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Shape));
+        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Shape));
+        STATIC_CHECK(ZB_IS_CONSTRUCTIBLE(za::Shape, za::Shape::Data));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Shape));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Shape));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Shape));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Shape));
+        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::Shape));
     }
 
     SECTION("Default constructor")
     {
         const TriangleShape triangleShape({0, 0});
-        CHECK(triangleShape.getTextureRect() == sf::Rect2f());
-        CHECK(triangleShape.getFillColor() == sf::Color::White);
-        CHECK(triangleShape.getOutlineColor() == sf::Color::White);
+        CHECK(triangleShape.getTextureRect() == za::Rect2f());
+        CHECK(triangleShape.getFillColor() == za::Color::White);
+        CHECK(triangleShape.getOutlineColor() == za::Color::White);
         CHECK(triangleShape.getOutlineThickness() == 0.f);
-        CHECK(triangleShape.getLocalBounds() == sf::Rect2f());
-        CHECK(triangleShape.getGlobalBounds() == sf::Rect2f());
+        CHECK(triangleShape.getLocalBounds() == za::Rect2f());
+        CHECK(triangleShape.getGlobalBounds() == za::Rect2f());
     }
 
     SECTION("Set/get texture rect")
     {
         TriangleShape triangleShape({});
         triangleShape.setTextureRect({{4, 5}, {6, 7}});
-        CHECK(triangleShape.getTextureRect() == sf::Rect2f({4, 5}, {6, 7}));
+        CHECK(triangleShape.getTextureRect() == za::Rect2f({4, 5}, {6, 7}));
     }
 
     SECTION("Set/get fill color")
     {
         TriangleShape triangleShape({});
-        triangleShape.setFillColor(sf::Color::Cyan);
-        CHECK(triangleShape.getFillColor() == sf::Color::Cyan);
+        triangleShape.setFillColor(za::Color::Cyan);
+        CHECK(triangleShape.getFillColor() == za::Color::Cyan);
     }
 
     SECTION("Set/get outline color")
     {
         TriangleShape triangleShape({});
-        triangleShape.setOutlineColor(sf::Color::Magenta);
-        CHECK(triangleShape.getOutlineColor() == sf::Color::Magenta);
+        triangleShape.setOutlineColor(za::Color::Magenta);
+        CHECK(triangleShape.getOutlineColor() == za::Color::Magenta);
     }
 
     SECTION("Set/get outline thickness")
@@ -92,30 +92,30 @@ TEST_CASE("[Graphics] sf::Shape" * tst::skip(skipDisplayTests))
     SECTION("Get bounds")
     {
         TriangleShape triangleShape({30, 40});
-        CHECK(triangleShape.getLocalBounds() == sf::Rect2f({0, 0}, {30, 40}));
-        CHECK(triangleShape.getGlobalBounds() == sf::Rect2f({0, 0}, {30, 40}));
+        CHECK(triangleShape.getLocalBounds() == za::Rect2f({0, 0}, {30, 40}));
+        CHECK(triangleShape.getGlobalBounds() == za::Rect2f({0, 0}, {30, 40}));
 
         SECTION("Move and rotate")
         {
             triangleShape.position += {1, 1};
-            triangleShape.rotation += sf::degrees(90);
-            CHECK(triangleShape.getLocalBounds() == sf::Rect2f({0, 0}, {30, 40}));
-            CHECK(triangleShape.getGlobalBounds() == Approx(sf::Rect2f({-39, 1}, {40, 30})));
+            triangleShape.rotation += za::degrees(90);
+            CHECK(triangleShape.getLocalBounds() == za::Rect2f({0, 0}, {30, 40}));
+            CHECK(triangleShape.getGlobalBounds() == Approx(za::Rect2f({-39, 1}, {40, 30})));
         }
 
         SECTION("Add outline")
         {
             triangleShape.setOutlineThickness(5);
-            CHECK(triangleShape.getLocalBounds() == Approx(sf::Rect2f({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
-            CHECK(triangleShape.getGlobalBounds() == Approx(sf::Rect2f({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
+            CHECK(triangleShape.getLocalBounds() == Approx(za::Rect2f({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
+            CHECK(triangleShape.getGlobalBounds() == Approx(za::Rect2f({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
         }
 
         SECTION("Add beveled outline")
         {
             triangleShape.setMiterLimit(2);
             triangleShape.setOutlineThickness(5);
-            CHECK(triangleShape.getLocalBounds() == Approx(sf::Rect2f({-7.2150f, -10.f}, {44.4300f, 55.f})));
-            CHECK(triangleShape.getGlobalBounds() == Approx(sf::Rect2f({-7.2150f, -10.f}, {44.4300f, 55.f})));
+            CHECK(triangleShape.getLocalBounds() == Approx(za::Rect2f({-7.2150f, -10.f}, {44.4300f, 55.f})));
+            CHECK(triangleShape.getGlobalBounds() == Approx(za::Rect2f({-7.2150f, -10.f}, {44.4300f, 55.f})));
         }
     }
 }

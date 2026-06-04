@@ -1,16 +1,16 @@
 #include "InputState.hpp"
 
-#include "SFML/Window/Event.hpp"
+#include "Zancle/Window/Event.hpp"
 
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-void InputState::apply(const sf::Event& event)
+void InputState::apply(const za::Event& event)
 {
-    if (const auto* e = event.getIf<sf::Event::KeyPressed>())
+    if (const auto* e = event.getIf<za::Event::KeyPressed>())
     {
-        keys[static_cast<sf::base::SizeT>(e->code)] = true;
+        keys[static_cast<zb::SizeT>(e->code)] = true;
 
         alt     = e->alt;
         control = e->control;
@@ -20,9 +20,9 @@ void InputState::apply(const sf::Event& event)
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::KeyReleased>())
+    if (const auto* e = event.getIf<za::Event::KeyReleased>())
     {
-        keys[static_cast<sf::base::SizeT>(e->code)] = false;
+        keys[static_cast<zb::SizeT>(e->code)] = false;
 
         alt     = e->alt;
         control = e->control;
@@ -32,44 +32,44 @@ void InputState::apply(const sf::Event& event)
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::MouseButtonPressed>())
+    if (const auto* e = event.getIf<za::Event::MouseButtonPressed>())
     {
-        buttons[static_cast<sf::base::SizeT>(e->button)] = true;
+        buttons[static_cast<zb::SizeT>(e->button)] = true;
         mousePosition                                    = e->position;
 
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::MouseButtonReleased>())
+    if (const auto* e = event.getIf<za::Event::MouseButtonReleased>())
     {
-        buttons[static_cast<sf::base::SizeT>(e->button)] = false;
+        buttons[static_cast<zb::SizeT>(e->button)] = false;
         mousePosition                                    = e->position;
 
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::MouseMoved>())
+    if (const auto* e = event.getIf<za::Event::MouseMoved>())
     {
         mousePosition = e->position;
 
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::TouchBegan>())
+    if (const auto* e = event.getIf<za::Event::TouchBegan>())
     {
         fingerPositions[e->finger].emplace(e->position);
 
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::TouchMoved>())
+    if (const auto* e = event.getIf<za::Event::TouchMoved>())
     {
         fingerPositions[e->finger].emplace(e->position);
 
         return;
     }
 
-    if (const auto* e = event.getIf<sf::Event::TouchEnded>())
+    if (const auto* e = event.getIf<za::Event::TouchEnded>())
     {
         fingerPositions[e->finger].reset();
 

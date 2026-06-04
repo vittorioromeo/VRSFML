@@ -30,7 +30,7 @@
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void Main::spawnParticles(const SizeT n, const sf::Vec2f position, auto... args)
+[[gnu::always_inline]] inline void Main::spawnParticles(const SizeT n, const za::Vec2f position, auto... args)
 {
     if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
         return;
@@ -68,7 +68,7 @@
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void Main::spawnParticlesWithHue(const float hue, const SizeT n, const sf::Vec2f position, auto... args)
+[[gnu::always_inline]] inline void Main::spawnParticlesWithHue(const float hue, const SizeT n, const za::Vec2f position, auto... args)
 {
     if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
         return;
@@ -79,7 +79,7 @@
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void Main::spawnParticlesNoGravity(const SizeT n, const sf::Vec2f position, auto... args)
+[[gnu::always_inline]] inline void Main::spawnParticlesNoGravity(const SizeT n, const za::Vec2f position, auto... args)
 {
     if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
         return;
@@ -93,7 +93,7 @@
 [[gnu::always_inline]] inline void Main::spawnParticlesWithHueNoGravity(
     const float     hue,
     const SizeT     n,
-    const sf::Vec2f position,
+    const za::Vec2f position,
     auto... args)
 {
     if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
@@ -118,7 +118,7 @@
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void Main::forEachBubbleInRadiusSquared(const sf::Vec2f center, const float radiusSq, auto&& func)
+[[gnu::always_inline]] inline void Main::forEachBubbleInRadiusSquared(const za::Vec2f center, const float radiusSq, auto&& func)
 {
     for (Bubble& bubble : pt->bubbles)
         if ((bubble.position - center).lengthSquared() <= radiusSq)
@@ -128,14 +128,14 @@
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline void Main::forEachBubbleInRadius(const sf::Vec2f center, const float radius, auto&& func)
+[[gnu::always_inline]] inline void Main::forEachBubbleInRadius(const za::Vec2f center, const float radius, auto&& func)
 {
     forEachBubbleInRadiusSquared(center, radius * radius, func);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline Bubble* Main::pickRandomBubbleInRadiusMatching(const sf::Vec2f center, const float radius, auto&& predicate)
+[[gnu::always_inline]] inline Bubble* Main::pickRandomBubbleInRadiusMatching(const za::Vec2f center, const float radius, auto&& predicate)
 {
     const float radiusSq = radius * radius;
 

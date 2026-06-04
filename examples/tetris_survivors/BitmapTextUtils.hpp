@@ -7,20 +7,20 @@
 #include "BitmapFont.hpp"
 #include "BitmapTextAlignment.hpp"
 
-#include "SFML/Graphics/IndexType.hpp"
-#include "SFML/Graphics/Transform.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/IndexType.hpp"
+#include "Zancle/Graphics/Transform.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/FromChars.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/FromChars.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace tsurv
@@ -28,14 +28,14 @@ namespace tsurv
 //////////////////////////////////////////////////////////////
 struct [[nodiscard]] BitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    sf::base::Vector<sf::Vertex>&    outVertices;
-    sf::base::Vector<sf::IndexType>& outIndices;
+    zb::Vector<za::Vertex>&    outVertices;
+    zb::Vector<za::IndexType>& outIndices;
     const BitmapFont&                bitmapFont;
-    sf::Rect2f                       fontTextureRect;
+    za::Rect2f                       fontTextureRect;
     BitmapTextAlignment              alignment;
-    sf::Color                        baseColor;
+    za::Color                        baseColor;
     float                            time;
-    sf::base::StringView             string;
+    zb::StringView             string;
 };
 
 
@@ -54,29 +54,29 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
     struct [[nodiscard]] FormattingState // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        sf::Color color;
+        za::Color color;
         Wobble    wobble;
         bool      bold;
         float     hSpace;
         float     vSpace;
     };
 
-    using sf::base::StringView::nPos;
+    using zb::StringView::nPos;
 
-    const auto parseArg = [](sf::base::StringView& args, auto& outValue)
+    const auto parseArg = [](zb::StringView& args, auto& outValue)
     {
         const auto delimiterPos = args.find(',');
         const auto segment      = (delimiterPos == nPos) ? args : args.substrByPosLen(0, delimiterPos);
 
-        [[maybe_unused]] const auto [ptr, ec] = sf::base::fromChars(segment.data(), segment.data() + segment.size(), outValue);
-        SFML_BASE_ASSERT(ec == sf::base::FromCharsError::None);
+        [[maybe_unused]] const auto [ptr, ec] = zb::fromChars(segment.data(), segment.data() + segment.size(), outValue);
+        ZB_ASSERT(ec == zb::FromCharsError::None);
 
         args.removePrefix((delimiterPos == nPos) ? args.size() : delimiterPos + 1);
     };
 
     const auto parseText = [&](auto&& onChar)
     {
-        sf::base::InPlaceVector<FormattingState, 16> formattingStack{{
+        zb::InPlaceVector<FormattingState, 16> formattingStack{{
             .color  = baseColor,
             .wobble = {.frequency = 0.f, .amplitude = 0.f, .phase = 0.f},
             .bold   = false,
@@ -84,7 +84,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
             .vSpace = 0.f,
         }};
 
-        for (sf::base::SizeT i = 0u; i < str.size(); ++i)
+        for (zb::SizeT i = 0u; i < str.size(); ++i)
         {
             if (str[i] == '^')
             {
@@ -155,7 +155,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
             }
             else if (str[i] == ')' && i + 1 < str.size() && str[i + 1] == '^') // Check for ")^"
             {
-                SFML_BASE_ASSERT(formattingStack.size() > 1);
+                ZB_ASSERT(formattingStack.size() > 1);
                 formattingStack.popBack();
 
                 i += 1; // Jump cursor past the ")^" sequence
@@ -169,20 +169,20 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
     // --- Pass 1: Measure line widths without allocating glyph structures ---
 
-    sf::base::InPlaceVector<sf::base::SizeT, 64> linePixelWidths;
+    zb::InPlaceVector<zb::SizeT, 64> linePixelWidths;
     linePixelWidths.emplaceBack(0u); // Width of the first line
 
-    sf::base::SizeT maxPixelWidth = 0;
+    zb::SizeT maxPixelWidth = 0;
 
-    sf::Vec2f maxs;
+    za::Vec2f maxs;
 
     const auto [hSpacing, vSpacing] = bitmapFont.getGlyphSize('i');
 
-    parseText([&](const sf::base::SizeT /* charIdx */, const char c, const FormattingState& fs)
+    parseText([&](const zb::SizeT /* charIdx */, const char c, const FormattingState& fs)
     {
         if (c == '\n')
         {
-            maxPixelWidth = sf::base::max(maxPixelWidth, linePixelWidths.back());
+            maxPixelWidth = zb::max(maxPixelWidth, linePixelWidths.back());
             linePixelWidths.emplaceBack(0u);
             return;
         }
@@ -202,15 +202,15 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         linePixelWidths.back() += (fs.bold ? hSpacing + 1 : hSpacing);
     });
 
-    maxPixelWidth = sf::base::max(maxPixelWidth, linePixelWidths.back());
+    maxPixelWidth = zb::max(maxPixelWidth, linePixelWidths.back());
 
 
     // --- Pass 2: Generate vertices directly ---
 
-    sf::Vec2f       cursor         = {0.f, 0.f};
-    sf::base::SizeT currentLineIdx = 0u;
+    za::Vec2f       cursor         = {0.f, 0.f};
+    zb::SizeT currentLineIdx = 0u;
 
-    const auto getAlignedX = [&](const sf::base::SizeT lineIdx)
+    const auto getAlignedX = [&](const zb::SizeT lineIdx)
     {
         if (alignment == BitmapTextAlignment::Center)
             return (static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx])) / 2.f;
@@ -218,16 +218,16 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         if (alignment == BitmapTextAlignment::Right)
             return static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx]);
 
-        SFML_BASE_ASSERT(alignment == BitmapTextAlignment::Left);
+        ZB_ASSERT(alignment == BitmapTextAlignment::Left);
         return 0.f;
     };
 
     cursor.x = getAlignedX(0u);
 
     const auto emitQuad =
-        [&](const sf::Vec2f position, const sf::Vec2f size, const sf::Rect2f& textureRect, const sf::Color color)
+        [&](const za::Vec2f position, const za::Vec2f size, const za::Rect2f& textureRect, const za::Color color)
     {
-        const auto baseIndex = static_cast<sf::IndexType>(outVertices.size());
+        const auto baseIndex = static_cast<za::IndexType>(outVertices.size());
 
         outVertices.emplaceBack(position, color, textureRect.getTopLeft());
         outVertices.emplaceBack(position.addX(size.x), color, textureRect.getTopRight());
@@ -237,7 +237,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         outIndices.pushBackMultiple(baseIndex + 0u, baseIndex + 1u, baseIndex + 2u, baseIndex + 0u, baseIndex + 2u, baseIndex + 3u);
     };
 
-    parseText([&](const sf::base::SizeT charIdx, const char c, const FormattingState& fs)
+    parseText([&](const zb::SizeT charIdx, const char c, const FormattingState& fs)
     {
         if (c == '\n')
         {
@@ -266,7 +266,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         const auto texRect = bitmapFont.getGlyphTextureRect(fontTextureRect, c);
 
         const auto wobbleAmount = fs.wobble.amplitude *
-                                  sf::base::sin(fs.wobble.frequency * time + static_cast<float>(charIdx) * fs.wobble.phase);
+                                  zb::sin(fs.wobble.frequency * time + static_cast<float>(charIdx) * fs.wobble.phase);
 
         const auto fGlyphSize = bitmapFont.getGlyphSize(c).toVec2f();
 
@@ -282,8 +282,8 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
         cursor.x += fs.bold ? fGlyphSize.x + 1.f : fGlyphSize.x;
 
-        maxs.x = sf::base::max(maxs.x, cursor.x + fs.hSpace);
-        maxs.y = sf::base::max(maxs.y, cursor.y + fs.vSpace + fGlyphSize.y);
+        maxs.x = zb::max(maxs.x, cursor.x + fs.hSpace);
+        maxs.y = zb::max(maxs.y, cursor.y + fs.vSpace + fGlyphSize.y);
     });
 
     return maxs;
@@ -291,12 +291,12 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
 
 //////////////////////////////////////////////////////////////
-inline sf::Rect2f bitmapTextToVerticesPretransformed(const BitmapTextToVerticesOptions& options, const sf::Transform& transform)
+inline za::Rect2f bitmapTextToVerticesPretransformed(const BitmapTextToVerticesOptions& options, const za::Transform& transform)
 {
     const auto prevVerticesSize = options.outVertices.size();
     const auto localBoundsSize  = bitmapTextToVertices</* TBoundsOnly */ false>(options);
 
-    for (sf::base::SizeT i = prevVerticesSize; i < options.outVertices.size(); ++i)
+    for (zb::SizeT i = prevVerticesSize; i < options.outVertices.size(); ++i)
         options.outVertices[i].position = transform.transformPoint(options.outVertices[i].position);
 
     return transform.transformRect({{0.f, 0.f}, localBoundsSize});

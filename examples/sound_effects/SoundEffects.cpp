@@ -3,65 +3,65 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/ConvexShape.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Transform.hpp"
+#include "Zancle/Graphics/CircleShape.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/ConvexShape.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Transform.hpp"
 
-#include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/EffectProcessor.hpp"
-#include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/PlaybackDeviceHandle.hpp"
-#include "SFML/Audio/SoundChannel.hpp"
-#include "SFML/Audio/SoundStream.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/ChannelMap.hpp"
+#include "Zancle/Audio/EffectProcessor.hpp"
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/PlaybackDeviceHandle.hpp"
+#include "Zancle/Audio/SoundChannel.hpp"
+#include "Zancle/Audio/SoundStream.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Fmt/FmtPath.hpp"
-#include "SFML/System/IO.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Fmt/FmtPath.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/InPlaceVector.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Floor.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
-#include "SFML/Base/Math/Lround.hpp"
-#include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Math/Tan.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Abort.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/InPlaceVector.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Floor.hpp"
+#include "ZancleBase/Math/Fmod.hpp"
+#include "ZancleBase/Math/Lround.hpp"
+#include "ZancleBase/Math/Pow.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Math/Tan.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <limits>
 
@@ -71,9 +71,9 @@ namespace
 constexpr auto windowWidth  = 800u;
 constexpr auto windowHeight = 600u;
 
-sf::Path resourcesDir()
+za::Path resourcesDir()
 {
-#ifdef SFML_SYSTEM_IOS
+#ifdef ZA_SYSTEM_IOS
     return "";
 #else
     return "resources";
@@ -89,28 +89,28 @@ class Effect
 public:
     virtual ~Effect() = default;
 
-    [[nodiscard]] const sf::base::String& getName() const
+    [[nodiscard]] const zb::String& getName() const
     {
         return m_name;
     }
 
     virtual void update(float time, float x, float y)                          = 0;
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
+    virtual void draw(za::RenderTarget& target, za::RenderStates states) const = 0;
 
-    virtual void start(sf::PlaybackDevice&, sf::MusicReader&) = 0;
+    virtual void start(za::PlaybackDevice&, za::MusicReader&) = 0;
     virtual void stop()                                       = 0;
 
-    virtual void handleKey([[maybe_unused]] sf::Keyboard::Key key)
+    virtual void handleKey([[maybe_unused]] za::Keyboard::Key key)
     {
     }
 
 protected:
-    explicit Effect(sf::base::String name) : m_name(SFML_BASE_MOVE(name))
+    explicit Effect(zb::String name) : m_name(ZB_MOVE(name))
     {
     }
 
 private:
-    sf::base::String m_name;
+    zb::String m_name;
 };
 
 
@@ -120,7 +120,7 @@ private:
 class Surround : public Effect
 {
 public:
-    explicit Surround(sf::Listener& listener) : Effect("Surround / Attenuation"), m_listener(listener)
+    explicit Surround(za::Listener& listener) : Effect("Surround / Attenuation"), m_listener(listener)
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
     }
@@ -131,28 +131,28 @@ public:
         m_music->setPosition({m_position.x, m_position.y, 0.f});
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         target.draw(m_listenerShape, states);
 
-        states.transform = sf::Transform::Identity;
+        states.transform = za::Transform::Identity;
         states.transform.translate(m_position);
 
         target.draw(m_soundShape, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::base::printErrLn("Failed to update listener");
+            zb::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
                      musicReader,
-                     sf::AudioSettings{
+                     za::AudioSettings{
                          .attenuation = 0.04f,
                          .looping     = true,
                      })
@@ -165,11 +165,11 @@ public:
     }
 
 private:
-    sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
-    sf::Vec2f       m_position;
-    sf::base::Optional<sf::Music> m_music;
+    za::Listener&   m_listener;
+    za::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = za::Color::Red, .radius = 20.f}};
+    za::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
+    za::Vec2f       m_position;
+    zb::Optional<za::Music> m_music;
 };
 
 
@@ -179,7 +179,7 @@ private:
 class PitchVolume : public Effect
 {
 public:
-    explicit PitchVolume(sf::Listener& listener, const sf::Font& font) :
+    explicit PitchVolume(za::Listener& listener, const za::Font& font) :
         Effect("Pitch / Volume"),
         m_listener(listener),
         m_pitchText(font,
@@ -199,34 +199,34 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_pitch  = sf::base::clamp(2.f * x, 0.f, 2.f);
-        m_volume = sf::base::clamp(100.f * (1.f - y), 0.f, 100.f);
+        m_pitch  = zb::clamp(2.f * x, 0.f, 2.f);
+        m_volume = zb::clamp(100.f * (1.f - y), 0.f, 100.f);
 
         m_music->setPitch(m_pitch);
         m_music->setVolume(m_volume / 100.f);
 
-        m_pitchText.setString("Pitch: " + sf::base::toString(m_pitch));
-        m_volumeText.setString("Volume: " + sf::base::toString(m_volume));
+        m_pitchText.setString("Pitch: " + zb::toString(m_pitch));
+        m_volumeText.setString("Volume: " + zb::toString(m_volume));
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         target.withRenderStates(states).drawAll(m_pitchText, m_volumeText);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         // We set the listener position back to the default
         // so that the music is right on top of the listener
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::base::printErrLn("Failed to update listener");
+            zb::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
                      musicReader,
-                     sf::AudioSettings{
+                     za::AudioSettings{
                          .volume      = m_volume / 100.f,
                          .pitch       = m_pitch,
                          .attenuation = 0.f,
@@ -241,12 +241,12 @@ public:
     }
 
 private:
-    sf::Listener&                 m_listener;
+    za::Listener&                 m_listener;
     float                         m_pitch{1.f};
     float                         m_volume{100.f};
-    sf::Text                      m_pitchText;
-    sf::Text                      m_volumeText;
-    sf::base::Optional<sf::Music> m_music;
+    za::Text                      m_pitchText;
+    za::Text                      m_volumeText;
+    zb::Optional<za::Music> m_music;
 };
 
 
@@ -256,7 +256,7 @@ private:
 class Attenuation : public Effect
 {
 public:
-    explicit Attenuation(sf::Listener& listener, const sf::Font& font) :
+    explicit Attenuation(za::Listener& listener, const za::Font& font) :
         Effect("Attenuation"),
         m_listener(listener),
         m_text(font,
@@ -276,39 +276,39 @@ public:
         m_music->setPosition({m_position.x, m_position.y, 0.f});
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         auto statesCopy(states);
 
-        statesCopy.transform = sf::Transform::Identity;
+        statesCopy.transform = za::Transform::Identity;
         statesCopy.transform.translate(m_position);
 
         target.withRenderStates(statesCopy).drawAll(m_soundConeOuter, m_soundConeInner, m_soundShape);
         target.withRenderStates(states).drawAll(m_listenerShape, m_text);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::base::printErrLn("Failed to update listener");
+            zb::printErrLn("Failed to update listener");
 
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
-        static constexpr auto outerConeAngle = sf::degrees(120.f);
-        static constexpr auto innerConeAngle = sf::degrees(30.f);
+        static constexpr auto outerConeAngle = za::degrees(120.f);
+        static constexpr auto innerConeAngle = za::degrees(30.f);
 
         // Set common properties of both cones
-        for (sf::ConvexShape* cone : {&m_soundConeOuter, &m_soundConeInner})
+        for (za::ConvexShape* cone : {&m_soundConeOuter, &m_soundConeInner})
             cone->setPoint(0, {0.f, 0.f});
 
         // Make each cone based on their angle and height
         static constexpr auto makeCone = [](auto& shape, const auto& angle)
         {
-            const auto theta = sf::degrees(90.f) - (angle / 2);
-            const auto x     = coneHeight / sf::base::tan(theta.asRadians());
+            const auto theta = za::degrees(90.f) - (angle / 2);
+            const auto x     = coneHeight / zb::tan(theta.asRadians());
 
             shape.setPoint(1, {-x, coneHeight});
             shape.setPoint(2, {x, coneHeight});
@@ -320,7 +320,7 @@ public:
         m_music
             .emplace(playbackDevice,
                      musicReader,
-                     sf::AudioSettings{
+                     za::AudioSettings{
                          .cone        = {innerConeAngle, outerConeAngle, 0.f},
                          .direction   = {0.f, 1.f, 0.f},
                          .attenuation = m_attenuation,
@@ -335,18 +335,18 @@ public:
     }
 
 private:
-    sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{
+    za::Listener&   m_listener;
+    za::CircleShape m_listenerShape{
         {.position  = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f + 100.f},
          .origin    = {10.f, 10.f},
-         .fillColor = sf::Color::Red,
+         .fillColor = za::Color::Red,
          .radius    = 20.f}};
-    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Magenta, .radius = 20.f}};
-    sf::ConvexShape m_soundConeOuter{{.position = {10.f, 10.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
-    sf::ConvexShape m_soundConeInner{{.position = {10.f, 10.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
-    sf::Text        m_text;
-    sf::Vec2f       m_position;
-    sf::base::Optional<sf::Music> m_music;
+    za::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .fillColor = za::Color::Magenta, .radius = 20.f}};
+    za::ConvexShape m_soundConeOuter{{.position = {10.f, 10.f}, .fillColor = za::Color::Black, .pointCount = 3u}};
+    za::ConvexShape m_soundConeInner{{.position = {10.f, 10.f}, .fillColor = za::Color::Cyan, .pointCount = 3u}};
+    za::Text        m_text;
+    za::Vec2f       m_position;
+    zb::Optional<za::Music> m_music;
 
     float m_attenuation{0.01f};
 };
@@ -358,7 +358,7 @@ private:
 class Tone : public Effect
 {
 private:
-    enum class Type : sf::base::SizeT
+    enum class Type : zb::SizeT
     {
         Sine,
         Square,
@@ -370,7 +370,7 @@ private:
     {
         Tone& tone;
 
-        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
+        bool onGetData(zb::Vector<zb::I16>& outBuffer)
         {
             const auto period = 1.f / tone.m_frequency;
 
@@ -384,21 +384,21 @@ private:
                 {
                     case Type::Sine:
                     {
-                        value = tone.m_amplitude * sf::base::sin(2 * sf::base::pi * tone.m_frequency * tone.m_time);
+                        value = tone.m_amplitude * zb::sin(2 * zb::pi * tone.m_frequency * tone.m_time);
                         break;
                     }
                     case Type::Square:
                     {
-                        value = tone.m_amplitude * (2 * (2 * sf::base::floor(tone.m_frequency * tone.m_time) -
-                                                         sf::base::floor(2 * tone.m_frequency * tone.m_time)) +
+                        value = tone.m_amplitude * (2 * (2 * zb::floor(tone.m_frequency * tone.m_time) -
+                                                         zb::floor(2 * tone.m_frequency * tone.m_time)) +
                                                     1);
                         break;
                     }
                     case Type::Triangle:
                     {
                         value = 4 * tone.m_amplitude / period *
-                                    sf::base::fabs(
-                                        sf::base::fmod(((sf::base::fmod((tone.m_time - period / 4), period)) + period),
+                                    zb::fabs(
+                                        zb::fmod(((zb::fmod((tone.m_time - period / 4), period)) + period),
                                                        period) -
                                         period / 2) -
                                 tone.m_amplitude;
@@ -407,13 +407,13 @@ private:
                     case Type::Sawtooth:
                     {
                         value = tone.m_amplitude * 2 *
-                                (tone.m_time / period - sf::base::floor(0.5f + tone.m_time / period));
+                                (tone.m_time / period - zb::floor(0.5f + tone.m_time / period));
                         break;
                     }
                 }
 
-                outBuffer[i] = static_cast<sf::base::I16>(
-                    sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
+                outBuffer[i] = static_cast<zb::I16>(
+                    zb::lround(value * std::numeric_limits<zb::I16>::max()));
                 tone.m_time += timePerSample;
             }
 
@@ -422,7 +422,7 @@ private:
     };
 
 public:
-    explicit Tone(sf::Listener& listener, const sf::Font& font) :
+    explicit Tone(za::Listener& listener, const za::Font& font) :
         Effect("Tone Generator"),
         m_listener(listener),
         m_instruction(font,
@@ -454,32 +454,32 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_amplitude = sf::base::clamp(0.2f * (1.f - y), 0.f, 0.2f);
-        m_frequency = sf::base::clamp(500.f * x, 0.f, 500.f);
+        m_amplitude = zb::clamp(0.2f * (1.f - y), 0.f, 0.2f);
+        m_frequency = zb::clamp(500.f * x, 0.f, 500.f);
 
-        m_currentAmplitude.setString("Amplitude: " + sf::base::toString(m_amplitude));
-        m_currentFrequency.setString("Frequency: " + sf::base::toString(m_frequency) + " Hz");
+        m_currentAmplitude.setString("Amplitude: " + zb::toString(m_amplitude));
+        m_currentFrequency.setString("Frequency: " + zb::toString(m_frequency) + " Hz");
 
         m_currentType.setString(
-            sf::base::String{"Wave Type: "} +
-            sf::base::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<sf::base::SizeT>(m_type)]);
+            zb::String{"Wave Type: "} +
+            zb::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<zb::SizeT>(m_type)]);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         target.withRenderStates(states).drawAll(m_instruction, m_currentType, m_currentAmplitude, m_currentFrequency);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader&) override
     {
         // We set the listener position back to the default
         // so that the tone is right on top of the listener
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::base::printErrLn("Failed to update listener");
+            zb::printErrLn("Failed to update listener");
 
-        m_toneSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this).play();
+        m_toneSoundStream.emplace(playbackDevice, za::ChannelMap{za::SoundChannel::Mono}, sampleRate, *this).play();
     }
 
     void stop() override
@@ -487,32 +487,32 @@ public:
         m_toneSoundStream.reset();
     }
 
-    void handleKey(sf::Keyboard::Key key) override
+    void handleKey(za::Keyboard::Key key) override
     {
-        if (key == sf::Keyboard::Key::Down)
-            m_type = static_cast<Type>((static_cast<sf::base::SizeT>(m_type) + 1) % 4u); // Forward
-        else if (key == sf::Keyboard::Key::Up)
-            m_type = static_cast<Type>((static_cast<sf::base::SizeT>(m_type) - 1) % 4u); // Reverse
+        if (key == za::Keyboard::Key::Down)
+            m_type = static_cast<Type>((static_cast<zb::SizeT>(m_type) + 1) % 4u); // Forward
+        else if (key == za::Keyboard::Key::Up)
+            m_type = static_cast<Type>((static_cast<zb::SizeT>(m_type) - 1) % 4u); // Reverse
     }
 
 private:
     static constexpr unsigned int    sampleRate{44'100};
-    static constexpr sf::base::SizeT chunkSize{sampleRate / 100};
+    static constexpr zb::SizeT chunkSize{sampleRate / 100};
     static constexpr float           timePerSample{1.f / float{sampleRate}};
 
-    sf::Listener& m_listener;
+    za::Listener& m_listener;
 
     Type  m_type{Type::Triangle};
     float m_amplitude{0.05f};
     float m_frequency{220};
     float m_time{};
 
-    sf::Text m_instruction;
-    sf::Text m_currentType;
-    sf::Text m_currentAmplitude;
-    sf::Text m_currentFrequency;
+    za::Text m_instruction;
+    za::Text m_currentType;
+    za::Text m_currentAmplitude;
+    za::Text m_currentFrequency;
 
-    sf::base::Optional<sf::SoundStream<ToneState>> m_toneSoundStream;
+    zb::Optional<za::SoundStream<ToneState>> m_toneSoundStream;
 };
 
 
@@ -526,7 +526,7 @@ private:
     {
         Doppler& doppler;
 
-        bool onGetData(sf::base::Vector<sf::base::I16>& outBuffer)
+        bool onGetData(zb::Vector<zb::I16>& outBuffer)
         {
             const auto period = 1.f / doppler.m_frequency;
 
@@ -535,10 +535,10 @@ private:
             for (auto i = 0u; i < chunkSize; ++i)
             {
                 const auto value = doppler.m_amplitude * 2 *
-                                   (doppler.m_time / period - sf::base::floor(0.5f + doppler.m_time / period));
+                                   (doppler.m_time / period - zb::floor(0.5f + doppler.m_time / period));
 
-                outBuffer[i] = static_cast<sf::base::I16>(
-                    sf::base::lround(value * std::numeric_limits<sf::base::I16>::max()));
+                outBuffer[i] = static_cast<zb::I16>(
+                    zb::lround(value * std::numeric_limits<zb::I16>::max()));
                 doppler.m_time += timePerSample;
             }
 
@@ -547,7 +547,7 @@ private:
     };
 
 public:
-    explicit Doppler(sf::Listener& listener, const sf::Font& font) :
+    explicit Doppler(za::Listener& listener, const za::Font& font) :
         Effect("Doppler Shift"),
         m_listener(listener),
         m_currentVelocity(font,
@@ -568,25 +568,25 @@ public:
 
     void update(float time, float x, float y) override
     {
-        m_velocity = sf::base::clamp(150.f * (1.f - y), 0.f, 150.f);
-        m_factor   = sf::base::clamp(x, 0.f, 1.f);
+        m_velocity = zb::clamp(150.f * (1.f - y), 0.f, 150.f);
+        m_factor   = zb::clamp(x, 0.f, 1.f);
 
-        m_currentVelocity.setString("Velocity: " + sf::base::toString(m_velocity));
-        m_currentFactor.setString("Doppler Factor: " + sf::base::toString(m_factor));
+        m_currentVelocity.setString("Velocity: " + zb::toString(m_velocity));
+        m_currentFactor.setString("Doppler Factor: " + zb::toString(m_factor));
 
-        m_position.x = sf::base::fmod(time, 8.f) * windowWidth / 8.f;
+        m_position.x = zb::fmod(time, 8.f) * windowWidth / 8.f;
 
         m_dopplerSoundStream->setPosition({m_position.x, m_position.y, 0.f});
         m_dopplerSoundStream->setVelocity({m_velocity, 0.f, 0.f});
         m_dopplerSoundStream->setDopplerFactor(m_factor);
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         auto statesCopy(states);
 
-        statesCopy.transform = sf::Transform::Identity;
-        statesCopy.transform.translate(m_position - sf::Vec2f({20.f, 0.f}));
+        statesCopy.transform = za::Transform::Identity;
+        statesCopy.transform.translate(m_position - za::Vec2f({20.f, 0.f}));
 
         target.draw(m_listenerShape, states);
         target.draw(m_soundShape, statesCopy);
@@ -594,15 +594,15 @@ public:
         target.draw(m_currentFactor, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader&) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::base::printErrLn("Failed to update listener");
+            zb::printErrLn("Failed to update listener");
 
-        auto& stream = m_dopplerSoundStream.emplace(playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate, *this);
+        auto& stream = m_dopplerSoundStream.emplace(playbackDevice, za::ChannelMap{za::SoundChannel::Mono}, sampleRate, *this);
         stream.setAttenuation(0.05f);
         stream.play();
     }
@@ -614,10 +614,10 @@ public:
 
 private:
     static constexpr unsigned int    sampleRate{44'100};
-    static constexpr sf::base::SizeT chunkSize{sampleRate / 100};
+    static constexpr zb::SizeT chunkSize{sampleRate / 100};
     static constexpr float           timePerSample{1.f / float{sampleRate}};
 
-    sf::Listener& m_listener;
+    za::Listener& m_listener;
 
     float m_amplitude{0.05f};
     float m_frequency{220};
@@ -625,14 +625,14 @@ private:
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
-    sf::CircleShape m_listenerShape{
-        {.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
-    sf::Vec2f       m_position;
-    sf::Text        m_currentVelocity;
-    sf::Text        m_currentFactor;
+    za::CircleShape m_listenerShape{
+        {.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f}, .fillColor = za::Color::Red, .radius = 20.f}};
+    za::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
+    za::Vec2f       m_position;
+    za::Text        m_currentVelocity;
+    za::Text        m_currentFactor;
 
-    sf::base::Optional<sf::SoundStream<DopplerState>> m_dopplerSoundStream;
+    zb::Optional<za::SoundStream<DopplerState>> m_dopplerSoundStream;
 };
 
 
@@ -648,30 +648,30 @@ public:
         m_music->setPosition({m_position.x, m_position.y, 0.f});
     }
 
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void draw(za::RenderTarget& target, za::RenderStates states) const override
     {
         target.draw(m_listenerShape, states);
         target.draw(m_enabledText, states);
         target.draw(m_instructions, states);
 
-        states.transform = sf::Transform::Identity;
+        states.transform = za::Transform::Identity;
         states.transform.translate(m_position);
 
         target.draw(m_soundShape, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            sf::base::printErrLn("Failed to update listener");
+            zb::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
                      musicReader,
-                     sf::AudioSettings{
+                     za::AudioSettings{
                          .attenuation = 0.f,
                          .looping     = true,
                      })
@@ -684,8 +684,8 @@ public:
     }
 
 protected:
-    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::base::String name) :
-        Effect(SFML_BASE_MOVE(name)),
+    explicit Processing(za::Listener& listener, const za::Font& font, zb::String name) :
+        Effect(ZB_MOVE(name)),
         m_listener(listener),
         m_enabledText(font, {.string = "Processing: Enabled", .characterSize = 30u}),
         m_instructions(font, {.string = "Press Space to enable/disable processing", .characterSize = 30u})
@@ -697,27 +697,27 @@ protected:
     }
 
 
-    sf::Listener& m_listener;
+    za::Listener& m_listener;
 
     // Needs to be defined above `m_music` because it's used in the music's effect processor
     bool m_enabled{true};
 
-    sf::base::Optional<sf::Music> m_music;
+    zb::Optional<za::Music> m_music;
 
 private:
-    void handleKey(sf::Keyboard::Key key) override
+    void handleKey(za::Keyboard::Key key) override
     {
-        if (key == sf::Keyboard::Key::Space)
+        if (key == za::Keyboard::Key::Space)
             m_enabled = !m_enabled;
 
         m_enabledText.setString(m_enabled ? "Processing: Enabled" : "Processing: Disabled");
     }
 
-    sf::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
-    sf::Vec2f       m_position;
-    sf::Text        m_enabledText;
-    sf::Text        m_instructions;
+    za::CircleShape m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = za::Color::Red, .radius = 20.f}};
+    za::CircleShape m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
+    za::Vec2f       m_position;
+    za::Text        m_enabledText;
+    za::Text        m_instructions;
 };
 
 
@@ -758,7 +758,7 @@ protected:
         const bool success = m_music->setEffectProcessor(
             [coefficients,
              &enabled = m_enabled,
-             state    = sf::base::Vector<State>()](const float*  inputFrames,
+             state    = zb::Vector<State>()](const float*  inputFrames,
                                                 unsigned int& inputFrameCount,
                                                 float*        outputFrames,
                                                 unsigned int& outputFrameCount,
@@ -800,8 +800,8 @@ protected:
 
         if (!success)
         {
-            sf::base::printErrLn("Failed to set effect processor");
-            sf::base::abort();
+            zb::printErrLn("Failed to set effect processor");
+            zb::abort();
         }
     }
 };
@@ -812,24 +812,24 @@ protected:
 ////////////////////////////////////////////////////////////
 struct HighPassFilter : BiquadFilter
 {
-    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font) :
+    explicit HighPassFilter(za::Listener& listener, const za::Font& font) :
         BiquadFilter(listener, font, "High-pass Filter")
     {
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         BiquadFilter::start(playbackDevice, musicReader);
 
         static constexpr auto cutoffFrequency = 2000.f;
 
-        const auto c = sf::base::tan(sf::base::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
+        const auto c = zb::tan(zb::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sf::base::sqrt2 * c + sf::base::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + zb::sqrt2 * c + zb::pow(c, 2.f)),
                                   .a1 = -2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
-                                  .b1 = 2.f * coefficients.a0 * (sf::base::pow(c, 2.f) - 1.f),
-                                  .b2 = coefficients.a0 * (1.f - sf::base::sqrt2 * c + sf::base::pow(c, 2.f))};
+                                  .b1 = 2.f * coefficients.a0 * (zb::pow(c, 2.f) - 1.f),
+                                  .b2 = coefficients.a0 * (1.f - zb::sqrt2 * c + zb::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -841,25 +841,25 @@ struct HighPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct LowPassFilter : BiquadFilter
 {
-    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font) :
+    explicit LowPassFilter(za::Listener& listener, const za::Font& font) :
         BiquadFilter(listener, font, "Low-pass Filter")
     {
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         BiquadFilter::start(playbackDevice, musicReader);
 
         static constexpr auto cutoffFrequency = 500.f;
 
         const auto c = 1.f /
-                       sf::base::tan(sf::base::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
+                       zb::tan(zb::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + sf::base::sqrt2 * c + sf::base::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + zb::sqrt2 * c + zb::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
-                                  .b1 = 2.f * coefficients.a0 * (1.f - sf::base::pow(c, 2.f)),
-                                  .b2 = coefficients.a0 * (1.f - sf::base::sqrt2 * c + sf::base::pow(c, 2.f))};
+                                  .b1 = 2.f * coefficients.a0 * (1.f - zb::pow(c, 2.f)),
+                                  .b2 = coefficients.a0 * (1.f - zb::sqrt2 * c + zb::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -871,11 +871,11 @@ struct LowPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct Echo : Processing
 {
-    explicit Echo(sf::Listener& listener, const sf::Font& font) : Processing(listener, font, "Echo")
+    explicit Echo(za::Listener& listener, const za::Font& font) : Processing(listener, font, "Echo")
     {
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         Processing::start(playbackDevice, musicReader);
 
@@ -895,7 +895,7 @@ struct Echo : Processing
         const bool success = m_music->setEffectProcessor(
             [delayInFrames,
              &enabled = m_enabled,
-             buffer   = sf::base::Vector<float>(),
+             buffer   = zb::Vector<float>(),
              cursor   = 0u](const float*  inputFrames,
                           unsigned int& inputFrameCount,
                           float*        outputFrames,
@@ -931,8 +931,8 @@ struct Echo : Processing
 
         if (!success)
         {
-            sf::base::printErrLn("Failed to set effect processor");
-            sf::base::abort();
+            zb::printErrLn("Failed to set effect processor");
+            zb::abort();
         }
     }
 };
@@ -944,11 +944,11 @@ struct Echo : Processing
 class Reverb : public Processing
 {
 public:
-    explicit Reverb(sf::Listener& listener, const sf::Font& font) : Processing(listener, font, "Reverb")
+    explicit Reverb(za::Listener& listener, const za::Font& font) : Processing(listener, font, "Reverb")
     {
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(za::PlaybackDevice& playbackDevice, za::MusicReader& musicReader) override
     {
         Processing::start(playbackDevice, musicReader);
 
@@ -961,7 +961,7 @@ public:
         // associated lambda are destroyed
         const bool success = m_music->setEffectProcessor(
             [sampleRate = playbackDevice.getSampleRate(),
-             filters    = sf::base::Vector<ReverbFilter<float>>(),
+             filters    = zb::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
                                    unsigned int& inputFrameCount,
                                    float*        outputFrames,
@@ -993,8 +993,8 @@ public:
 
         if (!success)
         {
-            sf::base::printErrLn("Failed to set effect processor");
-            sf::base::abort();
+            zb::printErrLn("Failed to set effect processor");
+            zb::abort();
         }
     }
 
@@ -1003,7 +1003,7 @@ private:
     class AllPassFilter
     {
     public:
-        AllPassFilter(sf::base::SizeT delay, float theGain) : m_buffer(delay, {}), m_gain(theGain)
+        AllPassFilter(zb::SizeT delay, float theGain) : m_buffer(delay, {}), m_gain(theGain)
         {
         }
 
@@ -1017,8 +1017,8 @@ private:
         }
 
     private:
-        sf::base::Vector<T> m_buffer;
-        sf::base::SizeT     m_cursor{};
+        zb::Vector<T> m_buffer;
+        zb::SizeT     m_cursor{};
         const float         m_gain{};
     };
 
@@ -1026,7 +1026,7 @@ private:
     class FIRFilter
     {
     public:
-        explicit FIRFilter(sf::base::Vector<float> taps) : m_taps(SFML_BASE_MOVE(taps))
+        explicit FIRFilter(zb::Vector<float> taps) : m_taps(ZB_MOVE(taps))
         {
         }
 
@@ -1044,9 +1044,9 @@ private:
         }
 
     private:
-        const sf::base::Vector<float> m_taps;
-        sf::base::Vector<T>           m_buffer = sf::base::Vector<T>(m_taps.size(), {});
-        sf::base::SizeT               m_cursor{};
+        const zb::Vector<float> m_taps;
+        zb::Vector<T>           m_buffer = zb::Vector<T>(m_taps.size(), {});
+        zb::SizeT               m_cursor{};
     };
 
     template <typename T>
@@ -1090,9 +1090,9 @@ private:
     private:
         AllPassFilter<T>      m_allPass[4];
         FIRFilter<T>          m_fir;
-        sf::base::Vector<T>   m_buffer;
-        sf::base::SizeT       m_cursor{};
-        const sf::base::SizeT m_interval{m_buffer.size() / 3};
+        zb::Vector<T>   m_buffer;
+        zb::SizeT       m_cursor{};
+        const zb::SizeT m_interval{m_buffer.size() / 3};
         const float           m_feedbackGain{};
     };
 };
@@ -1107,10 +1107,10 @@ private:
 int main()
 {
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Create the main window
-    constexpr sf::Vec2f windowSize{windowWidth, windowHeight};
+    constexpr za::Vec2f windowSize{windowWidth, windowHeight};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -1124,27 +1124,27 @@ int main()
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     // Load the application font and pass it to the Effect class
-    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
+    const auto font = za::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
     // Exit early if music file not found
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
     if (!musicPath.exists())
     {
-        sf::base::printErrLn("Music file '{}' not found, aborting", musicPath);
+        zb::printErrLn("Music file '{}' not found, aborting", musicPath);
         return 1;
     }
 
     // Create the playback device and listener
     // TODO P1: docs
-    auto audioContext          = sf::AudioContext::create().value();
-    auto playbackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
+    auto audioContext          = za::AudioContext::create().value();
+    auto playbackDeviceHandles = za::AudioContext::getAvailablePlaybackDeviceHandles();
 
-    sf::base::SizeT currentPlaybackDeviceIndex = 0;
+    zb::SizeT currentPlaybackDeviceIndex = 0;
 
-    sf::base::InPlaceVector<sf::PlaybackDevice, 8> playbackDevices;
+    zb::InPlaceVector<za::PlaybackDevice, 8> playbackDevices;
     playbackDevices.reserve(playbackDeviceHandles.size());
 
-    for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
+    for (const za::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
         playbackDevices.emplaceBack(deviceHandle);
 
@@ -1152,14 +1152,14 @@ int main()
             currentPlaybackDeviceIndex = playbackDevices.size() - 1;
     }
 
-    const auto getCurrentPlaybackDevice = [&] -> sf::PlaybackDevice&
+    const auto getCurrentPlaybackDevice = [&] -> za::PlaybackDevice&
     { return playbackDevices[currentPlaybackDeviceIndex]; };
 
     // TODO P1: docs
-    sf::Listener listener;
+    za::Listener listener;
 
     // Helper function to open a new instance of the music file
-    auto musicReader = sf::MusicReader::openFromFile(musicPath).value();
+    auto musicReader = za::MusicReader::openFromFile(musicPath).value();
 
     // Create the effects
     Surround       surroundEffect(listener);
@@ -1172,7 +1172,7 @@ int main()
     Echo           echoEffect(listener, font);
     Reverb         reverbEffect(listener, font);
 
-    const sf::base::Array<Effect*, 9>
+    const zb::Array<Effect*, 9>
         effects{&surroundEffect,
                 &pitchVolumeEffect,
                 &attenuationEffect,
@@ -1183,22 +1183,22 @@ int main()
                 &echoEffect,
                 &reverbEffect};
 
-    sf::base::SizeT current = 0;
+    zb::SizeT current = 0;
 
     effects[current]->start(getCurrentPlaybackDevice(), musicReader);
 
     // Create the messages background
-    const auto textBackgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "text-background.png").value();
+    const auto textBackgroundTexture = za::Texture::loadFromFile(resourcesDir() / "text-background.png").value();
 
     // Create the description text
-    sf::Text description(font,
+    za::Text description(font,
                          {.position      = {10.f, 522.f},
                           .string        = "Current effect: " + effects[current]->getName(),
                           .characterSize = 20u,
                           .fillColor     = {80, 80, 80}});
 
     // Create the instructions text
-    const sf::Text instructions(font,
+    const za::Text instructions(font,
                                 {.position      = {280.f, 544.f},
                                  .string        = "Press left and right arrows to change the current effect",
                                  .characterSize = 20u,
@@ -1206,41 +1206,41 @@ int main()
 
     // Utility functions
     const auto getCurrentDeviceName = [&]
-    { return sf::base::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
+    { return zb::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
 
     // Create the playback device text
-    sf::Text playbackDeviceText(font,
+    za::Text playbackDeviceText(font,
                                 {.position      = {10.f, 566.f},
                                  .string        = "Current playback device: " + getCurrentDeviceName(),
                                  .characterSize = 20u,
                                  .fillColor     = {80, 80, 80}});
 
     // Create the playback device instructions text
-    const sf::Text playbackDeviceInstructions(font,
+    const za::Text playbackDeviceInstructions(font,
                                               {.position      = {565.f, 566.f},
                                                .string        = "Press F1 to change device",
                                                .characterSize = 20u,
                                                .fillColor     = {80, 80, 80}});
 
     // Start the game loop
-    const sf::Clock clock;
+    const za::Clock clock;
     while (true)
     {
         // Process events
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
-            if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+            if (const auto* keyPressed = event->getIf<za::Event::KeyPressed>())
             {
                 switch (keyPressed->code)
                 {
                     // Left arrow key: previous effect
-                    case sf::Keyboard::Key::Left:
+                    case za::Keyboard::Key::Left:
                     {
                         effects[current]->stop();
 
@@ -1256,7 +1256,7 @@ int main()
                     }
 
                     // Right arrow key: next effect
-                    case sf::Keyboard::Key::Right:
+                    case za::Keyboard::Key::Right:
                     {
                         effects[current]->stop();
 
@@ -1272,13 +1272,13 @@ int main()
                     }
 
                     // F1 key: change playback device
-                    case sf::Keyboard::Key::F1:
+                    case za::Keyboard::Key::F1:
                     {
-                        sf::base::SizeT newPlaybackDeviceIndex{};
+                        zb::SizeT newPlaybackDeviceIndex{};
 
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
-                        auto newPlaybackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
+                        auto newPlaybackDeviceHandles = za::AudioContext::getAvailablePlaybackDeviceHandles();
 
                         // TODO P1: cleanup
                         if (playbackDeviceHandles != newPlaybackDeviceHandles)
@@ -1286,7 +1286,7 @@ int main()
                             effects[current]->stop();
                             playbackDevices.clear();
 
-                            for (const sf::PlaybackDeviceHandle& deviceHandle : newPlaybackDeviceHandles)
+                            for (const za::PlaybackDeviceHandle& deviceHandle : newPlaybackDeviceHandles)
                             {
                                 playbackDevices.emplaceBack(deviceHandle);
 
@@ -1294,18 +1294,18 @@ int main()
                                     newPlaybackDeviceIndex = playbackDevices.size() - 1;
                             }
 
-                            sf::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
+                            za::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
 
                             effects[current]->stop();
                             effects[current]->start(newPlaybackDevice, musicReader);
 
-                            playbackDeviceHandles = SFML_BASE_MOVE(newPlaybackDeviceHandles);
+                            playbackDeviceHandles = ZB_MOVE(newPlaybackDeviceHandles);
                         }
                         else
                         {
                             newPlaybackDeviceIndex = (currentPlaybackDeviceIndex + 1) % playbackDevices.size();
 
-                            sf::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
+                            za::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
 
                             effects[current]->stop();
                             effects[current]->start(newPlaybackDevice, musicReader);
@@ -1327,7 +1327,7 @@ int main()
 
         // Update the current example
         const auto [x,
-                    y] = windowView.screenToWorld(sf::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f())
+                    y] = windowView.screenToWorld(za::Mouse::getPosition(window).toVec2f(), window.getSize().toVec2f())
                              .componentWiseDiv(windowSize.toVec2f());
 
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);

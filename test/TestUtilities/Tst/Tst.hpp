@@ -13,8 +13,8 @@
 #include "Tst/Detail/Subcase.hpp"        // IWYU pragma: export
 #include "Tst/TstFwd.hpp"                // IWYU pragma: export
 
-#include "SFML/Base/Builtin/Pragma.hpp"
-#include "SFML/Base/SizeT.hpp"
+#include "ZancleBase/Builtin/Pragma.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 namespace tst::detail
@@ -22,16 +22,16 @@ namespace tst::detail
 ////////////////////////////////////////////////////////////
 // Messages
 ////////////////////////////////////////////////////////////
-void emitInfoPushRaw(const char* file, int line, const char* data, sf::base::SizeT size) noexcept;
+void emitInfoPushRaw(const char* file, int line, const char* data, zb::SizeT size) noexcept;
 void emitInfoPop() noexcept;
-void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, sf::base::SizeT size);
+void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, zb::SizeT size);
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Stream-chain accumulator for `INFO`/`MESSAGE`/`CAPTURE`.
 ///
-/// Uses a fixed 1 KiB stack buffer instead of a `sf::base::String`,
-/// keeping this header free of `<SFML/Base/String.hpp>` -- a measurable
+/// Uses a fixed 1 KiB stack buffer instead of a `zb::String`,
+/// keeping this header free of `<ZancleBase/String.hpp>` -- a measurable
 /// per-TU win across the ~130 test files that include `Tst.hpp`.
 /// Messages longer than 1 KiB are silently truncated; in practice INFO
 /// payloads are short (file paths, ints, a few words).
@@ -45,35 +45,35 @@ void emitMessageRaw(AssertKind kind, const char* file, int line, const char* dat
 ////////////////////////////////////////////////////////////
 struct MessageBuilder // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    static constexpr sf::base::SizeT capacity = 1024u;
+    static constexpr zb::SizeT capacity = 1024u;
 
     char            buf[capacity]; // intentionally uninitialized -- avoid zeroing 1 KiB on every CHECK
-    sf::base::SizeT len = 0u;
+    zb::SizeT len = 0u;
 
-    void appendRaw(const char* data, sf::base::SizeT n) noexcept;
+    void appendRaw(const char* data, zb::SizeT n) noexcept;
 
-#define SFML_TST_MSGB_DECL_PAIR(T)               \
+#define ZA_TST_MSGB_DECL_PAIR(T)               \
     MessageBuilder&  operator*(T v) & noexcept;  \
     MessageBuilder&  operator<<(T v) & noexcept; \
     MessageBuilder&& operator*(T v) && noexcept; \
     MessageBuilder&& operator<<(T v) && noexcept
 
-    SFML_TST_MSGB_DECL_PAIR(const char*);
-    SFML_TST_MSGB_DECL_PAIR(sf::base::StringView);
-    SFML_TST_MSGB_DECL_PAIR(bool);
-    SFML_TST_MSGB_DECL_PAIR(char);
-    SFML_TST_MSGB_DECL_PAIR(short);
-    SFML_TST_MSGB_DECL_PAIR(unsigned short);
-    SFML_TST_MSGB_DECL_PAIR(int);
-    SFML_TST_MSGB_DECL_PAIR(unsigned int);
-    SFML_TST_MSGB_DECL_PAIR(long);
-    SFML_TST_MSGB_DECL_PAIR(unsigned long);
-    SFML_TST_MSGB_DECL_PAIR(long long);
-    SFML_TST_MSGB_DECL_PAIR(unsigned long long);
-    SFML_TST_MSGB_DECL_PAIR(float);
-    SFML_TST_MSGB_DECL_PAIR(double);
+    ZA_TST_MSGB_DECL_PAIR(const char*);
+    ZA_TST_MSGB_DECL_PAIR(zb::StringView);
+    ZA_TST_MSGB_DECL_PAIR(bool);
+    ZA_TST_MSGB_DECL_PAIR(char);
+    ZA_TST_MSGB_DECL_PAIR(short);
+    ZA_TST_MSGB_DECL_PAIR(unsigned short);
+    ZA_TST_MSGB_DECL_PAIR(int);
+    ZA_TST_MSGB_DECL_PAIR(unsigned int);
+    ZA_TST_MSGB_DECL_PAIR(long);
+    ZA_TST_MSGB_DECL_PAIR(unsigned long);
+    ZA_TST_MSGB_DECL_PAIR(long long);
+    ZA_TST_MSGB_DECL_PAIR(unsigned long long);
+    ZA_TST_MSGB_DECL_PAIR(float);
+    ZA_TST_MSGB_DECL_PAIR(double);
 
-#undef SFML_TST_MSGB_DECL_PAIR
+#undef ZA_TST_MSGB_DECL_PAIR
 };
 
 
@@ -84,24 +84,24 @@ struct MessageBuilder // NOLINT(cppcoreguidelines-pro-type-member-init)
 // works on the rvalue builder + a generic right-hand-side via the
 // builder's existing overloads. Defined out-of-line in `Messages.cpp`.
 ////////////////////////////////////////////////////////////
-#define SFML_TST_MSGB_COMMA(T) MessageBuilder&& operator,(MessageBuilder&& mb, T v) noexcept
+#define ZA_TST_MSGB_COMMA(T) MessageBuilder&& operator,(MessageBuilder&& mb, T v) noexcept
 
-SFML_TST_MSGB_COMMA(const char*);
-SFML_TST_MSGB_COMMA(sf::base::StringView);
-SFML_TST_MSGB_COMMA(bool);
-SFML_TST_MSGB_COMMA(char);
-SFML_TST_MSGB_COMMA(short);
-SFML_TST_MSGB_COMMA(unsigned short);
-SFML_TST_MSGB_COMMA(int);
-SFML_TST_MSGB_COMMA(unsigned int);
-SFML_TST_MSGB_COMMA(long);
-SFML_TST_MSGB_COMMA(unsigned long);
-SFML_TST_MSGB_COMMA(long long);
-SFML_TST_MSGB_COMMA(unsigned long long);
-SFML_TST_MSGB_COMMA(float);
-SFML_TST_MSGB_COMMA(double);
+ZA_TST_MSGB_COMMA(const char*);
+ZA_TST_MSGB_COMMA(zb::StringView);
+ZA_TST_MSGB_COMMA(bool);
+ZA_TST_MSGB_COMMA(char);
+ZA_TST_MSGB_COMMA(short);
+ZA_TST_MSGB_COMMA(unsigned short);
+ZA_TST_MSGB_COMMA(int);
+ZA_TST_MSGB_COMMA(unsigned int);
+ZA_TST_MSGB_COMMA(long);
+ZA_TST_MSGB_COMMA(unsigned long);
+ZA_TST_MSGB_COMMA(long long);
+ZA_TST_MSGB_COMMA(unsigned long long);
+ZA_TST_MSGB_COMMA(float);
+ZA_TST_MSGB_COMMA(double);
 
-#undef SFML_TST_MSGB_COMMA
+#undef ZA_TST_MSGB_COMMA
 
 
 ////////////////////////////////////////////////////////////
@@ -144,12 +144,12 @@ void noteNothrowSuccess() noexcept;
 ////////////////////////////////////////////////////////////
 // Implementation macro helpers
 ////////////////////////////////////////////////////////////
-#define SFML_TST_CAT_INNER(a, b) a##b
-#define SFML_TST_CAT(a, b)       SFML_TST_CAT_INNER(a, b)
+#define ZA_TST_CAT_INNER(a, b) a##b
+#define ZA_TST_CAT(a, b)       ZA_TST_CAT_INNER(a, b)
 // Use `__COUNTER__` (not `__LINE__`) so identifiers stay unique under
 // unity builds, where multiple test files are concatenated into one TU
 // and would otherwise clash on identical line numbers.
-#define SFML_TST_ANON(prefix) SFML_TST_CAT(prefix, __COUNTER__)
+#define ZA_TST_ANON(prefix) ZA_TST_CAT(prefix, __COUNTER__)
 
 
 ////////////////////////////////////////////////////////////
@@ -164,29 +164,29 @@ void noteNothrowSuccess() noexcept;
 // in `TestCaseHandle::operator*(const char*)` (it just sets the name);
 // any subsequent comma-separated args are dropped by the discarded
 // comma-operator expression.
-#define SFML_TST_TEST_CASE_IMPL(func, ...)                                                          \
+#define ZA_TST_TEST_CASE_IMPL(func, ...)                                                          \
     /* NOLINTNEXTLINE(misc-use-anonymous-namespace) */                                              \
     static void func();                                                                             \
     namespace                                                                                       \
     {                                                                                               \
-    [[maybe_unused]] static const int SFML_TST_ANON(sfmlTstReg_) =                                  \
+    [[maybe_unused]] static const int ZA_TST_ANON(zancleTstReg_) =                                  \
         ::tst::detail::swallow(::tst::detail::makeHandle(&func, __FILE__, __LINE__) * __VA_ARGS__); \
     }                                                                                               \
     /* NOLINTNEXTLINE(misc-use-anonymous-namespace) */                                              \
     static void func()
 // NOLINTEND(bugprone-macro-parentheses)
 
-#define TEST_CASE(...) SFML_TST_TEST_CASE_IMPL(SFML_TST_ANON(sfmlTstFunc_), __VA_ARGS__)
+#define TEST_CASE(...) ZA_TST_TEST_CASE_IMPL(ZA_TST_ANON(zancleTstFunc_), __VA_ARGS__)
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define SFML_TST_SUBCASE_IMPL(var, name)                                       \
+#define ZA_TST_SUBCASE_IMPL(var, name)                                       \
     if (const ::tst::detail::SubcaseScope var(name, __FILE__, __LINE__); !var) \
     {                                                                          \
     }                                                                          \
     else
 // NOLINTEND(bugprone-macro-parentheses)
 
-#define SUBCASE(name) SFML_TST_SUBCASE_IMPL(SFML_TST_ANON(sfmlTstSubcase_), name)
+#define SUBCASE(name) ZA_TST_SUBCASE_IMPL(ZA_TST_ANON(zancleTstSubcase_), name)
 #define SECTION(name) SUBCASE(name)
 
 
@@ -202,7 +202,7 @@ template <typename T>
 }
 } // namespace tst::detail
 
-#define SFML_TST_DECLARE_TYPE_NAME(type, str)                    \
+#define ZA_TST_DECLARE_TYPE_NAME(type, str)                    \
     namespace tst::detail                                        \
     {                                                            \
     template <>                                                  \
@@ -213,20 +213,20 @@ template <typename T>
     }
 
 
-SFML_TST_DECLARE_TYPE_NAME(int, "int")
-SFML_TST_DECLARE_TYPE_NAME(unsigned int, "unsigned int")
-SFML_TST_DECLARE_TYPE_NAME(long, "long")
-SFML_TST_DECLARE_TYPE_NAME(unsigned long, "unsigned long")
-SFML_TST_DECLARE_TYPE_NAME(long long, "long long")
-SFML_TST_DECLARE_TYPE_NAME(unsigned long long, "unsigned long long")
-SFML_TST_DECLARE_TYPE_NAME(float, "float")
-SFML_TST_DECLARE_TYPE_NAME(double, "double")
-SFML_TST_DECLARE_TYPE_NAME(bool, "bool")
-SFML_TST_DECLARE_TYPE_NAME(char, "char")
+ZA_TST_DECLARE_TYPE_NAME(int, "int")
+ZA_TST_DECLARE_TYPE_NAME(unsigned int, "unsigned int")
+ZA_TST_DECLARE_TYPE_NAME(long, "long")
+ZA_TST_DECLARE_TYPE_NAME(unsigned long, "unsigned long")
+ZA_TST_DECLARE_TYPE_NAME(long long, "long long")
+ZA_TST_DECLARE_TYPE_NAME(unsigned long long, "unsigned long long")
+ZA_TST_DECLARE_TYPE_NAME(float, "float")
+ZA_TST_DECLARE_TYPE_NAME(double, "double")
+ZA_TST_DECLARE_TYPE_NAME(bool, "bool")
+ZA_TST_DECLARE_TYPE_NAME(char, "char")
 
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define SFML_TST_TEMPLATE_TEST_CASE_IMPL(func, regfunc, name, T, ...)                                                    \
+#define ZA_TST_TEMPLATE_TEST_CASE_IMPL(func, regfunc, name, T, ...)                                                    \
     template <typename T>                                                                                                \
     static void func();                                                                                                  \
     namespace                                                                                                            \
@@ -237,7 +237,7 @@ SFML_TST_DECLARE_TYPE_NAME(char, "char")
         ((void)::tst::detail::makeTemplatedHandle(&func<Ts>, file, line, tcName, ::tst::detail::typeNameOf<Ts>()), ...); \
         return 0;                                                                                                        \
     }                                                                                                                    \
-    [[maybe_unused]] static const int SFML_TST_ANON(sfmlTstTplReg_) = regfunc<__VA_ARGS__>(__FILE__, __LINE__, name);    \
+    [[maybe_unused]] static const int ZA_TST_ANON(zancleTstTplReg_) = regfunc<__VA_ARGS__>(__FILE__, __LINE__, name);    \
     }                                                                                                                    \
     template <typename T>                                                                                                \
     static void func()
@@ -245,39 +245,39 @@ SFML_TST_DECLARE_TYPE_NAME(char, "char")
 
 
 #define TEMPLATE_TEST_CASE(name, tag, ...) \
-    SFML_TST_TEMPLATE_TEST_CASE_IMPL(SFML_TST_ANON(sfmlTstTplFunc_), SFML_TST_ANON(sfmlTstTplRegFn_), name, TestType, __VA_ARGS__)
+    ZA_TST_TEMPLATE_TEST_CASE_IMPL(ZA_TST_ANON(zancleTstTplFunc_), ZA_TST_ANON(zancleTstTplRegFn_), name, TestType, __VA_ARGS__)
 
 
 ////////////////////////////////////////////////////////////
 // CHECK / REQUIRE family
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-macro-parentheses)
-#define SFML_TST_ASSERT_IMPL(kind, ...)                                                                                      \
+#define ZA_TST_ASSERT_IMPL(kind, ...)                                                                                      \
     do                                                                                                                       \
     {                                                                                                                        \
-        SFML_BASE_PRAGMA(GCC diagnostic push);                                                                               \
+        ZB_PRAGMA(GCC diagnostic push);                                                                               \
         /* Suppress the unknown-pragma warning before mentioning Clang-only options below. */                                \
-        SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                                \
-        SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                                 \
-        SFML_BASE_PRAGMA(GCC diagnostic ignored "-Woverloaded-shift-op-parentheses");                                        \
-        SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                           \
-        SFML_BASE_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                                        \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                                \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                                 \
+        ZB_PRAGMA(GCC diagnostic ignored "-Woverloaded-shift-op-parentheses");                                        \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                           \
+        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                                        \
                                                                                                                              \
-        const ::tst::detail::Result sfmlTstRes = ::tst::detail::ExpressionDecomposer(::tst::detail::AssertKind::kind)        \
+        const ::tst::detail::Result zancleTstRes = ::tst::detail::ExpressionDecomposer(::tst::detail::AssertKind::kind)        \
                                                  << __VA_ARGS__;                                                             \
                                                                                                                              \
-        (void)::tst::detail::handleAssertion(sfmlTstRes, ::tst::detail::AssertKind::kind, __FILE__, __LINE__, #__VA_ARGS__); \
+        (void)::tst::detail::handleAssertion(zancleTstRes, ::tst::detail::AssertKind::kind, __FILE__, __LINE__, #__VA_ARGS__); \
                                                                                                                              \
-        SFML_BASE_PRAGMA(GCC diagnostic pop);                                                                                \
+        ZB_PRAGMA(GCC diagnostic pop);                                                                                \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 
 
-#define CHECK(...)         SFML_TST_ASSERT_IMPL(Check, __VA_ARGS__)
-#define CHECK_FALSE(...)   SFML_TST_ASSERT_IMPL(CheckFalse, __VA_ARGS__)
-#define REQUIRE(...)       SFML_TST_ASSERT_IMPL(Require, __VA_ARGS__)
-#define REQUIRE_FALSE(...) SFML_TST_ASSERT_IMPL(RequireFalse, __VA_ARGS__)
-#define WARN(...)          SFML_TST_ASSERT_IMPL(Warn, __VA_ARGS__)
+#define CHECK(...)         ZA_TST_ASSERT_IMPL(Check, __VA_ARGS__)
+#define CHECK_FALSE(...)   ZA_TST_ASSERT_IMPL(CheckFalse, __VA_ARGS__)
+#define REQUIRE(...)       ZA_TST_ASSERT_IMPL(Require, __VA_ARGS__)
+#define REQUIRE_FALSE(...) ZA_TST_ASSERT_IMPL(RequireFalse, __VA_ARGS__)
+#define WARN(...)          ZA_TST_ASSERT_IMPL(Warn, __VA_ARGS__)
 
 #define CHECK_UNARY(...)       CHECK(__VA_ARGS__)
 #define CHECK_UNARY_FALSE(...) CHECK_FALSE(__VA_ARGS__)
@@ -296,15 +296,15 @@ SFML_TST_DECLARE_TYPE_NAME(char, "char")
 #define CHECK_NOTHROW(...)                                                           \
     do                                                                               \
     {                                                                                \
-        bool sfmlTstNothrowOk = true;                                                \
+        bool zancleTstNothrowOk = true;                                                \
         try                                                                          \
         {                                                                            \
             (void)(__VA_ARGS__);                                                     \
         } catch (...) /* NOLINT(bugprone-empty-catch) */                             \
         {                                                                            \
-            sfmlTstNothrowOk = false;                                                \
+            zancleTstNothrowOk = false;                                                \
         }                                                                            \
-        if (sfmlTstNothrowOk)                                                        \
+        if (zancleTstNothrowOk)                                                        \
             ::tst::detail::noteNothrowSuccess();                                     \
         else                                                                         \
             (void)::tst::detail::checkNothrowImpl(__FILE__, __LINE__, #__VA_ARGS__); \
@@ -327,8 +327,8 @@ SFML_TST_DECLARE_TYPE_NAME(char, "char")
 // starting at `Builder{} * <first sub-expr>`.
 ////////////////////////////////////////////////////////////
 #define INFO(...)                                     \
-    const ::tst::detail::ScopedMessage SFML_TST_ANON( \
-        sfmlTstInfo_)(__FILE__, __LINE__, (::tst::detail::MessageBuilder{} * __VA_ARGS__))
+    const ::tst::detail::ScopedMessage ZA_TST_ANON( \
+        zancleTstInfo_)(__FILE__, __LINE__, (::tst::detail::MessageBuilder{} * __VA_ARGS__))
 
 #define CAPTURE(x) INFO(#x " := " << (x))
 

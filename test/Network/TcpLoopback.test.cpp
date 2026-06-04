@@ -3,33 +3,33 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/Socket.hpp"
-#include "SFML/Network/SocketSelector.hpp"
-#include "SFML/Network/TcpListener.hpp"
-#include "SFML/Network/TcpSocket.hpp"
+#include "Zancle/Network/IpAddress.hpp"
+#include "Zancle/Network/Socket.hpp"
+#include "Zancle/Network/SocketSelector.hpp"
+#include "Zancle/Network/TcpListener.hpp"
+#include "Zancle/Network/TcpSocket.hpp"
 
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::base::StringView commonName = "SFML TLS Example"; // Part of certificate
+constexpr zb::StringView commonName = "SFML TLS Example"; // Part of certificate
 
 
 ////////////////////////////////////////////////////////////
 // Generated with: openssl ecparam -out key.pem -name secp384r1 -genkey
-constexpr sf::base::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
+constexpr zb::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
 BgUrgQQAIg==
 -----END EC PARAMETERS-----
 -----BEGIN EC PRIVATE KEY-----
@@ -49,7 +49,7 @@ ztTSrGCF1rJynnEoGJrIh3trvRAKD0E=
 // Organizational Unit Name (eg, section) []:.
 // Common Name (e.g. server FQDN or YOUR name) []:SFML TLS Example
 // Email Address []:.
-constexpr sf::base::StringView certificate = R"(-----BEGIN CERTIFICATE-----
+constexpr zb::StringView certificate = R"(-----BEGIN CERTIFICATE-----
 MIIByTCCAVCgAwIBAgIUKT3iSj7kJlvzxEGvfK1/yAYzRPcwCgYIKoZIzj0EAwMw
 GzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTAgFw0yNTA4MjMxMjI4MDJaGA8y
 MTI1MDczMDEyMjgwMlowGzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTB2MBAG
@@ -76,24 +76,24 @@ RZlDlROT9eBnJ76WeMDiPMz+7E/oUdvGCAhuZb0=
 } // namespace
 
 
-#ifdef SFML_RUN_LOOPBACK_TESTS
+#ifdef ZA_RUN_LOOPBACK_TESTS
 
-TEST_CASE("[Network] sf::Tcp Loopback")
+TEST_CASE("[Network] za::Tcp Loopback")
 {
     using Byte = unsigned char;
 
-    constexpr sf::base::SizeT nTestDataBytes = 1024 * 1024;
-    sf::base::Vector<Byte>    testData(nTestDataBytes);
+    constexpr zb::SizeT nTestDataBytes = 1024 * 1024;
+    zb::Vector<Byte>    testData(nTestDataBytes);
 
-    for (sf::base::SizeT i = 0u; i < nTestDataBytes; ++i)
+    for (zb::SizeT i = 0u; i < nTestDataBytes; ++i)
         testData[i] = static_cast<Byte>(i % 256u);
 
     const auto* sendEnd = testData.data() + testData.size();
 
-    sf::base::Vector<Byte> buffer(testData.size());
+    zb::Vector<Byte> buffer(testData.size());
     const auto*            recvEnd = buffer.data() + buffer.size();
 
-    auto tcpListenerOpt = sf::TcpListener::create(sf::Socket::AnyPort, /* isBlocking */ false);
+    auto tcpListenerOpt = za::TcpListener::create(za::Socket::AnyPort, /* isBlocking */ false);
     REQUIRE(tcpListenerOpt.hasValue());
 
     auto& tcpListener = *tcpListenerOpt;
@@ -103,31 +103,31 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
     SECTION("Non-TLS")
     {
-        auto clientSocketOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        auto clientSocketOpt = za::TcpSocket::create(/* isBlocking */ false);
         REQUIRE(clientSocketOpt.hasValue());
 
         auto& clientSocket = *clientSocketOpt;
 
-        CHECK(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(750)) ==
-              sf::TcpSocket::Status::NotReady);
+        CHECK(clientSocket.connect(za::IpAddress(127, 0, 0, 1), localPort, za::milliseconds(750)) ==
+              za::TcpSocket::Status::NotReady);
 
-        auto start = sf::Clock::now();
+        auto start = za::Clock::now();
 
-        sf::base::Optional<sf::TcpSocket> serverSocketOpt;
+        zb::Optional<za::TcpSocket> serverSocketOpt;
         while (true)
         {
             auto result = tcpListener.accept();
 
-            REQUIRE(((result.status == sf::TcpListener::Status::NotReady) ||
-                     (result.status == sf::TcpListener::Status::Done)));
+            REQUIRE(((result.status == za::TcpListener::Status::NotReady) ||
+                     (result.status == za::TcpListener::Status::Done)));
 
-            if (result.status == sf::TcpListener::Status::Done)
+            if (result.status == za::TcpListener::Status::Done)
             {
-                serverSocketOpt = SFML_BASE_MOVE(result.socket);
+                serverSocketOpt = ZB_MOVE(result.socket);
                 break;
             }
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
+            REQUIRE((za::Clock::now() - start < za::milliseconds(750)));
         }
 
         REQUIRE(serverSocketOpt.hasValue());
@@ -147,16 +147,16 @@ TEST_CASE("[Network] sf::Tcp Loopback")
         const auto* sendPtr = testData.data();
         auto*       recvPtr = buffer.data();
 
-        start = sf::Clock::now();
+        start = za::Clock::now();
 
         while (true)
         {
             if (sendPtr != sendEnd)
             {
-                sf::base::SizeT sent{};
-                const auto status = serverSocket.send(sendPtr, static_cast<sf::base::SizeT>(sendEnd - sendPtr), sent);
-                REQUIRE_FALSE(status == sf::TcpSocket::Status::Error);
-                REQUIRE_FALSE(status == sf::TcpSocket::Status::Disconnected);
+                zb::SizeT sent{};
+                const auto status = serverSocket.send(sendPtr, static_cast<zb::SizeT>(sendEnd - sendPtr), sent);
+                REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
+                REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
                 sendPtr += sent;
             }
             else if (serverSocket.getRemoteAddress())
@@ -165,21 +165,21 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             }
 
             {
-                sf::base::SizeT received{};
-                const auto status = clientSocket.receive(recvPtr, static_cast<sf::base::SizeT>(recvEnd - recvPtr), received);
-                REQUIRE_FALSE(status == sf::TcpSocket::Status::Error);
+                zb::SizeT received{};
+                const auto status = clientSocket.receive(recvPtr, static_cast<zb::SizeT>(recvEnd - recvPtr), received);
+                REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 if (received > 0)
-                    REQUIRE_FALSE(status == sf::TcpSocket::Status::Disconnected);
+                    REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
                 recvPtr += received;
 
-                if (status == sf::TcpSocket::Status::Disconnected)
+                if (status == za::TcpSocket::Status::Disconnected)
                 {
                     clientSocket.disconnect();
                     break;
                 }
             }
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
+            REQUIRE((za::Clock::now() - start < za::milliseconds(750)));
         }
 
         CHECK(rangesAreEqual(buffer.begin(), buffer.end(), testData.begin()));
@@ -187,30 +187,30 @@ TEST_CASE("[Network] sf::Tcp Loopback")
 
     SECTION("TLS")
     {
-        auto clientSocketOpt = sf::TcpSocket::create(/* isBlocking */ false);
+        auto clientSocketOpt = za::TcpSocket::create(/* isBlocking */ false);
         REQUIRE(clientSocketOpt.hasValue());
         auto& clientSocket = *clientSocketOpt;
 
-        REQUIRE(clientSocket.connect(sf::IpAddress(127, 0, 0, 1), localPort, sf::milliseconds(750)) ==
-                sf::TcpSocket::Status::NotReady);
+        REQUIRE(clientSocket.connect(za::IpAddress(127, 0, 0, 1), localPort, za::milliseconds(750)) ==
+                za::TcpSocket::Status::NotReady);
 
-        auto start = sf::Clock::now();
+        auto start = za::Clock::now();
 
-        sf::base::Optional<sf::TcpSocket> serverSocketOpt;
+        zb::Optional<za::TcpSocket> serverSocketOpt;
         while (true)
         {
             auto result = tcpListener.accept();
 
-            REQUIRE(((result.status == sf::TcpListener::Status::NotReady) ||
-                     (result.status == sf::TcpListener::Status::Done)));
+            REQUIRE(((result.status == za::TcpListener::Status::NotReady) ||
+                     (result.status == za::TcpListener::Status::Done)));
 
-            if (result.status == sf::TcpListener::Status::Done)
+            if (result.status == za::TcpListener::Status::Done)
             {
-                serverSocketOpt = SFML_BASE_MOVE(result.socket);
+                serverSocketOpt = ZB_MOVE(result.socket);
                 break;
             }
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
+            REQUIRE((za::Clock::now() - start < za::milliseconds(750)));
         }
 
         REQUIRE(serverSocketOpt.hasValue());
@@ -227,41 +227,41 @@ TEST_CASE("[Network] sf::Tcp Loopback")
         const auto* sendPtr = testData.data();
         auto*       recvPtr = buffer.data();
 
-        start = sf::Clock::now();
+        start = za::Clock::now();
 
         while (true)
         {
             const auto serverStatus = serverSocket.setupTlsServer(certificate, privateKey);
 
-            REQUIRE_FALSE(serverStatus == sf::TcpSocket::TlsStatus::Error);
-            REQUIRE_FALSE(serverStatus == sf::TcpSocket::TlsStatus::NotConnected);
+            REQUIRE_FALSE(serverStatus == za::TcpSocket::TlsStatus::Error);
+            REQUIRE_FALSE(serverStatus == za::TcpSocket::TlsStatus::NotConnected);
 
-            const auto clientStatus = clientSocket.setupTlsClient(commonName.to<sf::base::String>(), certificate);
+            const auto clientStatus = clientSocket.setupTlsClient(commonName.to<zb::String>(), certificate);
 
-            REQUIRE_FALSE(clientStatus == sf::TcpSocket::TlsStatus::Error);
-            REQUIRE_FALSE(clientStatus == sf::TcpSocket::TlsStatus::NotConnected);
+            REQUIRE_FALSE(clientStatus == za::TcpSocket::TlsStatus::Error);
+            REQUIRE_FALSE(clientStatus == za::TcpSocket::TlsStatus::NotConnected);
 
-            if ((serverStatus == sf::TcpSocket::TlsStatus::HandshakeComplete) &&
-                (clientStatus == sf::TcpSocket::TlsStatus::HandshakeComplete))
+            if ((serverStatus == za::TcpSocket::TlsStatus::HandshakeComplete) &&
+                (clientStatus == za::TcpSocket::TlsStatus::HandshakeComplete))
                 break;
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
+            REQUIRE((za::Clock::now() - start < za::milliseconds(750)));
         }
 
         CHECK(serverSocket.getCurrentCiphersuiteName().hasValue());
         CHECK(clientSocket.getCurrentCiphersuiteName().hasValue());
         CHECK(serverSocket.getCurrentCiphersuiteName() == clientSocket.getCurrentCiphersuiteName());
 
-        start = sf::Clock::now();
+        start = za::Clock::now();
 
         while (true)
         {
             if (sendPtr != sendEnd)
             {
-                sf::base::SizeT sent{};
-                const auto status = serverSocket.send(sendPtr, static_cast<sf::base::SizeT>(sendEnd - sendPtr), sent);
-                REQUIRE_FALSE(status == sf::TcpSocket::Status::Error);
-                REQUIRE_FALSE(status == sf::TcpSocket::Status::Disconnected);
+                zb::SizeT sent{};
+                const auto status = serverSocket.send(sendPtr, static_cast<zb::SizeT>(sendEnd - sendPtr), sent);
+                REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
+                REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
                 sendPtr += sent;
             }
             else if (serverSocket.getRemoteAddress())
@@ -270,21 +270,21 @@ TEST_CASE("[Network] sf::Tcp Loopback")
             }
 
             {
-                sf::base::SizeT received{};
-                const auto status = clientSocket.receive(recvPtr, static_cast<sf::base::SizeT>(recvEnd - recvPtr), received);
-                REQUIRE_FALSE(status == sf::TcpSocket::Status::Error);
+                zb::SizeT received{};
+                const auto status = clientSocket.receive(recvPtr, static_cast<zb::SizeT>(recvEnd - recvPtr), received);
+                REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 if (received > 0)
-                    REQUIRE_FALSE(status == sf::TcpSocket::Status::Disconnected);
+                    REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
                 recvPtr += received;
 
-                if (status == sf::TcpSocket::Status::Disconnected)
+                if (status == za::TcpSocket::Status::Disconnected)
                 {
                     clientSocket.disconnect();
                     break;
                 }
             }
 
-            REQUIRE((sf::Clock::now() - start < sf::milliseconds(750)));
+            REQUIRE((za::Clock::now() - start < za::milliseconds(750)));
         }
 
         CHECK(rangesAreEqual(buffer.begin(), buffer.end(), testData.begin()));

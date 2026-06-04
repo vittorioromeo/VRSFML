@@ -1,12 +1,12 @@
 #include "BubbleIdleMain.hpp"
 #include "Profile.hpp"
 
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
 
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
 void Main::uiSettingsDrawDisplayTab()
 {
@@ -72,7 +72,7 @@ void Main::uiSettingsDrawDisplayTab()
     {
         playSound(sounds.buy);
 
-        profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
+        profile.resWidth = za::VideoModeUtils::getDesktopMode().size;
         profile.windowed = true;
 
         if (window.isFullscreen())
@@ -87,7 +87,7 @@ void Main::uiSettingsDrawDisplayTab()
     {
         playSound(sounds.buy);
 
-        profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
+        profile.resWidth = za::VideoModeUtils::getDesktopMode().size;
         profile.windowed = false;
 
         recreateWindow();

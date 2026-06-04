@@ -1,18 +1,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Texture.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/WindowsHeader.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/WindowsHeader.hpp"
 
-#include "SFML/Base/Math/Cos.hpp"
+#include "ZancleBase/Math/Cos.hpp"
 
 
 namespace
@@ -116,18 +116,18 @@ int main()
                               instance,
                               nullptr);
 
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     {
-        auto sfmlView1 = sf::RenderWindow::create(view1).value();
-        auto sfmlView2 = sf::RenderWindow::create(view2).value();
+        auto zancleView1 = za::RenderWindow::create(view1).value();
+        auto zancleView2 = za::RenderWindow::create(view2).value();
 
         // Load some textures to display
-        const auto texture1 = sf::Texture::loadFromFile("resources/image1.jpg").value();
-        const auto texture2 = sf::Texture::loadFromFile("resources/image2.jpg").value();
+        const auto texture1 = za::Texture::loadFromFile("resources/image1.jpg").value();
+        const auto texture2 = za::Texture::loadFromFile("resources/image2.jpg").value();
 
         // Create a clock for measuring elapsed time
-        const sf::Clock clock;
+        const za::Clock clock;
 
         // Loop until a WM_QUIT message is received
         MSG message;
@@ -145,21 +145,21 @@ int main()
                 const float time = clock.getElapsedTime().asSeconds();
 
                 // Clear views
-                sfmlView1.clear();
-                sfmlView2.clear();
+                zancleView1.clear();
+                zancleView2.clear();
 
                 // Draw sprite 1 on view 1
-                sfmlView1.draw(texture1,
+                zancleView1.draw(texture1,
                                {.position = texture1.getSize().toVec2f() / 2.f,
                                 .origin   = texture1.getSize().toVec2f() / 2.f,
-                                .rotation = sf::degrees(time * 100)});
+                                .rotation = za::degrees(time * 100)});
 
                 // Draw sprite 2 on view 2
-                sfmlView2.draw(texture2, {.position = {sf::base::cos(time) * 100.f, 0.f}});
+                zancleView2.draw(texture2, {.position = {zb::cos(time) * 100.f, 0.f}});
 
                 // Display each view on screen
-                sfmlView1.display();
-                sfmlView2.display();
+                zancleView1.display();
+                zancleView2.display();
             }
         }
     }

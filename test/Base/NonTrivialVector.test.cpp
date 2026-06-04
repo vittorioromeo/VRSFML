@@ -1,19 +1,19 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsMoveConstructible.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace
@@ -100,28 +100,28 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Vector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Vector<Obj>));
+        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Vector<Obj>));
 
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::Vector<Obj>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(zb::Vector<Obj>));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(zb::Vector<Obj>));
+        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::Vector<Obj>));
+        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::Vector<Obj>));
 
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_RELOCATABLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Vector<Obj>));
     }
 
     SECTION("Empty")
@@ -140,7 +140,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
         resetCounters();
 
-        sf::base::Vector<Obj> tv;
+        zb::Vector<Obj> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -148,21 +148,21 @@ TEST_CASE("[Base] Base/Vector.hpp")
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
-        sf::base::Vector<Obj> tv2 = tv;
+        zb::Vector<Obj> tv2 = tv;
         DO_EMPTY_CHECKS(tv2);
         CHECK(tv2.capacity() == 0u);
 
-        sf::base::Vector<Obj> tv3 = SFML_BASE_MOVE(tv);
+        zb::Vector<Obj> tv3 = ZB_MOVE(tv);
         DO_EMPTY_CHECKS(tv3);
         CHECK(tv3.capacity() == 0u);
 
-        sf::base::Vector<Obj> tv4;
+        zb::Vector<Obj> tv4;
         tv4 = tv;
         DO_EMPTY_CHECKS(tv4);
         CHECK(tv4.capacity() == 0u);
 
-        sf::base::Vector<Obj> tv5;
-        tv5 = SFML_BASE_MOVE(tv4);
+        zb::Vector<Obj> tv5;
+        tv5 = ZB_MOVE(tv4);
         DO_EMPTY_CHECKS(tv5);
         CHECK(tv5.capacity() == 0u);
 
@@ -180,7 +180,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         resetCounters();
 
         {
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             DO_EMPTY_CHECKS(tv);
             CHECK(tv.capacity() == 0u);
 
@@ -257,7 +257,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv.capacity() >= 100u);
             CHECK(tv[0].value == 42);
 
-            for (sf::base::SizeT i = 1; i < 100; ++i)
+            for (zb::SizeT i = 1; i < 100; ++i)
                 CHECK(tv[i].value == 0);
         }
 
@@ -275,7 +275,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         resetCounters();
 
         {
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             DO_EMPTY_CHECKS(tv);
             CHECK(tv.capacity() == 0u);
 
@@ -338,7 +338,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
     SECTION("erase")
     {
         resetCounters();
-        sf::base::Vector<Obj> tv;
+        zb::Vector<Obj> tv;
 
         // Populate the vector: 10, 20, 30, 40, 50
         tv.emplaceBack(10);
@@ -440,7 +440,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
         // --- Edge case: Erase from single-element vector ---
         resetCounters();
-        sf::base::Vector<Obj> tvSingle;
+        zb::Vector<Obj> tvSingle;
         tvSingle.emplaceBack(100); // int:1, move:0 (initially no alloc)
         REQUIRE(tvSingle.size() == 1);
         resetCounters();
@@ -458,7 +458,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace into empty vector")
         {
             resetCounters();
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             tv.reserve(5);
             resetCounters();
 
@@ -477,7 +477,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace at the end with capacity")
         {
             resetCounters();
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(20);
             tv.reserve(5);
@@ -501,7 +501,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace in the middle with capacity")
         {
             resetCounters();
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(30);
             tv.emplaceBack(40);
@@ -534,7 +534,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace at the beginning with capacity")
         {
             resetCounters();
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             tv.emplaceBack(20);
             tv.emplaceBack(30);
             tv.reserve(5);
@@ -565,7 +565,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace in the middle with reallocation")
         {
             resetCounters();
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(30);
             tv.shrinkToFit(); // size == 2, capacity == 2
@@ -595,7 +595,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace at the end with reallocation")
         {
             resetCounters();
-            sf::base::Vector<Obj> tv;
+            zb::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(20);
             tv.shrinkToFit(); // size == 2, capacity == 2
@@ -625,7 +625,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element without reallocation")
     {
-        sf::base::Vector<Obj> v;
+        zb::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -642,7 +642,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element with reallocation")
     {
-        sf::base::Vector<Obj> v;
+        zb::Vector<Obj> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -660,7 +660,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: insert at begin from last element")
     {
-        sf::base::Vector<Obj> v;
+        zb::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -677,7 +677,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: insert at middle from element that gets shifted")
     {
-        sf::base::Vector<Obj> v;
+        zb::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -694,7 +694,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: emplace at begin from back()")
     {
-        sf::base::Vector<Obj> v;
+        zb::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -712,7 +712,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: emplaceBack from own element with reallocation")
     {
-        sf::base::Vector<Obj> v;
+        zb::Vector<Obj> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);

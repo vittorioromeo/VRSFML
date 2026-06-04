@@ -1,44 +1,44 @@
-#include "SFML/Graphics/TextureAtlasUtils.hpp"
+#include "Zancle/Graphics/TextureAtlasUtils.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Texture.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/RectPacker.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/RectPacker.hpp"
 
 
-TEST_CASE("[Graphics] sf::TextureAtlasUtils" * tst::skip(skipDisplayTests))
+TEST_CASE("[Graphics] za::TextureAtlasUtils" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
-    const auto makeColoredTexture = [&](sf::Color color)
-    { return sf::Texture::loadFromImage(sf::Image::create({64u, 64u}, color).value()).value(); };
+    const auto makeColoredTexture = [&](za::Color color)
+    { return za::Texture::loadFromImage(za::Image::create({64u, 64u}, color).value()).value(); };
 
-    constexpr sf::Vec2u atlasSize{512u, 512u};
+    constexpr za::Vec2u atlasSize{512u, 512u};
 
     SECTION("Add -- failure case")
     {
-        auto texture    = sf::Texture::create({32u, 32u}).value();
-        auto rectPacker = sf::RectPacker({32u, 32u});
+        auto texture    = za::Texture::create({32u, 32u}).value();
+        auto rectPacker = za::RectPacker({32u, 32u});
 
-        const auto p0 = sf::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(sf::Color::Red));
+        const auto p0 = za::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(za::Color::Red));
         CHECK(!p0.hasValue());
     }
 
     SECTION("Add -- one texture")
     {
-        auto texture    = sf::Texture::create(atlasSize).value();
-        auto rectPacker = sf::RectPacker(atlasSize);
+        auto texture    = za::Texture::create(atlasSize).value();
+        auto rectPacker = za::RectPacker(atlasSize);
 
-        const auto p0 = sf::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(sf::Color::Red));
+        const auto p0 = za::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(za::Color::Red));
         CHECK(p0.hasValue());
         CHECK(p0->position.x == 0u);
         CHECK(p0->position.y == 0u);
@@ -46,23 +46,23 @@ TEST_CASE("[Graphics] sf::TextureAtlasUtils" * tst::skip(skipDisplayTests))
         CHECK(p0->size.y == 64u);
 
         const auto atlasImage = texture.copyToImage();
-        CHECK(atlasImage.getPixel({0u, 0u}) == sf::Color::Red);
-        CHECK(atlasImage.getPixel({64u, 64u}) != sf::Color::Red);
+        CHECK(atlasImage.getPixel({0u, 0u}) == za::Color::Red);
+        CHECK(atlasImage.getPixel({64u, 64u}) != za::Color::Red);
     }
 
     SECTION("Add -- two textures")
     {
-        auto texture    = sf::Texture::create(atlasSize).value();
-        auto rectPacker = sf::RectPacker(atlasSize);
+        auto texture    = za::Texture::create(atlasSize).value();
+        auto rectPacker = za::RectPacker(atlasSize);
 
-        const auto p0 = sf::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(sf::Color::Red));
+        const auto p0 = za::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(za::Color::Red));
         CHECK(p0.hasValue());
         CHECK(p0->position.x == 0u);
         CHECK(p0->position.y == 0u);
         CHECK(p0->size.x == 64u);
         CHECK(p0->size.y == 64u);
 
-        const auto p1 = sf::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(sf::Color::Blue));
+        const auto p1 = za::TextureAtlasUtils::add(texture, rectPacker, /* padding */ {}, makeColoredTexture(za::Color::Blue));
         CHECK(p1.hasValue());
         CHECK(p1->position.x == 64u);
         CHECK(p1->position.y == 0u);
@@ -70,10 +70,10 @@ TEST_CASE("[Graphics] sf::TextureAtlasUtils" * tst::skip(skipDisplayTests))
         CHECK(p1->size.y == 64u);
 
         const auto atlasImage = texture.copyToImage();
-        CHECK(atlasImage.getPixel({0u, 0u}) == sf::Color::Red);
-        CHECK(atlasImage.getPixel({64u, 0u}) == sf::Color::Blue);
+        CHECK(atlasImage.getPixel({0u, 0u}) == za::Color::Red);
+        CHECK(atlasImage.getPixel({64u, 0u}) == za::Color::Blue);
 
-        CHECK(atlasImage.getPixel({128u, 0u}) != sf::Color::Red);
-        CHECK(atlasImage.getPixel({128u, 0u}) != sf::Color::Blue);
+        CHECK(atlasImage.getPixel({128u, 0u}) != za::Color::Red);
+        CHECK(atlasImage.getPixel({128u, 0u}) != za::Color::Blue);
     }
 }

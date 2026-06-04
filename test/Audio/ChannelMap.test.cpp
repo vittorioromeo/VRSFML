@@ -1,32 +1,32 @@
 #include "AudioUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Audio/ChannelMap.hpp"
+#include "Zancle/Audio/ChannelMap.hpp"
 
-#include "SFML/Audio/SoundChannel.hpp"
+#include "Zancle/Audio/SoundChannel.hpp"
 
-#include "SFML/Base/Trait/HasVirtualDestructor.hpp"
-#include "SFML/Base/Trait/IsCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
+#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
+#include "ZancleBase/Trait/IsCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
 
 
-TEST_CASE("[Audio] sf::ChannelMap" * tst::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] za::ChannelMap" * tst::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::ChannelMap));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::ChannelMap));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::ChannelMap));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::ChannelMap));
-        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::ChannelMap));
+        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::ChannelMap));
+        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::ChannelMap));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::ChannelMap));
+        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::ChannelMap));
+        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::ChannelMap));
     }
 
     SECTION("Permutation check")
     {
-        const sf::ChannelMap cm0{sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
-        const sf::ChannelMap cm1{sf::SoundChannel::FrontRight, sf::SoundChannel::FrontLeft};
+        const za::ChannelMap cm0{za::SoundChannel::FrontLeft, za::SoundChannel::FrontRight};
+        const za::ChannelMap cm1{za::SoundChannel::FrontRight, za::SoundChannel::FrontLeft};
 
         CHECK(cm0.getSize() == 2);
         CHECK(cm1.getSize() == 2);
@@ -36,7 +36,7 @@ TEST_CASE("[Audio] sf::ChannelMap" * tst::skip(skipAudioDeviceTests))
         CHECK(cm1.isPermutationOf(cm0));
         CHECK(cm1.isPermutationOf(cm1));
 
-        sf::ChannelMap cm2;
+        za::ChannelMap cm2;
         cm2 = cm0;
 
         CHECK(cm2.isPermutationOf(cm0));
@@ -47,12 +47,12 @@ TEST_CASE("[Audio] sf::ChannelMap" * tst::skip(skipAudioDeviceTests))
 
     SECTION("Assignment from init list")
     {
-        sf::ChannelMap cm0;
+        za::ChannelMap cm0;
 
-        cm0 = {sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
+        cm0 = {za::SoundChannel::FrontLeft, za::SoundChannel::FrontRight};
 
         CHECK(cm0.getSize() == 2);
-        CHECK(cm0[0] == sf::SoundChannel::FrontLeft);
-        CHECK(cm0[1] == sf::SoundChannel::FrontRight);
+        CHECK(cm0[0] == za::SoundChannel::FrontLeft);
+        CHECK(cm0[1] == za::SoundChannel::FrontRight);
     }
 }

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/MusicReader.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Optional.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Macros.hpp"
+#include "ZancleBase/Optional.hpp"
 
 
-namespace sf
+namespace za
 {
 class PlaybackDevice;
 }
@@ -17,11 +17,11 @@ class PlaybackDevice;
 ////////////////////////////////////////////////////////////
 struct BGMBuffer
 {
-    sf::MusicReader musicReader;
-    sf::Music       music;
+    za::MusicReader musicReader;
+    za::Music       music;
 
-    explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicReader&& theMusicSource) :
-        musicReader{SFML_BASE_MOVE(theMusicSource)},
+    explicit BGMBuffer(za::PlaybackDevice& playbackDevice, za::MusicReader&& theMusicSource) :
+        musicReader{ZB_MOVE(theMusicSource)},
         music{playbackDevice, musicReader}
     {
     }
@@ -31,5 +31,5 @@ struct BGMBuffer
 ////////////////////////////////////////////////////////////
 struct MainBGMStorage
 {
-    sf::base::Array<sf::base::Optional<BGMBuffer>, 2u> bgmBuffers{sf::base::nullOpt, sf::base::nullOpt};
+    zb::Array<zb::Optional<BGMBuffer>, 2u> bgmBuffers{zb::nullOpt, zb::nullOpt};
 };

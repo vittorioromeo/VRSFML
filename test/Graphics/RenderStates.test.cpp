@@ -1,50 +1,50 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "SFML/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Base/Trait/IsAggregate.hpp"
-#include "SFML/Base/Trait/IsStandardLayout.hpp"
-#include "SFML/Base/Trait/IsTrivial.hpp"
-#include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
+#include "ZancleBase/Trait/IsAggregate.hpp"
+#include "ZancleBase/Trait/IsStandardLayout.hpp"
+#include "ZancleBase/Trait/IsTrivial.hpp"
+#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
+#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
+#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 
-TEST_CASE("[Graphics] sf::RenderStates")
+TEST_CASE("[Graphics] za::RenderStates")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::RenderStates));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::RenderStates)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::RenderStates));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::RenderStates, sf::RenderStates));
+        STATIC_CHECK(!ZB_IS_TRIVIAL(za::RenderStates)); // because of member initializers
+        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::RenderStates));
+        STATIC_CHECK(ZB_IS_AGGREGATE(za::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::RenderStates));
+        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::RenderStates, za::RenderStates));
 
-        STATIC_CHECK(sizeof(sf::RenderStates) <= 128); // TODO P0: this is big...
+        STATIC_CHECK(sizeof(za::RenderStates) <= 128); // TODO P0: this is big...
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            const sf::RenderStates renderStates{};
-            CHECK(renderStates.blendMode == sf::BlendAlpha);
-            CHECK(renderStates.stencilMode == sf::StencilMode{});
-            CHECK(renderStates.transform == sf::Transform{});
-            CHECK(renderStates.view == sf::View{});
+            const za::RenderStates renderStates{};
+            CHECK(renderStates.blendMode == za::BlendAlpha);
+            CHECK(renderStates.stencilMode == za::StencilMode{});
+            CHECK(renderStates.transform == za::Transform{});
+            CHECK(renderStates.view == za::View{});
             CHECK(renderStates.texture == nullptr);
             CHECK(renderStates.shader == nullptr);
         }
@@ -52,11 +52,11 @@ TEST_CASE("[Graphics] sf::RenderStates")
 
     SECTION("Default constant")
     {
-        CHECK(sf::RenderStates{}.blendMode == sf::BlendAlpha);
-        CHECK(sf::RenderStates{}.stencilMode == sf::StencilMode{});
-        CHECK(sf::RenderStates{}.transform == sf::Transform{});
-        CHECK(sf::RenderStates{}.view == sf::View{});
-        CHECK(sf::RenderStates{}.texture == nullptr);
-        CHECK(sf::RenderStates{}.shader == nullptr);
+        CHECK(za::RenderStates{}.blendMode == za::BlendAlpha);
+        CHECK(za::RenderStates{}.stencilMode == za::StencilMode{});
+        CHECK(za::RenderStates{}.transform == za::Transform{});
+        CHECK(za::RenderStates{}.view == za::View{});
+        CHECK(za::RenderStates{}.texture == nullptr);
+        CHECK(za::RenderStates{}.shader == nullptr);
     }
 }

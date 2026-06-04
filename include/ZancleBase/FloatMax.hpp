@@ -1,0 +1,22 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#ifndef __FLT_MAX__
+    #include <cfloat>
+#endif
+
+
+////////////////////////////////////////////////////////////
+/// \brief `FLT_MAX` macro, prefers the compiler builtin to avoid `<cfloat>`
+///
+////////////////////////////////////////////////////////////
+#ifdef __FLT_MAX__
+    #define ZB_FLOAT_MAX __FLT_MAX__
+#else
+    #define ZB_FLOAT_MAX FLT_MAX
+#endif

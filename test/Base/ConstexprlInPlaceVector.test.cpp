@@ -2,7 +2,7 @@
 
     #include "Tst/Tst.hpp"
 
-    #include "SFML/Base/InPlaceVector.hpp"
+    #include "ZancleBase/InPlaceVector.hpp"
 
 
 namespace
@@ -13,7 +13,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp (Constexpr)")
     {
         constexpr auto result = []
         {
-            sf::base::InPlaceVector<int, 8> vec;
+            zb::InPlaceVector<int, 8> vec;
 
             for (int i = 0; i < 8; ++i)
                 vec.pushBack(i);

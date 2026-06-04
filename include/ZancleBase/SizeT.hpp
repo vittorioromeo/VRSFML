@@ -1,0 +1,14 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+namespace zb
+{
+////////////////////////////////////////////////////////////
+/// \brief `std::size_t` equivalent obtained without including `<cstddef>`
+///
+////////////////////////////////////////////////////////////
+using SizeT = decltype(sizeof(int));
+
+} // namespace zb

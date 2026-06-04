@@ -1,12 +1,12 @@
 #include "Sounds.hpp"
 
-#include "SFML/Base/Assert.hpp"
+#include "ZancleBase/Assert.hpp"
 
 
 ////////////////////////////////////////////////////////////
 void Sounds::setupSounds(const bool volumeOnly, const float volumeMult)
 {
-    SFML_BASE_ASSERT(volumeMult >= 0.f && volumeMult <= 1.f);
+    ZB_ASSERT(volumeMult >= 0.f && volumeMult <= 1.f);
 
     const auto setupWorldSound = [&](auto& sound, const float attenuationMult = 1.f)
     {

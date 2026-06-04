@@ -1,45 +1,45 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
-#include "SFML/ImGui/ImGuiContext.hpp"
-#include "SFML/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/CircleShape.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Window/Event.hpp" // IWYU pragma: keep
-#include "SFML/Window/EventUtils.hpp"
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/InterferenceSize.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/ThreadPool.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/InterferenceSize.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/PtrDiffT.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/ThreadPool.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <latch>
 
@@ -62,20 +62,20 @@ int main()
     const auto getRndUInt = [&](const unsigned int min, const unsigned int max)
     { return rng.getI<unsigned int>(min, max); };
 
-    const auto getRndU8 = [&](const sf::base::U8 min, const sf::base::U8 max)
-    { return rng.getI<sf::base::U8>(min, max); };
+    const auto getRndU8 = [&](const zb::U8 min, const zb::U8 max)
+    { return rng.getI<zb::U8>(min, max); };
 
     //
     //
     // Set up graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     //
     //
     // Set up window
-    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
+    constexpr za::Vec2f windowSize{1680.f, 1050.f};
 
-    auto window = sf::RenderWindow::create(
+    auto window = za::RenderWindow::create(
                       {
                           .size      = windowSize.toVec2u(),
                           .title     = "Vittorio's SFML fork: batching example",
@@ -87,31 +87,31 @@ int main()
     //
     //
     // Set up imgui
-    sf::ImGuiContext imGuiContext;
+    za::ImGuiContext imGuiContext;
 
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
+    za::TextureAtlas textureAtlas{za::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
 
-    const auto addImgResourceToAtlas = [&](const sf::Path& path)
-    { return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value(); };
+    const auto addImgResourceToAtlas = [&](const za::Path& path)
+    { return textureAtlas.add(za::Image::loadFromFile("resources" / path).value()).value(); };
 
     //
     //
     // Add white dot to atlas
-    const auto whiteDotAtlasRect = textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+    const auto whiteDotAtlasRect = textureAtlas.add(za::GraphicsContext::getBuiltInWhiteDotTexture()).value();
 
     //
     //
     // Load fonts
-    const auto fontTuffy        = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
-    const auto fontMouldyCheese = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
+    const auto fontTuffy        = za::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
+    const auto fontMouldyCheese = za::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
 
     //
     //
     // Load images and add to texture atlas
-    const sf::Rect2f spriteTextureRects[]{
+    const za::Rect2f spriteTextureRects[]{
         addImgResourceToAtlas("elephant.png"),
         addImgResourceToAtlas("giraffe.png"),
         addImgResourceToAtlas("monkey.png"),
@@ -125,20 +125,20 @@ int main()
     // Simulation stuff
     struct Entity
     {
-        sf::Text        text;
-        sf::CircleShape circleShape;
-        sf::Sprite      sprite;
-        sf::Vec2f       velocity;
+        za::Text        text;
+        za::CircleShape circleShape;
+        za::Sprite      sprite;
+        za::Vec2f       velocity;
         float           torque;
     };
 
-    sf::base::Vector<Entity> entities;
+    zb::Vector<Entity> entities;
 
-    const auto populateEntities = [&](const sf::base::SizeT n)
+    const auto populateEntities = [&](const zb::SizeT n)
     {
         if (n < entities.size())
         {
-            entities.erase(entities.begin() + static_cast<sf::base::PtrDiffT>(n), entities.end());
+            entities.erase(entities.begin() + static_cast<zb::PtrDiffT>(n), entities.end());
             return;
         }
 
@@ -147,21 +147,21 @@ int main()
         char                  labelBuffer[64]{};
         constexpr const char* names[]{"Elephant", "Giraffe", "Monkey", "Pig", "Rabbit", "Snake"};
 
-        for (sf::base::SizeT i = entities.size(); i < n; ++i)
+        for (zb::SizeT i = entities.size(); i < n; ++i)
         {
-            const sf::base::SizeT type        = i % 6u;
-            const sf::Rect2f&     textureRect = spriteTextureRects[type];
+            const zb::SizeT type        = i % 6u;
+            const za::Rect2f&     textureRect = spriteTextureRects[type];
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
 
             auto& [text, circleShape, sprite, velocity, torque] = entities.emplaceBack(
-                sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
+                za::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                          {.string           = labelBuffer,
                           .characterSize    = 30u,
-                          .fillColor        = sf::Color::Black,
-                          .outlineColor     = sf::Color::White,
+                          .fillColor        = za::Color::Black,
+                          .outlineColor     = za::Color::White,
                           .outlineThickness = 5.f}},
-                sf::CircleShape{
+                za::CircleShape{
                     {.textureRect        = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
                      .outlineTextureRect = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
                      .fillColor    = {getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(125u, 255u)},
@@ -169,12 +169,12 @@ int main()
                      .outlineThickness = 3.f,
                      .radius           = getRndFloat(3.f, 8.f),
                      .pointCount       = getRndUInt(3u, 8u)}},
-                sf::Sprite{.textureRect = textureRect},
-                sf::Vec2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
+                za::Sprite{.textureRect = textureRect},
+                za::Vec2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                 getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
-            sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
+            sprite.rotation = za::radians(getRndFloat(0.f, zb::tau));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
             sprite.scale            = {scaleFactor, scaleFactor};
@@ -190,8 +190,8 @@ int main()
     //
     //
     // Get hardware constants
-    const auto     nMaxWorkers   = sf::base::ThreadPool::getHardwareWorkerCount();
-    constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
+    const auto     nMaxWorkers   = zb::ThreadPool::getHardwareWorkerCount();
+    constexpr auto cacheLineSize = static_cast<zb::SizeT>(zb::hardwareDestructiveInterferenceSize);
 
     //
     //
@@ -204,7 +204,7 @@ int main()
     };
 
     const auto defaultBatchType =
-#ifdef SFML_OPENGL_ES
+#ifdef ZA_OPENGL_ES
         BatchType::CPUStorage
 #else
         BatchType::GPUStorage
@@ -213,54 +213,54 @@ int main()
 
     auto            batchType                = BatchType::Disabled;
     auto            autobatchType            = defaultBatchType;
-    sf::base::U64   autoBatchVertexThreshold = 32'768u;
+    zb::U64   autoBatchVertexThreshold = 32'768u;
     bool            drawSprites              = true;
     bool            drawText                 = true;
     bool            drawShapes               = true;
     bool            multithreadedUpdate      = false;
     bool            multithreadedDraw        = false;
     bool            useWithRenderStatesAPI   = true;
-    auto            nWorkers                 = static_cast<sf::base::U64>(nMaxWorkers);
+    auto            nWorkers                 = static_cast<zb::U64>(nMaxWorkers);
     int             numEntities              = 500;
-    sf::base::SizeT drawnVertices            = 0u;
+    zb::SizeT drawnVertices            = 0u;
     unsigned int    nDrawCalls               = 0u;
 
     //
     //
     // Set up drawable batches
-    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : sf::CPUDrawableBatch
+    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : za::CPUDrawableBatch
     {
-        using sf::CPUDrawableBatch::CPUDrawableBatch;
+        using za::CPUDrawableBatch::CPUDrawableBatch;
     };
 
-    struct alignas(cacheLineSize) AlignedGPUDrawableBatch : sf::PersistentGPUDrawableBatch
+    struct alignas(cacheLineSize) AlignedGPUDrawableBatch : za::PersistentGPUDrawableBatch
     {
-        using sf::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
+        using za::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
+    zb::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
 
-#ifndef SFML_OPENGL_ES
-    sf::base::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
+#ifndef ZA_OPENGL_ES
+    zb::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
 #endif
 
     //
     //
     // Set up thread pool
-    sf::base::ThreadPool pool(nMaxWorkers);
+    zb::ThreadPool pool(nMaxWorkers);
 
     const auto doInBatches = [&](auto&& f)
     {
-        const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
+        const zb::SizeT entitiesPerBatch = entities.size() / nWorkers;
 
-        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
+        std::latch latch{static_cast<zb::PtrDiffT>(nWorkers)};
 
-        for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
+        for (zb::SizeT i = 0u; i < nWorkers; ++i)
         {
             pool.post([&, i]
             {
-                const sf::base::SizeT batchStartIdx = i * entitiesPerBatch;
-                const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
+                const zb::SizeT batchStartIdx = i * entitiesPerBatch;
+                const zb::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -272,8 +272,8 @@ int main()
     };
 
     // Set up clock and time sampling
-    sf::Clock clock;
-    sf::Clock fpsClock;
+    za::Clock clock;
+    za::Clock fpsClock;
 
     Sampler<float> samplesEventMs(/* capacity */ 64u);
     Sampler<float> samplesUpdateMs(/* capacity */ 64u);
@@ -285,7 +285,7 @@ int main()
     //
     //
     // Set up initial simulation state
-    populateEntities(static_cast<sf::base::SizeT>(numEntities));
+    populateEntities(static_cast<zb::SizeT>(numEntities));
 
     //
     //
@@ -300,11 +300,11 @@ int main()
         // ---
         clock.restart();
         {
-            while (sf::base::Optional event = window.pollEvent())
+            while (zb::Optional event = window.pollEvent())
             {
                 imGuiContext.processEvent(window, *event);
 
-                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
             }
         }
@@ -322,7 +322,7 @@ int main()
                 auto& [text, circleShape, sprite, velocity, torque] = entity;
 
                 sprite.position += velocity;
-                sprite.rotation += sf::radians(torque);
+                sprite.rotation += za::radians(torque);
 
                 if ((sprite.position.x > windowSize.x && velocity.x > 0.f) || (sprite.position.x < 0.f && velocity.x < 0.f))
                     velocity.x = -velocity.x;
@@ -330,7 +330,7 @@ int main()
                 if ((sprite.position.y > windowSize.y && velocity.y > 0.f) || (sprite.position.y < 0.f && velocity.y < 0.f))
                     velocity.y = -velocity.y;
 
-                text.position = sprite.position - sf::Vec2f{0.f, 250.f * sprite.scale.x};
+                text.position = sprite.position - za::Vec2f{0.f, 250.f * sprite.scale.x};
 
                 circleShape.position = sprite.position;
                 circleShape.rotation = sprite.rotation;
@@ -344,9 +344,9 @@ int main()
             else
             {
                 doInBatches(
-                    [&](const sf::base::SizeT /* iBatch */, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
+                    [&](const zb::SizeT /* iBatch */, const zb::SizeT batchStartIdx, const zb::SizeT batchEndIdx)
                 {
-                    for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                    for (zb::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         updateEntity(entities[i]);
                 });
             }
@@ -377,7 +377,7 @@ int main()
 
             constexpr const char* batchTypeItems[]{"Disabled",
                                                    "CPU Storage",
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
                                                    "GPU Storage"
 #endif
             };
@@ -385,24 +385,24 @@ int main()
             if (ImGui::Combo("Batch type",
                              reinterpret_cast<int*>(&batchType),
                              batchTypeItems,
-                             sf::base::getArraySize(batchTypeItems)))
+                             zb::getArraySize(batchTypeItems)))
                 clearSamples();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
             if (ImGui::Combo("Autobatch type",
                              reinterpret_cast<int*>(&autobatchType),
                              batchTypeItems,
-                             sf::base::getArraySize(batchTypeItems)))
+                             zb::getArraySize(batchTypeItems)))
             {
                 clearSamples();
-                window.setAutoBatchMode(static_cast<sf::RenderTarget::AutoBatchMode>(autobatchType));
+                window.setAutoBatchMode(static_cast<za::RenderTarget::AutoBatchMode>(autobatchType));
             }
 
-            const sf::base::U64 step = 1u;
+            const zb::U64 step = 1u;
             ImGui::SetNextItemWidth(172.f);
             if (ImGui::InputScalar("Autobatch Vertex Threshold", ImGuiDataType_U64, &autoBatchVertexThreshold, &step))
                 window.setAutoBatchVertexThreshold(
-                    static_cast<sf::base::SizeT>(sf::base::max(autoBatchVertexThreshold, sf::base::U64{1024u})));
+                    static_cast<zb::SizeT>(zb::max(autoBatchVertexThreshold, zb::U64{1024u})));
             ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Sprites", &drawSprites))
@@ -428,7 +428,7 @@ int main()
 
             ImGui::SetNextItemWidth(172.f);
             ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
-            nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, static_cast<sf::base::U64>(nMaxWorkers));
+            nWorkers = zb::clamp(nWorkers, zb::U64{2u}, static_cast<zb::U64>(nMaxWorkers));
 
             ImGui::NewLine();
 
@@ -438,7 +438,7 @@ int main()
 
             if (ImGui::Button("Repopulate") && numEntities > 0)
             {
-                populateEntities(static_cast<sf::base::SizeT>(numEntities));
+                populateEntities(static_cast<zb::SizeT>(numEntities));
                 clearSamples();
             }
 
@@ -450,7 +450,7 @@ int main()
                                  samples.data(),
                                  static_cast<int>(samples.capacity()),
                                  static_cast<int>(samples.insertionIndex()),
-                                 (sf::base::toString(samples.getAverageAs<double>()) + unit).cStr(),
+                                 (zb::toString(samples.getAverageAs<double>()) + unit).cStr(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});
@@ -476,9 +476,9 @@ int main()
         {
             window.clear();
 
-            const auto baseStates = sf::RenderStates{.texture = &textureAtlas.getTexture()};
+            const auto baseStates = za::RenderStates{.texture = &textureAtlas.getTexture()};
 
-            const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
+            const auto drawEntity = [&](const Entity& entity, zb::SizeT& drawnVertexCounter, auto&& drawFn)
             {
                 if (drawSprites)
                 {
@@ -525,14 +525,14 @@ int main()
                         batch.clear();
 
                     // Initialize per-worker drawn vertex counts
-                    sf::base::Vector<sf::base::SizeT> totalChunkDrawnVertices(nMaxWorkers);
+                    zb::Vector<zb::SizeT> totalChunkDrawnVertices(nMaxWorkers);
 
                     const auto populateBatches =
-                        [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
+                        [&](const zb::SizeT iBatch, const zb::SizeT batchStartIdx, const zb::SizeT batchEndIdx)
                     {
-                        sf::base::SizeT chunkDrawnVertices = 0u; // avoid false sharing
+                        zb::SizeT chunkDrawnVertices = 0u; // avoid false sharing
 
-                        for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                        for (zb::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                             drawEntity(entities[i], chunkDrawnVertices, [&](const auto& drawable) {
                                 batchesArray[iBatch].add(drawable);
                             });
@@ -548,22 +548,22 @@ int main()
                     // Tally vertices and submit batches to GPU
                     drawnVertices = 0u;
 
-                    for (sf::base::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
+                    for (zb::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
                     {
                         drawnVertices += totalChunkDrawnVertices[i];
                         window.draw(batchesArray[i], baseStates);
                     }
                 };
 
-#ifndef SFML_OPENGL_ES
+#ifndef ZA_OPENGL_ES
                 // If GPU storage, preallocate memory to avoid race conditions
                 if (batchType == BatchType::GPUStorage)
                 {
-                    const sf::base::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
-                    constexpr sf::base::SizeT maxQuadsPerEntityEstimate = 96u;
-                    const sf::base::SizeT     reservationSize = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
+                    const zb::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
+                    constexpr zb::SizeT maxQuadsPerEntityEstimate = 96u;
+                    const zb::SizeT     reservationSize = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
 
-                    for (sf::base::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
+                    for (zb::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
                         gpuDrawableBatches[i].reserveQuads(reservationSize);
                 }
 

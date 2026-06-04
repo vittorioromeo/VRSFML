@@ -1,8 +1,8 @@
 #include "Tst/Tst.hpp"
 
-#include "SFML/Base/FunctionRef.hpp"
+#include "ZancleBase/FunctionRef.hpp"
 
-#include "SFML/Base/Macros.hpp"
+#include "ZancleBase/Macros.hpp"
 
 
 namespace
@@ -75,21 +75,21 @@ struct CallableWithArgs
 
 
 ////////////////////////////////////////////////////////////
-int takesFunctionRef(sf::base::FunctionRef<int()> f)
+int takesFunctionRef(zb::FunctionRef<int()> f)
 {
     return f();
 }
 
 
 ////////////////////////////////////////////////////////////
-int takesFunctionRefWithArg(sf::base::FunctionRef<int(int)> f, int x)
+int takesFunctionRefWithArg(zb::FunctionRef<int(int)> f, int x)
 {
     return f(x);
 }
 
 
 ////////////////////////////////////////////////////////////
-int sumViaRef(sf::base::FunctionRef<int(int, int)> f)
+int sumViaRef(zb::FunctionRef<int(int, int)> f)
 {
     return f(3, 4) + f(5, 6);
 }
@@ -98,20 +98,20 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
 {
     SECTION("Construction from free function pointer")
     {
-        sf::base::FunctionRef<int()> fr(freeFunction);
+        zb::FunctionRef<int()> fr(freeFunction);
         CHECK(fr() == 42);
     }
 
     SECTION("Construction from free function with argument")
     {
-        sf::base::FunctionRef<int(int)> fr(freeFunctionWithArg);
+        zb::FunctionRef<int(int)> fr(freeFunctionWithArg);
         CHECK(fr(5) == 10);
         CHECK(fr(-3) == -6);
     }
 
     SECTION("Construction from free function with multiple arguments")
     {
-        sf::base::FunctionRef<int(int, int, int)> fr(freeFunctionSum);
+        zb::FunctionRef<int(int, int, int)> fr(freeFunctionSum);
         CHECK(fr(1, 2, 3) == 6);
         CHECK(fr(10, 20, 30) == 60);
     }
@@ -119,7 +119,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
     SECTION("Construction from stateless lambda")
     {
         auto                         lam = [] { return 99; };
-        sf::base::FunctionRef<int()> fr(lam);
+        zb::FunctionRef<int()> fr(lam);
         CHECK(fr() == 99);
     }
 
@@ -127,7 +127,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
     {
         int                          x   = 7;
         auto                         lam = [x] { return x * 3; };
-        sf::base::FunctionRef<int()> fr(lam);
+        zb::FunctionRef<int()> fr(lam);
         CHECK(fr() == 21);
     }
 
@@ -139,7 +139,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
             x += 5;
             return x;
         };
-        sf::base::FunctionRef<int()> fr(lam);
+        zb::FunctionRef<int()> fr(lam);
         CHECK(fr() == 15);
         CHECK(fr() == 20);
         CHECK(x == 20);
@@ -148,14 +148,14 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
     SECTION("Construction from const functor")
     {
         const CallableConst          cc{123};
-        sf::base::FunctionRef<int()> fr(cc);
+        zb::FunctionRef<int()> fr(cc);
         CHECK(fr() == 123);
     }
 
     SECTION("Construction from mutable functor")
     {
         CallableMutable              cm;
-        sf::base::FunctionRef<int()> fr(cm);
+        zb::FunctionRef<int()> fr(cm);
         CHECK(fr() == 1);
         CHECK(fr() == 2);
         CHECK(fr() == 3);
@@ -165,7 +165,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
     SECTION("Construction from functor with arguments")
     {
         const CallableWithArgs               cwa{3};
-        sf::base::FunctionRef<int(int, int)> fr(cwa);
+        zb::FunctionRef<int(int, int)> fr(cwa);
         CHECK(fr(2, 3) == 15);
         CHECK(fr(10, 0) == 30);
     }
@@ -221,7 +221,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
     {
         int                           out = 0;
         auto                          lam = [&out] { out = 42; };
-        sf::base::FunctionRef<void()> fr(lam);
+        zb::FunctionRef<void()> fr(lam);
         fr();
         CHECK(out == 42);
     }
@@ -229,7 +229,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
     SECTION("Void return type - free function")
     {
         int                               out = 0;
-        sf::base::FunctionRef<void(int&)> fr(freeFunctionVoid);
+        zb::FunctionRef<void(int&)> fr(freeFunctionVoid);
         fr(out);
         CHECK(out == 777);
     }
@@ -239,7 +239,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
         int  value = 5;
         auto lam   = [](int& v) { v *= 3; };
 
-        sf::base::FunctionRef<void(int&)> fr(lam);
+        zb::FunctionRef<void(int&)> fr(lam);
         fr(value);
         CHECK(value == 15);
     }
@@ -267,23 +267,23 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
         };
 
         auto                               lam = [](Move&& m) { return m.v; };
-        sf::base::FunctionRef<int(Move&&)> fr(lam);
+        zb::FunctionRef<int(Move&&)> fr(lam);
 
         Move m(88);
-        CHECK(fr(SFML_BASE_MOVE(m)) == 88);
+        CHECK(fr(ZB_MOVE(m)) == 88);
     }
 
     SECTION("Copyable and trivially small")
     {
-        sf::base::FunctionRef<int()> fr1(freeFunction);
-        sf::base::FunctionRef<int()> fr2 = fr1; // copy
+        zb::FunctionRef<int()> fr1(freeFunction);
+        zb::FunctionRef<int()> fr2 = fr1; // copy
         CHECK(fr2() == 42);
 
-        sf::base::FunctionRef<int()> fr3(fr1); // copy-construct
+        zb::FunctionRef<int()> fr3(fr1); // copy-construct
         CHECK(fr3() == 42);
 
         // FunctionRef should fit in two pointers (obj + thunk)
-        static_assert(sizeof(sf::base::FunctionRef<int()>) <= 2 * sizeof(void*));
+        static_assert(sizeof(zb::FunctionRef<int()>) <= 2 * sizeof(void*));
     }
 
     SECTION("Can rebind via assignment")
@@ -291,7 +291,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
         auto lam1 = [] { return 1; };
         auto lam2 = [] { return 2; };
 
-        sf::base::FunctionRef<int()> fr(lam1);
+        zb::FunctionRef<int()> fr(lam1);
         CHECK(fr() == 1);
 
         fr = lam2;
@@ -306,8 +306,8 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
         auto a = [] { return 11; };
         auto b = [] { return 22; };
 
-        sf::base::FunctionRef<int()> fa(a);
-        sf::base::FunctionRef<int()> fb(b);
+        zb::FunctionRef<int()> fa(a);
+        zb::FunctionRef<int()> fb(b);
 
         CHECK(fa() == 11);
         CHECK(fb() == 22);
@@ -342,7 +342,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
         int     copies = 0;
         Tracker t(&copies, 321);
 
-        sf::base::FunctionRef<int()> fr(t);
+        zb::FunctionRef<int()> fr(t);
         CHECK(fr() == 321);
         CHECK(copies == 0);
 
@@ -380,7 +380,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
         int  x   = 0;
         auto lam = [&x]() -> int& { return x; };
 
-        sf::base::FunctionRef<int&()> fr(lam);
+        zb::FunctionRef<int&()> fr(lam);
         fr() = 99;
         CHECK(x == 99);
     }
@@ -394,7 +394,7 @@ TEST_CASE("[Base] Base/FunctionRef.hpp")
             return accumulator;
         };
 
-        sf::base::FunctionRef<int(int)> fr(lam);
+        zb::FunctionRef<int(int)> fr(lam);
         CHECK(fr(1) == 1);
         CHECK(fr(2) == 3);
         CHECK(fr(7) == 10);

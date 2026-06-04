@@ -35,67 +35,67 @@
 #include "ExampleUtils/NinePatchUtils.hpp"
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/RingPieSliceShapeData.hpp"
-#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/TextureWrapMode.hpp"
-#include "SFML/Graphics/TrapezoidShapeData.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/RingPieSliceShapeData.hpp"
+#include "Zancle/Graphics/RoundedRectangleShapeData.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
+#include "Zancle/Graphics/TrapezoidShapeData.hpp"
+#include "Zancle/Graphics/View.hpp"
 
-#include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/Algorithm/Erase.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/GetArraySize.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/OverloadSet.hpp"
-#include "SFML/Base/Remainder.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/StringView.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Assert.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/GetArraySize.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Fabs.hpp"
+#include "ZancleBase/Math/Pow.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/OverloadSet.hpp"
+#include "ZancleBase/Remainder.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/StringView.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #include <cctype>
 #include <cstdio>
 
 ////////////////////////////////////////////////////////////
-sf::Sprite Main::particleToSprite(const Particle& particle) const
+za::Sprite Main::particleToSprite(const Particle& particle) const
 {
-    const auto  opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+    const auto  opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
     const auto& textureRect    = atlasRects.particleRects[asIdx(particle.type)];
 
     return {
         .position    = particle.position,
         .scale       = {particle.scale, particle.scale},
         .origin      = textureRect.size / 2.f,
-        .rotation    = sf::radians(particle.rotation),
+        .rotation    = za::radians(particle.rotation),
         .textureRect = textureRect,
         .color       = hueByteColor(particle.hueByte, opacityAsAlpha),
     };
@@ -107,8 +107,8 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 {
     const auto& [time, mins, maxs, xSteps, ySteps, scaleMult, outwardOffsetMult, color, batch] = settings;
 
-    const auto vec2Lerp = [](const sf::Vec2f a, const sf::Vec2f b, const sf::Vec2f t)
-    { return sf::Vec2f(a.x + (b.x - a.x) * t.x, a.y + (b.y - a.y) * t.y); };
+    const auto vec2Lerp = [](const za::Vec2f a, const za::Vec2f b, const za::Vec2f t)
+    { return za::Vec2f(a.x + (b.x - a.x) * t.x, a.y + (b.y - a.y) * t.y); };
 
     for (int iX = 0; iX < xSteps; ++iX)
     {
@@ -133,9 +133,9 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 
             const float noiseSeed = tX * 173.13f + tY * 317.71f;
 
-            const float noise0 = sf::base::sin(noiseSeed * 3.17f + 1.2f) * 0.5f + 0.5f;
-            const float noise1 = sf::base::sin(noiseSeed * 5.83f + 4.7f) * 0.5f + 0.5f;
-            const float noise2 = sf::base::cos(noiseSeed * 4.11f + 2.3f) * 0.5f + 0.5f;
+            const float noise0 = zb::sin(noiseSeed * 3.17f + 1.2f) * 0.5f + 0.5f;
+            const float noise1 = zb::sin(noiseSeed * 5.83f + 4.7f) * 0.5f + 0.5f;
+            const float noise2 = zb::cos(noiseSeed * 4.11f + 2.3f) * 0.5f + 0.5f;
 
             const float restOutward = (noise0 * noise1) * 12.f - 2.f;
             const float restTangent = (noise2 - 0.5f) * 5.f;
@@ -143,21 +143,21 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
             const float phase0 = time * (0.45f + noise0 * 0.35f) + noiseSeed * 0.35f;
             const float phase1 = time * (0.90f + noise1 * 0.55f) - noiseSeed * 0.21f;
 
-            const float outwardOffset = (restOutward + sf::base::sin(phase0) * (1.5f + noise0 * 2.5f) +
-                                         sf::base::sin(phase1) * (0.5f + noise1 * 1.25f)) *
+            const float outwardOffset = (restOutward + zb::sin(phase0) * (1.5f + noise0 * 2.5f) +
+                                         zb::sin(phase1) * (0.5f + noise1 * 1.25f)) *
                                         outwardOffsetMult;
 
             const float tangentOffset = restTangent +
-                                        sf::base::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) *
+                                        zb::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) *
                                             (0.5f + noise2 * 2.f) +
-                                        sf::base::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
+                                        zb::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
 
-            const sf::Vec2f animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
+            const za::Vec2f animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
                                       p0.y + outwardY * outwardOffset + tangentY * tangentOffset};
 
             const float puffScale = (0.58f + noise0 * 0.26f) * scaleMult;
 
-            batch->add(sf::Sprite{
+            batch->add(za::Sprite{
                 .position    = animatedP,
                 .scale       = {puffScale, puffScale},
                 .origin      = atlasRects.txrCloud.size / 2.f,
@@ -170,7 +170,7 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
                 const float clusterOutward = outwardOffset - (3.f + noise1 * 4.f);
                 const float clusterTangent = tangentOffset + (noise2 - 0.5f) * 8.f;
 
-                batch->add(sf::Sprite{
+                batch->add(za::Sprite{
                     .position    = {p0.x + outwardX * clusterOutward + tangentX * clusterTangent,
                                     p0.y + outwardY * clusterOutward + tangentY * clusterTangent},
                     .scale       = {puffScale, puffScale},
@@ -185,23 +185,23 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 
 ////////////////////////////////////////////////////////////
 void Main::drawMinimap(bool               back,
-                       sf::RenderTarget&  rt,
-                       const sf::View&    hudView,
-                       const sf::Vec2f    resolution,
-                       const sf::base::U8 shouldDrawUIAlpha)
+                       za::RenderTarget&  rt,
+                       const za::View&    hudView,
+                       const za::Vec2f    resolution,
+                       const zb::U8 shouldDrawUIAlpha)
 {
-    constexpr sf::Vec2f minimapPos = {10.f, 10.f};
+    constexpr za::Vec2f minimapPos = {10.f, 10.f};
 
     const float     minimapScale = profile.minimapScale;
     const float     mapLimit     = pt->getMapLimit();
     const float     hudScale     = profile.hudScale;
     const float     hueMod       = currentBackgroundHue.asDegrees();
-    const sf::Vec2f minimapSize  = boundaries / minimapScale;
+    const za::Vec2f minimapSize  = boundaries / minimapScale;
 
-    const sf::RoundedRectangleShapeData minimapBorder{
+    const za::RoundedRectangleShapeData minimapBorder{
         .position         = minimapPos,
-        .fillColor        = sf::Color::Transparent,
-        .outlineColor     = sf::Color::whiteWithAlpha(static_cast<U8>(shouldDrawUIAlpha * 0.75f)),
+        .fillColor        = za::Color::Transparent,
+        .outlineColor     = za::Color::whiteWithAlpha(static_cast<U8>(shouldDrawUIAlpha * 0.75f)),
         .outlineThickness = -4.f,
         .size             = {mapLimit / minimapScale, minimapSize.y},
         .cornerRadius     = 8.f,
@@ -210,12 +210,12 @@ void Main::drawMinimap(bool               back,
     uiState.minimapRect.position = minimapPos;
     uiState.minimapRect.size     = minimapBorder.size;
 
-    sf::Vec2f offset{-10.f, -10.f};
+    za::Vec2f offset{-10.f, -10.f};
 
     if (back)
         drawCloudFrame({
             .time              = shaderTime,
-            .mins              = minimapBorder.position - offset - sf::Vec2f{5.f, 5.f},
+            .mins              = minimapBorder.position - offset - za::Vec2f{5.f, 5.f},
             .maxs              = minimapBorder.position + minimapBorder.size + offset,
             .xSteps            = 16 + 4 * static_cast<int>(pt->getMapLimitIncreases()),
             .ySteps            = 8,
@@ -225,17 +225,17 @@ void Main::drawMinimap(bool               back,
         });
 
 
-    const float visibleLeft  = sf::base::max(0.f, gameView.center.x - gameView.size.x / 2.f);
-    const float visibleRight = sf::base::min(mapLimit, gameView.center.x + gameView.size.x / 2.f);
+    const float visibleLeft  = zb::max(0.f, gameView.center.x - gameView.size.x / 2.f);
+    const float visibleRight = zb::min(mapLimit, gameView.center.x + gameView.size.x / 2.f);
 
-    const sf::RectangleShapeData
+    const za::RectangleShapeData
         minimapIndicator{.position         = minimapPos.addX(visibleLeft / minimapScale),
-                         .fillColor        = sf::Color::Transparent,
-                         .outlineColor     = sf::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
+                         .fillColor        = za::Color::Transparent,
+                         .outlineColor     = za::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
                          .outlineThickness = 3.f,
-                         .size = sf::Vec2f{sf::base::max(0.f, visibleRight - visibleLeft), gameView.size.y} / minimapScale};
+                         .size = za::Vec2f{zb::max(0.f, visibleRight - visibleLeft), gameView.size.y} / minimapScale};
 
-    const float progressRatio = sf::base::clamp(mapLimit / boundaries.x, 0.f, 1.f);
+    const float progressRatio = zb::clamp(mapLimit / boundaries.x, 0.f, 1.f);
 
     auto minimapScaledPosition = minimapPos.componentWiseDiv(resolution / hudScale);
 
@@ -243,33 +243,33 @@ void Main::drawMinimap(bool               back,
                                        .clampX(0.f, (1.f - minimapScaledPosition.x) / progressRatio)
                                        .clampY(0.f, 1.f - minimapScaledPosition.y);
 
-    const sf::Rect2f preClampScissorRect{minimapScaledPosition, {progressRatio * minimapScaledSize.x, minimapScaledSize.y}};
+    const za::Rect2f preClampScissorRect{minimapScaledPosition, {progressRatio * minimapScaledSize.x, minimapScaledSize.y}};
 
-    const auto clampedScissorRect = sf::View::ScissorRect::fromRectClamped(preClampScissorRect);
+    const auto clampedScissorRect = za::View::ScissorRect::fromRectClamped(preClampScissorRect);
 
-    const sf::View minimapView{.center  = (resolution * 0.5f - minimapPos * hudScale) * minimapScale,
+    const za::View minimapView{.center  = (resolution * 0.5f - minimapPos * hudScale) * minimapScale,
                                .size    = resolution * minimapScale,
                                .scissor = clampedScissorRect};
 
-    const sf::Vec2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
+    const za::Vec2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
                                        static_cast<float>(txBackgroundChunk.getSize().y)};
 
     if (!back)
     {
-        rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackWithAlpha(shouldDrawUIAlpha),
+        rt.draw(za::RectangleShapeData{.fillColor = za::Color::blackWithAlpha(shouldDrawUIAlpha),
                                        .size      = boundaries * hudScale},
                 {.view = minimapView});
 
         rt.draw(txBackgroundChunk,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
+                 .color       = hueColor(hueMod, zb::min(shouldDrawUIAlpha, static_cast<zb::U8>(128u)))},
                 {.view = minimapView, .shader = &shaders.shader});
 
         rt.draw(txDrawings,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color = sf::Color::whiteWithAlpha(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
+                 .color = za::Color::whiteWithAlpha(zb::min(shouldDrawUIAlpha, static_cast<zb::U8>(215u)))},
                 {.view = minimapView, .shader = &shaders.shader});
 
         if (shouldDrawUIAlpha > 200u)
@@ -289,8 +289,8 @@ void Main::drawMinimap(bool               back,
         const float frameOffset = 3.f;
 
         NinePatchRect panel{
-            .position    = uiState.minimapRect.position - sf::Vec2f{frameOffset, frameOffset},
-            .size        = uiState.minimapRect.size + sf::Vec2f{frameOffset * 2.f, frameOffset * 2.f},
+            .position    = uiState.minimapRect.position - za::Vec2f{frameOffset, frameOffset},
+            .size        = uiState.minimapRect.size + za::Vec2f{frameOffset * 2.f, frameOffset * 2.f},
             .textureRect = txFrameTiny.getRect(),
             .borders     = NinePatchBorders::all(18.f),
             .color       = hueColor(hueMod, shouldDrawUIAlpha),
@@ -305,15 +305,15 @@ void Main::drawMinimap(bool               back,
 
 
 ////////////////////////////////////////////////////////////
-void Main::drawSplashScreen(sf::RenderTarget& rt, const sf::View& view, const sf::Vec2f resolution, const float hudScale) const
+void Main::drawSplashScreen(za::RenderTarget& rt, const za::View& view, const za::Vec2f resolution, const float hudScale) const
 {
     const auto progress = easeInOutCubic(splashCountdown.asProgress().getBounce());
 
-    rt.draw(sf::Sprite{.position    = resolution / 2.f / hudScale,
-                       .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
+    rt.draw(za::Sprite{.position    = resolution / 2.f / hudScale,
+                       .scale       = za::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
                        .origin      = txLogo.getSize().toVec2f() / 2.f,
                        .textureRect = txLogo.getRect(),
-                       .color       = sf::Color::whiteWithAlpha(static_cast<U8>(easeInOutSine(progress) * 255.f))},
+                       .color       = za::Color::whiteWithAlpha(static_cast<U8>(easeInOutSine(progress) * 255.f))},
             {.view = view, .texture = &txLogo});
 }
 
@@ -335,10 +335,10 @@ void Main::gameLoopDrawBubbles()
         {
             // Slowly rotating gold-ish hue.
             constexpr float goldBaseHue = 50.f;
-            return goldBaseHue + sf::base::sin(bubble.hueMod * 0.001f) * 8.f;
+            return goldBaseHue + zb::sin(bubble.hueMod * 0.001f) * 8.f;
         }
 
-        SFML_BASE_ASSERT(bubble.type == BubbleType::Normal);
+        ZB_ASSERT(bubble.type == BubbleType::Normal);
 
         constexpr float hueRange = 75.f;
 
@@ -346,23 +346,23 @@ void Main::gameLoopDrawBubbles()
 
         const float magnetHueMod = (beingRepelledOrAttracted ? 180.f : 0.f);
 
-        return sf::base::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
+        return zb::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
     };
 
-    const sf::Rect2f bubbleRects[]{atlasRects.txrBubble,
+    const za::Rect2f bubbleRects[]{atlasRects.txrBubble,
                                    atlasRects.txrBubbleStar,
                                    atlasRects.txrBomb,
                                    atlasRects.txrBubbleNova,
                                    atlasRects.txrBubbleGlass};
-    static_assert(sf::base::getArraySize(bubbleRects) == nBubbleTypes);
+    static_assert(zb::getArraySize(bubbleRects) == nBubbleTypes);
 
-    sf::CPUDrawableBatch* const batchToUseByType[]{&bubbleDrawableBatch,
+    za::CPUDrawableBatch* const batchToUseByType[]{&bubbleDrawableBatch,
                                                    &starBubbleDrawableBatch,
                                                    &bombBubbleDrawableBatch,
                                                    &starBubbleDrawableBatch,
                                                    &starBubbleDrawableBatch};
 
-    static_assert(sf::base::getArraySize(batchToUseByType) == nBubbleTypes);
+    static_assert(zb::getArraySize(batchToUseByType) == nBubbleTypes);
 
     for (const auto& bubble : pt->bubbles)
     {
@@ -379,7 +379,7 @@ void Main::gameLoopDrawBubbles()
         if (bubble.pendingTransformMs > 0.f)
         {
             constexpr float freezeMs = 450.f;
-            const float     phase    = sf::base::clamp(1.f - bubble.pendingTransformMs / freezeMs, 0.f, 1.f);
+            const float     phase    = zb::clamp(1.f - bubble.pendingTransformMs / freezeMs, 0.f, 1.f);
 
             const float bulge     = phase < 0.5f ? easeOutBack(phase * 2.f) : 1.f - easeInBack((phase - 0.5f) * 2.f);
             pendingTransformScale = 1.f + bulge * 0.35f;
@@ -390,21 +390,21 @@ void Main::gameLoopDrawBubbles()
         const auto& rect = bubbleRects[asIdx(bubble.type)];
 
         // Combo bubble shake: after the first click, wobble more and more as the timer runs out.
-        sf::Vec2f shakeOffset = {};
+        za::Vec2f shakeOffset = {};
         if (bubble.type == BubbleType::Combo && bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
         {
             const float maxMs   = gameConstants.events.invincibleBubble.comboTimerMaxMs;
-            const float frac    = sf::base::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
+            const float frac    = zb::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
             const float urgency = 1.f - frac;
             const float amp     = urgency * urgency * 8.f; // quadratic ramp, peaks ~8px right before pop
             shakeOffset         = {rngFast.getF(-amp, amp), rngFast.getF(-amp, amp)};
         }
 
-        batchToUseByType[asIdx(bubble.type)]->add(sf::Sprite{
+        batchToUseByType[asIdx(bubble.type)]->add(za::Sprite{
             .position    = bubble.position + shakeOffset,
             .scale       = {bubble.radius * scaleMult, bubble.radius * scaleMult},
             .origin      = rect.size / 2.f,
-            .rotation    = sf::radians(bubble.rotation),
+            .rotation    = za::radians(bubble.rotation),
             .textureRect = rect,
             .color       = hueColor(getBubbleHue(bubble), 255u),
         });
@@ -418,20 +418,20 @@ void Main::gameLoopDrawBubbles()
             if (bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
             {
                 const float maxMs = gameConstants.events.invincibleBubble.comboTimerMaxMs;
-                const float frac  = sf::base::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
+                const float frac  = zb::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
 
                 constexpr float thickness = 3.f;
                 const float     outerR    = bubble.radius;
 
-                batchToUseByType[asIdx(bubble.type)]->add(sf::RingPieSliceShapeData{
+                batchToUseByType[asIdx(bubble.type)]->add(za::RingPieSliceShapeData{
                     .position    = bubble.position + shakeOffset,
                     .origin      = {outerR, outerR},
                     .textureRect = atlasRects.txrWhiteDot,
-                    .fillColor   = sf::Color::whiteWithAlpha(64u),
+                    .fillColor   = za::Color::whiteWithAlpha(64u),
                     .outerRadius = outerR,
                     .innerRadius = outerR - thickness,
-                    .startAngle  = sf::degrees(-90.f),
-                    .sweepAngle  = sf::radians(sf::base::tau * frac),
+                    .startAngle  = za::degrees(-90.f),
+                    .sweepAngle  = za::radians(zb::tau * frac),
                     .pointCount  = 32u,
                 });
             }
@@ -454,7 +454,7 @@ void Main::gameLoopDisplayBubblesWithoutShader()
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopDrawCursorTrail(const sf::Vec2f mousePos)
+void Main::gameLoopDrawCursorTrail(const za::Vec2f mousePos)
 {
     if (profile.cursorTrailMode == 2 /* disabled */)
         return;
@@ -462,7 +462,7 @@ void Main::gameLoopDrawCursorTrail(const sf::Vec2f mousePos)
     if (comboState.combo <= 1 && profile.cursorTrailMode == 0 /* combo mode */)
         return;
 
-    const sf::Vec2f mousePosDiff    = playerInputState.lastMousePos - mousePos;
+    const za::Vec2f mousePosDiff    = playerInputState.lastMousePos - mousePos;
     const float     mousePosDiffLen = mousePosDiff.length();
 
     if (mousePosDiffLen == 0.f)
@@ -473,7 +473,7 @@ void Main::gameLoopDrawCursorTrail(const sf::Vec2f mousePos)
 
     const float trailHue = wrapHue(profile.cursorHue + currentBackgroundHue.asDegrees());
 
-    const sf::Vec2f trailStep = mousePosDiff.normalized() * chunkLen;
+    const za::Vec2f trailStep = mousePosDiff.normalized() * chunkLen;
 
     const float trailScaleMult = pt->laserPopEnabled ? 1.5f : 1.f;
 
@@ -497,7 +497,7 @@ void Main::gameLoopDrawMinimapIcons()
 {
     minimapDrawableBatch.clear();
 
-    const sf::Rect2f* const mmCatTxrs[]{
+    const za::Rect2f* const mmCatTxrs[]{
         &atlasRects.txrMMNormal,
         &atlasRects.txrMMUni,
         &atlasRects.txrMMDevil,
@@ -513,17 +513,17 @@ void Main::gameLoopDrawMinimapIcons()
         &atlasRects.txrMMDuck,
     };
 
-    static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
+    static_assert(zb::getArraySize(mmCatTxrs) == nCatTypes);
 
     for (const Shrine& shrine : pt->shrines)
     {
         const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
 
         minimapDrawableBatch.add(
-            sf::Sprite{.position    = shrine.position,
+            za::Sprite{.position    = shrine.position,
                        .scale       = {0.7f, 0.7f},
                        .origin      = atlasRects.txrMMShrine.size / 2.f,
-                       .rotation    = sf::radians(0.f),
+                       .rotation    = za::radians(0.f),
                        .textureRect = atlasRects.txrMMShrine,
                        .color       = hueColor(shrine.getHue(), shrineAlpha)});
     }
@@ -533,23 +533,23 @@ void Main::gameLoopDrawMinimapIcons()
         const auto& catMMTxr = *mmCatTxrs[asIdx(cat.type)];
 
         minimapDrawableBatch.add(
-            sf::Sprite{.position    = cat.position,
+            za::Sprite{.position    = cat.position,
                        .scale       = {1.f, 1.f},
                        .origin      = catMMTxr.size / 2.f,
-                       .rotation    = sf::radians(0.f),
+                       .rotation    = za::radians(0.f),
                        .textureRect = catMMTxr,
                        .color       = hueColor(cat.hue, 255u)});
     }
 
-    const auto addDollsToMinimap = [&](const sf::base::Vector<HexSession>& sessions, const float hueMod)
+    const auto addDollsToMinimap = [&](const zb::Vector<HexSession>& sessions, const float hueMod)
     {
         for (const HexSession& session : sessions)
             for (const Doll& doll : session.dolls)
                 minimapDrawableBatch.add(
-                    sf::Sprite{.position    = doll.position,
+                    za::Sprite{.position    = doll.position,
                                .scale       = {0.5f, 0.5f},
                                .origin      = atlasRects.txrDollNormal.size / 2.f,
-                               .rotation    = sf::radians(0.f),
+                               .rotation    = za::radians(0.f),
                                .textureRect = atlasRects.txrDollNormal,
                                .color       = hueColor(doll.hue + hueMod, 255u)});
     };
@@ -588,14 +588,14 @@ void Main::gameLoopDisplayBubblesWithShader()
     shaders.shader.setUniform(shaders.suRimShineTimeRate, profile.bsRimShineTimeRate);
     shaders.shader.setUniform(shaders.suRimShineArc, profile.bsRimShineArc);
 
-    constexpr sf::BlendMode bubbleBlend(sf::BlendMode::Factor::One,
-                                        sf::BlendMode::Factor::OneMinusSrcAlpha,
-                                        sf::BlendMode::Equation::Add,
-                                        sf::BlendMode::Factor::One,
-                                        sf::BlendMode::Factor::OneMinusSrcAlpha,
-                                        sf::BlendMode::Equation::Add);
+    constexpr za::BlendMode bubbleBlend(za::BlendMode::Factor::One,
+                                        za::BlendMode::Factor::OneMinusSrcAlpha,
+                                        za::BlendMode::Equation::Add,
+                                        za::BlendMode::Factor::One,
+                                        za::BlendMode::Factor::OneMinusSrcAlpha,
+                                        za::BlendMode::Equation::Add);
 
-    const sf::RenderStates bubbleStates{
+    const za::RenderStates bubbleStates{
         .blendMode = bubbleBlend,
         .view      = gameView,
         .texture   = &textureAtlas.getTexture(),
@@ -622,22 +622,22 @@ void Main::gameLoopDisplayBubblesWithShader()
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
+void Main::gameLoopDrawCats(const za::Vec2f mousePos, const float deltaTimeMs)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f* const uniCatTxr = isUnicatTranscendenceActive() ? &atlasRects.txrUniCat2 : &atlasRects.txrUniCat;
-    const sf::Rect2f* const uniCatTailTxr = isUnicatTranscendenceActive() ? &atlasRects.txrUniCat2Tail : &atlasRects.txrUniCatTail;
+    const za::Rect2f* const uniCatTxr = isUnicatTranscendenceActive() ? &atlasRects.txrUniCat2 : &atlasRects.txrUniCat;
+    const za::Rect2f* const uniCatTailTxr = isUnicatTranscendenceActive() ? &atlasRects.txrUniCat2Tail : &atlasRects.txrUniCatTail;
 
-    const sf::Rect2f* const devilCatTxr = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCat2 : &atlasRects.txrDevilCat3;
-    const sf::Rect2f* const devilCatPawTxr  = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCatPaw2
+    const za::Rect2f* const devilCatTxr = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCat2 : &atlasRects.txrDevilCat3;
+    const za::Rect2f* const devilCatPawTxr  = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCatPaw2
                                                                            : &atlasRects.txrDevilCat3Arm;
-    const sf::Rect2f* const devilCatTailTxr = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCatTail2
+    const za::Rect2f* const devilCatTailTxr = isDevilcatHellsingedActive() ? &atlasRects.txrDevilCatTail2
                                                                            : &atlasRects.txrDevilCat3Tail;
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f* const catTxrsByType[] = {
+    const za::Rect2f* const catTxrsByType[] = {
         &atlasRects.txrCat,       // Normal
         uniCatTxr,                // Uni
         devilCatTxr,              // Devil
@@ -654,10 +654,10 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         &atlasRects.txrDuckCat,     // Duck
     };
 
-    static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
+    static_assert(zb::getArraySize(catTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f* const catPawTxrsByType[] = {
+    const za::Rect2f* const catPawTxrsByType[] = {
         &atlasRects.txrCatPaw,       // Normal
         &atlasRects.txrUniCatPaw,    // Uni
         devilCatPawTxr,              // Devil
@@ -674,10 +674,10 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         &atlasRects.txrWhiteDot,       // Duck
     };
 
-    static_assert(sf::base::getArraySize(catPawTxrsByType) == nCatTypes);
+    static_assert(zb::getArraySize(catPawTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f* const catTailTxrsByType[] = {
+    const za::Rect2f* const catTailTxrsByType[] = {
         &atlasRects.txrCatTail,      // Normal
         uniCatTailTxr,               // Uni
         devilCatTailTxr,             // Devil
@@ -694,7 +694,7 @@ void Main::gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
         &atlasRects.txrWhiteDot,        // Duck
     };
 
-    static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
+    static_assert(zb::getArraySize(catTailTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
     for (Cat& cat : pt->cats)
@@ -723,31 +723,31 @@ namespace
 {
 struct CatTextureTables
 {
-    const sf::Rect2f* const (&catTxrsByType)[nCatTypes];
-    const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes];
-    const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes];
+    const za::Rect2f* const (&catTxrsByType)[nCatTypes];
+    const za::Rect2f* const (&catPawTxrsByType)[nCatTypes];
+    const za::Rect2f* const (&catTailTxrsByType)[nCatTypes];
 };
 
 struct CatDrawContext
 {
     Main&                          main;
     Cat&                           cat;
-    sf::CPUDrawableBatch&          batchToUse;
-    sf::CPUDrawableBatch&          textBatchToUse;
-    sf::CPUDrawableBatch&          spriteBatchToUse;
-    sf::CPUDrawableBatch&          cloudBatchToUse;
+    za::CPUDrawableBatch&          batchToUse;
+    za::CPUDrawableBatch&          textBatchToUse;
+    za::CPUDrawableBatch&          spriteBatchToUse;
+    za::CPUDrawableBatch&          cloudBatchToUse;
     Cat*                           witchCat;
     Cat*                           copyCat;
-    const sf::Rect2f&              catTxr;
-    const sf::Rect2f&              catPawTxr;
-    const sf::Rect2f&              catTailTxr;
-    sf::Vec2f                      catTailOffset;
-    sf::Vec2f                      catEyeOffset;
+    const za::Rect2f&              catTxr;
+    const za::Rect2f&              catPawTxr;
+    const za::Rect2f&              catTailTxr;
+    za::Vec2f                      catTailOffset;
+    za::Vec2f                      catEyeOffset;
     float                          deltaTimeMs;
-    sf::Vec2f                      mousePos;
+    za::Vec2f                      mousePos;
     bool                           drawHexedWithShader;
     bool                           beingDragged;
-    sf::base::Optional<sf::Rect2f> dragRect;
+    zb::Optional<za::Rect2f> dragRect;
     bool                           insideDragRect;
     bool                           hovered;
     bool                           shouldDisplayRangeCircle;
@@ -758,18 +758,18 @@ struct CatDrawContext
     float                          bodyRotationExtra; // tail-wobble + bonk pendulum etc. (added on top of catRotation)
     float                          range;
     U8                             alpha;
-    sf::Color                      catColor;
+    za::Color                      catColor;
     U8                             circleAlpha;
-    sf::Color                      circleColor;
-    sf::Color                      circleOutlineColor;
-    sf::Color                      textOutlineColor;
+    za::Color                      circleColor;
+    za::Color                      circleOutlineColor;
+    za::Color                      textOutlineColor;
     bool                           shouldDrawCatRange;
     float                          catScaleMult;
-    sf::Vec2f                      catScale;
-    sf::Vec2f                      catAnchor;
-    sf::Vec2f                      visualCatAnchor;
-    sf::Vec2f                      pushDown;
-    sf::Color                      attachmentHue;
+    za::Vec2f                      catScale;
+    za::Vec2f                      catAnchor;
+    za::Vec2f                      visualCatAnchor;
+    za::Vec2f                      pushDown;
+    za::Color                      attachmentHue;
     float                          hexedEffectStrength;
 
     [[nodiscard]] bool isCopyCatWithType(const CatType copiedType) const
@@ -777,12 +777,12 @@ struct CatDrawContext
         return cat.type == CatType::Copy && main.pt->copycatCopiedCatType == copiedType;
     }
 
-    [[nodiscard]] sf::Angle bodyRotation() const
+    [[nodiscard]] za::Angle bodyRotation() const
     {
-        return sf::radians(catRotation + bodyRotationExtra);
+        return za::radians(catRotation + bodyRotationExtra);
     }
 
-    [[nodiscard]] sf::Vec2f anchorOffset(const sf::Vec2f offset) const
+    [[nodiscard]] za::Vec2f anchorOffset(const za::Vec2f offset) const
     {
         return visualCatAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(bodyRotation());
     }
@@ -807,21 +807,21 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
             if (wobblePhase > 0.f)
                 wobblePhase -= ctx.deltaTimeMs * 0.005f;
 
-            wobblePhase = sf::base::max(wobblePhase, 0.f);
+            wobblePhase = zb::max(wobblePhase, 0.f);
         }
         else
         {
-            const float frequency = remap(sf::base::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
+            const float frequency = remap(zb::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
 
             wobblePhase += frequency * ctx.deltaTimeMs * 0.05f;
-            wobblePhase = sf::base::remainder(wobblePhase, sf::base::tau);
+            wobblePhase = zb::remainder(wobblePhase, zb::tau);
         }
     }
 
     if (ctx.main.isCatPerformingRitual(witch, ctx.cat))
     {
-        const float amplitude = remap(sf::base::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
-        ctx.catRotation       = sf::base::sin(wobblePhase) * amplitude;
+        const float amplitude = remap(zb::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
+        ctx.catRotation       = zb::sin(wobblePhase) * amplitude;
     }
 }
 
@@ -829,7 +829,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     Main&                   main,
     Cat&                    cat,
     const float             deltaTimeMs,
-    const sf::Vec2f         mousePos,
+    const za::Vec2f         mousePos,
     const CatTextureTables& textureTables)
 {
     auto& batchToUse = main.playerInputState.catToPlace == &cat ? main.cpuTopDrawableBatch : main.cpuDrawableBatch;
@@ -870,18 +870,18 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         .bodyRotationExtra        = 0.f,
         .range                    = main.getComputedRangeByCatTypeOrCopyCat(cat.type),
         .alpha                    = 255u,
-        .catColor                 = sf::Color::White,
+        .catColor                 = za::Color::White,
         .circleAlpha              = 0u,
-        .circleColor              = sf::Color::White,
-        .circleOutlineColor       = sf::Color::White,
-        .textOutlineColor         = sf::Color::White,
+        .circleColor              = za::Color::White,
+        .circleOutlineColor       = za::Color::White,
+        .textOutlineColor         = za::Color::White,
         .shouldDrawCatRange       = false,
         .catScaleMult             = easeOutElastic(cat.spawnEffectTimer.value),
         .catScale                 = {},
         .catAnchor                = {},
         .visualCatAnchor          = {},
         .pushDown                 = {},
-        .attachmentHue            = sf::Color::White,
+        .attachmentHue            = za::Color::White,
         .hexedEffectStrength      = cat.isHexedOrCopyHexed() ? cat.getHexedTimer()->remap(0.f, 1.f) : 0.f,
     };
 
@@ -894,7 +894,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     if (cat.type == CatType::Astro)
     {
         if (cat.astroState.hasValue() && cat.isCloseToStartX())
-            ctx.catRotation = remap(sf::base::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 0.f, 0.523599f);
+            ctx.catRotation = remap(zb::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 0.f, 0.523599f);
         else if (ctx.cooldownDiff < 1000.f)
             ctx.catRotation = remap(ctx.cooldownDiff, 0.f, 1000.f, 0.523599f, 0.f);
         else if (cat.astroState.hasValue())
@@ -902,7 +902,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     }
 
     const float mult = remap(cat.dragTime, 0.f, 1000.f, 0.f, 1.f);
-    ctx.catRotation += (-0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f) * mult;
+    ctx.catRotation += (-0.22f + zb::sin(cat.wobbleRadians) * 0.12f) * mult;
 
     if (ctx.witchCat != nullptr)
         applyWitchAnimation(ctx, main.witchcatWobblePhase, *ctx.witchCat);
@@ -925,7 +925,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     ctx.bodyRotationExtra = 0.f;
 
     if (cat.type == CatType::Warden)
-        ctx.bodyRotationExtra += sf::base::sin(cat.wobbleRadians) * main.gameConstants.wardenCatBodyWobbleRadians;
+        ctx.bodyRotationExtra += zb::sin(cat.wobbleRadians) * main.gameConstants.wardenCatBodyWobbleRadians;
 
     if (cat.bonkImpactMs > 0.f)
     {
@@ -936,7 +936,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         const float elapsedS = (bonkImpactDurationMs - cat.bonkImpactMs) * 0.001f;
         const float decay    = cat.bonkImpactMs / bonkImpactDurationMs;
 
-        ctx.bodyRotationExtra += sf::base::sin(elapsedS * bonkImpactFreqHz * sf::base::tau) * bonkImpactAmplitude * decay;
+        ctx.bodyRotationExtra += zb::sin(elapsedS * bonkImpactFreqHz * zb::tau) * bonkImpactAmplitude * decay;
     }
 
     ctx.alpha       = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
@@ -949,7 +949,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     ctx.shouldDrawCatRange = main.profile.showCatRange && !main.inPrestigeTransition &&
                              (!main.profile.showRangesOnlyOnHover || ctx.shouldDisplayRangeCircle);
 
-    ctx.catScale             = sf::Vec2f{0.2f, 0.2f} * ctx.catScaleMult;
+    ctx.catScale             = za::Vec2f{0.2f, 0.2f} * ctx.catScaleMult;
     ctx.catAnchor            = ctx.beingDragged ? cat.position : cat.getDrawPosition(main.profile.enableCatBobbing);
     const auto catDrawOffset = main.gameConstants.catDrawOffsetsByType[asIdx(cat.type)];
     ctx.visualCatAnchor = ctx.catAnchor + (catDrawOffset / 2.f * 0.2f * ctx.catScaleMult).rotatedBy(ctx.bodyRotation());
@@ -965,7 +965,7 @@ void drawCatRange(const CatDrawContext& ctx)
     if (!ctx.shouldDrawCatRange)
         return;
 
-    ctx.batchToUse.add(sf::CircleShapeData{
+    ctx.batchToUse.add(za::CircleShapeData{
         .position           = Main::getCatRangeCenter(ctx.cat),
         .origin             = {ctx.range, ctx.range},
         .outlineTextureRect = ctx.main.atlasRects.txrWhiteDot,
@@ -981,8 +981,8 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
 {
     const auto& [cloudPositionOffset, cloudXExtentMult] = ctx.main.gameConstants.cloudModifiers[asIdx(ctx.cat.type)];
 
-    const int   cloudCircleCount = sf::base::max(ctx.main.gameConstants.catCloudCircleCount, 3);
-    const float cloudScaleBase   = sf::base::max(ctx.catScaleMult, 0.35f) * ctx.main.gameConstants.catCloudScale;
+    const int   cloudCircleCount = zb::max(ctx.main.gameConstants.catCloudCircleCount, 3);
+    const float cloudScaleBase   = zb::max(ctx.catScaleMult, 0.35f) * ctx.main.gameConstants.catCloudScale;
 
     float cloudMult = easeInOutBack(remap(ctx.cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
 
@@ -991,7 +991,7 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
         if (ctx.cat.astroState.hasValue() && ctx.cat.isCloseToStartX())
         {
             cloudMult *= easeInOutBack(
-                remap(sf::base::fabs(ctx.cat.position.x - ctx.cat.astroState->startX), 0.f, 400.f, 1.f, 0.f));
+                remap(zb::fabs(ctx.cat.position.x - ctx.cat.astroState->startX), 0.f, 400.f, 1.f, 0.f));
         }
         else if (ctx.cooldownDiff < 1000.f)
         {
@@ -1008,30 +1008,30 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
                                ctx.main.gameConstants.catCloudExtraYOffset * (1.f - cloudMult) +
                                (ctx.beingDragged ? ctx.main.gameConstants.catCloudDraggedOffset : 0.f);
 
-    const sf::Vec2f cloudBasePos = ctx.visualCatAnchor.addY(ctx.catTxr.size.y / 2.f * ctx.catScale.y) +
-                                   sf::Vec2f{0.f, cloudYOffset * cloudScale} + cloudPositionOffset;
+    const za::Vec2f cloudBasePos = ctx.visualCatAnchor.addY(ctx.catTxr.size.y / 2.f * ctx.catScale.y) +
+                                   za::Vec2f{0.f, cloudYOffset * cloudScale} + cloudPositionOffset;
 
     for (int cloudCircleIndex = 0; cloudCircleIndex < cloudCircleCount; ++cloudCircleIndex)
     {
         const float normalizedIndex = static_cast<float>(cloudCircleIndex) / static_cast<float>(cloudCircleCount - 1);
         const float centeredIndex   = normalizedIndex * 2.f - 1.f;
-        const float lobeWeight      = 1.f - sf::base::fabs(centeredIndex);
+        const float lobeWeight      = 1.f - zb::fabs(centeredIndex);
         const float phase           = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
                                       static_cast<float>(cloudCircleIndex) * 0.85f;
 
         const float xOffset = centeredIndex * ctx.main.gameConstants.catCloudXExtent * cloudScale * cloudXExtentMult +
-                              sf::base::sin(phase) * (ctx.main.gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
+                              zb::sin(phase) * (ctx.main.gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
 
         const float yOffset = -lobeWeight * ctx.main.gameConstants.catCloudLobeLift * cloudScale +
-                              sf::base::cos(phase * 1.4f) * (ctx.main.gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
+                              zb::cos(phase * 1.4f) * (ctx.main.gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
 
         const float radius = (ctx.main.gameConstants.catCloudRadiusBase +
                               lobeWeight * ctx.main.gameConstants.catCloudRadiusLobe +
-                              sf::base::sin(phase * 1.15f) * ctx.main.gameConstants.catCloudRadiusWobble) *
+                              zb::sin(phase * 1.15f) * ctx.main.gameConstants.catCloudRadiusWobble) *
                              cloudScale;
 
-        ctx.cloudBatchToUse.add(sf::Sprite{
-            .position    = cloudBasePos + sf::Vec2f{xOffset, yOffset},
+        ctx.cloudBatchToUse.add(za::Sprite{
+            .position    = cloudBasePos + za::Vec2f{xOffset, yOffset},
             .scale       = {radius / (ctx.main.atlasRects.txrCloud.size.x / 2.f),
                             radius / (ctx.main.atlasRects.txrCloud.size.y / 2.f)},
             .origin      = ctx.main.atlasRects.txrCloud.size / 2.f,
@@ -1042,24 +1042,24 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
 
 void drawCatVisuals(const CatDrawContext& ctx)
 {
-    const auto addCatSprite = [&](const sf::Sprite& sprite) { ctx.spriteBatchToUse.add(sprite); };
+    const auto addCatSprite = [&](const za::Sprite& sprite) { ctx.spriteBatchToUse.add(sprite); };
 
     const float tailRotationMult = ctx.cat.type == CatType::Uni ? 0.4f : 1.f;
 
-    const auto tailWiggleRotation = sf::radians(
+    const auto tailWiggleRotation = za::radians(
         ctx.catRotation + ctx.bodyRotationExtra +
         ((ctx.beingDragged ? -0.2f : 0.f) +
-         sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+         zb::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
-    const auto tailWiggleRotationInvertedDragged = sf::radians(
+    const auto tailWiggleRotationInvertedDragged = za::radians(
         ctx.catRotation + ctx.bodyRotationExtra +
         ((ctx.beingDragged ? 0.2f : 0.f) +
-         sf::base::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+         zb::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     if (ctx.cat.type == CatType::Devil)
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(
+            za::Sprite{.position = ctx.anchorOffset(
                            ctx.catTailOffset + ctx.main.gameConstants.devilBackTail.positionOffset + ctx.pushDown * 2.f),
                        .scale       = ctx.catScale * 1.25f,
                        .origin      = ctx.main.gameConstants.devilBackTail.origin,
@@ -1070,7 +1070,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.geniusCatsPurchased)
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.atlasRects.txrBrainBack.size / 2.f,
                                 .rotation    = ctx.bodyRotation(),
@@ -1080,11 +1080,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Uni)
     {
-        const auto wingRotation = sf::radians(
+        const auto wingRotation = za::radians(
             ctx.catRotation + (ctx.beingDragged ? -0.2f : 0.f) +
-            sf::base::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
+            zb::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
 
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
                                 .scale       = ctx.catScale * 1.25f,
                                 .origin      = ctx.main.atlasRects.txrUniCatWings.size / 2.f -
                                                ctx.main.gameConstants.uniWingsOriginOffsetFromCenter,
@@ -1096,13 +1096,13 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type == CatType::Devil)
     {
         addCatSprite(
-            sf::Sprite{.position    = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
+            za::Sprite{.position    = ctx.visualCatAnchor + ctx.main.gameConstants.devilBookOffset,
                        .scale       = ctx.catScale * 1.55f,
                        .origin      = ctx.main.atlasRects.txrDevilCat3Book.size / 2.f,
                        .rotation    = ctx.bodyRotation(),
                        .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.atlasRects.txrDevilCat2Book
                                                                             : ctx.main.atlasRects.txrDevilCat3Book,
-                       .color = hueColor(sf::base::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
+                       .color = hueColor(zb::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
                                                              60.f) -
                                              30.f,
                                          255u)});
@@ -1111,11 +1111,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type == CatType::Devil)
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.devilPawDraggedOffset
+            za::Sprite{.position = ctx.cat.pawPosition + (ctx.beingDragged ? ctx.main.gameConstants.devilPawDraggedOffset
                                                                            : ctx.main.gameConstants.devilPawIdleOffset),
                        .scale       = ctx.catScale * 1.25f,
                        .origin      = ctx.catPawTxr.size / 2.f,
-                       .rotation    = ctx.cat.pawRotation + sf::degrees(35.f),
+                       .rotation    = ctx.cat.pawRotation + za::degrees(35.f),
                        .textureRect = ctx.catPawTxr,
                        .color       = ctx.catColor.withAlpha(static_cast<U8>(ctx.cat.pawOpacity))});
     }
@@ -1126,11 +1126,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
     // only the cat visibly rocks.
     if (ctx.cat.type == CatType::Warden)
     {
-        addCatSprite(sf::Sprite{
+        addCatSprite(za::Sprite{
             .position    = ctx.anchorOffset(ctx.main.gameConstants.wardenGuardhouseBackOffset),
             .scale       = ctx.catScale,
             .origin      = ctx.main.atlasRects.txrGuardhouseBack.size / 2.f,
-            .rotation    = sf::radians(0.f),
+            .rotation    = za::radians(0.f),
             .textureRect = ctx.main.atlasRects.txrGuardhouseBack,
             .color       = ctx.catColor,
         });
@@ -1143,7 +1143,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     const auto bodyRotation = ctx.bodyRotation();
 
     addCatSprite(
-        sf::Sprite{.position = ctx.cat.type == CatType::Warden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatBodyOffset)
+        za::Sprite{.position = ctx.cat.type == CatType::Warden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatBodyOffset)
                                                                : ctx.visualCatAnchor,
                    .scale       = ctx.catScale,
                    .origin      = ctx.catTxr.size / 2.f,
@@ -1152,7 +1152,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                    .color       = ctx.catColor});
 
     if (ctx.main.gameConstants.debugDrawCatCenterMarker)
-        ctx.batchToUse.add(sf::CircleShapeData{
+        ctx.batchToUse.add(za::CircleShapeData{
             .position   = ctx.catAnchor,
             .origin     = {4.f, 4.f},
             .fillColor  = {255u, 0u, 0u, ctx.alpha},
@@ -1161,14 +1161,14 @@ void drawCatVisuals(const CatDrawContext& ctx)
         });
 
     if (ctx.main.gameConstants.debugDrawCatBodyBounds)
-        ctx.batchToUse.add(sf::RectangleShapeData{
+        ctx.batchToUse.add(za::RectangleShapeData{
             .position           = ctx.catAnchor,
             .scale              = ctx.catScale,
             .origin             = ctx.catTxr.size / 2.f,
             .rotation           = bodyRotation.wrapUnsigned(),
             .outlineTextureRect = ctx.main.atlasRects.txrWhiteDot,
-            .fillColor          = sf::Color::Transparent,
-            .outlineColor       = sf::Color{255u, 0u, 0u, ctx.alpha},
+            .fillColor          = za::Color::Transparent,
+            .outlineColor       = za::Color{255u, 0u, 0u, ctx.alpha},
             .outlineThickness   = 4.f,
             .size               = ctx.catTxr.size,
         });
@@ -1176,7 +1176,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type == CatType::Duck)
     {
         addCatSprite(
-            sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.duckFlag.positionOffset + ctx.pushDown),
+            za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.duckFlag.positionOffset + ctx.pushDown),
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.duckFlag.origin,
                        .rotation    = tailWiggleRotation,
@@ -1187,7 +1187,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.smartCatsPurchased)
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.smartHatOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.smartHatOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.atlasRects.txrSmartCatHat.size / 2.f,
                                 .rotation    = bodyRotation,
@@ -1211,7 +1211,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type == CatType::Normal)
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.earFlapOffset),
+            za::Sprite{.position = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.earFlapOffset),
                        .scale    = ctx.catScale,
                        .origin   = ctx.main.atlasRects.txrCatEars0.size / 2.f,
                        .rotation = bodyRotation,
@@ -1233,11 +1233,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
         (void)ctx.cat.yawnAnimCountdown.tick(ctx.deltaTimeMs);
 
-        const sf::Vec2f yawnOrigin = ctx.main.atlasRects.txrCatYawn0.size / 2.f +
+        const za::Vec2f yawnOrigin = ctx.main.atlasRects.txrCatYawn0.size / 2.f +
                                      (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatYawnOriginOffset
-                                                                      : sf::Vec2f{0.f, 0.f});
+                                                                      : za::Vec2f{0.f, 0.f});
 
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.yawnOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.yawnOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = yawnOrigin,
                                 .rotation    = bodyRotation,
@@ -1252,7 +1252,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.smartCatsPurchased)
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.smartDiploma.positionOffset + ctx.pushDown),
+            za::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.smartDiploma.positionOffset + ctx.pushDown),
                        .scale    = ctx.catScale,
                        .origin   = ctx.main.gameConstants.smartDiploma.origin,
                        .rotation = tailWiggleRotation,
@@ -1262,7 +1262,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     else if (ctx.cat.type == CatType::Astro && ctx.main.pt->perm.astroCatInspirePurchased)
     {
         addCatSprite(
-            sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.astroFlag.positionOffset + ctx.pushDown),
+            za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.astroFlag.positionOffset + ctx.pushDown),
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.astroFlag.origin,
                        .rotation    = tailWiggleRotation,
@@ -1272,7 +1272,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     else if (ctx.cat.type == CatType::Engi || ctx.isCopyCatWithType(CatType::Engi))
     {
         addCatSprite(
-            sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.engiWrench.positionOffset + ctx.pushDown),
+            za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.engiWrench.positionOffset + ctx.pushDown),
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.engiWrench.origin,
                        .rotation    = tailWiggleRotation,
@@ -1282,7 +1282,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     else if (ctx.cat.type == CatType::Attracto || ctx.isCopyCatWithType(CatType::Attracto))
     {
         addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.attractoMagnet.positionOffset + ctx.pushDown),
+            za::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.attractoMagnet.positionOffset + ctx.pushDown),
                        .scale       = ctx.catScale,
                        .origin      = ctx.main.gameConstants.attractoMagnet.origin,
                        .rotation    = tailWiggleRotation,
@@ -1293,11 +1293,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
     if (ctx.cat.type != CatType::Devil && ctx.cat.type != CatType::Warden)
     {
         const auto originOffset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailOriginOffset
-                                                               : sf::Vec2f{0.f, 0.f};
-        const auto offset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailExtraOffset : sf::Vec2f{0.f, 0.f};
+                                                               : za::Vec2f{0.f, 0.f};
+        const auto offset = ctx.cat.type == CatType::Uni ? ctx.main.gameConstants.uniTailExtraOffset : za::Vec2f{0.f, 0.f};
 
         addCatSprite(
-            sf::Sprite{.position = ctx.anchorOffset(
+            za::Sprite{.position = ctx.anchorOffset(
                            ctx.catTailOffset + ctx.main.gameConstants.tail.positionOffset + offset + originOffset),
                        .scale       = ctx.catScale,
                        .origin      = originOffset + ctx.main.gameConstants.tail.origin,
@@ -1308,7 +1308,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Mouse || ctx.isCopyCatWithType(CatType::Mouse))
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.mouseProp.positionOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.mouseProp.positionOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.gameConstants.mouseProp.origin,
                                 .rotation    = tailWiggleRotationInvertedDragged,
@@ -1339,16 +1339,16 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     (void)ctx.cat.blinkAnimCountdown.tick(ctx.deltaTimeMs);
 
-    const sf::Vec2f eyelidOrigin = ctx.main.atlasRects.txrCatEyeLid0.size / 2.f +
+    const za::Vec2f eyelidOrigin = ctx.main.atlasRects.txrCatEyeLid0.size / 2.f +
                                    (ctx.cat.type == CatType::Warden ? ctx.main.gameConstants.wardenCatEyelidOriginOffset
-                                                                    : sf::Vec2f{0.f, 0.f});
+                                                                    : za::Vec2f{0.f, 0.f});
 
     if ((ctx.witchCat != nullptr && ctx.main.isCatPerformingRitual(*ctx.witchCat, ctx.cat)) ||
         (ctx.copyCat != nullptr && ctx.main.pt->copycatCopiedCatType == CatType::Witch &&
          ctx.main.isCatPerformingRitual(*ctx.copyCat, ctx.cat)) ||
         ctx.cat.isNapping())
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = eyelidOrigin,
                                 .rotation    = bodyRotation,
@@ -1357,7 +1357,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     }
     else if (!ctx.cat.yawnAnimCountdown.isDone())
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = eyelidOrigin,
                                 .rotation    = bodyRotation,
@@ -1368,7 +1368,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     else if (!ctx.cat.blinkAnimCountdown.isDone())
     {
         addCatSprite(
-            sf::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
+            za::Sprite{.position    = ctx.anchorOffset(ctx.catEyeOffset + ctx.main.gameConstants.eyelidOffset),
                        .scale       = ctx.catScale,
                        .origin      = eyelidOrigin,
                        .rotation    = bodyRotation,
@@ -1379,7 +1379,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
     if (ctx.cat.type == CatType::Normal && ctx.main.pt->perm.geniusCatsPurchased)
     {
-        addCatSprite(sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
+        addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.brainJarOffset),
                                 .scale       = ctx.catScale,
                                 .origin      = ctx.main.atlasRects.txrBrainFront.size / 2.f,
                                 .rotation    = bodyRotation,
@@ -1392,11 +1392,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
     // reads as resting on the windowsill.
     if (ctx.cat.type == CatType::Warden)
     {
-        addCatSprite(sf::Sprite{
+        addCatSprite(za::Sprite{
             .position    = ctx.anchorOffset(ctx.main.gameConstants.wardenGuardhouseFrontOffset),
             .scale       = ctx.catScale,
             .origin      = ctx.main.atlasRects.txrGuardhouseFront.size / 2.f,
-            .rotation    = sf::radians(0.f),
+            .rotation    = za::radians(0.f),
             .textureRect = ctx.main.atlasRects.txrGuardhouseFront,
             .color       = ctx.catColor,
         });
@@ -1421,15 +1421,15 @@ void drawCatVisuals(const CatDrawContext& ctx)
         //   - Hold:   stays at cat.pawPosition
         //   - Return: cat.pawPosition → idle pose
         //   - Idle (no bonk): sits at the tunable windowsill offset
-        const sf::Vec2f wardenIdlePos = isWarden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatPawOffset)
-                                                 : sf::Vec2f{0.f, 0.f};
+        const za::Vec2f wardenIdlePos = isWarden ? ctx.anchorOffset(ctx.main.gameConstants.wardenCatPawOffset)
+                                                 : za::Vec2f{0.f, 0.f};
 
-        sf::Vec2f pawPosition = isWarden ? wardenIdlePos
+        za::Vec2f pawPosition = isWarden ? wardenIdlePos
                                          : ctx.cat.pawPosition +
                                                (ctx.beingDragged ? ctx.main.gameConstants.regularPawDraggedOffset
                                                                  : ctx.main.gameConstants.regularPawIdleOffset);
 
-        auto pawRotate = ctx.cat.type == CatType::Mouse ? sf::radians(-0.6f) : ctx.cat.pawRotation;
+        auto pawRotate = ctx.cat.type == CatType::Mouse ? za::radians(-0.6f) : ctx.cat.pawRotation;
 
         if (isWarden && ctx.cat.wardenBonk.hasValue())
         {
@@ -1442,13 +1442,13 @@ void drawCatVisuals(const CatDrawContext& ctx)
                                                                       : ctx.main.gameConstants.wardenCatBatonReturnMs;
 
             const float t = phaseDuration > 0.f
-                                ? easeInOutCubic(sf::base::clamp(1.f - (bonk.phaseMs / phaseDuration), 0.f, 1.f))
+                                ? easeInOutCubic(zb::clamp(1.f - (bonk.phaseMs / phaseDuration), 0.f, 1.f))
                                 : 1.f;
 
-            const sf::Vec2f     windupEndPos = ctx.cat.getDrawPosition(ctx.main.profile.enableCatBobbing) +
+            const za::Vec2f     windupEndPos = ctx.cat.getDrawPosition(ctx.main.profile.enableCatBobbing) +
                                                ctx.main.gameConstants.wardenCatBatonWindupOffset;
-            const sf::Angle     windupEndRot = sf::degrees(ctx.main.gameConstants.wardenCatBatonWindupRotationDeg);
-            constexpr sf::Angle idleRot      = sf::degrees(-45.f);
+            const za::Angle     windupEndRot = za::degrees(ctx.main.gameConstants.wardenCatBatonWindupRotationDeg);
+            constexpr za::Angle idleRot      = za::degrees(-45.f);
 
             switch (bonk.phase)
             {
@@ -1471,7 +1471,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
             }
         }
 
-        addCatSprite(sf::Sprite{.position    = pawPosition,
+        addCatSprite(za::Sprite{.position    = pawPosition,
                                 .scale       = pawScale,
                                 .origin      = ctx.catPawTxr.size / 2.f,
                                 .rotation    = pawRotate,
@@ -1490,7 +1490,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
         const float foo = easeInOutBack(ctx.main.copycatMaskAnim.asProgress(3000.f).getBounce()) * 0.5f;
 
-        const auto* txrMaskToUse = [&] -> const sf::Rect2f*
+        const auto* txrMaskToUse = [&] -> const za::Rect2f*
         {
             if (ctx.main.pt->copycatCopiedCatType == CatType::Witch)
                 return &ctx.main.atlasRects.txrCCMaskWitch;
@@ -1515,11 +1515,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
         if (txrMaskToUse != nullptr)
             addCatSprite(
-                sf::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
+                za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
                            .scale       = ctx.catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
                            .origin      = {ctx.main.gameConstants.copyMaskOrigin.x,
                                            ctx.main.gameConstants.copyMaskOrigin.y * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
-                           .rotation    = sf::radians(ctx.catRotation + foo),
+                           .rotation    = za::radians(ctx.catRotation + foo),
                            .textureRect = *txrMaskToUse,
                            .color       = ctx.catColor});
     }
@@ -1545,13 +1545,13 @@ void drawCatText(const CatDrawContext& ctx)
     if (!ctx.main.profile.showCatText)
         return;
 
-    static thread_local sf::base::String catNameBuffer;
+    static thread_local zb::String catNameBuffer;
     catNameBuffer.clear();
 
     if (ctx.main.pt->perm.smartCatsPurchased && ctx.cat.type == CatType::Normal && ctx.cat.nameIdx % 2u == 0u)
         catNameBuffer += "Dr. ";
 
-    const sf::base::StringView catNameSv = ctx.main.shuffledCatNamesPerType[asIdx(ctx.cat.type)][ctx.cat.nameIdx];
+    const zb::StringView catNameSv = ctx.main.shuffledCatNamesPerType[asIdx(ctx.cat.type)][ctx.cat.nameIdx];
     catNameBuffer.append(catNameSv.data(), catNameSv.size());
 
     if (ctx.main.pt->perm.smartCatsPurchased && ctx.cat.type == CatType::Normal && ctx.cat.nameIdx % 2u != 0u)
@@ -1562,8 +1562,8 @@ void drawCatText(const CatDrawContext& ctx)
     ctx.main.textNameBuffer.setString(catNameBuffer);
     ctx.main.textNameBuffer.position = ctx.cat.position.addY(ctx.main.gameConstants.catNameTextOffsetY);
     ctx.main.textNameBuffer.origin   = ctx.main.textNameBuffer.getLocalBounds().size / 2.f;
-    ctx.main.textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * ctx.catScaleMult;
-    ctx.main.textNameBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
+    ctx.main.textNameBuffer.scale    = za::Vec2f{0.5f, 0.5f} * ctx.catScaleMult;
+    ctx.main.textNameBuffer.setFillColor(za::Color::White.withAlpha(textAlpha));
     ctx.main.textNameBuffer.setOutlineColor(ctx.textOutlineColor.withAlpha(textAlpha));
     ctx.textBatchToUse.add(ctx.main.textNameBuffer);
 
@@ -1576,17 +1576,17 @@ void drawCatText(const CatDrawContext& ctx)
         if (ctx.cat.type == CatType::Devil && ctx.main.isDevilcatHellsingedActive())
             actionName = "Portals";
 
-        static thread_local sf::base::String actionString;
+        static thread_local zb::String actionString;
         actionString.clear();
 
-        actionString += sf::base::toString(ctx.cat.hits);
+        actionString += zb::toString(ctx.cat.hits);
         actionString += " ";
         actionString += actionName;
 
         if (ctx.cat.type == CatType::Mouse || ctx.isCopyCatWithType(CatType::Mouse))
         {
             actionString += " (x";
-            actionString += sf::base::toString(ctx.main.pt->mouseCatCombo + 1);
+            actionString += zb::toString(ctx.main.pt->mouseCatCombo + 1);
             actionString += ")";
         }
 
@@ -1602,7 +1602,7 @@ void drawCatText(const CatDrawContext& ctx)
         ctx.main.textStatusBuffer.setString(actionString);
         ctx.main.textStatusBuffer.position = ctx.cat.position.addY(ctx.main.gameConstants.catStatusTextOffsetY);
         ctx.main.textStatusBuffer.origin   = ctx.main.textStatusBuffer.getLocalBounds().size / 2.f;
-        ctx.main.textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
+        ctx.main.textStatusBuffer.setFillColor(za::Color::White.withAlpha(textAlpha));
         ctx.main.textStatusBuffer.setOutlineColor(ctx.textOutlineColor.withAlpha(textAlpha));
         ctx.cat.textStatusShakeEffect.applyToText(ctx.main.textStatusBuffer);
         ctx.main.textStatusBuffer.scale *= 0.4f * ctx.catScaleMult;
@@ -1614,7 +1614,7 @@ void drawCatText(const CatDrawContext& ctx)
         ctx.main.textStatusBuffer.setString(actionString);
         ctx.main.textStatusBuffer.position = ctx.cat.position.addY(ctx.main.gameConstants.catStatusTextOffsetY);
         ctx.main.textStatusBuffer.origin   = ctx.main.textStatusBuffer.getLocalBounds().size / 2.f;
-        ctx.main.textStatusBuffer.setFillColor(sf::Color::White.withAlpha(textAlpha));
+        ctx.main.textStatusBuffer.setFillColor(za::Color::White.withAlpha(textAlpha));
         ctx.main.textStatusBuffer.setOutlineColor(ctx.textOutlineColor.withAlpha(textAlpha));
         ctx.cat.textStatusShakeEffect.applyToText(ctx.main.textStatusBuffer);
         ctx.main.textStatusBuffer.scale *= 0.4f * ctx.catScaleMult;
@@ -1625,15 +1625,15 @@ void drawCatText(const CatDrawContext& ctx)
                                      ctx.cat.isHexedOrCopyHexed();
 
         if (!hideCooldownBar)
-            ctx.textBatchToUse.add(sf::RoundedRectangleShapeData{
+            ctx.textBatchToUse.add(za::RoundedRectangleShapeData{
                 .position = ctx.main.textStatusBuffer.getGlobalBottomCenter().addY(ctx.main.gameConstants.catCooldownBarOffsetY),
                 .scale              = {ctx.catScaleMult, ctx.catScaleMult},
                 .origin             = {32.f, 0.f},
                 .outlineTextureRect = ctx.main.atlasRects.txrWhiteDot,
-                .fillColor          = sf::Color::whiteWithAlpha(128u),
+                .fillColor          = za::Color::whiteWithAlpha(128u),
                 .outlineColor       = ctx.textOutlineColor,
                 .outlineThickness   = 1.f,
-                .size               = sf::Vec2f{ctx.cat.cooldown.time / ctx.maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
+                .size               = za::Vec2f{ctx.cat.cooldown.time / ctx.maxCooldown * 64.f, 3.f}.clampX(2.f, 64.f),
                 .cornerRadius       = 1.f,
                 .cornerPointCount   = 8u,
             });
@@ -1645,10 +1645,10 @@ void drawCatText(const CatDrawContext& ctx)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawCat(Cat&            cat,
                            const float     deltaTimeMs,
-                           const sf::Vec2f mousePos,
-                           const sf::Rect2f* const (&catTxrsByType)[nCatTypes],
-                           const sf::Rect2f* const (&catPawTxrsByType)[nCatTypes],
-                           const sf::Rect2f* const (&catTailTxrsByType)[nCatTypes])
+                           const za::Vec2f mousePos,
+                           const za::Rect2f* const (&catTxrsByType)[nCatTypes],
+                           const za::Rect2f* const (&catPawTxrsByType)[nCatTypes],
+                           const za::Rect2f* const (&catTailTxrsByType)[nCatTypes])
 {
     const float cloudTime = advanceCatCloudTime(*this, cat, deltaTimeMs);
 
@@ -1670,7 +1670,7 @@ void Main::gameLoopDrawCat(Cat&            cat,
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
+void Main::gameLoopDrawShrines(const za::Vec2f mousePos)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
@@ -1704,14 +1704,14 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
         const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
         const auto shrineColor = hueColor(shrine.getHue(), shrineAlpha);
 
-        const auto circleColor        = sf::Color{231u, 198u, 39u}.withRotatedHue(shrine.getHue()).withLightness(0.75f);
+        const auto circleColor        = za::Color{231u, 198u, 39u}.withRotatedHue(shrine.getHue()).withLightness(0.75f);
         const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha);
         const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
         cpuDrawableBatchAfterCats.add(
-            sf::Sprite{.position    = shrine.getDrawPosition(),
-                       .scale       = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
-                                      sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
+            za::Sprite{.position    = shrine.getDrawPosition(),
+                       .scale       = za::Vec2f{0.3f, 0.3f} * invDeathProgress +
+                                      za::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
                        .origin      = atlasRects.txrShrine.size / 2.f,
                        .textureRect = atlasRects.txrShrine,
                        .color       = shrineColor});
@@ -1721,7 +1721,7 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
         const bool shouldDrawShrineRange = !profile.showRangesOnlyOnHover || hoveredShrine == &shrine;
 
         if (shouldDrawShrineRange)
-            cpuDrawableBatchAfterCats.add(sf::CircleShapeData{
+            cpuDrawableBatchAfterCats.add(za::CircleShapeData{
                 .position           = shrine.position,
                 .origin             = {range, range},
                 .outlineTextureRect = atlasRects.txrWhiteDot,
@@ -1735,15 +1735,15 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
         textNameBuffer.setString(shrineNames[asIdx(shrine.type)]);
         textNameBuffer.position = shrine.position.addY(48.f);
         textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
-        textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * invDeathProgress;
-        textNameBuffer.setFillColor(sf::Color::White);
+        textNameBuffer.scale    = za::Vec2f{0.5f, 0.5f} * invDeathProgress;
+        textNameBuffer.setFillColor(za::Color::White);
         textNameBuffer.setOutlineColor(textOutlineColor);
         catTextDrawableBatch.add(textNameBuffer);
 
         if (shrine.isActive())
         {
             // TODO P2: move to member data
-            static thread_local sf::base::String shrineStatus;
+            static thread_local zb::String shrineStatus;
 
             shrineStatus = "$";
             shrineStatus += toStringWithSeparators(shrine.collectedReward);
@@ -1759,7 +1759,7 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
 
         textStatusBuffer.position = shrine.position.addY(68.f);
         textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-        textStatusBuffer.setFillColor(sf::Color::White);
+        textStatusBuffer.setFillColor(za::Color::White);
         textStatusBuffer.setOutlineColor(textOutlineColor);
         shrine.textStatusShakeEffect.applyToText(textStatusBuffer);
         textStatusBuffer.scale *= invDeathProgress;
@@ -1775,7 +1775,7 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
 
             textMoneyBuffer.position = shrine.position.addY(84.f);
             textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
-            textMoneyBuffer.setFillColor(sf::Color::White);
+            textMoneyBuffer.setFillColor(za::Color::White);
             textMoneyBuffer.setOutlineColor(textOutlineColor);
             shrine.textStatusShakeEffect.applyToText(textMoneyBuffer);
             textMoneyBuffer.scale *= invDeathProgress;
@@ -1787,12 +1787,12 @@ void Main::gameLoopDrawShrines(const sf::Vec2f mousePos)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
+void Main::gameLoopDrawDolls(const za::Vec2f mousePos)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
     ////////////////////////////////////////////////////////////
-    const sf::Rect2f* dollTxrs[] = {
+    const za::Rect2f* dollTxrs[] = {
         &atlasRects.txrDollNormal,   // Normal
         &atlasRects.txrDollUni,      // Uni
         &atlasRects.txrDollDevil,    // Devil
@@ -1808,10 +1808,10 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
         &atlasRects.txrDollNormal,   // Duck (missing, cannot be hexed)
     };
 
-    static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
+    static_assert(zb::getArraySize(dollTxrs) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
-    const auto processDolls = [&](const sf::base::Vector<HexSession>& sessions, const float hueMod)
+    const auto processDolls = [&](const zb::Vector<HexSession>& sessions, const float hueMod)
     {
         for (const HexSession& session : sessions)
             for (const Doll& doll : session.dolls)
@@ -1828,10 +1828,10 @@ void Main::gameLoopDrawDolls(const sf::Vec2f mousePos)
                     dollAlpha = 128.f;
 
                 cpuDrawableBatchAfterCats.add(
-                    sf::Sprite{.position    = doll.getDrawPosition(),
-                               .scale       = sf::Vec2f{0.22f, 0.22f} * progress,
+                    za::Sprite{.position    = doll.getDrawPosition(),
+                               .scale       = za::Vec2f{0.22f, 0.22f} * progress,
                                .origin      = dollTxr.size / 2.f,
-                               .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
+                               .rotation    = za::radians(-0.15f + 0.3f * zb::sin(doll.wobbleRadians / 2.f)),
                                .textureRect = dollTxr,
                                .color       = hueColor(doll.hue + hueMod, dollAlpha)});
             }
@@ -1857,16 +1857,16 @@ void Main::gameLoopDrawEvents()
     const auto computeIntensity = [&](const float remainingMs)
     {
         const float duration    = bfCfg.durationMs <= 0.f ? 1.f : bfCfg.durationMs;
-        const float elapsedNorm = sf::base::clamp(1.f - (remainingMs / duration), 0.f, 1.f);
+        const float elapsedNorm = zb::clamp(1.f - (remainingMs / duration), 0.f, 1.f);
 
-        const float attack  = sf::base::clamp(bfCfg.attackRatio, 0.f, 0.5f);
-        const float release = sf::base::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
+        const float attack  = zb::clamp(bfCfg.attackRatio, 0.f, 0.5f);
+        const float release = zb::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
 
         if (attack > 0.f && elapsedNorm < attack)
-            return easeInOutCubic(sf::base::clamp(elapsedNorm / attack, 0.f, 1.f));
+            return easeInOutCubic(zb::clamp(elapsedNorm / attack, 0.f, 1.f));
 
         if (release > 0.f && elapsedNorm > 1.f - release)
-            return easeInOutCubic(sf::base::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
+            return easeInOutCubic(zb::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
 
         return 1.f;
     };
@@ -1874,7 +1874,7 @@ void Main::gameLoopDrawEvents()
     constexpr float thinLineWidth = 4.f;
     constexpr float topWidthRatio = 0.4f; // top edge is 40% of the bottom
 
-    const auto drawRay = sf::base::OverloadSet{
+    const auto drawRay = zb::OverloadSet{
         // No light-ray for the global invincible-bubble event.
         [](const EInvincibleBubble&) {},
 
@@ -1886,16 +1886,16 @@ void Main::gameLoopDrawEvents()
 
         const float bottomWidth = thinLineWidth + (e.regionWidth - thinLineWidth) * intensity;
         const float topWidth    = thinLineWidth + (e.regionWidth * topWidthRatio - thinLineWidth) * intensity;
-        const auto  alpha       = static_cast<U8>(sf::base::clamp(intensity * 90.f, 0.f, 255.f));
+        const auto  alpha       = static_cast<U8>(zb::clamp(intensity * 90.f, 0.f, 255.f));
         const float height      = boundaries.y;
 
         const auto makeLightRay = [&](U8 xAlpha, float xSizeMult)
         {
-            const auto [fillSpan, outlineSpan] = cpuDrawableBatchBeforeCats.add(sf::TrapezoidShapeData{
+            const auto [fillSpan, outlineSpan] = cpuDrawableBatchBeforeCats.add(za::TrapezoidShapeData{
                 .position    = {e.regionCenterX, 0.f},
                 .origin      = {bottomWidth * xSizeMult * 0.5f, 0.f},
                 .textureRect = {},
-                .fillColor   = sf::Color::whiteWithAlpha(xAlpha),
+                .fillColor   = za::Color::whiteWithAlpha(xAlpha),
                 .topWidth    = topWidth * xSizeMult,
                 .bottomWidth = bottomWidth * xSizeMult,
                 .height      = height,
@@ -1930,12 +1930,12 @@ void Main::gameLoopDrawHellPortals()
                                      : 1.f;
 
         cpuDrawableBatchBeforeCats.add(
-            sf::Sprite{.position    = hp.getDrawPosition(),
-                       .scale       = sf::Vec2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
+            za::Sprite{.position    = hp.getDrawPosition(),
+                       .scale       = za::Vec2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
                        .origin      = atlasRects.txrHellPortal.size / 2.f,
-                       .rotation    = sf::radians(hp.life.time / 200.f),
+                       .rotation    = za::radians(hp.life.time / 200.f),
                        .textureRect = atlasRects.txrHellPortal,
-                       .color       = sf::Color::White});
+                       .color       = za::Color::White});
     }
 }
 
@@ -1947,7 +1947,7 @@ void Main::gameLoopDrawParticles()
     if (!profile.showParticles)
         return;
 
-    sf::CPUDrawableBatch* const cpuDrawableBatchToUse[nParticleTypes] = {
+    za::CPUDrawableBatch* const cpuDrawableBatchToUse[nParticleTypes] = {
         &cpuDrawableBatchAfterCats,
         &cpuDrawableBatchAfterCats,
         &cpuDrawableBatchAdditive,
@@ -1997,9 +1997,9 @@ void Main::gameLoopDrawEarnedCoinParticles()
 
     const auto targetPosition = moneyText.getGlobalCenterRight();
 
-    const auto bezier = [](const sf::Vec2f start, const sf::Vec2f end, const float t)
+    const auto bezier = [](const za::Vec2f start, const za::Vec2f end, const float t)
     {
-        const sf::Vec2f control(start.x, end.y);
+        const za::Vec2f control(start.x, end.y);
         const float     u = 1.f - t;
 
         return u * u * start + 2.f * u * t * control + t * t * end;
@@ -2010,16 +2010,16 @@ void Main::gameLoopDrawEarnedCoinParticles()
         const auto newPos  = bezier(particle.startPosition, targetPosition, easeInOutSine(particle.progress.value));
         const auto newPos2 = bezier(particle.startPosition, targetPosition, easeInOutBack(particle.progress.value));
 
-        const float opacityScale = sf::base::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
+        const float opacityScale = zb::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
         const float alpha        = (128.f + particle.progress.remapEased(easeInQuint, 128.f, 0.f)) * opacityScale;
 
-        hudDrawableBatch.add(sf::Sprite{
+        hudDrawableBatch.add(za::Sprite{
             .position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
-            .scale       = sf::Vec2f{0.25f, 0.25f} * opacityScale,
+            .scale       = za::Vec2f{0.25f, 0.25f} * opacityScale,
             .origin      = atlasRects.txrCoin.size / 2.f,
-            .rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau)),
+            .rotation    = za::radians(particle.progress.remap(0.f, zb::tau)),
             .textureRect = atlasRects.txrCoin,
-            .color       = sf::Color::whiteWithAlpha(static_cast<U8>(alpha)),
+            .color       = za::Color::whiteWithAlpha(static_cast<U8>(alpha)),
         });
     }
 }
@@ -2068,11 +2068,11 @@ void Main::gameLoopDrawTextParticles()
 
         textStatusBuffer.position = tp.position;
         textStatusBuffer.scale    = {tp.scale, tp.scale};
-        textStatusBuffer.rotation = sf::radians(tp.rotation);
+        textStatusBuffer.rotation = za::radians(tp.rotation);
         textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
 
-        const auto opacityAsAlpha = static_cast<sf::base::U8>(tp.opacity * 255.f);
-        textStatusBuffer.setFillColor(sf::Color::whiteWithAlpha(opacityAsAlpha));
+        const auto opacityAsAlpha = static_cast<zb::U8>(tp.opacity * 255.f);
+        textStatusBuffer.setFillColor(za::Color::whiteWithAlpha(opacityAsAlpha));
         textStatusBuffer.setOutlineColor(outlineHueColor.withAlpha(opacityAsAlpha));
 
         cpuDrawableBatchAfterCats.add(textStatusBuffer);
@@ -2085,11 +2085,11 @@ void Main::gameLoopDrawTextParticles()
 {
     const float rightEdgeX = getViewCenter().x + gameView.size.x / 2.f;
 
-    const sf::Vec2f resolution{getResolution()};
+    const za::Vec2f resolution{getResolution()};
 
-    const sf::Rect2f gameViewBounds{getViewportPixelBounds(gameView, resolution)};
+    const za::Rect2f gameViewBounds{getViewportPixelBounds(gameView, resolution)};
 
-    const float menuOverlapScreenX = sf::base::max(uiGetWindowPos().x, gameViewBounds.position.x);
+    const float menuOverlapScreenX = zb::max(uiGetWindowPos().x, gameViewBounds.position.x);
 
     const float menuOverlapWorldX = gameView
                                         .screenToWorld({menuOverlapScreenX,
@@ -2097,7 +2097,7 @@ void Main::gameLoopDrawTextParticles()
                                                        resolution)
                                         .x;
 
-    return sf::base::min(rightEdgeX, menuOverlapWorldX);
+    return zb::min(rightEdgeX, menuOverlapWorldX);
 }
 
 
@@ -2108,12 +2108,12 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
         return;
 
     if (playerInputState.scroll == 0.f)
-        (void)uiState.scrollArrowCountdown.tickLooping(deltaTimeMs, sf::base::tau * 350.f);
+        (void)uiState.scrollArrowCountdown.tickLooping(deltaTimeMs, zb::tau * 350.f);
     else
         (void)uiState.scrollArrowCountdown.tick(deltaTimeMs);
 
-    const float blinkOpacity = easeInOutSine(sf::base::fabs(sf::base::sin(
-                                   sf::base::remainder(uiState.scrollArrowCountdown.time / 350.f, sf::base::tau)))) *
+    const float blinkOpacity = easeInOutSine(zb::fabs(zb::sin(
+                                   zb::remainder(uiState.scrollArrowCountdown.time / 350.f, zb::tau)))) *
                                255.f;
 
     const float arrowX = getLeftMostUsefulX();
@@ -2121,13 +2121,13 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
     rtGame.draw(txArrow,
                 {.position = {arrowX, 15.f + (gameScreenSize.y / 5.f) * 1.f},
                  .origin   = txArrow.getRect().getCenterRight(),
-                 .color    = sf::Color::whiteWithAlpha(static_cast<U8>(blinkOpacity))},
+                 .color    = za::Color::whiteWithAlpha(static_cast<U8>(blinkOpacity))},
                 {.view = gameView});
 
     rtGame.draw(txArrow,
                 {.position = {arrowX, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
                  .origin   = txArrow.getRect().getCenterRight(),
-                 .color    = sf::Color::whiteWithAlpha(static_cast<U8>(blinkOpacity))},
+                 .color    = za::Color::whiteWithAlpha(static_cast<U8>(blinkOpacity))},
                 {.view = gameView});
 }
 
@@ -2136,7 +2136,7 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
 void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 {
     const float imguiWidth = uiWindowWidth * profile.uiScale;
-    const auto  blinkFn    = [](const float value) { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
+    const auto  blinkFn    = [](const float value) { return (1 - zb::cos(2.f * zb::pi * value)) / 2.f; };
     const float uiMenuCueX = uiState.uiMenuLastDrawSize.x > 1.f ? uiState.uiMenuLastDrawPos.x : uiGetWindowPos().x;
     const bool  uiMenuFullyOpen = uiState.uiMenuRevealT >= 0.999f;
 
@@ -2148,9 +2148,9 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
         {
             const float x = remap(countdown.time, 0.f, 1000.f, 0.f, imguiWidth);
 
-            const auto pos = sf::Vec2f{uiMenuCueX + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
+            const auto pos = za::Vec2f{uiMenuCueX + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
-            for (sf::base::SizeT i = 0u; i < 2u; ++i)
+            for (zb::SizeT i = 0u; i < 2u; ++i)
                 spawnHUDTopParticle({.position      = pos,
                                      .velocity      = rngFast.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
                                      .scale         = rngFast.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
@@ -2158,7 +2158,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
                                      .accelerationY = 0.f,
                                      .opacity       = 1.f,
                                      .opacityDecay  = rngFast.getF(0.00065f, 0.0055f),
-                                     .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                     .rotation      = rngFast.getF(0.f, zb::tau),
                                      .torque        = rngFast.getF(-0.002f, 0.002f)},
                                     /* hue */ wrapHue(165.f + hue + currentBackgroundHue.asDegrees()),
                                     ParticleType::Star);
@@ -2171,20 +2171,20 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
         {
             const float blinkProgress = blinkFn(arrowCountdown.asProgress(2000.f).getBounce());
 
-            const auto arrowAlpha = static_cast<sf::base::U8>(easeInOutCubic(blinkProgress) * 255.f);
+            const auto arrowAlpha = static_cast<zb::U8>(easeInOutCubic(blinkProgress) * 255.f);
 
             const auto& tx = type == 0 ? txUnlock : txPurchasable;
 
             rtGame.draw(tx,
                         {.position = {uiMenuCueX, y + 14.f * profile.uiScale},
-                         .scale  = sf::Vec2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
+                         .scale  = za::Vec2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                          .origin = tx.getRect().getCenterRight(),
                          .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
                         {.view = nonScaledHUDView, .shader = &shaders.shader});
         }
     }
 
-    sf::base::vectorEraseIf(uiState.purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
+    zb::vectorEraseIf(uiState.purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
 }
 
 
@@ -2198,7 +2198,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
 {
-    const sf::Vec2i windowSpaceMousePos = sf::Mouse::getPosition(window);
+    const za::Vec2i windowSpaceMousePos = za::Mouse::getPosition(window);
 
     const bool mouseNearWindowEdges = windowSpaceMousePos.x < 4 || windowSpaceMousePos.y < 4 ||
                                       windowSpaceMousePos.x > static_cast<int>(window.getSize().x) - 4 ||
@@ -2218,9 +2218,9 @@ void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
                 : pt->laserPopEnabled      ? txCursorLaser
                 : pt->multiPopEnabled      ? txCursorMultipop
                                            : txCursor,
-                {.position = sf::Mouse::getPosition(window).toVec2f(),
-                 .scale = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
-                          ((1.f + easeInOutBack(cursorGrow) * sf::base::pow(static_cast<float>(comboState.combo), 0.09f)) *
+                {.position = za::Mouse::getPosition(window).toVec2f(),
+                 .scale = za::Vec2f{profile.cursorScale, profile.cursorScale} *
+                          ((1.f + easeInOutBack(cursorGrow) * zb::pow(static_cast<float>(comboState.combo), 0.09f)) *
                            dpiScalingFactor),
                  .origin = {5.f, 5.f},
                  .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
@@ -2241,22 +2241,22 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
     else if (comboState.cursorComboAlpha > 0.f)
         comboState.cursorComboAlpha -= deltaTimeMs * 0.5f;
 
-    const auto alphaU8 = static_cast<U8>(sf::base::clamp(comboState.cursorComboAlpha, 0.f, 255.f));
+    const auto alphaU8 = static_cast<U8>(zb::clamp(comboState.cursorComboAlpha, 0.f, 255.f));
 
     if (comboState.combo > 0)
         comboState.cursorComboLastShown = comboState.combo + 1;
 
-    comboState.cursorComboOutlineColor = sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(
+    comboState.cursorComboOutlineColor = za::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(
         profile.cursorHue + currentBackgroundHue.asDegrees());
 
-    sf::TextData td{
-        .position         = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult,
+    za::TextData td{
+        .position         = za::Mouse::getPosition(window).toVec2f() + za::Vec2f{30.f, 48.f} * scaleMult,
         .origin           = {0.f, 0.f},
         .string           = comboState.cursorComboLastShown > 0
-                                ? sf::base::String{"x" + sf::base::toString(comboState.cursorComboLastShown)}
-                                : sf::base::String{""},
+                                ? zb::String{"x" + zb::toString(comboState.cursorComboLastShown)}
+                                : zb::String{""},
         .characterSize    = 48u,
-        .fillColor        = sf::Color::blackWithAlpha(alphaU8),
+        .fillColor        = za::Color::blackWithAlpha(alphaU8),
         .outlineColor     = comboState.cursorComboOutlineColor,
         .outlineThickness = 4.f,
     };
@@ -2265,17 +2265,17 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
 
     td.scale *= (static_cast<float>(comboState.combo) * 0.65f) * cursorGrow * 0.3f;
     td.scale += {0.85f, 0.85f};
-    td.scale += sf::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.time / 325.f;
+    td.scale += za::Vec2f{1.f, 1.f} * comboState.comboFailCountdown.time / 325.f;
     td.scale *= scaleMult;
 
-    const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboState.comboFailCountdown.time / 125.f;
+    const auto minScale = za::Vec2f{0.25f, 0.25f} + za::Vec2f{0.25f, 0.25f} * comboState.comboFailCountdown.time / 125.f;
 
     td.scale = td.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
 
     if (comboState.comboFailCountdown.time > 0.f)
     {
         td.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
-        td.fillColor = sf::Color::Red.withAlpha(alphaU8);
+        td.fillColor = za::Color::Red.withAlpha(alphaU8);
     }
 
     rtGame.draw(fontMouldyCheese, td, {.view = nonScaledHUDView, .shader = &shaders.shader});
@@ -2291,13 +2291,13 @@ void Main::gameLoopDrawCursorComboBar()
 
     const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
-    const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{52.f, 14.f} * scaleMult;
+    const auto cursorComboBarPosition = za::Mouse::getPosition(window).toVec2f() + za::Vec2f{52.f, 14.f} * scaleMult;
 
     rtGame.draw(
-        sf::RectangleShapeData{
+        za::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = atlasRects.txrWhiteDot,
-            .fillColor          = sf::Color::blackWithAlpha(80u),
+            .fillColor          = za::Color::blackWithAlpha(80u),
             .outlineColor       = comboState.cursorComboOutlineColor,
             .outlineThickness   = 1.f,
             .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
@@ -2305,10 +2305,10 @@ void Main::gameLoopDrawCursorComboBar()
         {.view = nonScaledHUDView});
 
     rtGame.draw(
-        sf::RectangleShapeData{
+        za::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = atlasRects.txrWhiteDot,
-            .fillColor          = sf::Color::blackWithAlpha(164u),
+            .fillColor          = za::Color::blackWithAlpha(164u),
             .outlineColor       = comboState.cursorComboOutlineColor,
             .outlineThickness   = 1.f,
             .size               = {64.f * scaleMult * comboState.comboCountdown.time / 700.f, 24.f * scaleMult},
@@ -2317,7 +2317,7 @@ void Main::gameLoopDrawCursorComboBar()
 }
 
 
-[[nodiscard]] sf::Rect2f Main::getViewportPixelBounds(const sf::View& view, const sf::Vec2f targetSize) const
+[[nodiscard]] za::Rect2f Main::getViewportPixelBounds(const za::View& view, const za::Vec2f targetSize) const
 {
     return {{view.viewport.position.x * targetSize.x, view.viewport.position.y * targetSize.y},
             {view.viewport.size.x * targetSize.x, view.viewport.size.y * targetSize.y}};
@@ -2325,7 +2325,7 @@ void Main::gameLoopDrawCursorComboBar()
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Vec2f Main::getEdgeSpawnPosition(const sf::Rect2f& bounds, const float thickness)
+[[nodiscard]] za::Vec2f Main::getEdgeSpawnPosition(const za::Rect2f& bounds, const float thickness)
 {
     // Randomly select one of the four edges: 0=top, 1=bottom, 2=left, 3=right.
     const int edge = rngFast.getI<int>(0, 3);
@@ -2343,7 +2343,7 @@ void Main::gameLoopDrawCursorComboBar()
     if (edge == 2)
         return {bounds.position.x + rngFast.getF(0.f, thickness), bounds.position.y + rngFast.getF(0.f, bounds.size.y)};
 
-    SFML_BASE_ASSERT(edge == 3);
+    ZB_ASSERT(edge == 3);
 
     // Right edge
     return {bounds.position.x + bounds.size.x - rngFast.getF(0.f, thickness),
@@ -2359,8 +2359,8 @@ void Main::gameLoopDrawDollParticleBorder(const float hueMod)
 
     for (int i = 0; i < 10; ++i)
     {
-        const sf::Rect2f gameViewBounds = getViewportPixelBounds(gameView, getResolution());
-        const sf::Vec2f  spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
+        const za::Rect2f gameViewBounds = getViewportPixelBounds(gameView, getResolution());
+        const za::Vec2f  spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
 
         spawnHUDBottomParticle({.position      = spawnPos,
                                 .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
@@ -2369,7 +2369,7 @@ void Main::gameLoopDrawDollParticleBorder(const float hueMod)
                                 .accelerationY = 0.f,
                                 .opacity       = 1.f,
                                 .opacityDecay  = rngFast.getF(0.0015f, 0.0025f) * 0.65f,
-                                .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                .rotation      = rngFast.getF(0.f, zb::tau),
                                 .torque        = rngFast.getF(-0.002f, 0.002f)},
                                /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + hueMod),
                                ParticleType::Hex);
@@ -2414,20 +2414,20 @@ void Main::gameLoopTips(const float deltaTimeMs)
     const float tipByteAlpha       = byteProgress * 255.f;
     const float tipBackgroundAlpha = bgProgress * 255.f;
 
-    sf::Sprite tipBackgroundSprite{.position = {},
-                                   .scale  = sf::Vec2f{0.2f, 0.2f} + sf::Vec2f{0.6f, 0.6f} * easeInOutBack(bgProgress),
+    za::Sprite tipBackgroundSprite{.position = {},
+                                   .scale  = za::Vec2f{0.2f, 0.2f} + za::Vec2f{0.6f, 0.6f} * easeInOutBack(bgProgress),
                                    .origin = txTipBg.getSize().toVec2f() / 2.f,
                                    .textureRect = txTipBg.getRect(),
-                                   .color = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
+                                   .color = za::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
 
 
-    SFML_BASE_ASSERT(profile.hudScale > 0.f);
+    ZB_ASSERT(profile.hudScale > 0.f);
 
     tipBackgroundSprite.setGlobalBottomCenter(
         {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
-    const sf::Vec2f tipBgTopLeft     = tipBackgroundSprite.getGlobalTopLeft() + sf::Vec2f{40.f, 40.f};
-    const sf::Vec2f tipBgBottomRight = tipBackgroundSprite.getGlobalBottomRight() - sf::Vec2f{40.f, 40.f};
+    const za::Vec2f tipBgTopLeft     = tipBackgroundSprite.getGlobalTopLeft() + za::Vec2f{40.f, 40.f};
+    const za::Vec2f tipBgBottomRight = tipBackgroundSprite.getGlobalBottomRight() - za::Vec2f{40.f, 40.f};
 
     cpuCloudHudDrawableBatch.clear();
 
@@ -2439,13 +2439,13 @@ void Main::gameLoopTips(const float deltaTimeMs)
         .ySteps            = 3,
         .scaleMult         = 2.5f,
         .outwardOffsetMult = 1.f,
-        .color             = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.82f)),
+        .color             = za::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.82f)),
         .batch             = &cpuCloudHudDrawableBatch,
     });
 
-    const sf::Vec2f tipBgSize = tipBgBottomRight - tipBgTopLeft;
-    const sf::Vec2f tipMidInset{tipBgSize.x * 0.14f, tipBgSize.y * 0.22f};
-    const sf::Vec2f tipInnerInset{tipBgSize.x * 0.27f, tipBgSize.y * 0.36f};
+    const za::Vec2f tipBgSize = tipBgBottomRight - tipBgTopLeft;
+    const za::Vec2f tipMidInset{tipBgSize.x * 0.14f, tipBgSize.y * 0.22f};
+    const za::Vec2f tipInnerInset{tipBgSize.x * 0.27f, tipBgSize.y * 0.36f};
 
     drawCloudFrame({
         .time              = shaderTime + 1.7f,
@@ -2455,7 +2455,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
         .ySteps            = 3,
         .scaleMult         = 2.6f,
         .outwardOffsetMult = 0.85f,
-        .color             = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.62f)),
+        .color             = za::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.62f)),
         .batch             = &cpuCloudHudDrawableBatch,
     });
 
@@ -2467,18 +2467,18 @@ void Main::gameLoopTips(const float deltaTimeMs)
         .ySteps            = 2,
         .scaleMult         = 2.6f,
         .outwardOffsetMult = 0.7f,
-        .color             = sf::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.46f)),
+        .color             = za::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.46f)),
         .batch             = &cpuCloudHudDrawableBatch,
     });
 
     gameLoopDisplayCloudBatch(cpuCloudHudDrawableBatch, scaledHUDView);
 
-    sf::Sprite tipByteSprite{.position    = {},
-                             .scale       = sf::Vec2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
+    za::Sprite tipByteSprite{.position    = {},
+                             .scale       = za::Vec2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
                              .origin      = txTipByte.getSize().toVec2f() / 2.f,
-                             .rotation    = sf::radians(sf::base::tau * easeInOutBack(byteProgress)),
+                             .rotation    = za::radians(zb::tau * easeInOutBack(byteProgress)),
                              .textureRect = txTipByte.getRect(),
-                             .color       = sf::Color::whiteWithAlpha(static_cast<U8>(tipByteAlpha))};
+                             .color       = za::Color::whiteWithAlpha(static_cast<U8>(tipByteAlpha))};
 
     tipByteSprite.setGlobalCenter(tipBackgroundSprite.getGlobalCenterRight().addY(-40.f));
     rtGame.draw(tipByteSprite, {.view = scaledHUDView, .texture = &txTipByte});
@@ -2493,7 +2493,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                                  .accelerationY = 0.0015f,
                                  .opacity       = 1.f,
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f) * 0.5f,
-                                 .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                 .rotation      = rngFast.getF(0.f, zb::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
                                 /* hue */ 0.f,
                                 ParticleType::Star);
@@ -2539,18 +2539,18 @@ void Main::gameLoopTips(const float deltaTimeMs)
         tipTCByteEnd->restart();
     }
 
-    sf::Text tipText{fontSuperBakery,
+    za::Text tipText{fontSuperBakery,
                      {
                          .position         = {},
-                         .scale            = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
-                         .string           = tipString.substrByPosLen(0u, tipCharIdx).to<sf::base::String>(),
+                         .scale            = za::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
+                         .string           = tipString.substrByPosLen(0u, tipCharIdx).to<zb::String>(),
                          .characterSize    = 60u,
-                         .fillColor        = sf::Color::whiteWithAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
-                         .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                         .fillColor        = za::Color::whiteWithAlpha(static_cast<zb::U8>(tipByteAlpha)),
+                         .outlineColor     = outlineHueColor.withAlpha(static_cast<zb::U8>(tipByteAlpha)),
                          .outlineThickness = 4.f,
                      }};
 
-    tipText.setGlobalTopLeft(tipBackgroundSprite.getGlobalTopLeft() + sf::Vec2f{45.f, 65.f});
+    tipText.setGlobalTopLeft(tipBackgroundSprite.getGlobalTopLeft() + za::Vec2f{45.f, 65.f});
 
     tipStringWiggle.advance(deltaTimeMs);
     tipStringWiggle.apply(tipText);
@@ -2562,29 +2562,29 @@ void Main::gameLoopTips(const float deltaTimeMs)
 
 
 ////////////////////////////////////////////////////////////
-void Main::recreateImGuiRenderTexture(const sf::Vec2u newResolution)
+void Main::recreateImGuiRenderTexture(const za::Vec2u newResolution)
 {
-    rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+    rtImGui = za::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::recreateBackgroundRenderTexture(const sf::Vec2u newResolution)
+void Main::recreateBackgroundRenderTexture(const za::Vec2u newResolution)
 {
-    rtBackground = sf::RenderTexture::create(newResolution,
-                                             {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = sf::TextureWrapMode::Repeat})
+    rtBackground = za::RenderTexture::create(newResolution,
+                                             {.antiAliasingLevel = aaLevel, .smooth = true, .wrapMode = za::TextureWrapMode::Repeat})
                        .value();
 
-    rtBackgroundProcessed = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+    rtBackgroundProcessed = za::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::recreateGameRenderTexture(const sf::Vec2u newResolution)
+void Main::recreateGameRenderTexture(const za::Vec2u newResolution)
 {
-    rtCloudMask      = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
-    rtCloudProcessed = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
-    rtGame           = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+    rtCloudMask      = za::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+    rtCloudProcessed = za::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
+    rtGame           = za::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .smooth = true}).value();
 }
 
 
@@ -2606,7 +2606,7 @@ void Main::setPostProcessUniforms(const float vibrance,
 ////////////////////////////////////////////////////////////
 void Main::updateProcessedBackground()
 {
-    rtBackgroundProcessed.clear(sf::Color::Transparent);
+    rtBackgroundProcessed.clear(za::Color::Transparent);
 
     setPostProcessUniforms(profile.ppBGVibrance,
                            profile.ppBGSaturation,
@@ -2619,19 +2619,19 @@ void Main::updateProcessedBackground()
 }
 
 ////////////////////////////////////////////////////////////
-void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
-                                                const sf::View&   backgroundView,
-                                                const sf::Vec2f   activeGameViewCenter) const
+void Main::drawActivatedShrineBackgroundEffects(za::RenderTarget& rt,
+                                                const za::View&   backgroundView,
+                                                const za::Vec2f   activeGameViewCenter) const
 {
     constexpr float maxShrineEffectRange = 256.f; // Keep in sync with Shrine::getRange().
     constexpr float hexedCatEffectRange  = Cat::radius * 1.35f;
 
-    const sf::Texture& backgroundTexture    = rtBackgroundProcessed.getTexture();
-    const sf::Vec2f    backgroundViewOrigin = backgroundView.center - backgroundView.size / 2.f;
-    const sf::Vec2f    activeViewDelta      = activeGameViewCenter - backgroundView.center;
+    const za::Texture& backgroundTexture    = rtBackgroundProcessed.getTexture();
+    const za::Vec2f    backgroundViewOrigin = backgroundView.center - backgroundView.size / 2.f;
+    const za::Vec2f    activeViewDelta      = activeGameViewCenter - backgroundView.center;
 
     const auto drawBackgroundEffect =
-        [&](const sf::Vec2f center, const float range, const sf::Color tint, const float effectStrength)
+        [&](const za::Vec2f center, const float range, const za::Color tint, const float effectStrength)
     {
         if (range <= 0.f || effectStrength <= 0.f)
             return;
@@ -2672,8 +2672,8 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         if (range <= 0.f)
             continue;
 
-        const sf::Color tint = sf::Color::fromHSLA({.hue = shrine.getHue() + 40.f, .saturation = 1.f, .lightness = 0.5f});
-        const sf::Vec2f backgroundSpaceCenter = shrine.position - activeViewDelta;
+        const za::Color tint = za::Color::fromHSLA({.hue = shrine.getHue() + 40.f, .saturation = 1.f, .lightness = 0.5f});
+        const za::Vec2f backgroundSpaceCenter = shrine.position - activeViewDelta;
         drawBackgroundEffect(backgroundSpaceCenter, range, tint, effectStrength);
     }
 
@@ -2688,8 +2688,8 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
 
         const bool      copyHexed = cat.hexedCopyTimer.hasValue();
         const float     hexHue    = copyHexed ? 180.f : 0.f;
-        const sf::Color tint      = sf::Color::fromHSLA({.hue = hexHue + 40.f, .saturation = 1.f, .lightness = 0.5f});
-        const sf::Vec2f backgroundSpaceCenter = cat.getDrawPosition(profile.enableCatBobbing) - activeViewDelta;
+        const za::Color tint      = za::Color::fromHSLA({.hue = hexHue + 40.f, .saturation = 1.f, .lightness = 0.5f});
+        const za::Vec2f backgroundSpaceCenter = cat.getDrawPosition(profile.enableCatBobbing) - activeViewDelta;
         drawBackgroundEffect(backgroundSpaceCenter, hexedCatEffectRange, tint, effectStrength);
     }
 
@@ -2704,41 +2704,41 @@ void Main::drawActivatedShrineBackgroundEffects(sf::RenderTarget& rt,
         // count climbs toward the auto-pop cap.
         const auto& cfg            = gameConstants.events.invincibleBubble;
         const float maxClicks      = cfg.maxClicks == 0u ? 1.f : static_cast<float>(cfg.maxClicks);
-        const float clicksFrac     = sf::base::clamp(static_cast<float>(bubble.comboClickCount) / maxClicks, 0.f, 1.f);
-        const float effectStrength = sf::base::clamp(0.45f + 0.55f * clicksFrac, 0.f, 1.f);
+        const float clicksFrac     = zb::clamp(static_cast<float>(bubble.comboClickCount) / maxClicks, 0.f, 1.f);
+        const float effectStrength = zb::clamp(0.45f + 0.55f * clicksFrac, 0.f, 1.f);
 
         // The halo extends a bit past the bubble's outer edge.
-        const float range = sf::base::max(bubble.radius * 3.5f, 96.f);
+        const float range = zb::max(bubble.radius * 3.5f, 96.f);
 
-        const sf::Color tint = sf::Color::fromHSLA({.hue = 255.f, .saturation = 1.f, .lightness = 0.55f});
-        const sf::Vec2f backgroundSpaceCenter = bubble.position - activeViewDelta;
+        const za::Color tint = za::Color::fromHSLA({.hue = 255.f, .saturation = 1.f, .lightness = 0.55f});
+        const za::Vec2f backgroundSpaceCenter = bubble.position - activeViewDelta;
         drawBackgroundEffect(backgroundSpaceCenter, range, tint.withAlpha(64), effectStrength);
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::RenderTexture& Main::getHexedCatRenderTexture(const sf::base::SizeT index)
+[[nodiscard]] za::RenderTexture& Main::getHexedCatRenderTexture(const zb::SizeT index)
 {
-    SFML_BASE_ASSERT(index < hexedCatRenderTextures.size());
+    ZB_ASSERT(index < hexedCatRenderTextures.size());
     return hexedCatRenderTextures[index];
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch,
-                                      const sf::Vec2f             position,
+void Main::enqueueHexedCatDrawCommand(const za::CPUDrawableBatch& batch,
+                                      const za::Vec2f             position,
                                       const bool                  top,
                                       const float                 phaseSeed,
                                       const float                 effectStrength)
 {
-    SFML_BASE_ASSERT(hexedCatDrawCommands.size() < maxHexedCatRenderTextures);
+    ZB_ASSERT(hexedCatDrawCommands.size() < maxHexedCatRenderTextures);
 
     auto&           rtHexedCat = hexedCatRenderTextures[hexedCatDrawCommands.size()];
-    const sf::Vec2f rtCenter   = rtHexedCat.getSize().toVec2f() * 0.5f;
-    auto            toLocal    = sf::Transform::fromPosition(rtCenter - position);
+    const za::Vec2f rtCenter   = rtHexedCat.getSize().toVec2f() * 0.5f;
+    auto            toLocal    = za::Transform::fromPosition(rtCenter - position);
 
-    rtHexedCat.clear(sf::Color::Transparent);
+    rtHexedCat.clear(za::Color::Transparent);
     shaders.shader.setUniform(shaders.suBubbleEffect, false);
     rtHexedCat.draw(batch, {.transform = toLocal, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     rtHexedCat.display();
@@ -2753,7 +2753,7 @@ void Main::enqueueHexedCatDrawCommand(const sf::CPUDrawableBatch& batch,
 
 
 ////////////////////////////////////////////////////////////
-void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
+void Main::drawHexedCatDrawCommands(const za::View& view, const bool top)
 {
     for (const HexedCatDrawCommand& command : hexedCatDrawCommands)
     {
@@ -2761,7 +2761,7 @@ void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
             continue;
 
         auto&              rtHexedCat = getHexedCatRenderTexture(command.renderTextureIndex);
-        const sf::Texture& texture    = rtHexedCat.getTexture();
+        const za::Texture& texture    = rtHexedCat.getTexture();
 
         rtGame.flush();
         shaders.shaderHexed.setUniform(shaders.suHexedTime, shaderTime);
@@ -2773,42 +2773,42 @@ void Main::drawHexedCatDrawCommands(const sf::View& view, const bool top)
                     {.position    = command.position,
                      .origin      = texture.getSize().toVec2f() / 2.f,
                      .textureRect = texture.getRect(),
-                     .color = sf::Color::whiteWithAlpha(static_cast<U8>(blend(255.f, 128.f, command.effectStrength)))},
+                     .color = za::Color::whiteWithAlpha(static_cast<U8>(blend(255.f, 128.f, command.effectStrength)))},
                     {.view = view, .texture = &texture, .shader = &shaders.shaderHexed});
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf::View& view)
+void Main::gameLoopDisplayCloudBatch(const za::CPUDrawableBatch& batch, const za::View& view)
 {
     if (batch.isEmpty())
         return;
 
-    rtCloudMask.clear(sf::Color::Transparent);
+    rtCloudMask.clear(za::Color::Transparent);
     rtCloudMask.draw(batch, {.view = view, .texture = &textureAtlas.getTexture()});
     rtCloudMask.display();
 
     shaders.shaderClouds.setUniform(shaders.suCloudTime, shaderTime);
     shaders.shaderClouds.setUniform(shaders.suCloudResolution, rtCloudMask.getSize().toVec2f());
 
-    rtCloudProcessed.clear(sf::Color::Transparent);
-    rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = sf::BlendNone, .shader = &shaders.shaderClouds});
+    rtCloudProcessed.clear(za::Color::Transparent);
+    rtCloudProcessed.draw(rtCloudMask.getTexture(), {.blendMode = za::BlendNone, .shader = &shaders.shaderClouds});
     rtCloudProcessed.display();
 
-    constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,
-                                                    sf::BlendMode::Factor::OneMinusSrcAlpha,
-                                                    sf::BlendMode::Equation::Add,
-                                                    sf::BlendMode::Factor::One,
-                                                    sf::BlendMode::Factor::OneMinusSrcAlpha,
-                                                    sf::BlendMode::Equation::Add);
+    constexpr za::BlendMode premultipliedAlphaBlend(za::BlendMode::Factor::One,
+                                                    za::BlendMode::Factor::OneMinusSrcAlpha,
+                                                    za::BlendMode::Equation::Add,
+                                                    za::BlendMode::Factor::One,
+                                                    za::BlendMode::Factor::OneMinusSrcAlpha,
+                                                    za::BlendMode::Equation::Add);
 
     const U8 opacity = (&batch == &cpuCloudUiDrawableBatch || &batch == &cpuCloudHudDrawableBatch)
                            ? 255u
                            : static_cast<U8>(gameConstants.catCloudOpacity * 255.f);
 
     rtGame.draw(rtCloudProcessed.getTexture(),
-                {.color = sf::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication
+                {.color = za::Color{opacity, opacity, opacity, opacity}}, // because of premultiplication
                 {.blendMode = premultipliedAlphaBlend});
 
     rtGame.flush(); // TODO P0: needed?
@@ -2816,21 +2816,21 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Vec2u Main::getNewResolution() const
+[[nodiscard]] za::Vec2u Main::getNewResolution() const
 {
-    return profile.resWidth == sf::Vec2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
+    return profile.resWidth == za::Vec2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::RenderWindow Main::makeWindow()
+[[nodiscard]] za::RenderWindow Main::makeWindow()
 {
-    const sf::Vec2u desktopResolution = sf::VideoModeUtils::getDesktopMode().size;
-    const sf::Vec2u newResolution     = getNewResolution();
+    const za::Vec2u desktopResolution = za::VideoModeUtils::getDesktopMode().size;
+    const za::Vec2u newResolution     = getNewResolution();
 
     const bool takesAllScreen = newResolution == desktopResolution;
 
-    return sf::RenderWindow::create(
+    return za::RenderWindow::create(
                {
                    .size           = newResolution,
                    .title          = "BubbleByte " BUBBLEBYTE_VERSION_STR,
@@ -2839,7 +2839,7 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
                    .closable       = !takesAllScreen,
                    .hasTitlebar    = !takesAllScreen,
                    .vsync          = profile.vsync,
-                   .frametimeLimit = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
+                   .frametimeLimit = zb::clamp(profile.frametimeLimit, 60u, 144u),
                })
         .value();
 }
@@ -2848,7 +2848,7 @@ void Main::gameLoopDisplayCloudBatch(const sf::CPUDrawableBatch& batch, const sf
 ////////////////////////////////////////////////////////////
 void Main::recreateWindow()
 {
-    const sf::Vec2u newResolution = getNewResolution();
+    const za::Vec2u newResolution = getNewResolution();
 
     window = makeWindow();
     refreshWindowAutoBatchModeFromProfile();
@@ -2864,8 +2864,8 @@ void Main::recreateWindow()
 ////////////////////////////////////////////////////////////
 void Main::resizeWindow()
 {
-    const sf::Vec2u desktopResolution = sf::VideoModeUtils::getDesktopMode().size;
-    const sf::Vec2u newResolution     = getNewResolution();
+    const za::Vec2u desktopResolution = za::VideoModeUtils::getDesktopMode().size;
+    const za::Vec2u newResolution     = getNewResolution();
 
     const bool takesAllScreen = newResolution == desktopResolution;
 
@@ -2895,7 +2895,7 @@ void Main::resizeWindow()
     if (cursorGrow >= 0.f)
     {
         cursorGrow -= deltaTimeMs * 0.0015f;
-        cursorGrow = sf::base::max(cursorGrow, 0.f);
+        cursorGrow = zb::max(cursorGrow, 0.f);
     }
 
     return cursorGrow;

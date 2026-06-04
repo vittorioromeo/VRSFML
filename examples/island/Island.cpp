@@ -3,41 +3,41 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Vertex.hpp"
-#include "SFML/Graphics/VertexBuffer.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/PrimitiveType.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Shader.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Vertex.hpp"
+#include "Zancle/Graphics/VertexBuffer.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
-#include "SFML/System/Atomic.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Thread.hpp"
-#include "SFML/System/Time.hpp"
-#include "SFML/System/Utf8String.hpp"
-#include "SFML/System/Vec2.hpp"
-#include "SFML/System/Vec3.hpp"
+#include "Zancle/System/Atomic.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/System/Vec2.hpp"
+#include "Zancle/System/Vec3.hpp"
 
-#include "SFML/Base/Array.hpp"
-#include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Math/Pow.hpp"
-#include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/ThreadPool.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Array.hpp"
+#include "ZancleBase/Clamp.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Math/Pow.hpp"
+#include "ZancleBase/MinMax.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/ThreadPool.hpp"
+#include "ZancleBase/Vector.hpp"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
@@ -46,10 +46,10 @@
 namespace
 {
 // Width and height of the application window
-constexpr sf::Vec2u windowSize(800, 600);
+constexpr za::Vec2u windowSize(800, 600);
 
 // Resolution of the generated terrain
-constexpr sf::Vec2u resolution(800, 600);
+constexpr za::Vec2u resolution(800, 600);
 
 // Thread pool parameters
 constexpr unsigned int blockCount   = 32;
@@ -57,7 +57,7 @@ constexpr unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
 
 // Worker status
 constinit bool                     bufferUploadPending = false;
-constinit sf::Atomic<unsigned int> pendingTasks{0u};
+constinit za::Atomic<unsigned int> pendingTasks{0u};
 
 struct Setting
 {
@@ -88,25 +88,25 @@ float lightFactor   = 0.7f;
 /// Get the terrain elevation at the given coordinates.
 ///
 ////////////////////////////////////////////////////////////
-float getElevation(sf::Vec2u position)
+float getElevation(za::Vec2u position)
 {
-    const sf::Vec2f normalized = position.toVec2f().componentWiseDiv(resolution.toVec2f()) - sf::Vec2f(0.5f, 0.5f);
+    const za::Vec2f normalized = position.toVec2f().componentWiseDiv(resolution.toVec2f()) - za::Vec2f(0.5f, 0.5f);
 
     float elevation = 0.f;
 
     for (int i = 0; i < perlinOctaves; ++i)
     {
-        const sf::Vec2f scaled = normalized * perlinFrequency *
-                                 static_cast<float>(sf::base::pow(perlinFrequencyBase, static_cast<float>(i)));
+        const za::Vec2f scaled = normalized * perlinFrequency *
+                                 static_cast<float>(zb::pow(perlinFrequencyBase, static_cast<float>(i)));
         elevation += stb_perlin_noise3(scaled.x, scaled.y, 0, 0, 0, 0) *
-                     static_cast<float>(sf::base::pow(perlinFrequencyBase, -static_cast<float>(i)));
+                     static_cast<float>(zb::pow(perlinFrequencyBase, -static_cast<float>(i)));
     }
 
     elevation = (elevation + 1.f) / 2.f;
 
     const float distance = 2.f * normalized.length();
-    elevation            = (elevation + heightBase) * (1.f - edgeFactor * sf::base::pow(distance, edgeDropoffExponent));
-    elevation            = sf::base::clamp(elevation, 0.f, 1.f);
+    elevation            = (elevation + heightBase) * (1.f - edgeFactor * zb::pow(distance, edgeDropoffExponent));
+    elevation            = zb::clamp(elevation, 0.f, 1.f);
 
     return elevation;
 }
@@ -116,10 +116,10 @@ float getElevation(sf::Vec2u position)
 /// Get the terrain moisture at the given coordinates.
 ///
 ////////////////////////////////////////////////////////////
-float getMoisture(sf::Vec2u position)
+float getMoisture(za::Vec2u position)
 {
-    const sf::Vec2f normalized  = position.toVec2f().componentWiseDiv(resolution.toVec2f()) - sf::Vec2f(0.5f, 0.5f);
-    const sf::Vec2f transformed = normalized * 4.f + sf::Vec2f(0.5f, 0.5f);
+    const za::Vec2f normalized  = position.toVec2f().componentWiseDiv(resolution.toVec2f()) - za::Vec2f(0.5f, 0.5f);
+    const za::Vec2f transformed = normalized * 4.f + za::Vec2f(0.5f, 0.5f);
 
     const float moisture = stb_perlin_noise3(transformed.x, transformed.y, 0, 0, 0, 0);
 
@@ -131,12 +131,12 @@ float getMoisture(sf::Vec2u position)
 /// Get the lowlands terrain color for the given moisture.
 ///
 ////////////////////////////////////////////////////////////
-sf::Color colorFromFloats(float r, float g, float b)
+za::Color colorFromFloats(float r, float g, float b)
 {
-    return {static_cast<sf::base::U8>(r), static_cast<sf::base::U8>(g), static_cast<sf::base::U8>(b)};
+    return {static_cast<zb::U8>(r), static_cast<zb::U8>(g), static_cast<zb::U8>(b)};
 }
 
-sf::Color getLowlandsTerrainColor(float moisture)
+za::Color getLowlandsTerrainColor(float moisture)
 {
     if (moisture < 0.27f)
         return colorFromFloats(240, 240, 180);
@@ -169,16 +169,16 @@ sf::Color getLowlandsTerrainColor(float moisture)
 /// and moisture.
 ///
 ////////////////////////////////////////////////////////////
-sf::Color getHighlandsTerrainColor(float elevation, float moisture)
+za::Color getHighlandsTerrainColor(float elevation, float moisture)
 {
-    const sf::Color lowlandsColor = getLowlandsTerrainColor(moisture);
+    const za::Color lowlandsColor = getLowlandsTerrainColor(moisture);
 
-    const sf::Color color = moisture < 0.6f ? sf::Color(112, 128, 144)
+    const za::Color color = moisture < 0.6f ? za::Color(112, 128, 144)
                                             : colorFromFloats(112 + (110 * (moisture - 0.6f) / 0.4f),
                                                               128 + (56 * (moisture - 0.6f) / 0.4f),
                                                               144 - (9 * (moisture - 0.6f) / 0.4f));
 
-    const float factor = sf::base::min((elevation - 0.4f) / 0.1f, 1.f);
+    const float factor = zb::min((elevation - 0.4f) / 0.1f, 1.f);
 
     return colorFromFloats(lowlandsColor.r * (1.f - factor) + color.r * factor,
                            lowlandsColor.g * (1.f - factor) + color.g * factor,
@@ -191,15 +191,15 @@ sf::Color getHighlandsTerrainColor(float elevation, float moisture)
 /// and moisture.
 ///
 ////////////////////////////////////////////////////////////
-sf::Color getSnowcapTerrainColor(float elevation, float moisture)
+za::Color getSnowcapTerrainColor(float elevation, float moisture)
 {
-    const sf::Color highlandsColor = getHighlandsTerrainColor(elevation, moisture);
+    const za::Color highlandsColor = getHighlandsTerrainColor(elevation, moisture);
 
-    const float factor = sf::base::min((elevation - snowcapHeight) / 0.05f, 1.f);
+    const float factor = zb::min((elevation - snowcapHeight) / 0.05f, 1.f);
 
-    return {static_cast<sf::base::U8>(highlandsColor.r * (1.f - factor) + 255 * factor),
-            static_cast<sf::base::U8>(highlandsColor.g * (1.f - factor) + 255 * factor),
-            static_cast<sf::base::U8>(highlandsColor.b * (1.f - factor) + 255 * factor)};
+    return {static_cast<zb::U8>(highlandsColor.r * (1.f - factor) + 255 * factor),
+            static_cast<zb::U8>(highlandsColor.g * (1.f - factor) + 255 * factor),
+            static_cast<zb::U8>(highlandsColor.b * (1.f - factor) + 255 * factor)};
 }
 
 
@@ -208,20 +208,20 @@ sf::Color getSnowcapTerrainColor(float elevation, float moisture)
 /// moisture.
 ///
 ////////////////////////////////////////////////////////////
-sf::Color getTerrainColor(float elevation, float moisture)
+za::Color getTerrainColor(float elevation, float moisture)
 {
     if (elevation < 0.11f)
-        return {0, 0, static_cast<sf::base::U8>(elevation / 0.11f * 74.f + 181.f)};
+        return {0, 0, static_cast<zb::U8>(elevation / 0.11f * 74.f + 181.f)};
 
     if (elevation < 0.14f)
-        return {static_cast<sf::base::U8>(sf::base::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
-                static_cast<sf::base::U8>(sf::base::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
+        return {static_cast<zb::U8>(zb::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
+                static_cast<zb::U8>(zb::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
                 255};
 
     if (elevation < 0.16f)
-        return {static_cast<sf::base::U8>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
-                static_cast<sf::base::U8>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
-                static_cast<sf::base::U8>(127.f + (0.16f - elevation) * 128.f / 0.02f)};
+        return {static_cast<zb::U8>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
+                static_cast<zb::U8>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
+                static_cast<zb::U8>(127.f + (0.16f - elevation) * 128.f / 0.02f)};
 
     if (elevation < 0.17f)
         return {240, 230, 140};
@@ -242,12 +242,12 @@ sf::Color getTerrainColor(float elevation, float moisture)
 /// of the 4 adjacent neighbours.
 ///
 ////////////////////////////////////////////////////////////
-sf::Vec2f computeNormal(float left, float right, float bottom, float top)
+za::Vec2f computeNormal(float left, float right, float bottom, float top)
 {
-    const sf::Vec3f deltaX(1, 0, (sf::base::pow(right, heightFlatten) - sf::base::pow(left, heightFlatten)) * heightFactor);
-    const sf::Vec3f deltaY(0, 1, (sf::base::pow(top, heightFlatten) - sf::base::pow(bottom, heightFlatten)) * heightFactor);
+    const za::Vec3f deltaX(1, 0, (zb::pow(right, heightFlatten) - zb::pow(left, heightFlatten)) * heightFactor);
+    const za::Vec3f deltaY(0, 1, (zb::pow(top, heightFlatten) - zb::pow(bottom, heightFlatten)) * heightFactor);
 
-    sf::Vec3f crossProduct = deltaX.cross(deltaY);
+    za::Vec3f crossProduct = deltaX.cross(deltaY);
 
     // Scale cross product to make z component 1.f so we can drop it
     crossProduct /= crossProduct.z;
@@ -262,16 +262,16 @@ sf::Vec2f computeNormal(float left, float right, float bottom, float top)
 /// coordinates.
 ///
 ////////////////////////////////////////////////////////////
-sf::Vertex computeVertex(sf::Vec2u position)
+za::Vertex computeVertex(za::Vec2u position)
 {
     static constexpr auto scalingFactors = windowSize.toVec2f().componentWiseDiv(resolution.toVec2f());
 
     return {.position  = position.toVec2f().componentWiseMul(scalingFactors),
             .color     = getTerrainColor(getElevation(position), getMoisture(position)),
-            .texCoords = computeNormal(getElevation(position - sf::Vec2u(1, 0)),
-                                       getElevation(position + sf::Vec2u(1, 0)),
-                                       getElevation(position + sf::Vec2u(0, 1)),
-                                       getElevation(position - sf::Vec2u(0, 1)))};
+            .texCoords = computeNormal(getElevation(position - za::Vec2u(1, 0)),
+                                       getElevation(position + za::Vec2u(1, 0)),
+                                       getElevation(position + za::Vec2u(0, 1)),
+                                       getElevation(position - za::Vec2u(0, 1)))};
 }
 
 
@@ -281,14 +281,14 @@ sf::Vertex computeVertex(sf::Vec2u position)
 /// the vertex buffer when done.
 ///
 ////////////////////////////////////////////////////////////
-void processWorkItem(sf::Vertex* vertices, const unsigned int index)
+void processWorkItem(za::Vertex* vertices, const unsigned int index)
 {
     const unsigned int rowStart = rowBlockSize * index;
 
     if (rowStart >= resolution.y)
         return;
 
-    const unsigned int rowEnd = sf::base::min(rowStart + rowBlockSize, resolution.y);
+    const unsigned int rowEnd = zb::min(rowStart + rowBlockSize, resolution.y);
 
     for (unsigned int y = rowStart; y < rowEnd; ++y)
     {
@@ -335,13 +335,13 @@ void processWorkItem(sf::Vertex* vertices, const unsigned int index)
 /// and process.
 ///
 ////////////////////////////////////////////////////////////
-void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
+void generateTerrain(zb::ThreadPool& threadPool, za::Vertex* buffer)
 {
     bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
     while (pendingTasks.loadAcquire() > 0u)
-        sf::ThisThread::sleepFor(sf::milliseconds(10));
+        za::ThisThread::sleepFor(za::milliseconds(10));
 
     // Queue all the new work items
     for (unsigned int i = 0u; i < blockCount; ++i)
@@ -365,17 +365,17 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
 int main()
 {
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Load the terrain shader
-    auto terrainShader = sf::Shader::loadFromFile(
+    auto terrainShader = za::Shader::loadFromFile(
                              {.vertexPath = "resources/terrain.vert", .fragmentPath = "resources/terrain.frag"})
                              .value();
 
     const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
 
     // Load the font
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the window of the application
     auto window = makeDPIScaledRenderWindow(
@@ -390,33 +390,33 @@ int main()
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize.toVec2f());
 
     // Create all of our graphics resources
-    sf::Text hudText(font,
+    za::Text hudText(font,
                      {.position         = {5.f, 5.f},
                       .string           = "",
                       .characterSize    = 14,
-                      .fillColor        = sf::Color::White,
-                      .outlineColor     = sf::Color::Black,
+                      .fillColor        = za::Color::White,
+                      .outlineColor     = za::Color::Black,
                       .outlineThickness = 2.f});
 
-    sf::Text statusText(font,
+    za::Text statusText(font,
                         {.string           = "Generating Terrain...",
                          .characterSize    = 28,
-                         .fillColor        = sf::Color::White,
-                         .outlineColor     = sf::Color::Black,
+                         .fillColor        = za::Color::White,
+                         .outlineColor     = za::Color::Black,
                          .outlineThickness = 2.f});
 
-    sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
+    za::VertexBuffer terrain(za::PrimitiveType::Triangles, za::VertexBuffer::Usage::Static);
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
-    sf::base::Vector<sf::Vertex> terrainStagingBuffer;
+    zb::Vector<za::Vertex> terrainStagingBuffer;
 
     // Create a thread pool
-    sf::base::ThreadPool threadPool{sf::base::ThreadPool::getHardwareWorkerCount()};
+    zb::ThreadPool threadPool{zb::ThreadPool::getHardwareWorkerCount()};
 
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))
     {
-        sf::base::printErrLn("Failed to create vertex buffer");
+        zb::printErrLn("Failed to create vertex buffer");
         return 1;
     }
 
@@ -430,7 +430,7 @@ int main()
     statusText.position = (windowSize.toVec2f() - statusText.getLocalBounds().size) / 2.f;
 
     // Set up an array of pointers to our settings for arrow navigation
-    constexpr sf::base::Array<Setting, 9> settings = {
+    constexpr zb::Array<Setting, 9> settings = {
         {{"perlinFrequency", &perlinFrequency},
          {"perlinFrequencyBase", &perlinFrequencyBase},
          {"heightBase", &heightBase},
@@ -441,40 +441,40 @@ int main()
          {"heightFlatten", &heightFlatten},
          {"lightFactor", &lightFactor}}};
 
-    sf::base::SizeT currentSetting = 0;
+    zb::SizeT currentSetting = 0;
 
-    sf::Utf8String hudBuf;
-    sf::Clock      clock;
+    za::Utf8String hudBuf;
+    za::Clock      clock;
 
     while (true)
     {
         // Handle events
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), windowView))
                 continue;
 
             // Arrow key pressed:
-            if (event->is<sf::Event::KeyPressed>())
+            if (event->is<za::Event::KeyPressed>())
             {
-                switch (event->getIf<sf::Event::KeyPressed>()->code)
+                switch (event->getIf<za::Event::KeyPressed>()->code)
                 {
-                    case sf::Keyboard::Key::Enter:
+                    case za::Keyboard::Key::Enter:
                         generateTerrain(threadPool, terrainStagingBuffer.data());
                         break;
-                    case sf::Keyboard::Key::Down:
+                    case za::Keyboard::Key::Down:
                         currentSetting = (currentSetting + 1) % settings.size();
                         break;
-                    case sf::Keyboard::Key::Up:
+                    case za::Keyboard::Key::Up:
                         currentSetting = (currentSetting + settings.size() - 1) % settings.size();
                         break;
-                    case sf::Keyboard::Key::Left:
+                    case za::Keyboard::Key::Left:
                         *(settings[currentSetting].value) -= 0.1f;
                         break;
-                    case sf::Keyboard::Key::Right:
+                    case za::Keyboard::Key::Right:
                         *(settings[currentSetting].value) += 0.1f;
                         break;
                     default:
@@ -496,7 +496,7 @@ int main()
             {
                 if (!terrain.update(terrainStagingBuffer.data()))
                 {
-                    sf::base::printErrLn("Failed to update vertex buffer");
+                    zb::printErrLn("Failed to update vertex buffer");
                     return 0;
                 }
 
@@ -509,7 +509,7 @@ int main()
 
         // Update and draw the HUD text
         hudBuf.clear();
-        (void)sf::base::fmtTo(hudBuf,
+        (void)zb::fmtTo(hudBuf,
                               "Frame:  {}ms\n"
                               "perlinOctaves:  {}\n\n"
                               "Use the arrow keys to change the values.\nUse the return key to regenerate the "
@@ -517,8 +517,8 @@ int main()
                               clock.restart().asMilliseconds(),
                               perlinOctaves);
 
-        for (sf::base::SizeT i = 0; i < settings.size(); ++i)
-            (void)sf::base::fmtTo(hudBuf,
+        for (zb::SizeT i = 0; i < settings.size(); ++i)
+            (void)zb::fmtTo(hudBuf,
                                   "{}{}:  {}\n",
                                   (i == currentSetting) ? ">>  " : "       ",
                                   settings[i].name,

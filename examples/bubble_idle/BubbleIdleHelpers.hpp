@@ -13,20 +13,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/Color.hpp"
+#include "Zancle/Graphics/Color.hpp"
 
-#include "SFML/System/Vec2.hpp"
+#include "Zancle/System/Vec2.hpp"
 
-#include "SFML/Base/Math/Pow.hpp"
+#include "ZancleBase/Math/Pow.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace sf
+namespace za
 {
 class CPUDrawableBatch;
-} // namespace sf
+} // namespace za
 
 
 ////////////////////////////////////////////////////////////
@@ -34,17 +34,17 @@ struct CloudFrameDrawSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     float time;
 
-    sf::Vec2f mins;
-    sf::Vec2f maxs;
+    za::Vec2f mins;
+    za::Vec2f maxs;
 
     int xSteps;
     int ySteps;
 
     float     scaleMult;
     float     outwardOffsetMult;
-    sf::Color color = sf::Color::White;
+    za::Color color = za::Color::White;
 
-    sf::CPUDrawableBatch* batch;
+    za::CPUDrawableBatch* batch;
 };
 
 
@@ -57,5 +57,5 @@ inline constexpr auto mouseCatComboDecay    = 0.995f; // higher decay for mousec
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline constexpr float getComboValueMult(const int n, const float decay)
 {
-    return (1.f - sf::base::pow(decay, static_cast<float>(n))) / (1.f - decay);
+    return (1.f - zb::pow(decay, static_cast<float>(n))) / (1.f - decay);
 }

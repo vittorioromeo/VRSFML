@@ -1,0 +1,21 @@
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "Zancle/System/Rect2.hpp"
+
+#include "ZancleBase/SizeT.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Explicit instantiation definitions
+////////////////////////////////////////////////////////////
+template class za::Rect2<float>;
+template class za::Rect2<double>;
+template class za::Rect2<long double>;
+template class za::Rect2<int>;
+template class za::Rect2<unsigned int>;
+template class za::Rect2<zb::SizeT>;

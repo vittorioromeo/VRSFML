@@ -3,24 +3,24 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Text.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
 
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Utf8String.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Utf8String.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/String.hpp"
-#include "SFML/Base/ToString.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/String.hpp"
+#include "ZancleBase/ToString.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -30,10 +30,10 @@
 int main()
 {
     // Create the graphics context
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto graphicsContext = za::GraphicsContext::create().value();
 
     // Create the main window
-    constexpr sf::Vec2f windowSize{800.f, 600.f};
+    constexpr za::Vec2f windowSize{800.f, 600.f};
 
     auto window = makeDPIScaledRenderWindow(
                       {
@@ -47,43 +47,43 @@ int main()
     auto windowView = computeAspectRatioAwareView(window.getSize().toVec2f(), windowSize);
 
     // Open the application font and pass it to the Effect class
-    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+    const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the mouse position and mouse raw movement texts
-    sf::Text mousePosition(font,
+    za::Text mousePosition(font,
                            {
                                .position      = {400.f, 300.f},
                                .string        = "",
                                .characterSize = 20u,
-                               .fillColor     = sf::Color::White,
+                               .fillColor     = za::Color::White,
                            });
 
-    sf::Text mouseRawMovement(font,
+    za::Text mouseRawMovement(font,
                               {
                                   .string        = "",
                                   .characterSize = 20u,
-                                  .fillColor     = sf::Color::White,
+                                  .fillColor     = za::Color::White,
                               });
 
-    sf::base::Vector<sf::base::String> log;
+    zb::Vector<zb::String> log;
 
     while (true)
     {
-        while (const sf::base::Optional event = window.pollEvent())
+        while (const zb::Optional event = window.pollEvent())
         {
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, windowView))
                 continue;
 
-            static const auto vec2ToString = [](const sf::Vec2i vec2)
-            { return '(' + sf::base::toString(vec2.x) + ", " + sf::base::toString(vec2.y) + ')'; };
+            static const auto vec2ToString = [](const za::Vec2i vec2)
+            { return '(' + zb::toString(vec2.x) + ", " + zb::toString(vec2.y) + ')'; };
 
-            if (const auto* const mouseMoved = event->getIf<sf::Event::MouseMoved>())
+            if (const auto* const mouseMoved = event->getIf<za::Event::MouseMoved>())
                 mousePosition.setString("Mouse Position: " + vec2ToString(mouseMoved->position));
 
-            if (const auto* const mouseMovedRaw = event->getIf<sf::Event::MouseMovedRaw>())
+            if (const auto* const mouseMovedRaw = event->getIf<za::Event::MouseMovedRaw>())
             {
                 log.emplaceBack("Mouse Movement: " + vec2ToString(mouseMovedRaw->delta));
 
@@ -95,7 +95,7 @@ int main()
         window.clear();
         window.draw(mousePosition, {.view = windowView});
 
-        for (sf::base::SizeT i = 0u; i < log.size(); ++i)
+        for (zb::SizeT i = 0u; i < log.size(); ++i)
         {
             mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);

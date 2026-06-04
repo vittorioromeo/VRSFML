@@ -19,31 +19,31 @@
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/CircleShapeData.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/TextData.hpp"
-#include "SFML/Graphics/TextUtils.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
+#include "Zancle/Graphics/BlendMode.hpp"
+#include "Zancle/Graphics/CircleShapeData.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/RectangleShapeData.hpp"
+#include "Zancle/Graphics/RenderTexture.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/RoundedRectangleShapeData.hpp"
+#include "Zancle/Graphics/Sprite.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+#include "Zancle/Graphics/TextUtils.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Window/Mouse.hpp"
+#include "Zancle/Window/Mouse.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
-#include "SFML/System/Rect2.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Remainder.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/StringView.hpp"
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/Remainder.hpp"
+#include "ZancleBase/SizeT.hpp"
+#include "ZancleBase/StringView.hpp"
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] FrameViewState Main::gameLoopComputeViews()
@@ -53,7 +53,7 @@
 
     const auto screenShake = profile.enableScreenShake ? rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
                                                                           {screenShakeAmount, screenShakeAmount})
-                                                       : sf::Vec2f{0.f, 0.f};
+                                                       : za::Vec2f{0.f, 0.f};
 
     nonScaledHUDView = {.center = out.resolution / 2.f, .size = out.resolution};
     scaledHUDView    = makeScaledHUDView(out.resolution, profile.hudScale);
@@ -62,13 +62,13 @@
     gameView.viewport.position.x = 0.f;
     gameView.center              = getViewCenter() + screenShake;
 
-    const sf::Vec2u backgroundResolution = gameView.size.toVec2u();
+    const za::Vec2u backgroundResolution = gameView.size.toVec2u();
     if (rtBackground.getSize() != backgroundResolution)
         recreateBackgroundRenderTexture(backgroundResolution);
 
     out.scaledTopGameView        = createScaledTopGameView(gameScreenSize, out.resolution);
     out.scaledTopGameView.center = gameView.center -
-                                   (gameView.viewport.position + gameView.viewport.size * 0.5f - sf::Vec2f{0.5f, 0.5f})
+                                   (gameView.viewport.position + gameView.viewport.size * 0.5f - za::Vec2f{0.5f, 0.5f})
                                        .componentWiseMul(out.scaledTopGameView.size);
 
     out.gameBackgroundView = {.center = getViewCenterWithoutScroll() + screenShake, .size = gameView.size};
@@ -78,12 +78,12 @@
 ////////////////////////////////////////////////////////////
 void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                                const bool              shouldDrawUI,
-                               const sf::base::U8      shouldDrawUIAlpha,
+                               const zb::U8      shouldDrawUIAlpha,
                                const FrameInput&       frameInput,
                                const FrameUpdateState& frameUpdate,
                                const FrameViewState&   frameViews)
 {
-    rtGame.clear(sf::Color::Transparent);
+    rtGame.clear(za::Color::Transparent);
 
     gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, frameUpdate.elapsedUs);
     gameLoopUpdateAndDrawBackground(deltaTimeMs, frameViews.gameBackgroundView);
@@ -103,12 +103,12 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     cpuCloudDrawableBatch.clear();
 
     {
-        sf::Vec2f p_min{pt->getMapLimit(), 0.f};
-        sf::Vec2f p_max{pt->getMapLimit() + frameViews.resolution.x, frameViews.resolution.y};
+        za::Vec2f p_min{pt->getMapLimit(), 0.f};
+        za::Vec2f p_max{pt->getMapLimit() + frameViews.resolution.x, frameViews.resolution.y};
 
-        cpuCloudDrawableBatch.add(sf::RectangleShapeData{
+        cpuCloudDrawableBatch.add(za::RectangleShapeData{
             .position  = p_min.addX(10.f),
-            .fillColor = sf::Color::White,
+            .fillColor = za::Color::White,
             .size      = p_max - p_min,
         });
 
@@ -144,11 +144,11 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     {
         const auto range = pt->psvPPMultiPopRange.currentValue() * 0.9f;
 
-        cpuDrawableBatchBeforeCats.add(sf::CircleShapeData{
+        cpuDrawableBatchBeforeCats.add(za::CircleShapeData{
             .position           = frameInput.mousePos,
             .origin             = {range, range},
             .outlineTextureRect = atlasRects.txrWhiteDot,
-            .fillColor          = sf::Color::Transparent,
+            .fillColor          = za::Color::Transparent,
             .outlineColor       = (outlineHueColor.withAlpha(105u).withLightness(0.75f)),
             .outlineThickness   = 1.5f,
             .radius             = range,
@@ -172,16 +172,16 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     drawBatch(cpuDrawableBatchAfterCats,
               {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     drawBatch(cpuDrawableBatchAdditive,
-              {.blendMode = sf::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
+              {.blendMode = za::BlendAdd, .view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
     drawBatch(catTextDrawableBatch, {.view = gameView, .texture = &textureAtlas.getTexture(), .shader = &shaders.shader});
 
     gameLoopDrawScrollArrowHint(deltaTimeMs);
 
     if (const auto dragRect = getAoEDragRect(frameInput.mousePos); dragRect.hasValue())
-        rtGame.draw(sf::RectangleShapeData{.position         = dragRect->position,
+        rtGame.draw(za::RectangleShapeData{.position         = dragRect->position,
                                            .origin           = {0.f, 0.f},
-                                           .fillColor        = sf::Color::whiteWithAlpha(64u),
-                                           .outlineColor     = sf::Color::whiteWithAlpha(176u),
+                                           .fillColor        = za::Color::whiteWithAlpha(64u),
+                                           .outlineColor     = za::Color::whiteWithAlpha(176u),
                                            .outlineThickness = 4.f,
                                            .size             = dragRect->size},
                     {.view = gameView});
@@ -190,8 +190,8 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
     if (shouldDrawUI)
     {
-        sf::Vec2f mins{10.f, 10.f};
-        sf::Vec2f maxs{20.f + static_cast<float>(moneyText.getString().byteSize()) * 15.f, pt->comboPurchased ? 60.f : 40.f};
+        za::Vec2f mins{10.f, 10.f};
+        za::Vec2f maxs{20.f + static_cast<float>(moneyText.getString().byteSize()) * 15.f, pt->comboPurchased ? 60.f : 40.f};
 
         mins.y += yBelowMinimap;
         maxs.y += yBelowMinimap;
@@ -233,26 +233,26 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         demoText.setOutlineColor(outlineHueColor);
         rtGame.draw(demoText, {.view = scaledHUDView});
 
-        sf::TextData demoInfoTextData{.position         = {},
+        za::TextData demoInfoTextData{.position         = {},
                                       .string           = "",
                                       .characterSize    = 24u,
-                                      .fillColor        = sf::Color::White,
+                                      .fillColor        = za::Color::White,
                                       .outlineColor     = outlineHueColor,
                                       .outlineThickness = 2.f};
 
         const float lineSpacing = fontSuperBakery.getLineSpacing(demoInfoTextData.characterSize);
 
-        const sf::base::StringView lines[3] = {"Only one prestige and two shrines",
+        const zb::StringView lines[3] = {"Only one prestige and two shrines",
                                                "Full version available on Steam",
                                                "Your progress will carry over!"};
 
-        for (sf::base::SizeT i = 0u; i < 3u; ++i)
+        for (zb::SizeT i = 0u; i < 3u; ++i)
         {
             demoInfoTextData.string = lines[i].data();
             demoInfoTextData.position = demoText.getGlobalBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
 
             rtGame.draw(fontSuperBakery,
-                        sf::TextUtils::anchored(fontSuperBakery, demoInfoTextData, {1.f, 0.f}),
+                        za::TextUtils::anchored(fontSuperBakery, demoInfoTextData, {1.f, 0.f}),
                         {.view = scaledHUDView});
         }
     }
@@ -260,10 +260,10 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
     gameLoopUpdateSpentMoneyEffect(deltaTimeMs);
 
-    sf::TextData     comboTextData   = gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-    const sf::Rect2f comboTextBounds = pt->comboPurchased
-                                           ? sf::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, comboTextData)
-                                           : sf::Rect2f{};
+    za::TextData     comboTextData   = gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
+    const za::Rect2f comboTextBounds = pt->comboPurchased
+                                           ? za::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, comboTextData)
+                                           : za::Rect2f{};
 
     if (isDevilcatHellsingedActive() && pt->buffCountdownsPerType[asIdx(CatType::Devil)].time > 0.f)
     {
@@ -284,15 +284,15 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
         }
     }
 
-    sf::TextData     buffTextData   = gameLoopUpdateBuffText(comboTextBounds);
-    const sf::Rect2f buffTextBounds = sf::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, buffTextData);
+    za::TextData     buffTextData   = gameLoopUpdateBuffText(comboTextBounds);
+    const za::Rect2f buffTextBounds = za::TextUtils::precomputeTextGlobalBounds(fontSuperBakery, buffTextData);
 
     if (!buffTextData.string.empty())
     {
-        const sf::Vec2f offset{10.f, 10.f};
+        const za::Vec2f offset{10.f, 10.f};
 
         auto mins = buffTextBounds.position + offset;
-        auto maxs = buffTextBounds.position + buffTextBounds.size - offset - sf::Vec2{0.f, 20.f};
+        auto maxs = buffTextBounds.position + buffTextBounds.size - offset - za::Vec2{0.f, 20.f};
 
         mins = (mins.toVec2i() / 20 * 20).toVec2f();
         maxs = (maxs.toVec2i() / 20 * 20).toVec2f().addX(20.f).addY(5.f);
@@ -312,9 +312,9 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
     if (shouldDrawUI && !uiState.debugHideUI)
         if (comboState.comboCountdown.time > 25.f)
             rtGame.draw(
-                sf::RoundedRectangleShapeData{
+                za::RoundedRectangleShapeData{
                     .position     = {comboTextBounds.position.x + comboTextBounds.size.x + 3.f, yBelowMinimap + 51.f},
-                    .fillColor    = sf::Color{75, 75, 75, 255},
+                    .fillColor    = za::Color{75, 75, 75, 255},
                     .size         = {100.f * comboState.comboCountdown.time / 700.f, 20.f},
                     .cornerRadius = 6.f,
                 },
@@ -334,7 +334,7 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                                                    window.getSize().toVec2f());
 
         if (uiState.minimapRect.contains(p) && !uiState.minimapZoomButtonsRect.contains(p) &&
-            mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
+            mBtnDown(za::Mouse::Button::Left, /* penetrateUI */ true))
         {
             const auto minimapPos   = p - uiState.minimapRect.position;
             playerInputState.scroll = minimapPos.x * 0.5f * pt->getMapLimit() / uiState.minimapRect.size.x -
@@ -405,12 +405,12 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
             const float progress = cdLetterAppear.asProgress(4000.f).getBounce();
 
-            rtGame.draw(sf::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,
-                                   .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
+            rtGame.draw(za::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,
+                                   .scale       = za::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
                                                   profile.hudScale * 2.f,
                                    .origin      = txLetter.getSize().toVec2f() / 2.f,
                                    .textureRect = txLetter.getRect(),
-                                   .color = sf::Color::whiteWithAlpha(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
+                                   .color = za::Color::whiteWithAlpha(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
                         {.view = scaledHUDView, .texture = &txLetter});
         }
 
@@ -420,12 +420,12 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                                    : cdLetterText.time < 1000.f ? cdLetterText.time / 1000.f
                                                                 : 1.f;
 
-        rtGame.draw(sf::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,
-                               .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
+        rtGame.draw(za::Sprite{.position    = frameViews.resolution / 2.f / profile.hudScale,
+                               .scale       = za::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
                                               profile.hudScale * 1.45f,
                                .origin      = txLetterText.getSize().toVec2f() / 2.f,
                                .textureRect = txLetterText.getRect(),
-                               .color = sf::Color::whiteWithAlpha(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
+                               .color = za::Color::whiteWithAlpha(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
                     {.view = scaledHUDView, .texture = &txLetterText});
     }
 
@@ -469,14 +469,14 @@ void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
 
     {
         const float ratio         = frameViews.resolution.x / 1250.f;
-        const float fixedBgScroll = txFixedBg.getSize().toVec2f().x * 0.5f * sf::base::remainder(fixedBgSlide, 3.f);
+        const float fixedBgScroll = txFixedBg.getSize().toVec2f().x * 0.5f * zb::remainder(fixedBgSlide, 3.f);
 
         window.draw(txFixedBg,
                     {.position    = {0.f, 0.f},
                      .scale       = {ratio, ratio},
                      .textureRect = {{fixedBgScroll - playerInputState.actualScroll / 20.f, 0.f},
                                      {frameViews.resolution.x / ratio, frameViews.resolution.y / ratio}},
-                     .color       = sf::Color::White},
+                     .color       = za::Color::White},
                     {.view = nonScaledHUDView});
     }
 
@@ -492,12 +492,12 @@ void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
                            profile.ppSSharpness,
                            profile.ppSBlur);
 
-    constexpr sf::BlendMode premultipliedAlphaBlend(sf::BlendMode::Factor::One,
-                                                    sf::BlendMode::Factor::OneMinusSrcAlpha,
-                                                    sf::BlendMode::Equation::Add,
-                                                    sf::BlendMode::Factor::One,
-                                                    sf::BlendMode::Factor::OneMinusSrcAlpha,
-                                                    sf::BlendMode::Equation::Add);
+    constexpr za::BlendMode premultipliedAlphaBlend(za::BlendMode::Factor::One,
+                                                    za::BlendMode::Factor::OneMinusSrcAlpha,
+                                                    za::BlendMode::Equation::Add,
+                                                    za::BlendMode::Factor::One,
+                                                    za::BlendMode::Factor::OneMinusSrcAlpha,
+                                                    za::BlendMode::Equation::Add);
 
     window.draw(rtGame.getTexture(), {.blendMode = premultipliedAlphaBlend, .shader = &shaders.shaderPostProcess});
 

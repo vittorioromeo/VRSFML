@@ -1,25 +1,25 @@
 file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "*.cpp" "*.hpp" "*.inl")
-sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
+zancle_add_test(test-zancle-graphics "${GRAPHICS_SRC}" Zancle::Graphics)
 
 # Some tests directly instantiate GL utility types whose public headers
-# transitively include private headers from `src/SFML/GLUtils/` and the
+# transitively include private headers from `src/Zancle/GLUtils/` and the
 # bundled `glad` sources.
-target_include_directories(test-sfml-graphics PRIVATE "${PROJECT_SOURCE_DIR}/src")
-target_include_directories(test-sfml-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+target_include_directories(test-zancle-graphics PRIVATE "${PROJECT_SOURCE_DIR}/src")
+target_include_directories(test-zancle-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
 
-if(SFML_RUN_DISPLAY_TESTS)
-    target_compile_definitions(test-sfml-graphics PRIVATE SFML_RUN_DISPLAY_TESTS)
+if(ZA_RUN_DISPLAY_TESTS)
+    target_compile_definitions(test-zancle-graphics PRIVATE ZA_RUN_DISPLAY_TESTS)
 endif()
 
-if (SFML_OS_EMSCRIPTEN OR (XCODE AND SFML_OS_IOS))
+if (ZA_OS_EMSCRIPTEN OR (XCODE AND ZA_OS_IOS))
     set(GRAPHICS_RESOURCES
         invalid_shader.vert
-        sfml-logo-big.bmp
-        sfml-logo-big.gif
-        sfml-logo-big.jpg
-        sfml-logo-big.png
-        sfml-logo-big.psd
-        sfml-logo-big.qoi
+        zancle-logo-big.bmp
+        zancle-logo-big.gif
+        zancle-logo-big.jpg
+        zancle-logo-big.png
+        zancle-logo-big.psd
+        zancle-logo-big.qoi
         shader-🐌.vert
         shader-ń.vert
         shader.frag
@@ -30,21 +30,21 @@ if (SFML_OS_EMSCRIPTEN OR (XCODE AND SFML_OS_IOS))
         tuffy.ttf
     )
 
-    target_sources(test-sfml-graphics PRIVATE ${GRAPHICS_RESOURCES})
+    target_sources(test-zancle-graphics PRIVATE ${GRAPHICS_RESOURCES})
     set_source_files_properties(${GRAPHICS_RESOURCES} MACOSX_PACKAGE_LOCATION "Graphics")
 
-    if (SFML_OS_EMSCRIPTEN)
+    if (ZA_OS_EMSCRIPTEN)
         # Use --preload-file instead of --embed-file to support non-ASCII filenames.
         # --embed-file generates assembly symbols derived from filenames, which the
         # assembler rejects for non-ASCII characters (e.g. ń, 🐌). --preload-file
         # stores filenames as JS strings in a .data bundle, avoiding the issue.
-        set(GRAPHICS_RESOURCE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/staging_test-sfml-graphics")
+        set(GRAPHICS_RESOURCE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/staging_test-zancle-graphics")
 
         foreach(RESOURCE ${GRAPHICS_RESOURCES})
             file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${RESOURCE}" DESTINATION "${GRAPHICS_RESOURCE_STAGING_DIR}")
         endforeach()
 
-        target_link_options(test-sfml-graphics PRIVATE
+        target_link_options(test-zancle-graphics PRIVATE
             "SHELL:--preload-file ${GRAPHICS_RESOURCE_STAGING_DIR}@/")
     endif()
 endif()

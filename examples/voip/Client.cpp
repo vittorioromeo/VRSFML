@@ -3,32 +3,32 @@
 ////////////////////////////////////////////////////////////
 #include "Client.hpp"
 
-#include "SFML/Audio/CaptureDeviceHandle.hpp"
-#include "SFML/Audio/SoundRecorder.hpp"
+#include "Zancle/Audio/CaptureDeviceHandle.hpp"
+#include "Zancle/Audio/SoundRecorder.hpp"
 
-#include "SFML/Network/IpAddress.hpp"
-#include "SFML/Network/IpAddressUtils.hpp"
-#include "SFML/Network/Packet.hpp"
-#include "SFML/Network/Socket.hpp"
-#include "SFML/Network/TcpSocket.hpp"
+#include "Zancle/Network/IpAddress.hpp"
+#include "Zancle/Network/IpAddressUtils.hpp"
+#include "Zancle/Network/Packet.hpp"
+#include "Zancle/Network/Socket.hpp"
+#include "Zancle/Network/TcpSocket.hpp"
 
-#include "SFML/Base/Fmt/Fmt.hpp"
-#include "SFML/Base/Fmt/FmtNumeric.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Scn/ScnStdin.hpp"
-#include "SFML/Base/Scn/ScnString.hpp"
-#include "SFML/Base/String.hpp"
+#include "ZancleBase/Fmt/Fmt.hpp"
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Scn/ScnStdin.hpp"
+#include "ZancleBase/Scn/ScnString.hpp"
+#include "ZancleBase/String.hpp"
 
 
-constexpr sf::base::U8 clientAudioData   = 1;
-constexpr sf::base::U8 clientEndOfStream = 2;
+constexpr zb::U8 clientAudioData   = 1;
+constexpr zb::U8 clientEndOfStream = 2;
 
 
 ////////////////////////////////////////////////////////////
 /// Specialization of audio recorder for sending recorded audio
 /// data through the network
 ////////////////////////////////////////////////////////////
-class NetworkRecorder : public sf::SoundRecorder
+class NetworkRecorder : public za::SoundRecorder
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public:
     /// \param port Port of the remote host
     ///
     ////////////////////////////////////////////////////////////
-    explicit NetworkRecorder(sf::IpAddress host, unsigned short port) : m_host(host), m_port(port)
+    explicit NetworkRecorder(za::IpAddress host, unsigned short port) : m_host(host), m_port(port)
     {
     }
 
@@ -51,7 +51,7 @@ public:
     ~NetworkRecorder() override
     {
         if (!stop())
-            sf::base::printErrLn("Failed to stop network recorder on destruction");
+            zb::printErrLn("Failed to stop network recorder on destruction");
     }
 
 private:
@@ -59,15 +59,15 @@ private:
     /// \see SoundRecorder::onStart
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onStart(sf::CaptureDevice&) override
+    [[nodiscard]] bool onStart(za::CaptureDevice&) override
     {
-        m_socket = sf::TcpSocket::create(/* isBlocking */ true);
+        m_socket = za::TcpSocket::create(/* isBlocking */ true);
         if (!m_socket.hasValue())
             return false;
 
-        if (m_socket->connect(m_host, m_port) == sf::Socket::Status::Done)
+        if (m_socket->connect(m_host, m_port) == za::Socket::Status::Done)
         {
-            sf::base::printLn("Connected to server {}", sf::IpAddressUtils::toString(m_host));
+            zb::printLn("Connected to server {}", za::IpAddressUtils::toString(m_host));
             return true;
         }
 
@@ -79,30 +79,30 @@ private:
     /// \see SoundRecorder::onProcessSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const sf::base::I16* samples, sf::base::SizeT sampleCount) override
+    [[nodiscard]] bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) override
     {
         // Pack the audio samples into a network packet
-        sf::Packet packet;
+        za::Packet packet;
         packet << clientAudioData;
-        packet.append(samples, sampleCount * sizeof(sf::base::I16));
+        packet.append(samples, sampleCount * sizeof(zb::I16));
 
         // Send the audio packet to the server
-        return m_socket->send(packet) == sf::Socket::Status::Done;
+        return m_socket->send(packet) == za::Socket::Status::Done;
     }
 
     ////////////////////////////////////////////////////////////
     /// \see SoundRecorder::onStop
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onStop(sf::CaptureDevice&) override
+    [[nodiscard]] bool onStop(za::CaptureDevice&) override
     {
         // Send an "end-of-stream" packet
-        sf::Packet packet;
+        za::Packet packet;
         packet << clientEndOfStream;
 
-        if (m_socket->send(packet) != sf::Socket::Status::Done)
+        if (m_socket->send(packet) != za::Socket::Status::Done)
         {
-            sf::base::printErrLn("Failed to send end-of-stream packet");
+            zb::printErrLn("Failed to send end-of-stream packet");
             return false;
         }
 
@@ -116,9 +116,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::IpAddress                     m_host;   ///< Address of the remote host
+    za::IpAddress                     m_host;   ///< Address of the remote host
     unsigned short                    m_port;   ///< Remote port
-    sf::base::Optional<sf::TcpSocket> m_socket; ///< Socket used to communicate with the server (created in onStart)
+    zb::Optional<za::TcpSocket> m_socket; ///< Socket used to communicate with the server (created in onStart)
 };
 
 
@@ -127,37 +127,37 @@ private:
 /// start sending it audio data
 ///
 ////////////////////////////////////////////////////////////
-void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
+void doClient(za::CaptureDevice& captureDevice, unsigned short port)
 {
     // Ask for server address
-    sf::base::Optional<sf::IpAddress> server;
+    zb::Optional<za::IpAddress> server;
     do
     {
-        sf::base::print("Type address or name of the server to connect to: ");
+        zb::print("Type address or name of the server to connect to: ");
 
-        sf::base::String addressStr;
-        (void)sf::base::scnStdinInto(addressStr);
-        server = sf::IpAddressUtils::resolve(addressStr);
+        zb::String addressStr;
+        (void)zb::scnStdinInto(addressStr);
+        server = za::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
     // Create an instance of our custom recorder
     NetworkRecorder recorder(server.value(), port);
 
     // Wait for user input...
-    sf::base::scnStdinIgnoreLine();
-    sf::base::print("Press enter to start recording audio");
-    sf::base::scnStdinIgnoreLine();
+    zb::scnStdinIgnoreLine();
+    zb::print("Press enter to start recording audio");
+    zb::scnStdinIgnoreLine();
 
     // Start capturing audio data
     if (!recorder.start(captureDevice, 44'100))
     {
-        sf::base::printErrLn("Failed to start recorder");
+        zb::printErrLn("Failed to start recorder");
         return;
     }
 
-    sf::base::print("Recording... press enter to stop");
-    sf::base::scnStdinIgnoreLine();
+    zb::print("Recording... press enter to stop");
+    zb::scnStdinIgnoreLine();
 
     if (!recorder.stop())
-        sf::base::printErrLn("Failed to stop network recorder");
+        zb::printErrLn("Failed to stop network recorder");
 }

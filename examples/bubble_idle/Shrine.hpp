@@ -8,24 +8,24 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Remainder.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Shrine
 {
-    sf::Vec2f position;
+    za::Vec2f position;
 
     float wobbleRadians = 0.f;
 
-    sf::base::Optional<TimedCountdown> tcActivation;
-    sf::base::Optional<TimedCountdown> tcDeath;
+    zb::Optional<TimedCountdown> tcActivation;
+    zb::Optional<TimedCountdown> tcDeath;
 
     TextShakeEffect textStatusShakeEffect;
 
@@ -55,14 +55,14 @@ struct [[nodiscard]] Shrine
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {
         textStatusShakeEffect.update(deltaTime);
-        wobbleRadians = sf::base::remainder(wobbleRadians + deltaTime * 0.002f + getDeathProgress() * 0.2f, sf::base::tau);
+        wobbleRadians = zb::remainder(wobbleRadians + deltaTime * 0.002f + getDeathProgress() * 0.2f, zb::tau);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline sf::Vec2f getDrawPosition() const
+    [[nodiscard, gnu::always_inline]] inline za::Vec2f getDrawPosition() const
     {
-        const sf::Vec2f wobbleOffset{sf::base::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
-                                     sf::base::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
+        const za::Vec2f wobbleOffset{zb::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
+                                     zb::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
 
         return position + getActivationProgress() * wobbleOffset;
     }
@@ -84,7 +84,7 @@ struct [[nodiscard]] Shrine
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isInRange(const sf::Vec2f point) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isInRange(const za::Vec2f point) const
     {
         return isActive() && (point - position).lengthSquared() < getRangeSquared();
     }

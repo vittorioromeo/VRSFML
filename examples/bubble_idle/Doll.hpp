@@ -4,25 +4,25 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "SFML/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/Math/Cos.hpp"
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Remainder.hpp"
+#include "ZancleBase/Constants.hpp"
+#include "ZancleBase/Math/Cos.hpp"
+#include "ZancleBase/Math/Sin.hpp"
+#include "ZancleBase/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Doll
 {
-    sf::Vec2f position;
+    za::Vec2f position;
     float     wobbleRadians;
     float     buffPower;
     float     hue = 0.f;
     CatType   catType;
 
     TimedCountdown                     tcActivation;
-    sf::base::Optional<TimedCountdown> tcDeath;
+    zb::Optional<TimedCountdown> tcDeath;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline bool isActive() const
@@ -45,14 +45,14 @@ struct [[nodiscard]] Doll
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {
-        wobbleRadians = sf::base::remainder(wobbleRadians + deltaTime * 0.002f, sf::base::tau);
+        wobbleRadians = zb::remainder(wobbleRadians + deltaTime * 0.002f, zb::tau);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline za::Vec2f getDrawPosition() const
     {
-        const sf::Vec2f wobbleOffset{sf::base::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
-                                     sf::base::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
+        const za::Vec2f wobbleOffset{zb::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
+                                     zb::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
 
         return position + getActivationProgress() * wobbleOffset;
     }
