@@ -46,7 +46,7 @@ inline Path getTemporaryFilePath()
     const auto tmp = Path::getTempDirectory();
     ZB_ASSERT(tmp && "Failed to obtain temp directory");
 
-    return *tmp / Path(zb::fmtToString("sfmltemp_{}_{}.tmp", getProcessUniqueId(), counter++));
+    return *tmp / Path(zb::fmtToString("zancletemp_{}_{}.tmp", getProcessUniqueId(), counter++));
 }
 
 

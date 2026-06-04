@@ -50,7 +50,7 @@ TEST_CASE("[System] priv::errMsg")
 
         za::priv::errMsg("hello {}", 42);
 
-        CHECK(sink.captured.find("[[SFML ERROR]]: hello 42") != zb::String::nPos);
+        CHECK(sink.captured.find("[[ZANCLE ERROR]]: hello 42") != zb::String::nPos);
         // Single-line emission ends with a newline.
         CHECK(sink.captured.find('\n') != zb::String::nPos);
     }
@@ -62,7 +62,7 @@ TEST_CASE("[System] priv::errMsg")
 
         za::priv::errMsgMulti("partial message no trailing");
 
-        CHECK(sink.captured == zb::String{"[[SFML ERROR]]: partial message no trailing"});
+        CHECK(sink.captured == zb::String{"[[ZANCLE ERROR]]: partial message no trailing"});
     }
 
     SECTION("ErrMsgScope composes multiple format calls into one emission")
@@ -78,7 +78,7 @@ TEST_CASE("[System] priv::errMsg")
             scope.fmt("line B {}", 2);
         }
 
-        CHECK(sink.captured == zb::String{"[[SFML ERROR]]: line A 1\nline B 2"});
+        CHECK(sink.captured == zb::String{"[[ZANCLE ERROR]]: line A 1\nline B 2"});
     }
 
     SECTION("Setting a null sink restores the default (writes to stderr; just verifies it doesn't crash)")
@@ -98,7 +98,7 @@ TEST_CASE("[System] priv::errMsg")
 
         za::priv::errMsgMulti("{}", zb::StringView{big.data(), big.size()});
 
-        CHECK(sink.captured.find("[[SFML ERROR]]: ") != zb::String::nPos);
+        CHECK(sink.captured.find("[[ZANCLE ERROR]]: ") != zb::String::nPos);
         CHECK(sink.captured.size() >= big.size());
     }
 }
