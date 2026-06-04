@@ -6,10 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Export.hpp"
+
+#include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Shape.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 
 

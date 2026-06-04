@@ -1,6 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/Shader.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -9,21 +14,23 @@
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
-#include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -35,9 +42,6 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Scaling.hpp"
 
 
 namespace

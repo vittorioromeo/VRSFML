@@ -29,8 +29,17 @@
 #include "TextParticle.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/LoadedSound.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
@@ -40,17 +49,22 @@
 #include "Zancle/Graphics/Text.hpp" // IWYU pragma: keep
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
+
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -65,14 +79,6 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/ThreadPool.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/LoadedSound.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/SoundManager.hpp"
 
 #include <cstdarg>
 #include <cstdio>

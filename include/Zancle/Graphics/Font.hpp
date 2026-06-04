@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/System/LifetimeDependee.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 #include "ZancleBase/SizeT.hpp"

@@ -5,11 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
+
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/Algorithm/Sort.hpp"
 #include "ZancleBase/Assert.hpp"

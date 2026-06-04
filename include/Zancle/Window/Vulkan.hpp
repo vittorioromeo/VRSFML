@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
+
 #include "Zancle/Window/WindowHandle.hpp"
+
 #include "ZancleBase/Span.hpp"
 
 

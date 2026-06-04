@@ -1,9 +1,12 @@
 #pragma once
 
 #include "InputState.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"

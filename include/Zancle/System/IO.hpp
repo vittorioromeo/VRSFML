@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
+
 #include "ZancleBase/EnumClassBitwiseOps.hpp"
 #include "ZancleBase/FwdStdString.hpp" // TODO P1: remove?
 #include "ZancleBase/InPlacePImpl.hpp"

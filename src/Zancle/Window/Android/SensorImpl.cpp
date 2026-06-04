@@ -5,8 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Time.hpp"
 #include "Zancle/Window/SensorImpl.hpp"
+
+#include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/EnumArray.hpp"
 #include "ZancleBase/Optional.hpp"
 

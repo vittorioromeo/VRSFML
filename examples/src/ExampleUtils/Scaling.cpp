@@ -5,15 +5,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
@@ -21,8 +26,6 @@
 #include "ZancleBase/Math/Floor.hpp"
 #include "ZancleBase/MinMax.hpp"
 #include "ZancleBase/Optional.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
 
 
 ////////////////////////////////////////////////////////////

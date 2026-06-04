@@ -5,9 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/System/RectPacker.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/RectPacker.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"

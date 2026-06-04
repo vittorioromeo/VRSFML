@@ -6,13 +6,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/DisplayOrientation.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"

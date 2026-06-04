@@ -5,9 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Android/Activity.hpp"
 #include "Zancle/System/Android/ResourceStream.hpp"
+
+#include "Zancle/System/Android/Activity.hpp"
 #include "Zancle/System/Path.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Optional.hpp"
 

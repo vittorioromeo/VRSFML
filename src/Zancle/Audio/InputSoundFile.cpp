@@ -5,10 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/InputSoundFile.hpp"
+
+#include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundFileFactory.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/FileInputStream.hpp"
 #include "Zancle/System/InputStream.hpp"
@@ -16,6 +18,7 @@
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"

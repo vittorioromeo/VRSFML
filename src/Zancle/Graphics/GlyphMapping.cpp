@@ -5,9 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Glyph.hpp"
 #include "Zancle/Graphics/GlyphMapping.hpp"
+
+#include "Zancle/Graphics/Glyph.hpp"
+
 #include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 

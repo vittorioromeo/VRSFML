@@ -7,8 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
+
 #include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
+
 #include "Zancle/System/LifetimeDependant.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 
 

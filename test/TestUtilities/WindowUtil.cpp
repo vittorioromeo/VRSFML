@@ -1,6 +1,8 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "WindowUtil.hpp"
+
 #include "Zancle/Window/VideoMode.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToChars.hpp"

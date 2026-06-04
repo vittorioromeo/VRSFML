@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/RectangleShapeData.hpp"
+
 #include "Zancle/Graphics/Transform.hpp"
+
 #include "Zancle/System/Rect2.hpp"
 
 

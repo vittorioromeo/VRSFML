@@ -27,6 +27,14 @@
 #include "ShrineType.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/NinePatchRect.hpp"
+#include "ExampleUtils/NinePatchUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
@@ -45,12 +53,15 @@
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
+
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -70,13 +81,6 @@
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/NinePatchRect.hpp"
-#include "ExampleUtils/NinePatchUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
 
 #include <cctype>
 #include <cstdio>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Vector.hpp"

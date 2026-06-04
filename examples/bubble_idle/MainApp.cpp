@@ -20,9 +20,12 @@
 #include "Steam.hpp"
 #include "SweepAndPrune.hpp"
 #include "UIState.hpp"
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/Listener.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
+
+#include "ExampleUtils/SoundManager.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -37,13 +40,18 @@
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+
+#include "Zancle/Window/VideoMode.hpp"
+#include "Zancle/Window/VideoModeUtils.hpp"
+
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
-#include "Zancle/Window/VideoMode.hpp"
-#include "Zancle/Window/VideoModeUtils.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
@@ -52,8 +60,6 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/SoundManager.hpp"
 
 
 namespace

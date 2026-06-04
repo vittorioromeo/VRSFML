@@ -1,7 +1,10 @@
 #include "Tst/Tst.hpp"
+
 #include "Zancle/System/Atomic.hpp"
+
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PtrDiffT.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"

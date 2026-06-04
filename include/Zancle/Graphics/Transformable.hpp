@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
 

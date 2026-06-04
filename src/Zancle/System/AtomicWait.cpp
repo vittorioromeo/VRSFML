@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
+
 #include "Zancle/System/Atomic.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/InterferenceSize.hpp"
 #include "ZancleBase/SizeT.hpp"

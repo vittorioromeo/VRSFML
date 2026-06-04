@@ -7,9 +7,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
+
 #include "Zancle/Audio/Listener.hpp"
+
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 
 

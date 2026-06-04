@@ -1,19 +1,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RectangleShape.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
-#include "ZancleBase/Optional.hpp"
 
-#include "ExampleUtils/Scaling.hpp"
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
+#include "ZancleBase/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -1,9 +1,13 @@
 #include "StringifyOptionalUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/Cursor.hpp"
+
 #include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

@@ -3,10 +3,10 @@
 ////////////////////////////////////////////////////////////
 #include "../bubble_idle/TextEffectWiggle.cpp" // TODO P0: move to ExampleUtils
 #include "../bubble_idle/TextEffectWiggle.hpp" // TODO P1: avoid the relative path...?
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/CircleShape.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -17,22 +17,27 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
+
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
 #include "Zancle/System/Vec2.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
+
 #include "ZancleBase/Math/Cos.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/String.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Scaling.hpp"
 
 #ifdef ZA_SYSTEM_IOS
     #include "Zancle/Main.hpp"

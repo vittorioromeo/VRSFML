@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/TstFwd.hpp"
+
 #include "ZancleBase/Builtin/Pragma.hpp"
 #include "ZancleBase/Trait/IsArray.hpp"
 

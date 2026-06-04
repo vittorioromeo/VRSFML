@@ -7,6 +7,11 @@
 // - Right-click drag to apply a temporary spring force at the grab point.
 ////////////////////////////////////////////////////////////
 
+#include "ExampleUtils/Scaling.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -17,24 +22,23 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Mouse.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Mouse.hpp"
+
 #include "ZancleBase/Math/Atan2.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Math/Sin.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
 
 #include <box2d/box2d.h>
 #include <box2d/collision.h>

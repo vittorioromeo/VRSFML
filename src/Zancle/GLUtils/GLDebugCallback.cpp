@@ -5,11 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Config.hpp" // IWYU pragma: keep
-#include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLDebugCallback.hpp"
+
+#include "Zancle/Config.hpp" // IWYU pragma: keep
+
+#include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/StringView.hpp"
 
 

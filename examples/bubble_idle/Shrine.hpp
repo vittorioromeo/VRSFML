@@ -4,15 +4,17 @@
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
 #include "TextShakeEffect.hpp"
+
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Cos.hpp"
 #include "ZancleBase/Math/Sin.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Remainder.hpp"
-
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////

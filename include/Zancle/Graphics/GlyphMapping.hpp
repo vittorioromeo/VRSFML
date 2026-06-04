@@ -7,8 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/Glyph.hpp"
+
 #include "Zancle/System/LifetimeDependee.hpp"
+
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/SizeT.hpp"
 

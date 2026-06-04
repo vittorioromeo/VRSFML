@@ -6,11 +6,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/PieSliceShapeData.hpp"
+
 #include "Zancle/Graphics/Priv/ArcBounds.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/Transform.hpp"
+
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Fabs.hpp"

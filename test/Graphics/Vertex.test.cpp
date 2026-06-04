@@ -1,7 +1,10 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"

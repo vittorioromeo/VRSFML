@@ -7,12 +7,16 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/Window.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 

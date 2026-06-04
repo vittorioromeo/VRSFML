@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
+
 #include "Zancle/System/LifetimeDependee.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"

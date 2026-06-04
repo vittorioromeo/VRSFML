@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Restrict.hpp"

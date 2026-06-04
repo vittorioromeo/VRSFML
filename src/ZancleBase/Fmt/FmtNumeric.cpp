@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ZancleBase/Fmt/FmtNumeric.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/Fmt/FmtSink.hpp"
 #include "ZancleBase/Fmt/FmtSpec.hpp"

@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
+
 #include "Zancle/Window/Sensor.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS) || defined(ZA_SYSTEM_LINUX) || defined(ZA_SYSTEM_FREEBSD) || \

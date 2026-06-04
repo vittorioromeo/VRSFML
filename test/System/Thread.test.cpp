@@ -1,9 +1,12 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
+#include "Zancle/System/Thread.hpp"
+
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

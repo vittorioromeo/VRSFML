@@ -4,13 +4,17 @@
 // Other 1st party headers
     #include "SystemUtil.hpp"
     #include "Tst/Tst.hpp"
+
     #include "Zancle/Graphics/RenderWindow.hpp"
-    #include "Zancle/System/Priv/Vec2Base.hpp"
-    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
+
     #include "Zancle/Window/Window.hpp"
     #include "Zancle/Window/WindowBase.hpp"
     #include "Zancle/Window/WindowContext.hpp"
     #include "Zancle/Window/WindowHandle.hpp"
+
+    #include "Zancle/System/Priv/Vec2Base.hpp"
+    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
+
     #include "ZancleBase/Optional.hpp"
 
 

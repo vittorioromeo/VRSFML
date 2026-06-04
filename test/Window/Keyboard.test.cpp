@@ -1,10 +1,12 @@
 #include "Zancle/Window/Keyboard.hpp"
+
 #include "Zancle/Window/WindowContext.hpp"
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
+
 #include "Zancle/System/Utf8String.hpp" // IWYU pragma: keep
 
 // We're limited on what can be tested. Without control over the hardware and the

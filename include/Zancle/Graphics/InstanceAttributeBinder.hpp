@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/GlDataType.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/SizeT.hpp"

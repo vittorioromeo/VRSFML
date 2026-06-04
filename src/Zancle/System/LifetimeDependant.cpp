@@ -7,6 +7,7 @@
     // Headers
     ////////////////////////////////////////////////////////////
     #include "Zancle/System/LifetimeDependant.hpp"
+
     #include "Zancle/System/LifetimeDependee.hpp"
 
 

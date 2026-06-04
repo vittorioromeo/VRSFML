@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Android/Activity.hpp"
+
 #include "ZancleBase/Assert.hpp"
 
 #include <android/log.h>

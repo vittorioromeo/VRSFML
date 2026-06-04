@@ -1,6 +1,8 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/StencilMode.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsConvertible.hpp"
 #include "ZancleBase/Trait/IsDefaultConstructible.hpp"

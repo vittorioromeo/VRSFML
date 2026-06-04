@@ -9,6 +9,7 @@
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/SinCosLookup.hpp"

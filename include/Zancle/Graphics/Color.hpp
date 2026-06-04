@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Unreachable.hpp"

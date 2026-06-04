@@ -1,5 +1,7 @@
 #include "Tst/Tst.hpp"
+
 #include "ZancleBase/Bitset.hpp"
+
 #include "ZancleBase/Builtin/Popcountll.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"

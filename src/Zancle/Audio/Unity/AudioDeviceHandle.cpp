@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/AudioDeviceHandle.hpp"
+
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
+
 #include "ZancleBase/Builtin/Memcmp.hpp"
 #include "ZancleBase/PassKey.hpp"
 

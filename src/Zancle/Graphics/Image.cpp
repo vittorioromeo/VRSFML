@@ -5,8 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Image.hpp"
+
+#include "Zancle/Graphics/Color.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/InputStream.hpp"
@@ -14,6 +16,7 @@
 #include "Zancle/System/PathUtils.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"

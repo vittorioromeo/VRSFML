@@ -1,8 +1,10 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/RectUtils.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"

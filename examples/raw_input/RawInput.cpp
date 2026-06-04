@@ -1,23 +1,26 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Text.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Utf8String.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
 
 
 ////////////////////////////////////////////////////////////

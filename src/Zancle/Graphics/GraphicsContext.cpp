@@ -5,15 +5,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/GraphicsContext.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DefaultShader.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/Texture.hpp"
+
+#include "Zancle/Window/WindowContext.hpp"
+
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Err.hpp"
-#include "Zancle/Window/WindowContext.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"

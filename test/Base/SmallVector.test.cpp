@@ -1,9 +1,11 @@
 #include "Tst/Tst.hpp"
+
+#include "ZancleBase/SmallVector.hpp"
+
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/PlacementNew.hpp"
 #include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/SmallVector.hpp"
 #include "ZancleBase/Swap.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

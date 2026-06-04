@@ -21,14 +21,22 @@
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
+
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
+
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/FixedFunction.hpp"
 #include "ZancleBase/GetArraySize.hpp"
@@ -40,10 +48,6 @@
 #include "ZancleBase/ThreadPool.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Sampler.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))

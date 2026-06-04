@@ -13,8 +13,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
-#include "Zancle/GLUtils/GlContext.hpp"
+
 #include "Zancle/Window/ContextSettings.hpp"
+
+#include "Zancle/GLUtils/GlContext.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 
 

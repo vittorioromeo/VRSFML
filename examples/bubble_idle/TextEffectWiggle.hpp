@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Vector.hpp"
 
 

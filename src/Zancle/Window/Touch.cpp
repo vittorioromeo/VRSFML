@@ -5,9 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/Touch.hpp"
+
+#include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
+
 #include "ZancleBase/Span.hpp"
 #include "ZancleBase/Vector.hpp"
 

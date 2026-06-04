@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Zancle/System/Atomic.hpp"
+
 #include "ZancleBase/Algorithm/Sort.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/InterferenceSize.hpp"

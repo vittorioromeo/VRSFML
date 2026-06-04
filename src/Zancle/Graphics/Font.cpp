@@ -6,14 +6,17 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Font.hpp"
+
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/FontInfo.hpp"
 #include "Zancle/Graphics/Glyph.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
 #include "Zancle/System/Path.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"

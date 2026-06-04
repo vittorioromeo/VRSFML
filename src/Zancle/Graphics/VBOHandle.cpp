@@ -5,10 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/VBOHandle.hpp"
+
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLPersistentRingBuffer.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
-#include "Zancle/Graphics/VBOHandle.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Macros.hpp"

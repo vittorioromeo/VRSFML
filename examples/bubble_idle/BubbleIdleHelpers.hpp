@@ -14,7 +14,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp"
+
 #include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Math/Pow.hpp"
 
 

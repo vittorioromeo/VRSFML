@@ -9,7 +9,9 @@
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/EffectProcessor.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
+
 #include "Zancle/System/LifetimeDependant.hpp"
+
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/IntTypes.hpp"
 

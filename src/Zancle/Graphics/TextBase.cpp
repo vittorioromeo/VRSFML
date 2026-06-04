@@ -5,12 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/TextBase.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GlyphMappedText.hpp" // IWYU pragma: keep
 #include "Zancle/Graphics/Text.hpp"            // IWYU pragma: keep
-#include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 

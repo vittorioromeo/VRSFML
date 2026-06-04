@@ -8,7 +8,9 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/System/Export.hpp"
+
 #include "Zancle/System/InputStream.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 

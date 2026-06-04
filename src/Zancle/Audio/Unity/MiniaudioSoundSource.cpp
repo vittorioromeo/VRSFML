@@ -5,13 +5,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
+
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/EffectProcessor.hpp"
-#include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Clamp.hpp"
 

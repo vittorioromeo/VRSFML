@@ -1,21 +1,24 @@
 #pragma once
 
 #include "ShowcaseExample.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
 
 
 ////////////////////////////////////////////////////////////

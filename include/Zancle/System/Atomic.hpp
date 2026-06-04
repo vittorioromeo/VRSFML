@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
+
 #include "ZancleBase/Builtin/BitCast.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PtrDiffT.hpp"

@@ -23,8 +23,14 @@
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "SweepAndPrune.hpp"
-#include "Zancle/Audio/Listener.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
@@ -32,10 +38,15 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
+
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Algorithm/AnyOf.hpp"
 #include "ZancleBase/Algorithm/Count.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
@@ -54,13 +65,6 @@
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/SoundManager.hpp"
 
 #include <climits>
 #include <cstdio>

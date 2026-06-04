@@ -5,11 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Audio/SoundFileReaderFlac.hpp"
+
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
-#include "Zancle/Audio/SoundFileReaderFlac.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
+
 #include "ZancleBase/Algorithm/Copy.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"

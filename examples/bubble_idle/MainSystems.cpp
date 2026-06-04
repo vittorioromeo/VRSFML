@@ -27,16 +27,28 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "TextParticle.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+#include "ExampleUtils/SoundManager.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Window/Keyboard.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/Window/Keyboard.hpp"
+
 #include "ZancleBase/Algorithm/AllOf.hpp"
 #include "ZancleBase/Algorithm/AnyOf.hpp"
 #include "ZancleBase/Algorithm/Count.hpp"
@@ -60,13 +72,6 @@
 #include "ZancleBase/Remainder.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
-#include "ExampleUtils/SoundManager.hpp"
 
 #include <utility>
 

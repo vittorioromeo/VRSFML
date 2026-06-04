@@ -7,8 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Listener.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/FloatMax.hpp"
 
 

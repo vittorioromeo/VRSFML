@@ -24,12 +24,13 @@
 #include "CatType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
-#include "Zancle/System/Vec2.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/RNGFast.hpp"
+
+#include "Zancle/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////

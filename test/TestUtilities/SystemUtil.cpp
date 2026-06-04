@@ -1,6 +1,7 @@
 #include "SystemUtil.hpp"
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/AutoWrapAngle.hpp"
 #include "Zancle/System/Rect2.hpp"
@@ -8,6 +9,7 @@
 #include "Zancle/System/Utf8String.hpp"
 #include "Zancle/System/Vec2.hpp"
 #include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToChars.hpp"

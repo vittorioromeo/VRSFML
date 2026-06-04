@@ -1,4 +1,5 @@
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Config.hpp"
 
 TEST_CASE("[System] SFML/Config.hpp")

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CatType.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"

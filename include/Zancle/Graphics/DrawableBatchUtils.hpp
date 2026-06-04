@@ -11,8 +11,10 @@
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Restrict.hpp"
 #include "ZancleBase/Math/Fabs.hpp"

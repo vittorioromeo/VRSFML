@@ -1,9 +1,13 @@
 #include "AudioUtil.hpp"
 #include "Tst/Tst.hpp"
-#include "Zancle/Audio/ChannelMap.hpp"
+
 #include "Zancle/Audio/OutputSoundFile.hpp"
+
+#include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
+
 #include "Zancle/System/Path.hpp"
+
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsDefaultConstructible.hpp"

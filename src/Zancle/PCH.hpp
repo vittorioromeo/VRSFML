@@ -27,6 +27,7 @@
     #include "Zancle/System/Time.hpp"
     #include "Zancle/System/Utf8String.hpp"
     #include "Zancle/System/Vec2.hpp"
+
     #include "ZancleBase/Assert.hpp"
     #include "ZancleBase/Builtin/Memcpy.hpp"
     #include "ZancleBase/InPlacePImpl.hpp"

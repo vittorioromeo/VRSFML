@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
+
+#include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"

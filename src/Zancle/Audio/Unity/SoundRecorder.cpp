@@ -5,10 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/CaptureDevice.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
+
+#include "Zancle/Audio/CaptureDevice.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/LifetimeDependant.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"

@@ -7,9 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Priv/ShaderBase.hpp" // IWYU pragma: export
-#include "Zancle/System/Path.hpp"              // IWYU pragma: export
-#include "ZancleBase/Optional.hpp"             // IWYU pragma: export
-#include "ZancleBase/StringView.hpp"           // IWYU pragma: export
+
+#include "Zancle/System/Path.hpp" // IWYU pragma: export
+
+#include "ZancleBase/Optional.hpp"   // IWYU pragma: export
+#include "ZancleBase/StringView.hpp" // IWYU pragma: export
 
 
 namespace za

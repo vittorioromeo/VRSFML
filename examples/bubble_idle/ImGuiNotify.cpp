@@ -1,9 +1,12 @@
 #include "IconsFontAwesome6.h"
 #include "ImGuiNotify.hpp"
+
 #include "Zancle/ImGui/ImConfigSFML.hpp"
 #include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/ImGui/IncludeImGuiInternal.hpp"
+
 #include "Zancle/System/Clock.hpp"
+
 #include "ZancleBase/Builtin/Memset.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/SizeT.hpp"

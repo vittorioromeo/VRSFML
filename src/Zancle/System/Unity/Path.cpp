@@ -5,9 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Fmt/FmtPath.hpp"
 #include "Zancle/System/Path.hpp"
+
+#include "Zancle/System/Fmt/FmtPath.hpp"
 #include "Zancle/System/PathUtils.hpp"
+
 #include "ZancleBase/Fmt/FmtResult.hpp"
 #include "ZancleBase/Fmt/FmtSink.hpp"
 #include "ZancleBase/Fmt/FmtSpec.hpp"

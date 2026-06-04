@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Span.hpp"
 #include "ZancleBase/StringView.hpp"

@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Config.hpp" // IWYU pragma: keep
 #include "ZancleBase/StackTrace.hpp"
+
+#include "Zancle/Config.hpp" // IWYU pragma: keep
 
 #ifdef ZA_ENABLE_STACK_TRACES
 

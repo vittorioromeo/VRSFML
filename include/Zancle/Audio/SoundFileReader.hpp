@@ -6,8 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/Export.hpp"
+
+#include "Zancle/Audio/ChannelMap.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 

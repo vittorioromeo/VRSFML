@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/ChannelMap.hpp"
+
 #include "Zancle/Audio/SoundChannel.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/InitializerList.hpp"
 #include "ZancleBase/SizeT.hpp"

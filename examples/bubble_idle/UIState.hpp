@@ -1,12 +1,13 @@
 #pragma once
 
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////

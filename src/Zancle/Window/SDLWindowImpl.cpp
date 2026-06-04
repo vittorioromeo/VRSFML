@@ -5,14 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Window/SDLWindowImpl.hpp"
+
 #include "Zancle/Config.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf.hpp"
-#include "Zancle/System/Vec3.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/Joystick.hpp"
 #include "Zancle/Window/JoystickCapabilities.hpp"
@@ -21,7 +17,6 @@
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/SDLGlContext.hpp"
 #include "Zancle/Window/SDLLayer.hpp"
-#include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/Sensor.hpp"
 #include "Zancle/Window/SensorManager.hpp"
 #include "Zancle/Window/VideoMode.hpp"
@@ -30,6 +25,15 @@
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf.hpp"
+#include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"

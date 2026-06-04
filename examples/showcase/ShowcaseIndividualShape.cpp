@@ -1,11 +1,15 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseIndividualShape.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/System/Angle.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Constants.hpp"

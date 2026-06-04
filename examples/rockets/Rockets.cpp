@@ -1,6 +1,14 @@
 #include "ExampleProfiler/Profiler.hpp"
 #include "ExampleProfiler/ProfilerImGui.hpp"
 #include "SoAPFR.hpp"
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+#include "ExampleUtils/Scaling.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DefaultShader.hpp"
 #include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
@@ -24,18 +32,19 @@
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
+
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Algorithm/SwapAndPop.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"
@@ -43,10 +52,6 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Sampler.hpp"
-#include "ExampleUtils/Scaling.hpp"
 
 
 namespace

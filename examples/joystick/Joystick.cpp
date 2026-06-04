@@ -1,6 +1,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Window/Joystick.hpp"
+
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -12,21 +16,21 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Transformable.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Joystick.hpp"
-#include "Zancle/Window/Keyboard.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
 
 
 namespace

@@ -1,8 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
@@ -23,11 +22,16 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexBuffer.hpp"
 #include "Zancle/Graphics/View.hpp"
+
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Thread.hpp"
-#include "Zancle/Window/ContextSettings.hpp"
-#include "Zancle/Window/WindowContext.hpp"
 
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of

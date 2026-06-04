@@ -1,4 +1,7 @@
 #include "Tst/Tst.hpp"
+
+#include "ZancleBase/Variant.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
 #include "ZancleBase/Trait/IsTrivial.hpp"
@@ -10,7 +13,6 @@
 #include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
 #include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
-#include "ZancleBase/Variant.hpp"
 
 
 namespace

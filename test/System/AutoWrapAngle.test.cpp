@@ -1,7 +1,10 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-#include "Zancle/System/Angle.hpp"
+
 #include "Zancle/System/AutoWrapAngle.hpp"
+
+#include "Zancle/System/Angle.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

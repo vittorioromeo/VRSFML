@@ -4,6 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ZancleBase/String.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Builtin/Memmove.hpp"
@@ -11,7 +13,6 @@
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Priv/VectorUtils.hpp"
 #include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
 #include "ZancleBase/StringView.hpp"
 
 

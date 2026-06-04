@@ -1,5 +1,6 @@
-#include "ZancleBase/Constants.hpp"
 #include "ZancleBase/SinCosLookup.hpp"
+
+#include "ZancleBase/Constants.hpp"
 
 
 ////////////////////////////////////////////////////////////

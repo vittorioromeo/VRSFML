@@ -5,10 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers (project)
 ////////////////////////////////////////////////////////////
-#include "Zancle/Config.hpp"
-#include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Thread.hpp"
+
+#include "Zancle/Config.hpp"
+
+#include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"

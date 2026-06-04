@@ -7,10 +7,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/TextureWrapMode.hpp"
+
 #include "Zancle/System/LifetimeDependee.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"

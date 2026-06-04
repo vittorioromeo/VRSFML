@@ -1,20 +1,25 @@
-#include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RectangleShape.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
+#include "Zancle/Audio/AudioContext.hpp"
+
 #include "Zancle/Network/Ftp.hpp"
 #include "Zancle/Network/Http.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/Window.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
+
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/Optional.hpp"
 
 

@@ -8,6 +8,7 @@
 #include "LaserDirection.hpp"
 #include "Perk.hpp"
 #include "World.hpp"
+
 #include "ZancleBase/Fmt/FmtToString.hpp"
 #include "ZancleBase/String.hpp"
 

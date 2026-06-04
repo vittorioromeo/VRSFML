@@ -2,6 +2,7 @@
 #include "CatType.hpp"
 #include "MainAtlasRects.hpp"
 #include "Playthrough.hpp"
+
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include <cstdio>

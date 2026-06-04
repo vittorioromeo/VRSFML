@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
+
 #include "Zancle/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- makes fmtArg(Path) visible at errMsg call sites
+
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: export -- errMsg call sites typically format numeric arguments
 #include "ZancleBase/InPlacePImpl.hpp"

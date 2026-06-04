@@ -8,24 +8,28 @@
 #include "Profile.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/NinePatchUtils.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/FloatMax.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/NinePatchUtils.hpp"
 
 #include <cstdio>
 #include <cstring>

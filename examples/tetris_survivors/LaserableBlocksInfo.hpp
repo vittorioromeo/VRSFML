@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/InPlaceVector.hpp"
 
 

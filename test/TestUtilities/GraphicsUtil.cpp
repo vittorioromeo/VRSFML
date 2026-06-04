@@ -1,12 +1,15 @@
 #include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/View.hpp"
+
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/SizeT.hpp"

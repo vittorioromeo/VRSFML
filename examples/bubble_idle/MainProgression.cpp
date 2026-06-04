@@ -10,15 +10,17 @@
 #include "Playthrough.hpp"
 #include "Profile.hpp"
 #include "ShrineConstants.hpp"
+
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Algorithm/Count.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/MinMax.hpp"
 #include "ZancleBase/SizeT.hpp"
-
-#include "ExampleUtils/Progress.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateMilestones()

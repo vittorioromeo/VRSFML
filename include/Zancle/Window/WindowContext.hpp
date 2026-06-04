@@ -6,8 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/Export.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/PassKey.hpp"
 #include "ZancleBase/UniquePtr.hpp"

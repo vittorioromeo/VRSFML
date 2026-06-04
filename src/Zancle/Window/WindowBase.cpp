@@ -5,16 +5,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/Vulkan.hpp"
-#include "Zancle/Window/WindowBase.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Macros.hpp"

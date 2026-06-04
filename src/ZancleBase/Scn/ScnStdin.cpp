@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Scn/ScnStdin.hpp"
+
+#include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Scn/ScnString.hpp"
 #include "ZancleBase/String.hpp"
 

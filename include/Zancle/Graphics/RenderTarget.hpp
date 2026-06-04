@@ -6,17 +6,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/BatchedGeometry.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawTextureSettings.hpp"
 #include "Zancle/Graphics/DrawVerticesSettings.hpp"
-#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Priv/ShaderBase.hpp"
 #include "Zancle/Graphics/Priv/ShapeDataConcept.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/Texture.hpp" // needed for `hasGenerationMismatch` to access `Texture::m_destructiveGeneration`
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/FunctionRef.hpp"
 #include "ZancleBase/InPlacePImpl.hpp"

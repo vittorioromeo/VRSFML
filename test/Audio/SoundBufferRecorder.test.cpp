@@ -1,4 +1,5 @@
 #include "Zancle/Audio/SoundBufferRecorder.hpp"
+
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"

@@ -5,12 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Network/SocketSelector.hpp"
+
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
-#include "Zancle/Network/SocketSelector.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/MinMax.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Span.hpp"

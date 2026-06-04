@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
+
 #include "Zancle/System/Path.hpp"
 
 #include <iosfwd>

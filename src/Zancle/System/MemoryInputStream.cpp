@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/MemoryInputStream.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/MinMax.hpp"

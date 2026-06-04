@@ -1,4 +1,5 @@
 #include "Zancle/Audio/SoundFileWriter.hpp"
+
 #include "ZancleBase/Trait/HasVirtualDestructor.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

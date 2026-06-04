@@ -6,15 +6,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/BatchedGeometry.hpp"
 #include "Zancle/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "Zancle/Graphics/DrawVerticesSettings.hpp"
-#include "Zancle/Graphics/Export.hpp"
 #include "Zancle/Graphics/IndexType.hpp"
 #include "Zancle/Graphics/Transformable.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/SizeT.hpp"

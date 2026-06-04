@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp"
+
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Remainder.hpp"

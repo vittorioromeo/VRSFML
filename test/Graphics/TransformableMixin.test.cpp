@@ -1,10 +1,14 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-#include "Zancle/Graphics/Priv/TransformableMacros.hpp"
+
 #include "Zancle/Graphics/TransformableMixin.hpp"
+
+#include "Zancle/Graphics/Priv/TransformableMacros.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

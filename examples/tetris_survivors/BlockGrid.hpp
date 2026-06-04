@@ -8,11 +8,13 @@
 #include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
 #include "Tetramino.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Vector.hpp"
 
 #include "ExampleUtils/ControlFlow.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
+#include "ZancleBase/Optional.hpp"
+#include "ZancleBase/Vector.hpp"
 
 
 namespace tsurv

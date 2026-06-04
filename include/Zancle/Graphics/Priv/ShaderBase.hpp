@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/Priv/GlslFwd.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/PassKey.hpp"

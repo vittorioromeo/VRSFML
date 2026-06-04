@@ -5,6 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/ImGui/ImGuiContext.hpp"
+
+#include "Zancle/ImGui/Backend.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
@@ -12,14 +17,7 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Texture.hpp"
-#include "Zancle/ImGui/Backend.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+
 #include "Zancle/Window/Clipboard.hpp"
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/Event.hpp"
@@ -27,6 +25,13 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Window.hpp"
+
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Time.hpp"
+#include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Assert.hpp"

@@ -1,6 +1,8 @@
 #include "TextEffectWiggle.hpp"
+
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "ZancleBase/Math/Sin.hpp"
 #include "ZancleBase/SizeT.hpp"
 

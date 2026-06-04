@@ -8,7 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
+
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
 

@@ -31,8 +31,10 @@
 #undef MINIMP3_NO_STDIO
 
 #include "Zancle/Audio/SoundFileReaderMp3.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/InputStream.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcmp.hpp"
 #include "ZancleBase/IntTypes.hpp"

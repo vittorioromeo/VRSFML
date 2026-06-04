@@ -2,13 +2,16 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Client.hpp"
+
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
+
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
+
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"

@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
+
 #include "ZancleBase/Builtin/Strcmp.hpp"
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/Builtin/Strstr.hpp"

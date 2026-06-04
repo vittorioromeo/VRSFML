@@ -1,5 +1,6 @@
 #include "CatNames.hpp"
 #include "CatType.hpp"
+
 #include "ZancleBase/Algorithm/Shuffle.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/StringView.hpp"

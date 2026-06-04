@@ -1,7 +1,9 @@
 
 #include "Tst/Tst.hpp"
-#include "ZancleBase/Algorithm/Copy.hpp"
+
 #include "ZancleBase/BackInserter.hpp"
+
+#include "ZancleBase/Algorithm/Copy.hpp"
 #include "ZancleBase/Vector.hpp"
 
 

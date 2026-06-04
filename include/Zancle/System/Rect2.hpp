@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/MinMaxMacros.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Trait/IsSame.hpp"

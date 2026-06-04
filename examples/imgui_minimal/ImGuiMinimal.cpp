@@ -1,3 +1,6 @@
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/CircleShape.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -7,16 +10,17 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
+
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/IO.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
 #include "ZancleBase/Optional.hpp"

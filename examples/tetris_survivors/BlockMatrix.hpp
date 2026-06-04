@@ -7,6 +7,7 @@
 #include "Block.hpp"
 #include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/Optional.hpp"

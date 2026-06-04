@@ -1,6 +1,7 @@
 #include "BubbleIdleMain.hpp"
 #include "CatType.hpp"
 #include "Playthrough.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"

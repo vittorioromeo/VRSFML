@@ -15,8 +15,11 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "UIState.hpp"
-#include "Zancle/Graphics/Color.hpp"
+
 #include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Graphics/Color.hpp"
+
 #include "ZancleBase/Algorithm/Count.hpp"
 #include "ZancleBase/GetArraySize.hpp"
 #include "ZancleBase/IntTypes.hpp"

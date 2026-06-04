@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/PassKey.hpp"
 

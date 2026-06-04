@@ -1,11 +1,15 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
+
 #include "Zancle/Graphics/RenderTarget.hpp"
+
+#include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/View.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Trait/IsConstructible.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

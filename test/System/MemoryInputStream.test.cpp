@@ -1,6 +1,8 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/System/MemoryInputStream.hpp"
+
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

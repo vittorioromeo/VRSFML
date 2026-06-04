@@ -2,13 +2,15 @@
 // License: Academic Free License ("AFL") v. 3.0
 // AFL License page: https://opensource.org/licenses/AFL-3.0
 
+#include "ZancleBase/ThreadPool.hpp"
+
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Thread.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/ThreadPool.hpp"
 #include "ZancleBase/Vector.hpp"
 
 #pragma GCC diagnostic push

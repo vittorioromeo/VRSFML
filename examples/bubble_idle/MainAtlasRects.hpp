@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "ParticleType.hpp"
+
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/GetArraySize.hpp"
 
 

@@ -5,17 +5,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Network/TcpSocket.hpp"
+
 #include "Zancle/Config.hpp"
+
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Packet.hpp"
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
-#include "Zancle/Network/TcpSocket.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
@@ -49,6 +53,7 @@
 #if defined(ZA_SYSTEM_WINDOWS)
     #include "Zancle/System/Utf.hpp"
     #include "Zancle/System/WindowsHeader.hpp"
+
     #include "ZancleBase/BackInserter.hpp"
 
     #include <wincrypt.h>

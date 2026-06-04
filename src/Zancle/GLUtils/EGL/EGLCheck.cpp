@@ -6,9 +6,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/GLUtils/EGL/EGLCheck.hpp"
+
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Path.hpp"
+
 #include "ZancleBase/Assert.hpp"
 
 

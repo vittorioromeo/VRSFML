@@ -6,9 +6,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/HeartShapeData.hpp"
+
 #include "Zancle/Graphics/Priv/ArcBounds.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/Transform.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 

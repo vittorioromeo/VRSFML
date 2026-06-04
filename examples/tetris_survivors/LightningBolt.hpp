@@ -11,9 +11,11 @@
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"

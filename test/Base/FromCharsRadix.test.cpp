@@ -1,6 +1,8 @@
 #include "Tst/Tst.hpp"
-#include "ZancleBase/Builtin/Strlen.hpp"
+
 #include "ZancleBase/FromCharsRadix.hpp"
+
+#include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/ToCharsRadix.hpp"
 

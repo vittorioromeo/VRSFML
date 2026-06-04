@@ -5,21 +5,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/Shader.hpp"
+
+#include "Zancle/Graphics/DefaultShader.hpp"
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/ShaderUtils.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLSharedContextGuard.hpp"
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-#include "Zancle/Graphics/DefaultShader.hpp"
-#include "Zancle/Graphics/Glsl.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/Shader.hpp"
-#include "Zancle/Graphics/ShaderUtils.hpp"
-#include "Zancle/Graphics/Texture.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/InputStream.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
+
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"

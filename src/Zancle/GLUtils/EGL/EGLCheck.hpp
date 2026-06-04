@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
+
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp" // not expensive, included everwhere `EGLCheck.hpp` is included
+
 #include "ZancleBase/Assert.hpp"
 
 

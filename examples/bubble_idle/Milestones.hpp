@@ -2,6 +2,7 @@
 
 #include "ExactArray.hpp"
 #include "ShrineType.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 
 #include <climits>

@@ -4,14 +4,18 @@
 #include "PlayerInput.hpp"
 #include "Playthrough.hpp"
 #include "SweepAndPrune.hpp"
-#include "Zancle/Graphics/DrawableBatch.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/System/Time.hpp"
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Clamp.hpp"
 
 #include "ExampleUtils/Progress.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Graphics/DrawableBatch.hpp"
+
+#include "Zancle/System/Time.hpp"
+
+#include "ZancleBase/Algorithm/Erase.hpp"
+#include "ZancleBase/Clamp.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate)

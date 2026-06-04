@@ -5,18 +5,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/GlContext.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Window/Window.hpp"
+
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
-#include "Zancle/Window/Window.hpp"
 #include "Zancle/Window/WindowBase.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/GLUtils/GlContext.hpp"
+
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Thread.hpp"
+#include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"

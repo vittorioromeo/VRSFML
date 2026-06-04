@@ -6,9 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"

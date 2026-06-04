@@ -7,9 +7,11 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Approx.hpp"
 #include "Tst/Detail/StringifyValue.hpp"
+
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
 #include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtCString.hpp" // IWYU pragma: keep

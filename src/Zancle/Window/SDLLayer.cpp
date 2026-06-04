@@ -5,18 +5,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/DisplayOrientation.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
-#include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcmp.hpp"

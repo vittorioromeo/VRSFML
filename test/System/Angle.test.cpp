@@ -1,6 +1,8 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/System/Angle.hpp"
+
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsTriviallyAssignable.hpp"

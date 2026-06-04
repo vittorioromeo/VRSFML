@@ -1,10 +1,13 @@
 #include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/View.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
 #include "ZancleBase/Trait/IsTrivial.hpp"

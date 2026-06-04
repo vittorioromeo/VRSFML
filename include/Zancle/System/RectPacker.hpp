@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/InPlacePImpl.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Span.hpp"

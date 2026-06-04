@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
+
 #include "Zancle/System/Export.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Math/Sqrt.hpp"
 #include "ZancleBase/SizeT.hpp"

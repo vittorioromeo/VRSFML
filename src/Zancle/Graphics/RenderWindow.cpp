@@ -5,17 +5,22 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/Graphics/RenderWindow.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/Window.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
+#include "Zancle/System/Err.hpp"
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"

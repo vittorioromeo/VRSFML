@@ -5,6 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/JoystickManager.hpp"
+#include "Zancle/Window/SDLGlContext.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/SensorManager.hpp"
+
 #include "Zancle/GLUtils/CopyFramebuffer.hpp"
 #include "Zancle/GLUtils/FramebufferSaver.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
@@ -15,6 +23,7 @@
 #include "Zancle/GLUtils/GlFuncTypesImpl.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
+
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/AtomicMutex.hpp"
 #include "Zancle/System/Err.hpp"
@@ -22,12 +31,7 @@
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/SignalErrHandler.hpp"
 #include "Zancle/System/Utf8String.hpp"
-#include "Zancle/Window/ContextSettings.hpp"
-#include "Zancle/Window/JoystickManager.hpp"
-#include "Zancle/Window/SDLGlContext.hpp"
-#include "Zancle/Window/SDLLayer.hpp"
-#include "Zancle/Window/SensorManager.hpp"
-#include "Zancle/Window/WindowContext.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/AnkerlUnorderedDense.hpp"

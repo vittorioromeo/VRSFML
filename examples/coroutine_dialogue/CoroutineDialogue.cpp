@@ -1,6 +1,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/SfexCoroutine.hpp"
+#include "ExampleUtils/SfexYield.hpp"
+
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -9,18 +12,18 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
+
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
+
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
-#include "Zancle/Window/EventUtils.hpp"
+
 #include "ZancleBase/MinMax.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/String.hpp"
-
-#include "ExampleUtils/SfexCoroutine.hpp"
-#include "ExampleUtils/SfexYield.hpp"
 
 
 namespace

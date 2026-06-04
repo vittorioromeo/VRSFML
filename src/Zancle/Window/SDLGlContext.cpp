@@ -5,12 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Err.hpp"
-#include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/SDLGlContext.hpp"
+
+#include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Assert.hpp"
 
 #include <SDL3/SDL_error.h>

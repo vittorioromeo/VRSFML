@@ -6,13 +6,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Export.hpp"
+
+#include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
+
 #include "Zancle/System/GlobalAnchorPointMixin.hpp"
 #include "Zancle/System/LocalAnchorPointMixin.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 
 

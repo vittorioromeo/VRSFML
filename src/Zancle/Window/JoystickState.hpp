@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
+
 #include "Zancle/Window/Joystick.hpp"
+
 #include "ZancleBase/EnumArray.hpp"
 
 

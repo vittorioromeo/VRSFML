@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLPersistentBuffer.hpp"
+
+#include "Zancle/GLUtils/GLBufferObject.hpp"
 
 
 namespace za

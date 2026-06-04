@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Optional.hpp"
 

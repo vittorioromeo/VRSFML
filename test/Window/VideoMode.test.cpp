@@ -1,10 +1,14 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/Window/VideoMode.hpp"
+
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Algorithm/IsSorted.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"

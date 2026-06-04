@@ -5,15 +5,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/EGL/EGLCheck.hpp"
 #include "Zancle/GLUtils/EGL/EGLContext.hpp"
-#include "Zancle/GLUtils/EGL/EGLGlad.hpp"
-#include "Zancle/System/Err.hpp"
+
 #include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
+
+#include "Zancle/GLUtils/EGL/EGLCheck.hpp"
+#include "Zancle/GLUtils/EGL/EGLGlad.hpp"
+
+#include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"

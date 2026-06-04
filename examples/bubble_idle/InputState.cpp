@@ -1,5 +1,7 @@
 #include "InputState.hpp"
+
 #include "Zancle/Window/Event.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 
 

@@ -5,9 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
+
+#include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/StringView.hpp"

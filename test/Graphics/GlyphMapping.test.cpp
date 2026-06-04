@@ -1,13 +1,17 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
+
+#include "Zancle/Graphics/GlyphMapping.hpp"
+
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/GlyphMappedText.hpp"
-#include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
+
 #include "Zancle/System/LifetimeDependee.hpp"
 #include "Zancle/System/Path.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 
 

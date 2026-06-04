@@ -7,9 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp" // IWYU pragma: keep
+
 #include "Zancle/GLUtils/FenceUtils.hpp"
 #include "Zancle/GLUtils/GLFenceSync.hpp"
 #include "Zancle/GLUtils/GLPersistentBuffer.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/SmallVector.hpp"

@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
+
 #include "Zancle/Audio/SoundChannel.hpp"
+
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/InitializerList.hpp" // IWYU pragma: keep
 #include "ZancleBase/SizeT.hpp"

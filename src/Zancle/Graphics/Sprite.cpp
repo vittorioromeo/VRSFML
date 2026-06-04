@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Sprite.hpp"
+
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Math/Fabs.hpp"
 
 

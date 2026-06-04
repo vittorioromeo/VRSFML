@@ -1,10 +1,16 @@
 #include "ExampleProfiler/Profiler.hpp"
 #include "ExampleProfiler/ProfilerImGui.hpp"
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
+
+#include "ExampleUtils/ControlFlow.hpp"
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/HueColor.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Scaling.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/CurvedArrowShapeData.hpp"
@@ -24,18 +30,25 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
+
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
+
+#include "Zancle/System/Angle.hpp"
+#include "Zancle/System/Clock.hpp"
+#include "Zancle/System/Path.hpp"
+#include "Zancle/System/Rect2.hpp"
+#include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Algorithm/Sort.hpp"
@@ -54,13 +67,6 @@
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Variant.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/ControlFlow.hpp"
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/HueColor.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Scaling.hpp"
 
 // TODO P2:
 // - keys should have different colors compared to blocks

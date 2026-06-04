@@ -1,17 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/AudioSettings.hpp"
-#include "Zancle/Audio/ChannelMap.hpp"
-#include "Zancle/Audio/EffectProcessor.hpp"
-#include "Zancle/Audio/Listener.hpp"
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
-#include "Zancle/Audio/PlaybackDeviceHandle.hpp"
-#include "Zancle/Audio/SoundChannel.hpp"
-#include "Zancle/Audio/SoundStream.hpp"
+#include "ExampleUtils/Scaling.hpp"
+
 #include "Zancle/Graphics/CircleShape.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/ConvexShape.hpp"
@@ -23,6 +14,24 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/Transform.hpp"
+
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp"
+#include "Zancle/Audio/ChannelMap.hpp"
+#include "Zancle/Audio/EffectProcessor.hpp"
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/PlaybackDeviceHandle.hpp"
+#include "Zancle/Audio/SoundChannel.hpp"
+#include "Zancle/Audio/SoundStream.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/Window/Mouse.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Fmt/FmtPath.hpp"
@@ -31,10 +40,7 @@
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Utf8String.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
-#include "Zancle/Window/Mouse.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -56,8 +62,6 @@
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Scaling.hpp"
 
 #include <limits>
 

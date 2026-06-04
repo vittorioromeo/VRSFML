@@ -6,9 +6,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/ShaderUtils.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Macros.hpp"

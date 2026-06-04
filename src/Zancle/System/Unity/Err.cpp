@@ -5,9 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/AtomicMutex.hpp"
 #include "Zancle/System/Err.hpp"
+
+#include "Zancle/System/AtomicMutex.hpp"
 #include "Zancle/System/LockGuard.hpp"
+
 #include "ZancleBase/Builtin/Strlen.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/StackTrace.hpp"

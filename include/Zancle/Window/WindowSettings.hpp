@@ -6,9 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Window/ContextSettings.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Utf8String.hpp"
-#include "Zancle/Window/ContextSettings.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 

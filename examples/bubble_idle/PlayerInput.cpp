@@ -7,14 +7,19 @@
 #include "Playthrough.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
-#include "Zancle/Graphics/RenderWindow.hpp"
-#include "Zancle/Graphics/View.hpp"
+
 #include "Zancle/ImGui/ImGuiContext.hpp"
 #include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/View.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Math/Lround.hpp"
 #include "ZancleBase/MinMax.hpp"

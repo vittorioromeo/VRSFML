@@ -1,10 +1,13 @@
 #include "TextShakeEffect.hpp"
-#include "Zancle/Graphics/Text.hpp"
-#include "Zancle/Graphics/TextData.hpp"
-#include "Zancle/System/Angle.hpp"
-#include "ZancleBase/ClampMacro.hpp"
 
 #include "ExampleUtils/RNGFast.hpp"
+
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/TextData.hpp"
+
+#include "Zancle/System/Angle.hpp"
+
+#include "ZancleBase/ClampMacro.hpp"
 
 
 ////////////////////////////////////////////////////////////

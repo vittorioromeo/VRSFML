@@ -7,8 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/Transform.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/SinCosLookup.hpp"
 

@@ -6,11 +6,14 @@
 ////////////////////////////////////////////////////////////
 #include "BitmapFont.hpp"
 #include "BitmapTextAlignment.hpp"
+
 #include "Zancle/Graphics/IndexType.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/FromChars.hpp"
 #include "ZancleBase/InPlaceVector.hpp"
 #include "ZancleBase/Math/Sin.hpp"

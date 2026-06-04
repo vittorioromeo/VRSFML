@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
+
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Builtin/Memmove.hpp"

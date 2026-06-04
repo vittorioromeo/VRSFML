@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/WindowBase.hpp" // NOLINT(misc-header-include-cycle)
+
 #include "ZancleBase/OverloadSet.hpp"
 
 

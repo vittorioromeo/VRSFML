@@ -1,6 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -16,6 +17,7 @@
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 #include "Zancle/Graphics/View.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 
 

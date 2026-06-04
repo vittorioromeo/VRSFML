@@ -1,5 +1,7 @@
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Window/ContextSettings.hpp"
+
 #include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"

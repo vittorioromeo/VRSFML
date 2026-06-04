@@ -14,6 +14,11 @@
 #include "Profile.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
@@ -29,17 +34,16 @@
 #include "Zancle/Graphics/TextUtils.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
+
+#include "Zancle/Window/Mouse.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-#include "Zancle/Window/Mouse.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Remainder.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/StringView.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Progress.hpp"
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] FrameViewState Main::gameLoopComputeViews()

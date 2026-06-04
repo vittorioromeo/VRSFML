@@ -6,11 +6,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/AudioContext.hpp"
+
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
+
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Abort.hpp"
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Optional.hpp"

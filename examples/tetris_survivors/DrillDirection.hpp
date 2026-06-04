@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Builtin/Unreachable.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"

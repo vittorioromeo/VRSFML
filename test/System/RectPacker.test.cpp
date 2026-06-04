@@ -1,7 +1,10 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "Zancle/System/RectPacker.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Optional.hpp"
 
 

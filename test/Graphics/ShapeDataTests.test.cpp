@@ -1,5 +1,6 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/ArrowShapeData.hpp"
 #include "Zancle/Graphics/ChevronShapeData.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
@@ -16,9 +17,11 @@
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/StarShapeData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Remainder.hpp"

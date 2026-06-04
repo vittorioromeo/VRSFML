@@ -5,20 +5,25 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/RenderTexture.hpp"
+
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
+
+#include "Zancle/Window/WindowContext.hpp"
+
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLRenderBufferObject.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/Graphics/RenderTexture.hpp"
-#include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
-#include "Zancle/Graphics/Texture.hpp"
-#include "Zancle/Graphics/TextureWrapMode.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/Window/WindowContext.hpp"
+
 #include "ZancleBase/AnkerlUnorderedDense.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Macros.hpp"

@@ -1,8 +1,11 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
+
+#include "Zancle/System/Vec2.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Math/Sqrt.hpp"
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsSame.hpp"

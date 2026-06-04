@@ -19,15 +19,17 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Math/Pow.hpp"
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////

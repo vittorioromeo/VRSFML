@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/PrimitiveType.hpp"
+
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 #include "ZancleBase/SizeT.hpp"
 

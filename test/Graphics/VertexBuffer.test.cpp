@@ -1,11 +1,14 @@
-#include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/VertexBuffer.hpp"
+
+#include "Zancle/Graphics/GraphicsContext.hpp"
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsMoveAssignable.hpp"

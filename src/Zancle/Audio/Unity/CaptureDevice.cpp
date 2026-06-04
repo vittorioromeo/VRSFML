@@ -5,13 +5,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/CaptureDevice.hpp"
+
+#include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
+
 #include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"

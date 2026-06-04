@@ -5,13 +5,16 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Graphics/TextureAtlasUtils.hpp"
+
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/Texture.hpp"
-#include "Zancle/Graphics/TextureAtlasUtils.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/RectPacker.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Optional.hpp"
 

@@ -3,15 +3,19 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
+
+#include "Zancle/Graphics/RenderTexture.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
-#include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Macros.hpp"
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"

@@ -1,14 +1,16 @@
 #include "ExampleProfiler/Profiler.hpp"
 #include "ExampleProfiler/ProfilerImGui.hpp"
+
+#include "ExampleUtils/Sampler.hpp"
+
 #include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "ZancleBase/Algorithm/Sort.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Span.hpp"
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Sampler.hpp"
 
 
 namespace

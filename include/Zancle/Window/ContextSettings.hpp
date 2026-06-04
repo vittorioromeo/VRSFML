@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
+
 #include "ZancleBase/EnumClassBitwiseOps.hpp"
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 

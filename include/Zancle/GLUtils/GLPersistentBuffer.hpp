@@ -7,16 +7,20 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp" // IWYU pragma: keep
+
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/System/Err.hpp"
+
     #include "ZancleBase/Abort.hpp"
 #else
     #include "Zancle/GLUtils/GLCheck.hpp"
     #include "Zancle/GLUtils/Glad.hpp"
+
     #include "ZancleBase/Assert.hpp"
     #include "ZancleBase/Builtin/Memcpy.hpp"
     #include "ZancleBase/Macros.hpp"

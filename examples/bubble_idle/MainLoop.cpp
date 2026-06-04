@@ -7,12 +7,14 @@
 #include "PlayerInput.hpp"
 #include "Playthrough.hpp"
 #include "Serialization.hpp"
-#include "Zancle/System/Time.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
 
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
+
+#include "Zancle/System/Time.hpp"
+
+#include "ZancleBase/IntTypes.hpp"
+#include "ZancleBase/MinMax.hpp"
 
 namespace
 {

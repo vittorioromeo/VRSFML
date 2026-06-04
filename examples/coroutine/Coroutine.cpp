@@ -1,6 +1,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/Easing.hpp"
+#include "ExampleUtils/MathUtils.hpp"
+#include "ExampleUtils/Scaling.hpp"
+#include "ExampleUtils/SfexCoroutine.hpp"
+#include "ExampleUtils/SfexYield.hpp"
+
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -9,14 +15,17 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Keyboard.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Keyboard.hpp"
+
 #include "ZancleBase/Algorithm/SwapAndPop.hpp"
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/Constants.hpp"
@@ -30,12 +39,6 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Variant.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Easing.hpp"
-#include "ExampleUtils/MathUtils.hpp"
-#include "ExampleUtils/Scaling.hpp"
-#include "ExampleUtils/SfexCoroutine.hpp"
-#include "ExampleUtils/SfexYield.hpp"
 
 
 namespace

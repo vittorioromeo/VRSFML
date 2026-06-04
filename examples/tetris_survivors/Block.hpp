@@ -7,7 +7,9 @@
 #include "ShapeBlockSequence.hpp"
 #include "StrongTypedef.hpp"
 #include "TetraminoShapes.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/IntTypes.hpp"

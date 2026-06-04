@@ -1,4 +1,11 @@
 #include "../bubble_idle/SoA.hpp" // TODO P1: avoid the relative path...?
+
+#include "ExampleUtils/RNGFast.hpp"
+#include "ExampleUtils/Sampler.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -11,15 +18,16 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
+#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
+#include "Zancle/Window/EventUtils.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-#include "Zancle/Window/Event.hpp" // IWYU pragma: keep
-#include "Zancle/Window/EventUtils.hpp"
+
 #include "ZancleBase/Algorithm/Erase.hpp"
 #include "ZancleBase/Algorithm/SwapAndPop.hpp"
 #include "ZancleBase/Clamp.hpp"
@@ -35,9 +43,6 @@
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/UniquePtr.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/RNGFast.hpp"
-#include "ExampleUtils/Sampler.hpp"
 
 #include <latch>
 

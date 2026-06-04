@@ -1,4 +1,5 @@
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Window/Vulkan.hpp"
 
 TEST_CASE("[Window] za::Vulkan")

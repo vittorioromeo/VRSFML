@@ -1,8 +1,12 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
-#include "Zancle/Graphics/Color.hpp"
+
 #include "Zancle/Graphics/RectangleShape.hpp"
+
+#include "Zancle/Graphics/Color.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Trait/IsCopyAssignable.hpp"
 #include "ZancleBase/Trait/IsCopyConstructible.hpp"
 #include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"

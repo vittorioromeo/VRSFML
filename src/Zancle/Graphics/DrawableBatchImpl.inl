@@ -40,8 +40,10 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Vec2.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"

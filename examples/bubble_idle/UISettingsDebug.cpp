@@ -12,19 +12,23 @@
 #include "Shrine.hpp"
 #include "UIState.hpp"
 #include "Version.hpp"
+
+#include "ExampleUtils/Progress.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/View.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Clamp.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/ToString.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Progress.hpp"
 
 namespace
 {

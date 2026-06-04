@@ -6,12 +6,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Vec3.hpp"
 #include "Zancle/Window/Joystick.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Sensor.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/System/Vec3.hpp"
+
 #include "ZancleBase/Variant.hpp"
 
 

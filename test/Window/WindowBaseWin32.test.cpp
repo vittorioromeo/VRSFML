@@ -4,9 +4,12 @@
 
     #include "SystemUtil.hpp"
     #include "Tst/Tst.hpp"
-    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
+
     #include "Zancle/Window/WindowBase.hpp"
     #include "Zancle/Window/WindowContext.hpp"
+
+    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
+
     #include "ZancleBase/Assert.hpp"
     #include "ZancleBase/Optional.hpp"
 

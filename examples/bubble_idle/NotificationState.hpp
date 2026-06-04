@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ExampleUtils/Progress.hpp"
+
 #include "ZancleBase/String.hpp"
 #include "ZancleBase/Vector.hpp"
-
-#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////

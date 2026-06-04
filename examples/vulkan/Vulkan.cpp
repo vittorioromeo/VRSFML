@@ -10,6 +10,14 @@
 
 // Include graphics because we use za::Image for loading images
 #include "Zancle/Graphics/Image.hpp"
+
+#include "Zancle/Window/Event.hpp"
+#include "Zancle/Window/EventUtils.hpp"
+#include "Zancle/Window/Vulkan.hpp"
+#include "Zancle/Window/WindowBase.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Clock.hpp"
 #include "Zancle/System/FileInputStream.hpp"
@@ -18,12 +26,7 @@
 #include "Zancle/System/Time.hpp"
 #include "Zancle/System/Vec2.hpp"
 #include "Zancle/System/Vec3.hpp"
-#include "Zancle/Window/Event.hpp"
-#include "Zancle/Window/EventUtils.hpp"
-#include "Zancle/Window/Vulkan.hpp"
-#include "Zancle/Window/WindowBase.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-#include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/Clamp.hpp"

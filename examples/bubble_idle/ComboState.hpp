@@ -1,10 +1,12 @@
 #pragma once
 
 #include "TextShakeEffect.hpp"
-#include "Zancle/Graphics/Color.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
 
 #include "ExampleUtils/Progress.hpp"
+
+#include "Zancle/Graphics/Color.hpp"
+
+#include "Zancle/System/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////

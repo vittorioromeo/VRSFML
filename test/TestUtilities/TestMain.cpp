@@ -6,6 +6,7 @@
 // Entry point. Hands off to the bespoke testing runner.
 ////////////////////////////////////////////////////////////
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Config.hpp" // IWYU pragma: keep
 
 

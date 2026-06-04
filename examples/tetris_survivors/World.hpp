@@ -13,6 +13,7 @@
 #include "RandomBag.hpp"
 #include "Tetramino.hpp"
 #include "TetraminoShapes.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/Math/Pow.hpp"

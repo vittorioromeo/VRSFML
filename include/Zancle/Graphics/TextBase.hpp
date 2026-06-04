@@ -6,17 +6,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Export.hpp"
+
+#include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
+
 #include "Zancle/System/GlobalAnchorPointMixin.hpp"
 #include "Zancle/System/LocalAnchorPointMixin.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"

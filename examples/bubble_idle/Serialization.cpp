@@ -14,12 +14,17 @@
 #include "Shrine.hpp"
 #include "Stats.hpp"
 #include "Version.hpp"
+#include "cJSON.h"
+
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/System/Fmt/FmtPath.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathStreamOp.hpp" // IWYU pragma: keep
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Time.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Fmt/Fmt.hpp"
 #include "ZancleBase/Fmt/FmtNumeric.hpp"
@@ -38,9 +43,6 @@
 #include "ZancleBase/Trait/RemoveCVRef.hpp"
 #include "ZancleBase/Trait/UnderlyingType.hpp"
 #include "ZancleBase/Vector.hpp"
-#include "cJSON.h"
-
-#include "ExampleUtils/Progress.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 

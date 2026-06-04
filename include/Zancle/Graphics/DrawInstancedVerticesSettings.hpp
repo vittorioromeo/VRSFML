@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "ZancleBase/RequireDesignatedInitializers.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Span.hpp"

@@ -6,19 +6,21 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "ExampleUtils/NinePatchUtils.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
+
 #include "Zancle/System/GlobalAnchorPointMixin.hpp"
 #include "Zancle/System/LocalAnchorPointMixin.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
-#include "ZancleBase/SizeT.hpp"
 
-#include "ExampleUtils/NinePatchUtils.hpp"
+#include "ZancleBase/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

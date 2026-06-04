@@ -1,4 +1,5 @@
 #include "Tst/Tst.hpp"
+
 #include "ZancleBase/Algorithm/AdjacentFind.hpp"
 #include "ZancleBase/Algorithm/AllOf.hpp"
 #include "ZancleBase/Algorithm/AnyOf.hpp"

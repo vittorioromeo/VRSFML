@@ -6,8 +6,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/GLUtils/GLSharedContextGuard.hpp"
-#include "Zancle/System/Err.hpp"
+
 #include "Zancle/Window/WindowContext.hpp"
+
+#include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Assert.hpp"
 
 

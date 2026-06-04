@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathStreamOp.hpp"
+
+#include "Zancle/System/Path.hpp"
 
 #include <ios>
 #include <ostream>

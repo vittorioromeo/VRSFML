@@ -1,6 +1,8 @@
 #include "Tst/Tst.hpp"
-#include "Zancle/System/Atomic.hpp"
+
 #include "ZancleBase/ThreadPool.hpp"
+
+#include "Zancle/System/Atomic.hpp"
 
 
 TEST_CASE("[Base] Base/ThreadPool.hpp")

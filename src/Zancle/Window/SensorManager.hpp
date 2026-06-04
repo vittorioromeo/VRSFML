@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Sensor.hpp"
 #include "Zancle/Window/SensorImpl.hpp"
+
 #include "ZancleBase/EnumArray.hpp"
 
 

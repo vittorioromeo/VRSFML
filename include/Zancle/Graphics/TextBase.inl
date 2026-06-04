@@ -14,9 +14,11 @@
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
 #include "Zancle/System/Utf8StringCodepoints.hpp" // IWYU pragma: keep
+
 #include "ZancleBase/SizeT.hpp"
 
 

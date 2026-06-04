@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp" // IWYU pragma: keep
+
 #include "Zancle/GLUtils/Glad.hpp"
 
 

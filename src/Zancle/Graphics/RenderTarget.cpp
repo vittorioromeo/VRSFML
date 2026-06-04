@@ -5,9 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/GLVAOGroup.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+
 #include "Zancle/Graphics/BatchedGeometry.hpp"
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
@@ -31,7 +30,6 @@
 #include "Zancle/Graphics/Priv/EnumToGlEnumConversions.hpp"
 #include "Zancle/Graphics/Priv/ShapeDataConcept.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
-#include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/Shape.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
@@ -44,10 +42,16 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexBuffer.hpp"
 #include "Zancle/Graphics/View.hpp"
+
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLVAOGroup.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/System/Atomic.hpp"
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
 #include "Zancle/System/Rect2.hpp"
+
 #include "ZancleBase/Array.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Builtin/OffsetOf.hpp"

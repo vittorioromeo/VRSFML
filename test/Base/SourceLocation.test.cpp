@@ -1,7 +1,9 @@
 #include "Tst/Tst.hpp"
+
+#include "ZancleBase/SourceLocation.hpp"
+
 #include "ZancleBase/Builtin/Strcmp.hpp"
 #include "ZancleBase/Builtin/Strstr.hpp"
-#include "ZancleBase/SourceLocation.hpp"
 
 
 TEST_CASE("[Base] Base/SourceLocation.hpp")

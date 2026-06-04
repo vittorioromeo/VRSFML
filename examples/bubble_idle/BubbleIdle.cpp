@@ -1,4 +1,5 @@
 #include "BubbleIdleApp.hpp"
+
 #include "ZancleBase/Builtin/Strcmp.hpp"
 
 

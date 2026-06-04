@@ -5,12 +5,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundFileWriterOgg.hpp"
+
+#include "Zancle/Audio/ChannelMap.hpp"
+
 #include "Zancle/System/Err.hpp"
 #include "Zancle/System/IO.hpp"
 #include "Zancle/System/Path.hpp"
 #include "Zancle/System/PathUtils.hpp"
+
 #include "ZancleBase/Algorithm/Find.hpp"
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/MinMax.hpp"

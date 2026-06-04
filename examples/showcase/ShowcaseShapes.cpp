@@ -1,5 +1,6 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseShapes.hpp"
+
 #include "Zancle/Graphics/ArrowShapeData.hpp"
 #include "Zancle/Graphics/BatchedGeometry.hpp"
 #include "Zancle/Graphics/ChevronShapeData.hpp"
@@ -19,8 +20,10 @@
 #include "Zancle/Graphics/StarShapeData.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Math/Fabs.hpp"
 #include "ZancleBase/Math/Fmod.hpp"
 #include "ZancleBase/Math/Sin.hpp"

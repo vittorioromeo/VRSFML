@@ -5,8 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Graphics/Priv/EllipticalGlobalBounds.hpp"
 #include "Zancle/Graphics/RingShapeData.hpp"
+
+#include "Zancle/Graphics/Priv/EllipticalGlobalBounds.hpp"
+
 #include "Zancle/System/Rect2.hpp"
 
 

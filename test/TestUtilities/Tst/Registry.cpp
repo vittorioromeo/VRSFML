@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Detail/Registry.hpp"
 #include "Tst/Detail/State.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Vector.hpp"
 

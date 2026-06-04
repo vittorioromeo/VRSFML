@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Packet.hpp"
+
 #include "Zancle/System/Utf8String.hpp"
+
 #include "ZancleBase/AssertAndAssume.hpp"
 #include "ZancleBase/Builtin/Memcpy.hpp"
 #include "ZancleBase/IntTypes.hpp"

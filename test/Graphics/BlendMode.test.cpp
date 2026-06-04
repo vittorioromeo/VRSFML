@@ -1,6 +1,8 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
+
 #include "Zancle/Graphics/BlendMode.hpp"
+
 #include "ZancleBase/Trait/IsAggregate.hpp"
 #include "ZancleBase/Trait/IsStandardLayout.hpp"
 #include "ZancleBase/Trait/IsTrivial.hpp"

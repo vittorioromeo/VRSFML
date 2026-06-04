@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/System/Export.hpp"
+
 #include "Zancle/System/InputStream.hpp"
+
 #include "ZancleBase/UniquePtr.hpp"
 
 #include <android/asset_manager.h>

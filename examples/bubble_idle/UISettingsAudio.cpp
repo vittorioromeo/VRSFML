@@ -1,5 +1,6 @@
 #include "BubbleIdleMain.hpp"
 #include "Profile.hpp"
+
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
 void Main::uiSettingsDrawAudioTab()

@@ -6,7 +6,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/AudioSettings.hpp"
+
 #include "Zancle/Audio/Listener.hpp"
+
 #include "Zancle/System/Vec3.hpp"
 
 #include <miniaudio.h>

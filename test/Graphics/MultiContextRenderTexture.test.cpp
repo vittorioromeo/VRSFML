@@ -3,6 +3,7 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
+
 #include "Zancle/Graphics/DrawIndexedVerticesSettings.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
@@ -10,8 +11,10 @@
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
+
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
+
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Vector.hpp"
 

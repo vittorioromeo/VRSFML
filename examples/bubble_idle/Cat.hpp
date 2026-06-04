@@ -3,8 +3,12 @@
 #include "Aliases.hpp"
 #include "CatType.hpp"
 #include "TextShakeEffect.hpp"
+
+#include "ExampleUtils/Progress.hpp"
+
 #include "Zancle/System/Angle.hpp"
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/Constants.hpp"
 #include "ZancleBase/IntTypes.hpp"
@@ -13,8 +17,6 @@
 #include "ZancleBase/Optional.hpp"
 #include "ZancleBase/Remainder.hpp"
 #include "ZancleBase/SizeT.hpp"
-
-#include "ExampleUtils/Progress.hpp"
 
 
 ////////////////////////////////////////////////////////////

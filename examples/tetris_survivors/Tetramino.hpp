@@ -7,7 +7,9 @@
 #include "BlockMatrix.hpp"
 #include "StrongTypedef.hpp"
 #include "TetraminoShapes.hpp"
+
 #include "Zancle/System/Priv/Vec2Base.hpp"
+
 #include "ZancleBase/IntTypes.hpp"
 
 

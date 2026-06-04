@@ -5,15 +5,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
+#include "Zancle/Graphics/VertexBuffer.hpp"
+
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
-#include "Zancle/Graphics/VertexBuffer.hpp"
+
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/System/Err.hpp"
+
 #include "ZancleBase/Assert.hpp"
 #include "ZancleBase/SizeT.hpp"
 #include "ZancleBase/Swap.hpp"

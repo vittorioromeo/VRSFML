@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
+
 #include "Zancle/Graphics/PrimitiveType.hpp"
+
 #include "ZancleBase/SizeT.hpp"
 
 
