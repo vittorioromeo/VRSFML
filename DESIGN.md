@@ -23,7 +23,7 @@
     auto graphicsContext = za::GraphicsContext::create().value(); // Holds all "global" OpenGL state
     za::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
 
-    za::RenderWindow window({.size{640u, 480u}, .title = "ImGui + SFML = <3"});
+    za::RenderWindow window({.size{640u, 480u}, .title = "ImGui + Zancle = <3"});
     za::Clock deltaClock;
 
     while (true)
@@ -96,7 +96,7 @@ TODO P0: update
     // Create the audio context
     auto audioContext = za::AudioContext::create().value();
 
-    // For each hardware playback device, create a SFML playback device
+    // For each hardware playback device, create a Zancle playback device
     std::vector<za::PlaybackDevice> playbackDevices;
     for (const za::PlaybackDeviceHandle& deviceHandle :
          za::AudioContext::getAvailablePlaybackDeviceHandles())
@@ -121,7 +121,7 @@ TODO P0: update
     <summary>📜 Code example</summary>
 
     ```cpp
-    // ERROR, does not compile -- SFML resources do not have a default "empty state".
+    // ERROR, does not compile -- Zancle resources do not have a default "empty state".
     /* za::SoundBuffer soundBuffer; */
 
     // OK, user explicitly chose to throw if the file loading fails
@@ -379,4 +379,4 @@ TODO P0: update
     - All factory functions have been improved to support RVO or NRVO, checked via GCC's `-Wnrvo` flag.
     - Added `Vec2<T>::movedTowards(T r, Angle phi)` function.
     - `za::Vec2`, `za::Vec3`, and `za::Rect2` are now aggregates.
-    - Removed catch-all headers such as `SFML/Audio.hpp` to promote good header hygiene in user projects.
+    - Removed catch-all headers such as `Zancle/Audio.hpp` to promote good header hygiene in user projects.

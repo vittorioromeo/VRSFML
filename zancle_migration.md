@@ -51,7 +51,7 @@ window.setVerticalSyncEnabled(true);
 // AFTER (Zancle)
 za::RenderWindow window({.size = gameSize.toVec2u(),
                          .bitsPerPixel = 32u,
-                         .title = "SFML Tennis",
+                         .title = "Zancle Tennis",
                          .resizable = false,
                          .vsync = true});
 ```
@@ -82,7 +82,7 @@ za::CircleShape ball{{.origin           = {ballRadius / 2.f, ballRadius / 2.f},
 ## Standard Library Replacements
 
 - To optimize compilation speed and debug run-time performance, Zancle uses custom types instead of Standard Library ones.
-    - Check out the `SFML/Base` module to see all of them.
+    - Check out the `ZancleBase` module to see all of them.
 
 - Zancle types use the `pascalCase` convention, and some APIs might be very different (or missing).
 
@@ -381,7 +381,7 @@ socket2.connect(address, port);
 
 ## Shader GLSL API Is Different
 
-- Check `SFML/Graphics/DefaultShader.hpp` to see the default shaders.
+- Check `Zancle/Graphics/DefaultShader.hpp` to see the default shaders.
 
 For your convenience:
 
