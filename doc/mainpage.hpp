@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////
-/// \mainpage SFML Documentation
+/// \mainpage Zancle Documentation
 ///
 /// \section welcome Welcome
-/// Welcome to the official SFML documentation. Here you will find a detailed
-/// view of all the SFML classes and functions. <br/>
+/// Welcome to the official Zancle documentation. Here you will find a detailed
+/// view of all the Zancle classes and functions. <br/>
 /// If you are looking for tutorials, you can visit the official website
-/// at <a href="https://www.zancle-dev.org/">www.zancle-dev.org</a>.
+/// at <a href="https://www.zancle.org/">www.zancle.org</a>.
 ///
 /// \section example Short example
-/// Here is a short example, to show you how simple it is to use SFML:
+/// Here is a short example, to show you how simple it is to use Zancle:
 ///
 /// \code
 ///
@@ -27,7 +27,7 @@
 /// int main()
 /// {
 ///     // Create the main window
-///     auto window = za::RenderWindow::create(za::VideoMode({800, 600}), "SFML window").value();
+///     auto window = za::RenderWindow::create(za::VideoMode({800, 600}), "Zancle window").value();
 ///
 ///     // Load a sprite to display
 ///     const auto texture = za::Texture::loadFromFile("cute_image.jpg").value();
@@ -35,7 +35,7 @@
 ///
 ///     // Create a graphical text to display
 ///     const auto font = za::Font::openFromFile("arial.ttf").value();
-///     za::Text text(font, "Hello SFML", 50);
+///     za::Text text(font, "Hello Zancle", 50);
 ///
 ///     // Load a music to play
 ///     auto music = za::Music::openFromFile("nice_music.ogg").value();

@@ -36,7 +36,7 @@ namespace za
 struct Joystick
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Axes supported by SFML joysticks
+    /// \brief Axes supported by Zancle joysticks
     ///
     ////////////////////////////////////////////////////////////
     enum class Axis
@@ -237,7 +237,7 @@ private:
 /// moved, pressed or released when your window is out of focus
 /// and no event is triggered.
 ///
-/// SFML supports:
+/// Zancle supports:
 /// \li 8 joysticks (`za::Joystick::MaxCount`)
 /// \li 32 buttons per joystick (`za::Joystick::ButtonCount`)
 /// \li 8 axes per joystick (`za::Joystick::AxisCount`)

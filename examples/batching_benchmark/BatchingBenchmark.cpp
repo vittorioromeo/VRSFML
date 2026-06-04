@@ -57,7 +57,7 @@ int main()
     auto window = za::RenderWindow::create(
                       {
                           .size      = windowSize.toVec2u(),
-                          .title     = "Vittorio's SFML fork: batching benchmark",
+                          .title     = "Zancle: batching benchmark",
                           .resizable = false,
                           .vsync     = false,
                       })

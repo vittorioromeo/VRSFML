@@ -14,9 +14,9 @@ body:
           options:
               - label: "I searched for [existing issues](https://github.com/search?q=repo%3ASFML%2FSFML&type=issues) to prevent duplicates"
                 required: true
-              - label: "I searched for [existing discussions on the forum](https://www.google.com/search?q=site%3Ahttps%3A%2F%2Fen.zancle-dev.org) to prevent duplicates"
+              - label: "I searched for [existing discussions on the forum](https://www.google.com/search?q=site%3Ahttps%3A%2F%2Fen.zancle.org) to prevent duplicates"
                 required: true
-              - label: "I am here to report an issue and not to just ask a question or look for help (use the [forum](https://en.zancle-dev.org/forums/index.php#c3) or [Discord](https://discord.gg/nr4X7Fh) instead)"
+              - label: "I am here to report an issue and not to just ask a question or look for help (use the [forum](https://en.zancle.org/forums/index.php#c3) or [Discord](https://discord.gg/nr4X7Fh) instead)"
                 required: true
     - type: textarea
       id: description

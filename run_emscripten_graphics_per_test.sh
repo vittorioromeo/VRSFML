@@ -53,7 +53,7 @@ fi
 
 # Per-run isolated Chrome profile -- prevents the loop from clobbering the
 # user's normal browser session and lets --kill_exit terminate cleanly.
-profile_root="$(mktemp -d -t vrsfml-emrun-XXXXXX)"
+profile_root="$(mktemp -d -t zancle-emrun-XXXXXX)"
 trap 'rm -rf "$profile_root"' EXIT
 
 emrun_kill_flag="--kill_exit"

@@ -984,7 +984,7 @@ inline constexpr Vec2f computeConvexShapeGeometricCenter(const Vec2f* points, co
 /// vertices for shape outlines and for finding the geometric center of
 /// convex polygons.
 ///
-/// While these functions are primarily used internally by SFML's shape
+/// While these functions are primarily used internally by Zancle's shape
 /// classes (e.g., `za::Shape`, `za::CircleShape`, `za::RectangleShape`),
 /// they may also be useful for advanced users who need to perform custom
 /// geometric operations or create new types of drawable shapes.

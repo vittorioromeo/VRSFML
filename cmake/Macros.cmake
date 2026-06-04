@@ -49,7 +49,7 @@ function(zancle_set_common_ios_properties target)
     if(target_type STREQUAL "EXECUTABLE")
         set_target_properties(${target} PROPERTIES
             MACOSX_BUNDLE ON # Bare executables are not usable on iOS, only bundle applications
-            MACOSX_BUNDLE_GUI_IDENTIFIER "org.zancle-dev.${target}" # If missing, trying to launch an example in simulator will make Xcode < 9.3 crash
+            MACOSX_BUNDLE_GUI_IDENTIFIER "org.zancle.${target}" # If missing, trying to launch an example in simulator will make Xcode < 9.3 crash
             MACOSX_BUNDLE_BUNDLE_NAME "${target}"
             MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
             MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION_MAJOR}"
@@ -263,7 +263,7 @@ macro(zancle_add_library module)
             set_target_properties(${target} PROPERTIES
                                   FRAMEWORK ON
                                   FRAMEWORK_VERSION ${PROJECT_VERSION}
-                                  MACOSX_FRAMEWORK_IDENTIFIER org.zancle-dev.${target}
+                                  MACOSX_FRAMEWORK_IDENTIFIER org.zancle.${target}
                                   MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
                                   MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION})
         endif()

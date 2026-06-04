@@ -190,13 +190,13 @@ private:
     /// \warning This is an internal function and should not be used by client code.
     ///
     /// This function provides access to the raw miniaudio context
-    /// (`ma_context*`). It is used internally by SFML's audio
+    /// (`ma_context*`). It is used internally by Zancle's audio
     /// module, particularly by `za::PlaybackDevice` and
     /// `za::CaptureDevice`, to interact with the miniaudio backend.
     ///
     /// Accessing or manipulating the miniaudio context directly
     /// can lead to undefined behavior if not handled correctly
-    /// with SFML's own audio management.
+    /// with Zancle's own audio management.
     ///
     /// \return A pointer to the miniaudio context, or `nullptr` if not initialized.
     ///
@@ -232,7 +232,7 @@ private:
 ///         return -1;
 ///     }
 ///
-///     // ... proceed with using other SFML audio features ...
+///     // ... proceed with using other Zancle audio features ...
 ///
 ///     // The audio context will be automatically cleaned up when it goes out of scope.
 ///     return 0;

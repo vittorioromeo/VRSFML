@@ -72,7 +72,7 @@
 
 namespace
 {
-// A nested named namespace is used here to allow unity builds of SFML.
+// A nested named namespace is used here to allow unity builds of Zancle.
 namespace RenderTargetImpl
 {
 ////////////////////////////////////////////////////////////
@@ -324,7 +324,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
     m_currentDrawStats = {};
 
     // Unbind texture to fix RenderTexture preventing clear
-    unapplyTexture(); // See https://en.zancle-dev.org/forums/index.php?topic=9350
+    unapplyTexture(); // See https://en.zancle.org/forums/index.php?topic=9350
 
     // Disable scissor so `clear` always affects the whole target.
     // The next `setupDraw` will automatically re-enable it if the view demands it.
@@ -1047,7 +1047,7 @@ void RenderTarget::resetGLStatesImpl()
 
     m_impl->cache.glStatesSet = true;
 
-    // Apply the default SFML states
+    // Apply the default Zancle states
     applyBlendMode(BlendAlpha);
     applyStencilMode(StencilMode{});
     unapplyTexture();

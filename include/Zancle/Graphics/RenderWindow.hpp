@@ -63,7 +63,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
     ///
-    /// Use this constructor if you want to create an SFML
+    /// Use this constructor if you want to create a Zancle
     /// rendering area into an already existing control.
     ///
     /// The second parameter is an optional structure specifying

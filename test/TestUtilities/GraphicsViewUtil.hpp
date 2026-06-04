@@ -1,4 +1,4 @@
-// Header for SFML view-specific unit test stringification.
+// Header for Zancle view-specific unit test stringification.
 
 #pragma once
 

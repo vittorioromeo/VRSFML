@@ -3,8 +3,8 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/@ZA_RELATIVE_INSTALL_LIBDIR@
 includedir=${prefix}/include
 
-Name: SFML-all
-Description: The Simple and Fast Multimedia Library, all modules.
-URL: http://www.zancle-dev.org
+Name: Zancle-all
+Description: Zancle, an opinionated fork of SFML, all modules.
+URL: https://github.com/vittorioromeo/Zancle
 Version: @PROJECT_VERSION@
 Requires: zancle-system, zancle-window, zancle-graphics, zancle-audio, zancle-network

@@ -475,7 +475,7 @@ public:
     /// The type of the returned handle is `za::WindowHandle`,
     /// which is a type alias to the handle type defined by the OS.
     /// You shouldn't need to use this function, unless you have
-    /// very specific stuff to implement that SFML doesn't support,
+    /// very specific stuff to implement that Zancle doesn't support,
     /// or implement a temporary workaround until a bug is fixed.
     ///
     /// \return System handle of the window

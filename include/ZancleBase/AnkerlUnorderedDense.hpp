@@ -1,6 +1,6 @@
 // clang-format off
 
-// Small fork of ankerl::unordered_dense to use SFML's base library.
+// Small fork of ankerl::unordered_dense to use Zancle's base library.
 // Removes allocator support.
 
 ///////////////////////// ankerl::unordered_dense::{map, set} /////////////////////////
@@ -1048,7 +1048,7 @@ public:
         return ref;
     }
 
-    // Alias to match SFML/Base naming used by `detail::vector`.
+    // Alias to match Base naming used by `detail::vector`.
     template <class... Args>
     auto emplaceBack(Args&&... args) -> reference
     {

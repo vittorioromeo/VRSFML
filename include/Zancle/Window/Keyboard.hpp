@@ -36,7 +36,7 @@ struct ZA_WINDOW_API Keyboard
     ////////////////////////////////////////////////////////////
     enum class Key
     {
-        // `Unknown` used to be `-1` in SFML, but that was a bit of a hack and it doesn't work well with array-based
+        // `Unknown` used to be `-1` in Zancle, but that was a bit of a hack and it doesn't work well with array-based
         // containers, so now it's the last enumerator and `KeyCount` is the total number of keys, including `Unknown`.
 
         A = 0,
@@ -139,7 +139,7 @@ struct ZA_WINDOW_API Keyboard
         F13,
         F14,
         F15,
-        Pause, // Until here should be compatible with SFML
+        Pause, // Until here should be compatible with Zancle
 
         // From SDL3
         Exclaim,

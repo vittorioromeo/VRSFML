@@ -298,7 +298,7 @@ private:
 ///
 /// Like `za::RenderWindow`, `za::RenderTexture` is still able to render direct
 /// OpenGL stuff. It is even possible to mix together OpenGL calls
-/// and regular SFML drawing commands. If you need a depth buffer for
+/// and regular Zancle drawing commands. If you need a depth buffer for
 /// 3D rendering, don't forget to request it when calling `RenderTexture::create`.
 ///
 /// \see `za::RenderTarget`, `za::RenderWindow`, `za::View`, `za::Texture`

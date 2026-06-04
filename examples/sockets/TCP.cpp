@@ -47,7 +47,7 @@ ztTSrGCF1rJynnEoGJrIh3trvRAKD0E=
 // Locality Name (eg, city) []:.
 // Organization Name (eg, company) [Internet Widgits Pty Ltd]:.
 // Organizational Unit Name (eg, section) []:.
-// Common Name (e.g. server FQDN or YOUR name) []:SFML TLS Example
+// Common Name (e.g. server FQDN or YOUR name) []:Zancle TLS Example
 // Email Address []:.
 constexpr zb::StringView certificate = R"(-----BEGIN CERTIFICATE-----
 MIIByTCCAVCgAwIBAgIUKT3iSj7kJlvzxEGvfK1/yAYzRPcwCgYIKoZIzj0EAwMw

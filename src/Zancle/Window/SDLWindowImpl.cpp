@@ -66,7 +66,7 @@
 
 namespace
 {
-// A nested named namespace is used here to allow unity builds of SFML.
+// A nested named namespace is used here to allow unity builds of Zancle.
 // Yes, this is a rather weird namespace.
 namespace SDLWindowImplImpl
 {

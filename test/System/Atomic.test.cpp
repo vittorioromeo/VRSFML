@@ -341,14 +341,14 @@ void integralFetchOps(const T zero, const T one, const T mask)
 }
 } // namespace
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - bool")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - bool")
 {
     singleThreadedRoundTrip<bool>(false, true);
     exchangeRoundTrip<bool>(false, true);
     casRoundTrip<bool>(false, true, false);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - char")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - char")
 {
     singleThreadedRoundTrip<char>('a', 'z');
     exchangeRoundTrip<char>('a', 'z');
@@ -356,7 +356,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - char")
     integralFetchOps<char>(static_cast<char>(0x00), static_cast<char>(0x01), static_cast<char>(0x55));
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - signed/unsigned 8-bit")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - signed/unsigned 8-bit")
 {
     singleThreadedRoundTrip<zb::I8>(-3, 7);
     exchangeRoundTrip<zb::U8>(0u, 0xFFu);
@@ -365,7 +365,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - signed/unsigned 8-bit")
     integralFetchOps<zb::I8>(0, 1, 0x55);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - 16-bit")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - 16-bit")
 {
     singleThreadedRoundTrip<zb::I16>(-1234, 5678);
     exchangeRoundTrip<zb::U16>(0u, 0xFF'FFu);
@@ -374,7 +374,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - 16-bit")
     integralFetchOps<zb::I16>(0, 1, 0x55'55);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - 32-bit")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - 32-bit")
 {
     singleThreadedRoundTrip<zb::I32>(-100'000, 200'000);
     exchangeRoundTrip<zb::U32>(0u, 0xDE'AD'BE'EFu);
@@ -383,7 +383,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - 32-bit")
     integralFetchOps<zb::I32>(0, 1, 0x55'55'55'55);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - 64-bit")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - 64-bit")
 {
     singleThreadedRoundTrip<zb::I64>(-(static_cast<zb::I64>(1) << 40), static_cast<zb::I64>(1) << 50);
     exchangeRoundTrip<zb::U64>(0u, 0xDE'AD'BE'EF'CA'FE'BA'BEu);
@@ -392,21 +392,21 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - 64-bit")
     integralFetchOps<zb::I64>(0, 1, 0x55'55'55'55'55'55'55'55);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - float")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - float")
 {
     singleThreadedRoundTrip<float>(1.5f, -2.5f);
     exchangeRoundTrip<float>(0.0f, 3.14f);
     casRoundTrip<float>(1.0f, 2.0f, 3.0f);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - double")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - double")
 {
     singleThreadedRoundTrip<double>(1.5, -2.5);
     exchangeRoundTrip<double>(0.0, 3.14159);
     casRoundTrip<double>(1.0, 2.0, 3.0);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - pointer")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - pointer")
 {
     int storage[8]{};
 
@@ -428,7 +428,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - pointer")
     }
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - default-constructed and value-constructed")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - default-constructed and value-constructed")
 {
     za::Atomic<int> defaulted{0};
     CHECK(defaulted.loadRelaxed() == 0);
@@ -439,7 +439,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - default-constructed and value-const
     CHECK(valueCtor.loadRelaxed() == 42);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - thread fences (smoke)")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - thread fences (smoke)")
 {
     za::Atomic<int> a{0};
     za::Atomic<int> b{0};
@@ -456,7 +456,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - thread fences (smoke)")
     za::atomicSignalFence<za::MemoryOrder::SeqCst>();
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - concurrent fetchAdd is consistent")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - concurrent fetchAdd is consistent")
 {
     constexpr int       threadCount         = 8;
     constexpr int       incrementsPerThread = 50'000;
@@ -478,7 +478,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - concurrent fetchAdd is consistent")
     CHECK(counter.loadSeqCst() == static_cast<zb::I64>(threadCount) * static_cast<zb::I64>(incrementsPerThread));
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - producer/consumer release-acquire handoff")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - producer/consumer release-acquire handoff")
 {
     za::Atomic<int> data{0};
     za::Atomic<int> ready{0};
@@ -501,7 +501,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - producer/consumer release-acquire h
     consumer.join();
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - CAS-loop float increment (no fetchAdd for floats)")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - CAS-loop float increment (no fetchAdd for floats)")
 {
     za::Atomic<float> total{0.0f};
 
@@ -550,7 +550,7 @@ static_assert(!HasWait<za::Atomic<bool>, bool>);
 static_assert(!HasWait<za::Atomic<char>, char>);
 static_assert(!HasWait<za::Atomic<zb::U16>, zb::U16>);
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - waitUntil / notifyOne (latch pattern)")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - waitUntil / notifyOne (latch pattern)")
 {
     constexpr int       workerCount = 6;
     za::Atomic<zb::U32> nRemaining{static_cast<zb::U32>(workerCount)};
@@ -577,7 +577,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - waitUntil / notifyOne (latch patter
         th.join();
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - notifyAll wakes multiple waiters")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - notifyAll wakes multiple waiters")
 {
     za::Atomic<zb::U32>    gate{0u};
     za::Atomic<zb::U32>    woken{0u};
@@ -604,7 +604,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - notifyAll wakes multiple waiters")
     CHECK(woken.loadRelaxed() == static_cast<zb::U32>(waiterCount));
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - waitUntil predicate already true returns immediately")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - waitUntil predicate already true returns immediately")
 {
     za::Atomic<zb::U32> a{42u};
 
@@ -613,7 +613,7 @@ TEST_CASE("[System] SFML/System/Atomic.hpp - waitUntil predicate already true re
     CHECK(a.loadRelaxed() == 42u);
 }
 
-TEST_CASE("[System] SFML/System/Atomic.hpp - 64-bit waitUntil")
+TEST_CASE("[System] Zancle/System/Atomic.hpp - 64-bit waitUntil")
 {
     za::Atomic<zb::U64> counter{3u};
 

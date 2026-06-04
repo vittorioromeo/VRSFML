@@ -19,7 +19,7 @@ namespace za
 bool Keyboard::isKeyPressed(const Key key)
 {
     // TODO P0:
-    // dispatch to OS-specific SFML impls
+    // dispatch to OS-specific Zancle impls
 
     return isKeyPressed(delocalize(key));
 }
@@ -29,7 +29,7 @@ bool Keyboard::isKeyPressed(const Key key)
 bool Keyboard::isKeyPressed(const Scancode code)
 {
     // TODO P0:
-    // dispatch to OS-specific SFML impls
+    // dispatch to OS-specific Zancle impls
 
     return WindowContext::getSDLLayer().isKeyPressedByScancode(code);
 }

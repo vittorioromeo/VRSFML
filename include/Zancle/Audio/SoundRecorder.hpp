@@ -201,7 +201,7 @@ private:
 /// microphone or any other capture device). As an abstract
 /// base class, it only takes care of capturing sound samples;
 /// the task of doing something useful with them is left to the
-/// derived class. SFML provides a built-in specialization that
+/// derived class. Zancle provides a built-in specialization that
 /// stores the captured data into a `za::SoundBuffer`: see
 /// `za::SoundBufferRecorder`.
 ///

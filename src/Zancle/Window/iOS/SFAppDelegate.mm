@@ -44,7 +44,7 @@ std::vector<za::Vec2i> touchPositions;
 + (SFAppDelegate*)getInstance
 {
     NSAssert(delegateInstance,
-             @"SFAppDelegate instance is nil, this means SFML was not properly initialized. "
+             @"SFAppDelegate instance is nil, this means Zancle was not properly initialized. "
               "Make sure that the file defining your main() function includes <Zancle/Main.hpp>");
 
     return delegateInstance;

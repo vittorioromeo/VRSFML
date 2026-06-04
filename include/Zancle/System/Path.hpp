@@ -29,7 +29,7 @@ namespace za
 /// failure, and operations that produce a new `Path` (`absolute`, `tempDirectoryPath`)
 /// return `zb::Optional<Path>` so OS errors can be propagated without exceptions.
 ///
-/// For stream insertion (`std::ostream << Path`), include `SFML/System/PathStreamOp.hpp`.
+/// For stream insertion (`std::ostream << Path`), include `Zancle/System/PathStreamOp.hpp`.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] ZA_SYSTEM_API Path

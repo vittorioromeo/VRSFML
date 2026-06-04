@@ -46,7 +46,7 @@ using u8string_view = std::basic_string_view<decltype(u8' ')>;
 
 TEST_CASE("[System] za::Utf8")
 {
-    static constexpr auto utf8 = u8"SFML 🐌"sv;
+    static constexpr auto utf8 = u8"Zancle 🐌"sv;
 
     SECTION("decode")
     {
@@ -57,7 +57,7 @@ TEST_CASE("[System] za::Utf8")
             begin              = za::Utf8::decode(begin, utf8.cend(), character, 0);
             output.push_back(character);
         }
-        CHECK(output == U"SFML 🐌"sv);
+        CHECK(output == U"Zancle 🐌"sv);
     }
 
     SECTION("encode")
@@ -153,13 +153,13 @@ TEST_CASE("[System] za::Utf8")
         SECTION("Default replacement character")
         {
             za::Utf8::toAnsi(utf8.cbegin(), utf8.cend(), zb::BackInserter(output), 0, getFacet());
-            CHECK(output == "SFML \0"sv);
+            CHECK(output == "Zancle \0"sv);
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf8::toAnsi(utf8.cbegin(), utf8.cend(), zb::BackInserter(output), '_', getFacet());
-            CHECK(output == "SFML _"sv);
+            CHECK(output == "Zancle _"sv);
         }
     }
 
@@ -170,13 +170,13 @@ TEST_CASE("[System] za::Utf8")
         SECTION("Default replacement character")
         {
             za::Utf8::toWide(utf8.cbegin(), utf8.cend(), zb::BackInserter(output), 0);
-            CHECK(output == select(L"SFML "sv, L"SFML 🐌"sv));
+            CHECK(output == select(L"Zancle "sv, L"Zancle 🐌"sv));
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf8::toWide(utf8.cbegin(), utf8.cend(), zb::BackInserter(output), L'_');
-            CHECK(output == select(L"SFML _"sv, L"SFML 🐌"sv));
+            CHECK(output == select(L"Zancle _"sv, L"Zancle 🐌"sv));
         }
     }
 
@@ -187,13 +187,13 @@ TEST_CASE("[System] za::Utf8")
         SECTION("Default replacement character")
         {
             za::Utf8::toLatin1(utf8.cbegin(), utf8.cend(), zb::BackInserter(output), 0);
-            CHECK(output == "SFML \0"sv);
+            CHECK(output == "Zancle \0"sv);
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf8::toLatin1(utf8.cbegin(), utf8.cend(), zb::BackInserter(output), '_');
-            CHECK(output == "SFML _"sv);
+            CHECK(output == "Zancle _"sv);
         }
     }
 
@@ -208,20 +208,20 @@ TEST_CASE("[System] za::Utf8")
     {
         std::u16string output;
         za::Utf8::toUtf16(utf8.cbegin(), utf8.cend(), zb::BackInserter(output));
-        CHECK(output == u"SFML 🐌"sv);
+        CHECK(output == u"Zancle 🐌"sv);
     }
 
     SECTION("toUtf32")
     {
         std::u32string output;
         za::Utf8::toUtf32(utf8.cbegin(), utf8.cend(), zb::BackInserter(output));
-        CHECK(output == U"SFML 🐌"sv);
+        CHECK(output == U"Zancle 🐌"sv);
     }
 }
 
 TEST_CASE("[System] za::Utf16")
 {
-    static constexpr auto utf16 = u"SFML 🐌"sv;
+    static constexpr auto utf16 = u"Zancle 🐌"sv;
 
     SECTION("decode")
     {
@@ -232,7 +232,7 @@ TEST_CASE("[System] za::Utf16")
             begin              = za::Utf16::decode(begin, utf16.cend(), character, 0);
             output.push_back(character);
         }
-        CHECK(output == U"SFML 🐌"sv);
+        CHECK(output == U"Zancle 🐌"sv);
     }
 
     SECTION("encode")
@@ -326,13 +326,13 @@ TEST_CASE("[System] za::Utf16")
         SECTION("Default replacement character")
         {
             za::Utf16::toAnsi(utf16.cbegin(), utf16.cend(), zb::BackInserter(output), 0, getFacet());
-            CHECK(output == "SFML \0"sv);
+            CHECK(output == "Zancle \0"sv);
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf16::toAnsi(utf16.cbegin(), utf16.cend(), zb::BackInserter(output), '_', getFacet());
-            CHECK(output == "SFML _"sv);
+            CHECK(output == "Zancle _"sv);
         }
     }
 
@@ -343,13 +343,13 @@ TEST_CASE("[System] za::Utf16")
         SECTION("Default replacement character")
         {
             za::Utf16::toWide(utf16.cbegin(), utf16.cend(), zb::BackInserter(output), 0);
-            CHECK(output == select(L"SFML "sv, L"SFML 🐌"sv));
+            CHECK(output == select(L"Zancle "sv, L"Zancle 🐌"sv));
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf16::toWide(utf16.cbegin(), utf16.cend(), zb::BackInserter(output), '_');
-            CHECK(output == select(L"SFML _"sv, L"SFML 🐌"sv));
+            CHECK(output == select(L"Zancle _"sv, L"Zancle 🐌"sv));
         }
     }
 
@@ -360,13 +360,13 @@ TEST_CASE("[System] za::Utf16")
         SECTION("Default replacement character")
         {
             za::Utf16::toLatin1(utf16.cbegin(), utf16.cend(), zb::BackInserter(output), 0);
-            CHECK(output == "SFML \0\0"sv);
+            CHECK(output == "Zancle \0\0"sv);
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf16::toLatin1(utf16.cbegin(), utf16.cend(), zb::BackInserter(output), '_');
-            CHECK(output == "SFML __"sv);
+            CHECK(output == "Zancle __"sv);
         }
     }
 
@@ -374,7 +374,7 @@ TEST_CASE("[System] za::Utf16")
     {
         u8string output;
         za::Utf16::toUtf8(utf16.cbegin(), utf16.cend(), zb::BackInserter(output));
-        CHECK(output == u8"SFML 🐌"sv);
+        CHECK(output == u8"Zancle 🐌"sv);
     }
 
     SECTION("toUtf16")
@@ -388,13 +388,13 @@ TEST_CASE("[System] za::Utf16")
     {
         std::u32string output;
         za::Utf16::toUtf32(utf16.cbegin(), utf16.cend(), zb::BackInserter(output));
-        CHECK(output == U"SFML 🐌"sv);
+        CHECK(output == U"Zancle 🐌"sv);
     }
 }
 
 TEST_CASE("[System] za::Utf32")
 {
-    static constexpr auto utf32 = U"SFML 🐌"sv;
+    static constexpr auto utf32 = U"Zancle 🐌"sv;
 
     SECTION("decode")
     {
@@ -481,13 +481,13 @@ TEST_CASE("[System] za::Utf32")
         SECTION("Default replacement character")
         {
             za::Utf32::toAnsi(utf32.cbegin(), utf32.cend(), zb::BackInserter(output), 0, getFacet());
-            CHECK(output == "SFML \0"sv);
+            CHECK(output == "Zancle \0"sv);
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf32::toAnsi(utf32.cbegin(), utf32.cend(), zb::BackInserter(output), '_', getFacet());
-            CHECK(output == "SFML _"sv);
+            CHECK(output == "Zancle _"sv);
         }
     }
 
@@ -498,13 +498,13 @@ TEST_CASE("[System] za::Utf32")
         SECTION("Default replacement character")
         {
             za::Utf32::toWide(utf32.cbegin(), utf32.cend(), zb::BackInserter(output), 0);
-            CHECK(output == select(L"SFML "sv, L"SFML 🐌"sv));
+            CHECK(output == select(L"Zancle "sv, L"Zancle 🐌"sv));
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf32::toWide(utf32.cbegin(), utf32.cend(), zb::BackInserter(output), L'_');
-            CHECK(output == select(L"SFML _"sv, L"SFML 🐌"sv));
+            CHECK(output == select(L"Zancle _"sv, L"Zancle 🐌"sv));
         }
     }
 
@@ -515,13 +515,13 @@ TEST_CASE("[System] za::Utf32")
         SECTION("Default replacement character")
         {
             za::Utf32::toLatin1(utf32.cbegin(), utf32.cend(), zb::BackInserter(output), 0);
-            CHECK(output == "SFML \0"sv);
+            CHECK(output == "Zancle \0"sv);
         }
 
         SECTION("Custom replacement character")
         {
             za::Utf32::toLatin1(utf32.cbegin(), utf32.cend(), zb::BackInserter(output), '_');
-            CHECK(output == "SFML _"sv);
+            CHECK(output == "Zancle _"sv);
         }
     }
 
@@ -529,14 +529,14 @@ TEST_CASE("[System] za::Utf32")
     {
         u8string output;
         za::Utf32::toUtf8(utf32.cbegin(), utf32.cend(), zb::BackInserter(output));
-        CHECK(output == u8"SFML 🐌"sv);
+        CHECK(output == u8"Zancle 🐌"sv);
     }
 
     SECTION("toUtf16")
     {
         std::u16string output;
         za::Utf32::toUtf16(utf32.cbegin(), utf32.cend(), zb::BackInserter(output));
-        CHECK(output == u"SFML 🐌"sv);
+        CHECK(output == u"Zancle 🐌"sv);
     }
 
     SECTION("toUtf32")

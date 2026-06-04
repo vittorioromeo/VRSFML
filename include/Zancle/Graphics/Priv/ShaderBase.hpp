@@ -531,7 +531,7 @@ public:
     /// \brief Get the underlying OpenGL handle of the shader.
     ///
     /// You shouldn't need to use this function, unless you have
-    /// very specific stuff to implement that SFML doesn't support,
+    /// very specific stuff to implement that Zancle doesn't support,
     /// or implement a temporary workaround until a bug is fixed.
     ///
     /// \return OpenGL handle of the shader or 0 if not yet loaded
@@ -543,7 +543,7 @@ public:
     /// \brief Bind this shader for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
-    /// used when drawing SFML entities. It must be used only if you
+    /// used when drawing Zancle entities. It must be used only if you
     /// mix `za::Shader` with raw OpenGL code.
     ///
     /// Call `Shader::unbind()` to revert to using no shader.
@@ -581,7 +581,7 @@ public:
     /// any attempt to use `za::Shader` geometry shader features will fail.
     ///
     /// Note: The first call to this function, whether by your
-    /// code or SFML will result in a context switch.
+    /// code or Zancle will result in a context switch.
     ///
     /// \return `true` if geometry shaders are supported, `false` otherwise
     ///
@@ -677,7 +677,7 @@ private:
 /// Shaders are written in GLSL, which is a C-like
 /// language dedicated to OpenGL shaders. You'll probably
 /// need to learn its basics before writing your own shaders
-/// for SFML.
+/// for Zancle.
 ///
 /// Like any C/C++ program, a GLSL shader has its own variables
 /// called _uniforms_ that you can set from your C++ application.
@@ -687,7 +687,7 @@ private:
 /// \li matrices (3x3 or 4x4)
 /// \li samplers (textures)
 ///
-/// Some SFML-specific types can be converted:
+/// Some Zancle-specific types can be converted:
 /// \li `za::Color` as a 4D vector (\p vec4)
 /// \li `za::Transform` as matrices (\p mat3 or \p mat4)
 ///

@@ -2,8 +2,8 @@
 
 #define VER_COMPANYNAME_STR      "\0"
 #define VER_LEGALCOPYRIGHT_STR   "Copyright (C) 2007-@RC_CURRENT_YEAR@ Laurent Gomila\0"
-#define VER_FILEDESCRIPTION_STR  "SFML @RC_MODULE_NAME@ Module\0"
-#define VER_PRODUCTNAME_STR      "Simple and Fast Multimedia Library\0"
+#define VER_FILEDESCRIPTION_STR  "Zancle @RC_MODULE_NAME@ Module\0"
+#define VER_PRODUCTNAME_STR      "Zancle, an opinionated fork of SFML\0"
 
 #define VER_FILEVERSION          @PROJECT_VERSION_MAJOR@,@PROJECT_VERSION_MINOR@,@PROJECT_VERSION_PATCH@,0
 #define VER_FILEVERSION_STR      "@PROJECT_VERSION@@RC_VERSION_SUFFIX@\0"

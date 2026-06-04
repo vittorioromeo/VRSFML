@@ -223,7 +223,7 @@ public:
             GatewayTimeout      = 504, //!< The gateway server couldn't receive a response from the source server
             VersionNotSupported = 505, //!< The server doesn't support the requested HTTP version
 
-            // 10xx: SFML custom codes
+            // 10xx: Zancle custom codes
             InvalidResponse  = 1000, //!< Response is not a valid HTTP one
             ConnectionFailed = 1001  //!< Connection with server failed
         };
@@ -475,8 +475,8 @@ private:
 /// // Create a new HTTP client
 /// za::Http http;
 ///
-/// // We'll work on https://www.zancle-dev.org
-/// http.setHost("https://www.zancle-dev.org");
+/// // We'll work on https://www.zancle.org
+/// http.setHost("https://www.zancle.org");
 ///
 /// // Prepare a request to get the '/learn/' page
 /// za::Http::Request request("/learn/");

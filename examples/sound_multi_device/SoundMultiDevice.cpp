@@ -31,7 +31,7 @@ int main()
     // Create the audio context
     auto audioContext = za::AudioContext::create().value();
 
-    // For each hardware playback device, create a SFML playback device
+    // For each hardware playback device, create a Zancle playback device
     const auto playbackDeviceHandles = za::AudioContext::getAvailablePlaybackDeviceHandles();
     if (playbackDeviceHandles.empty())
     {

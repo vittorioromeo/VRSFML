@@ -5,8 +5,8 @@ Please make sure you are targetting the correct branch. No more features are pla
 
 Before creating the pull request, we ask you to check the following boxes: (For small changes not everything needs to ticked, but the more the better!)
 
--   [ ] Has this change been discussed on [the forum](https://en.zancle-dev.org/forums/index.php#c3) or in an issue before?
--   [ ] Does the code follow the SFML [Code Style Guide](https://www.zancle-dev.org/style.php)?
+-   [ ] Has this change been discussed on [the forum](https://en.zancle.org/forums/index.php#c3) or in an issue before?
+-   [ ] Does the code follow the SFML [Code Style Guide](https://www.zancle.org/style.php)?
 -   [ ] Have you provided some example/test code for your changes?
 -   [ ] If you have additional steps which need to be performed, please list them as tasks!
 -->

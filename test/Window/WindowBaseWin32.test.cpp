@@ -23,7 +23,7 @@ public:
     {
         m_classInfo.lpfnWndProc   = wndProc;
         m_classInfo.hInstance     = GetModuleHandleW(nullptr);
-        m_classInfo.lpszClassName = L"sfml_WindowBaseTests";
+        m_classInfo.lpszClassName = L"zancle_WindowBaseTests";
 
         m_winClassId = RegisterClassW(&m_classInfo);
         ZB_ASSERT(m_winClassId);

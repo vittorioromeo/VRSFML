@@ -65,5 +65,5 @@ elseif(ZA_OS_ANDROID)
 endif()
 
 if(ZA_ENABLE_STACK_TRACES AND NOT ZA_OS_EMSCRIPTEN)
-    target_link_libraries(zancle-system PRIVATE $<BUILD_INTERFACE:sfml::libbacktrace>)
+    target_link_libraries(zancle-system PRIVATE $<BUILD_INTERFACE:zancle::libbacktrace>)
 endif()

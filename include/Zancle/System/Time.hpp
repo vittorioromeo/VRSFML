@@ -372,7 +372,7 @@ private:
 /// `za::Time` is intentionally decoupled from `<chrono>` to keep
 /// this header lightweight; conversions between `za::Time` and
 /// `std::chrono::duration` are provided as opt-in helpers in
-/// `SFML/System/TimeChronoUtil.hpp` (see `za::TimeChronoUtil`).
+/// `Zancle/System/TimeChronoUtil.hpp` (see `za::TimeChronoUtil`).
 ///
 /// Time values support the usual arithmetic and comparison
 /// operations, and represent a span (so they may be negative).

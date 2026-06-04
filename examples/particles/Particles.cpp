@@ -119,7 +119,7 @@ int main()
     auto window = za::RenderWindow::create(
                       {
                           .size      = windowSize.toVec2u(),
-                          .title     = "Vittorio's SFML fork: particles example",
+                          .title     = "Zancle: particles example",
                           .resizable = false,
                           .vsync     = false,
                       })
@@ -655,7 +655,7 @@ int main()
         {
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
-            ImGui::Begin("Vittorio's SFML fork: particles example", nullptr, ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Zancle: particles example", nullptr, ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize({380.f, 510.f});
 
             const auto clearSamples = [&]

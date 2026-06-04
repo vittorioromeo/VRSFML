@@ -263,22 +263,22 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
         // We need to know filenames beforehand, so create them in two steps
 
         // First, create file A that includes file B
-        const auto pathA = za::Path::getTempDirectory().value() / za::Path("sfml_circular_a.glsl");
-        const auto pathB = za::Path::getTempDirectory().value() / za::Path("sfml_circular_b.glsl");
+        const auto pathA = za::Path::getTempDirectory().value() / za::Path("zancle_circular_a.glsl");
+        const auto pathB = za::Path::getTempDirectory().value() / za::Path("zancle_circular_b.glsl");
 
         {
-            constexpr zb::StringView    contentA = "#include \"sfml_circular_b.glsl\"\n";
+            constexpr zb::StringView    contentA = "#include \"zancle_circular_b.glsl\"\n";
             auto                        optFile  = za::OutFile::open(pathA);
             [[maybe_unused]] const bool ok       = optFile->write(contentA.data(), contentA.size());
         }
 
         {
-            constexpr zb::StringView    contentB = "#include \"sfml_circular_a.glsl\"\n";
+            constexpr zb::StringView    contentB = "#include \"zancle_circular_a.glsl\"\n";
             auto                        optFile  = za::OutFile::open(pathB);
             [[maybe_unused]] const bool ok       = optFile->write(contentB.data(), contentB.size());
         }
 
-        const zb::StringView source = "#include \"sfml_circular_b.glsl\"\n";
+        const zb::StringView source = "#include \"zancle_circular_b.glsl\"\n";
 
         zb::Vector<char> output;
         CHECK_FALSE(za::ShaderUtils::preprocessGlslIncludes(source, pathA, output));

@@ -13,7 +13,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>org.sfml-dev.$(EXECUTABLE_NAME)</string>
+	<string>org.zancle.$(EXECUTABLE_NAME)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>

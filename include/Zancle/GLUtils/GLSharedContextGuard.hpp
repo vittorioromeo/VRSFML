@@ -21,7 +21,7 @@ class GlContext;
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief RAII guard that temporarily activates SFML's shared GL context
+/// \brief RAII guard that temporarily activates Zancle's shared GL context
 ///
 /// Used to perform GL operations that must run on the shared context
 /// (typically resource creation/destruction such as `glGenBuffers` or

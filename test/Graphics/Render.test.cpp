@@ -872,7 +872,7 @@ void main()
             // Regression: `resetGLStatesImpl` previously did not reapply
             // `cache.lastView`, so a raw `glViewport` between draws (or an
             // ImGui backend) could leave the GL viewport mismatched with what
-            // SFML's cache claims is bound. The next draw with the same view
+            // Zancle's cache claims is bound. The next draw with the same view
             // would skip `applyView` (cache hit on `lastView`) and render at
             // the wrong viewport.
             auto rt = za::RenderTexture::create({100, 100}).value();
@@ -886,7 +886,7 @@ void main()
             rt.draw(leftRect);
             rt.flush(); // commit the draw so cache.lastView is set on the live view
 
-            // Mutate the GL viewport behind SFML's back. Without the fix, the
+            // Mutate the GL viewport behind Zancle's back. Without the fix, the
             // next `resetGLStates` + draw will inherit this 50x50 viewport.
             glCheck(glViewport(0, 0, 50, 50));
 
@@ -1170,9 +1170,9 @@ void main()
                 rtB.draw(full);
                 rtB.display();
 
-                // 3) Corrupt `fresh`'s persistent state behind SFML's back.
+                // 3) Corrupt `fresh`'s persistent state behind Zancle's back.
                 //    `GL_CULL_FACE` is touched only by `resetGLStatesImpl`
-                //    in the SFML pipeline, so it survives until that helper
+                //    in the Zancle pipeline, so it survives until that helper
                 //    runs again. `glCullFace(GL_FRONT_AND_BACK)` makes the
                 //    cull discard every triangle regardless of winding.
                 glCheck(glEnable(GL_CULL_FACE));

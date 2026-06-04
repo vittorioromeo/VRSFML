@@ -192,7 +192,7 @@ struct Main
     GameConstants& gameConstants;
 
     ////////////////////////////////////////////////////////////
-    // SFML fonts
+    // Zancle fonts
     MainOwnedPtr<za::Font> fontMouldyCheeseStorage;
     za::Font&              fontMouldyCheese;
 
@@ -233,7 +233,7 @@ struct Main
     za::TextureAtlas&              textureAtlas; // TODO P0: make smaller
 
     ////////////////////////////////////////////////////////////
-    // SFML fonts
+    // Zancle fonts
     MainOwnedPtr<za::Font> fontSuperBakeryStorage;
     za::Font&              fontSuperBakery;
 

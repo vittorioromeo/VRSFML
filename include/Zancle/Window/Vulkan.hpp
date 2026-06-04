@@ -146,7 +146,7 @@ struct VulkanSurfaceData
 /// \ingroup window
 ///
 /// This namespace contains the small set of helpers needed
-/// to use SFML for windowing alongside hand-rolled Vulkan
+/// to use Zancle for windowing alongside hand-rolled Vulkan
 /// rendering. Most users will only ever touch
 /// `za::Vulkan::isAvailable`,
 /// `za::Vulkan::getGraphicsRequiredInstanceExtensions`, and

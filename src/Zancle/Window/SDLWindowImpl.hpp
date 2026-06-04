@@ -340,7 +340,7 @@ private:
     /// \brief Push a new event into the event queue
     ///
     /// This function is to be used by derived classes, to
-    /// notify the SFML window that a new event was triggered
+    /// notify the Zancle window that a new event was triggered
     /// by the system.
     ///
     /// \param event Event to push

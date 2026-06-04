@@ -83,7 +83,7 @@ namespace za
 /// \endcode
 ///
 /// Most of the methods on `WindowContext` are private and
-/// only accessible to friend classes inside SFML; user code
+/// only accessible to friend classes inside Zancle; user code
 /// will typically only call `create()` and `isInstalled()`.
 ///
 ////////////////////////////////////////////////////////////

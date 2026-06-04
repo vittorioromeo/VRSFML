@@ -1,8 +1,8 @@
-// Header for SFML unit tests.
+// Header for Zancle unit tests.
 //
 // For a new graphics module test case, include this header.
 // Declares the `stringifyValue` ADL overloads so the bespoke testing
-// library can render SFML graphics types for failure output. (`Rect2` is
+// library can render Zancle graphics types for failure output. (`Rect2` is
 // rendered by the framework itself, see `Tst/Detail/StringifyValue.hpp`.)
 
 #pragma once

@@ -77,7 +77,7 @@ int main()
     auto window = za::RenderWindow::create(
                       {
                           .size      = windowSize.toVec2u(),
-                          .title     = "Vittorio's SFML fork: batching example",
+                          .title     = "Zancle: batching example",
                           .resizable = false,
                           .vsync     = false,
                       })
@@ -360,7 +360,7 @@ int main()
         {
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
-            ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
+            ImGui::Begin("Zancle: batching example", nullptr, ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize({420.f, 490.f});
 
             const auto clearSamples = [&]

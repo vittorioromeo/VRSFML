@@ -42,7 +42,7 @@
 #include "ZancleBase/StringView.hpp"
 #include "ZancleBase/Vector.hpp"
 
-#include <limits> // TODO P1: rewrite in sfml base
+#include <limits> // TODO P1: rewrite in zb
 
 
 ////////////////////////////////////////////////////////////
@@ -176,7 +176,7 @@ void matrixPerspective(Matrix& result, za::Angle fov, float aspect, float nearPl
 // Current Vulkan instance
 VkInstance currVulkanInstance = VK_NULL_HANDLE;
 
-// Helper function we pass to GLAD to load Vulkan functions via SFML
+// Helper function we pass to GLAD to load Vulkan functions via Zancle
 GLADapiproc getVulkanFunction(const char* name)
 {
     return za::Vulkan::getFunction(name, currVulkanInstance);
@@ -214,7 +214,7 @@ private:
 
 public:
     // Constructor
-    VulkanExample() : window{za::WindowBase::create({.size{800u, 600u}, .title = "SFML window with Vulkan"}).value()}
+    VulkanExample() : window{za::WindowBase::create({.size{800u, 600u}, .title = "Zancle window with Vulkan"}).value()}
     {
         const auto tryStep = [&](const char* fName, auto&& f)
         {
@@ -263,7 +263,7 @@ public:
 
         // If something went wrong, notify the user by setting the window title
         if (!vulkanAvailable)
-            window.setTitle("SFML window with Vulkan (Vulkan not available)");
+            window.setTitle("Zancle window with Vulkan (Vulkan not available)");
     }
 
 
@@ -470,7 +470,7 @@ public:
             }
         }
 
-        // Retrieve the extensions we need to enable in order to use Vulkan with SFML
+        // Retrieve the extensions we need to enable in order to use Vulkan with Zancle
         zb::Vector<const char*> requiredExtensions;
 
         for (const char* e : za::Vulkan::getGraphicsRequiredInstanceExtensions())
@@ -538,7 +538,7 @@ public:
             return failStep();
     }
 
-    // Setup the SFML window Vulkan rendering surface
+    // Setup the Zancle window Vulkan rendering surface
     void setupSurface()
     {
         if (!window.createVulkanSurface(za::Vulkan::VulkanSurfaceData{instance, surface}))

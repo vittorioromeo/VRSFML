@@ -21,7 +21,7 @@ namespace zb
 /// \brief A string class with Small String Optimization (SSO)
 ///
 /// This class provides a replacement for `std::string`, designed
-/// to fit within the SFML/Base module. It avoids heap allocations
+/// to fit within the Base module. It avoids heap allocations
 /// for small strings by storing them within the object itself.
 ///
 /// Inherits `FmtAppendMixin`, which exposes `.appendFmt(fmt, args...)`

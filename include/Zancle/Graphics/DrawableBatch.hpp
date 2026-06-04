@@ -353,7 +353,7 @@ struct PersistentGPUStorage
 
     ////////////////////////////////////////////////////////////
     /// \brief Gets a pointer to the Vertex Array Object (VAO) group
-    /// \warning Internal SFML detail, subject to change.
+    /// \warning Internal Zancle detail, subject to change.
     ///
     /// Returns a pointer representing the VAO configuration for this storage.
     /// This is used by the rendering system to set up vertex attribute pointers.

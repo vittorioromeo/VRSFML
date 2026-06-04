@@ -27,7 +27,7 @@ PER_PANE_JOBS=$(( NPROC / ${#PRESETS[@]} ))
 [ "$PER_PANE_JOBS" -lt 2 ] && PER_PANE_JOBS=2
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-SESSION="vrsfml_test_all"
+SESSION="zancle_test_all"
 
 # --pane <preset>: actual work for one pane. Recursive self-invocation.
 if [ "${1:-}" = "--pane" ]; then

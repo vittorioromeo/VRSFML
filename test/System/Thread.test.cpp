@@ -24,20 +24,20 @@ static_assert(ZB_IS_MOVE_CONSTRUCTIBLE(za::Thread));
 static_assert(ZB_IS_MOVE_ASSIGNABLE(za::Thread));
 
 
-TEST_CASE("[System] SFML/System/Thread.hpp - default-constructed is not joinable")
+TEST_CASE("[System] Zancle/System/Thread.hpp - default-constructed is not joinable")
 {
     za::Thread t;
     CHECK(!t.joinable());
     CHECK(t.getId().value() == 0u);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - hardwareConcurrency returns positive value")
+TEST_CASE("[System] Zancle/System/Thread.hpp - hardwareConcurrency returns positive value")
 {
     const unsigned int n = za::Thread::hardwareConcurrency();
     CHECK(n >= 1u); // every reasonable test target has at least one core
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - spawn + join round-trip")
+TEST_CASE("[System] Zancle/System/Thread.hpp - spawn + join round-trip")
 {
     za::Atomic<int> ran{0};
 
@@ -49,7 +49,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - spawn + join round-trip")
     CHECK(ran.loadAcquire() == 42);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - getId is non-zero for a running thread")
+TEST_CASE("[System] Zancle/System/Thread.hpp - getId is non-zero for a running thread")
 {
     za::Atomic<zb::U64> observedId{0u};
 
@@ -63,7 +63,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - getId is non-zero for a running thr
     CHECK(observedId.loadAcquire() == outsideId.value());
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - move construction transfers ownership")
+TEST_CASE("[System] Zancle/System/Thread.hpp - move construction transfers ownership")
 {
     za::Atomic<int> finished{0};
 
@@ -86,7 +86,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - move construction transfers ownersh
     CHECK(finished.loadAcquire() == 1);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - destructor implicitly joins (std::jthread semantics)")
+TEST_CASE("[System] Zancle/System/Thread.hpp - destructor implicitly joins (std::jthread semantics)")
 {
     za::Atomic<int> ran{0};
 
@@ -103,7 +103,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - destructor implicitly joins (std::j
     CHECK(ran.loadAcquire() == 123);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - move assignment to joinable target implicitly joins")
+TEST_CASE("[System] Zancle/System/Thread.hpp - move assignment to joinable target implicitly joins")
 {
     za::Atomic<int> firstRan{0};
     za::Atomic<int> secondRan{0};
@@ -128,7 +128,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - move assignment to joinable target 
     CHECK(secondRan.loadAcquire() == 2);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - move assignment to non-joinable target")
+TEST_CASE("[System] Zancle/System/Thread.hpp - move assignment to non-joinable target")
 {
     za::Atomic<int> ran{0};
 
@@ -144,7 +144,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - move assignment to non-joinable tar
     CHECK(ran.loadAcquire() == 7);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - detach releases joinability")
+TEST_CASE("[System] Zancle/System/Thread.hpp - detach releases joinability")
 {
     za::Atomic<int> done{0};
 
@@ -166,7 +166,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - detach releases joinability")
     CHECK(done.loadAcquire() == 1);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - ThisThread::getId is stable on the calling thread")
+TEST_CASE("[System] Zancle/System/Thread.hpp - ThisThread::getId is stable on the calling thread")
 {
     const za::ThreadId id1 = za::ThisThread::getId();
     const za::ThreadId id2 = za::ThisThread::getId();
@@ -174,7 +174,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - ThisThread::getId is stable on the 
     CHECK(id1.value() != 0u);
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - sleep sleeps for at least the given time")
+TEST_CASE("[System] Zancle/System/Thread.hpp - sleep sleeps for at least the given time")
 {
     // OS schedulers may oversleep, but should never undersleep.
     // Replaces the standalone `Sleep.test.cpp` round-trip.
@@ -193,7 +193,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - sleep sleeps for at least the given
     checkSleeps(za::milliseconds(25));
 }
 
-TEST_CASE("[System] SFML/System/Thread.hpp - many threads each see distinct ids")
+TEST_CASE("[System] Zancle/System/Thread.hpp - many threads each see distinct ids")
 {
     constexpr int       threadCount = 8;
     za::Atomic<zb::U32> distinctSum{0u};

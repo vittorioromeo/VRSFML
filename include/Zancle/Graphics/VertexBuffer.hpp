@@ -215,7 +215,7 @@ public:
     /// \brief Get the underlying OpenGL handle of the vertex buffer.
     ///
     /// You shouldn't need to use this function, unless you have
-    /// very specific stuff to implement that SFML doesn't support,
+    /// very specific stuff to implement that Zancle doesn't support,
     /// or implement a temporary workaround until a bug is fixed.
     ///
     /// \return OpenGL handle of the vertex buffer or 0 if not yet created

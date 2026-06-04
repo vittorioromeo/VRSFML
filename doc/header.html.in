@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>SFML - Simple and Fast Multimedia Library</title>
+        <title>Zancle - an opinionated fork of SFML</title>
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
         <link rel="stylesheet" type="text/css" href="doxygen.css" title="default" media="screen,print" />
         <script type="text/javascript" src="jquery.js"></script>
@@ -21,7 +21,7 @@
     <body>
         <div id="banner-container">
             <div id="banner">
-                <span id="sfml">SFML @PROJECT_VERSION@</span>
+                <span id="zancle">Zancle @PROJECT_VERSION@</span>
             </div>
         </div>
         <div id="content">

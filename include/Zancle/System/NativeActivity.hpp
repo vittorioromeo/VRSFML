@@ -23,10 +23,10 @@ namespace za
 /// \ingroup system
 /// \brief Return a pointer to the Android native activity
 ///
-/// Escape hatch for platform-specific details that SFML doesn't expose
+/// Escape hatch for platform-specific details that Zancle doesn't expose
 /// or for working around known issues; rarely needed in regular use.
 ///
-/// \sfplatform{Android,SFML/System/NativeActivity.hpp}
+/// \sfplatform{Android,Zancle/System/NativeActivity.hpp}
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ZA_SYSTEM_API ANativeActivity* getNativeActivity();

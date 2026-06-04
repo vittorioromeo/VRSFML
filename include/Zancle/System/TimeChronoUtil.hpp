@@ -62,7 +62,7 @@ public:
 /// \ingroup system
 ///
 /// The `za::TimeChronoUtil` class provides static helper functions to simplify
-/// the conversion between SFML's time representation (`za::Time`) and the
+/// the conversion between Zancle's time representation (`za::Time`) and the
 /// standard C++ time library (`<chrono>`). This allows for easier integration
 /// with other libraries or code that uses `std::chrono`.
 ///

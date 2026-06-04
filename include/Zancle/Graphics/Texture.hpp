@@ -398,7 +398,7 @@ public:
     /// \brief Get the underlying OpenGL handle of the texture.
     ///
     /// You shouldn't need to use this function, unless you have
-    /// very specific stuff to implement that SFML doesn't support,
+    /// very specific stuff to implement that Zancle doesn't support,
     /// or implement a temporary workaround until a bug is fixed.
     ///
     /// \return OpenGL handle of the texture or 0 if not yet created
@@ -421,7 +421,7 @@ public:
     /// \brief Bind a texture for rendering
     ///
     /// This function is not part of the graphics API, it mustn't be
-    /// used when drawing SFML entities. It must be used only if you
+    /// used when drawing Zancle entities. It must be used only if you
     /// mix `za::Texture` with OpenGL code.
     ///
     /// \code

@@ -98,12 +98,12 @@ public:
 /// \ingroup audio
 ///
 /// This class allows users to read audio file formats not natively
-/// supported by SFML, and thus extend the set of supported readable
+/// supported by Zancle, and thus extend the set of supported readable
 /// audio formats.
 ///
 /// A valid sound file reader must override the `open`, `seek` and
 /// `read` virtual functions, as well as providing a static `check`
-/// function; the latter is used by SFML to find a suitable reader
+/// function; the latter is used by Zancle to find a suitable reader
 /// for a given input stream.
 ///
 /// All sample data exchanged through this interface is 16-bit

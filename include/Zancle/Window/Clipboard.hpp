@@ -85,11 +85,11 @@ struct ZA_WINDOW_API Clipboard
 ///
 ///     if (const auto* keyPressed = event->getIf<za::Event::KeyPressed>())
 ///     {
-///         // Using Ctrl + V to paste a string into SFML
+///         // Using Ctrl + V to paste a string into Zancle
 ///         if (keyPressed->control && keyPressed->code == za::Keyboard::Key::V)
 ///             string = za::Clipboard::getString();
 ///
-///         // Using Ctrl + C to copy a string out of SFML
+///         // Using Ctrl + C to copy a string out of Zancle
 ///         if (keyPressed->control && keyPressed->code == za::Keyboard::Key::C)
 ///             za::Clipboard::setString("Hello World!");
 ///     }

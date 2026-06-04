@@ -313,7 +313,7 @@ inline void nativeClose(::HANDLE handle)
 
 ////////////////////////////////////////////////////////////
 // Path-native overload: on Linux/BSD/Emscripten `Path::c_str()` is already a
-// UTF-8 `const char*` (per `SFML/System/Path.hpp`'s value_type macro), so it
+// UTF-8 `const char*` (per `Zancle/System/Path.hpp`'s value_type macro), so it
 // can be handed straight to `::open` with no per-call allocation. On other
 // POSIX platforms (macOS/iOS/Android) Path stores `wchar_t`, so we go through
 // a single `to<std::string>()` UTF-8 conversion -- then call `::open` directly

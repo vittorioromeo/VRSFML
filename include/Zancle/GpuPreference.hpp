@@ -14,12 +14,12 @@
 ///
 /// \brief A macro to encourage usage of the discrete GPU
 ///
-/// In order to inform the Nvidia/AMD driver that an SFML
+/// In order to inform the Nvidia/AMD driver that an Zancle
 /// application could benefit from using the more powerful
 /// discrete GPU, special symbols have to be publicly
 /// exported from the final executable.
 ///
-/// SFML defines a helper macro to easily do this.
+/// Zancle defines a helper macro to easily do this.
 ///
 /// Place `ZA_DEFINE_DISCRETE_GPU_PREFERENCE` in the
 /// global scope of a source file that will be linked into

@@ -1,4 +1,4 @@
-// Header for SFML unit tests.
+// Header for Zancle unit tests.
 //
 // For a new window module test case, include this header.
 // Declares the `stringifyValue` ADL overload so the bespoke testing

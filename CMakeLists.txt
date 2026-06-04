@@ -136,7 +136,7 @@ if(ZA_OS_ANDROID)
     list(PREPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}")
 
     # install everything in $NDK/sources/ because this path is appended by the NDK (convenient)
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_ANDROID_NDK}/sources/third_party/sfml)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_ANDROID_NDK}/sources/third_party/zancle)
 
     # we install libs in a subdirectory named after the ABI
     set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/${CMAKE_ANDROID_ARCH_ABI}")
@@ -151,7 +151,7 @@ elseif(ZA_OS_LINUX OR ZA_OS_FREEBSD OR ZA_OS_OPENBSD OR ZA_OS_NETBSD)
 elseif(ZA_OS_MACOS)
     set(DEFAULT_INSTALL_MISC_DIR /usr/local/share/Zancle)
 elseif(ZA_OS_ANDROID)
-    set(DEFAULT_INSTALL_MISC_DIR ${CMAKE_ANDROID_NDK}/sources/third_party/sfml)
+    set(DEFAULT_INSTALL_MISC_DIR ${CMAKE_ANDROID_NDK}/sources/third_party/zancle)
 endif()
 
 # force building zancle-window, if zancle-graphics module is built
@@ -369,7 +369,7 @@ else()
     set_target_properties(Zancle PROPERTIES
                           FRAMEWORK ON
                           FRAMEWORK_VERSION ${PROJECT_VERSION}
-                          MACOSX_FRAMEWORK_IDENTIFIER org.zancle-dev.Zancle
+                          MACOSX_FRAMEWORK_IDENTIFIER org.zancle.Zancle
                           MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
                           MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
                           PUBLIC_HEADER "${ZA_HEADERS}")
@@ -470,10 +470,10 @@ set(CPACK_MONOLITHIC_INSTALL ON)
 
 # NSIS configurations
 set(CPACK_NSIS_DISPLAY_NAME "Zancle ${PROJECT_VERSION} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
-set(CPACK_NSIS_CONTACT "team@zancle-dev.org")
+set(CPACK_NSIS_CONTACT "team@zancle.org")
 set(NSIS_IMAGE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/nsis/")
 string(REGEX REPLACE "/" "\\\\\\\\" NSIS_IMAGE_PATH ${NSIS_IMAGE_PATH})
-set(CPACK_NSIS_INSTALLER_MUI_ICON_CODE "!define MUI_WELCOMEFINISHPAGE_BITMAP \\\"${NSIS_IMAGE_PATH}sidebar.bmp\\\"\n!define MUI_HEADERIMAGE_BITMAP \\\"${NSIS_IMAGE_PATH}header.bmp\\\"\n!define MUI_ICON \\\"${NSIS_IMAGE_PATH}sfml.ico\\\"")
+set(CPACK_NSIS_INSTALLER_MUI_ICON_CODE "!define MUI_WELCOMEFINISHPAGE_BITMAP \\\"${NSIS_IMAGE_PATH}sidebar.bmp\\\"\n!define MUI_HEADERIMAGE_BITMAP \\\"${NSIS_IMAGE_PATH}header.bmp\\\"\n!define MUI_ICON \\\"${NSIS_IMAGE_PATH}zancle.ico\\\"")
 
 include(CPack)
 

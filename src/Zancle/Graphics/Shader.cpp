@@ -280,7 +280,7 @@ void printLinesWithNumbers(zb::StringView text)
 //
 // Stale-cache risks the tag does NOT cover:
 //
-// * Raw user `glUseProgram` -- caller must follow with `resetGLStates()`, same contract as every other SFML state cache.
+// * Raw user `glUseProgram` -- caller must follow with `resetGLStates()`, same contract as every other Zancle state cache.
 // * Program-handle reuse after deletion -- handled below by clearing the cache in `destroyProgramIfNeeded`.
 //
 thread_local unsigned int currentProgramCacheValue     = 0u;

@@ -1,8 +1,8 @@
-// Header for SFML unit tests.
+// Header for Zancle unit tests.
 //
 // For a new system module test case, include this header.
 // Declares the `stringifyValue` ADL overloads so the bespoke testing
-// library can render SFML system types for failure output.
+// library can render Zancle system types for failure output.
 
 #pragma once
 

@@ -68,7 +68,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
                               {},
                               {},
                               {},
-                              L"sfml_WindowHandleTests"};
+                              L"zancle_WindowHandleTests"};
     const ATOM      winClassId = RegisterClassW(&classInfo);
     REQUIRE(winClassId);
 

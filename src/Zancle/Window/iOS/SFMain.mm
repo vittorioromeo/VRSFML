@@ -13,7 +13,7 @@
 // Since we don't know which prototype of `main` the user
 // defines, we declare both versions of `zancleMain`, but with
 // the `weak` attribute (GCC extension) so that the
-// user-declared one will replace SFML's one at linking stage.
+// user-declared one will replace Zancle's one at linking stage.
 //
 // If the user defines `main(argc, argv)` then it will be called
 // directly, if they define `main()` then it will be called by

@@ -1030,9 +1030,9 @@ void ImGuiContext::render(RenderTarget& target)
     // init rendering
     ::ImGui::GetIO().DisplaySize = toImVec2(target.getSize().toVec2f());
 
-    // The first `resetGLStates` puts the GL pipeline in a known SFML baseline
+    // The first `resetGLStates` puts the GL pipeline in a known Zancle baseline
     // for ImGui to overwrite. The second one, after `RenderDrawData`, re-syncs
-    // SFML's state cache with the GL pipeline (program, texture, blend, view,
+    // Zancle's state cache with the GL pipeline (program, texture, blend, view,
     // VAO, scissor enable) -- this lets us strip ImGui's own per-frame state
     // backup/restore in `Backend.cpp`, which in WebGL costs ~25 pipeline-sync
     // queries per frame.

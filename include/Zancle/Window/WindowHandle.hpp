@@ -75,7 +75,7 @@ using WindowHandle = "platform-specific";
 ///
 /// On macOS, a `za::Window` can be created either from an
 /// existing \p NSWindow* or an \p NSView*. When the window
-/// is created from a window, SFML will use its content view
+/// is created from a window, Zancle will use its content view
 /// as the OpenGL area. `za::Window::getNativeHandle()` will
 /// return the handle that was used to create the window,
 /// which is a \p NSWindow* by default.

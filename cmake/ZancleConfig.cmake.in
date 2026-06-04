@@ -79,7 +79,7 @@ foreach(component ${ZA_FIND_COMPONENTS})
     endif()
 endforeach()
 
-set(FIND_SFML_PATHS
+set(FIND_ZANCLE_PATHS
     "${CMAKE_CURRENT_LIST_DIR}/../../.."
     ~/Library/Frameworks
     /Library/Frameworks
@@ -92,29 +92,29 @@ set(FIND_SFML_PATHS
 
 find_path(ZA_DOC_DIR Zancle.tag
           PATH_SUFFIXES Zancle/doc share/doc/Zancle
-          PATHS ${FIND_SFML_PATHS})
+          PATHS ${FIND_ZANCLE_PATHS})
 
 # Update requested components (eg. request window component if graphics component was requested)
-set(FIND_SFML_COMPONENTS_SORTED "")
+set(FIND_ZANCLE_COMPONENTS_SORTED "")
 if("Audio" IN_LIST ZA_FIND_COMPONENTS)
-    list(APPEND FIND_SFML_COMPONENTS_SORTED "System" "Audio")
+    list(APPEND FIND_ZANCLE_COMPONENTS_SORTED "System" "Audio")
 endif()
 if("Graphics" IN_LIST ZA_FIND_COMPONENTS)
-    list(APPEND FIND_SFML_COMPONENTS_SORTED "System" "Window" "Graphics")
+    list(APPEND FIND_ZANCLE_COMPONENTS_SORTED "System" "Window" "Graphics")
 endif()
 if("Main" IN_LIST ZA_FIND_COMPONENTS)
-    list(APPEND FIND_SFML_COMPONENTS_SORTED "Main")
+    list(APPEND FIND_ZANCLE_COMPONENTS_SORTED "Main")
 endif()
 if("Network" IN_LIST ZA_FIND_COMPONENTS)
-    list(APPEND FIND_SFML_COMPONENTS_SORTED "System" "Network")
+    list(APPEND FIND_ZANCLE_COMPONENTS_SORTED "System" "Network")
 endif()
 if("System" IN_LIST ZA_FIND_COMPONENTS)
-    list(APPEND FIND_SFML_COMPONENTS_SORTED "System")
+    list(APPEND FIND_ZANCLE_COMPONENTS_SORTED "System")
 endif()
 if("Window" IN_LIST ZA_FIND_COMPONENTS)
-    list(APPEND FIND_SFML_COMPONENTS_SORTED "System" "Window")
+    list(APPEND FIND_ZANCLE_COMPONENTS_SORTED "System" "Window")
 endif()
-list(REMOVE_DUPLICATES FIND_SFML_COMPONENTS_SORTED)
+list(REMOVE_DUPLICATES FIND_ZANCLE_COMPONENTS_SORTED)
 
 # Choose which target definitions must be imported
 if(ZA_STATIC_LIBRARIES)
@@ -137,10 +137,10 @@ if(ZA_STATIC_LIBRARIES)
     # This is due to the fact that among other things, resolving the
     # X11 dependency will break our own find_package(Freetype CONFIG)
     # because X11 attempts to find Freetype itself to resolve its Xft dependency.
-    set(FIND_SFML_COMPONENTS_REVERSED ${FIND_SFML_COMPONENTS_SORTED})
-    list(REVERSE FIND_SFML_COMPONENTS_REVERSED)
+    set(FIND_ZANCLE_COMPONENTS_REVERSED ${FIND_ZANCLE_COMPONENTS_SORTED})
+    list(REVERSE FIND_ZANCLE_COMPONENTS_REVERSED)
 
-    foreach(component ${FIND_SFML_COMPONENTS_REVERSED})
+    foreach(component ${FIND_ZANCLE_COMPONENTS_REVERSED})
         set(dependencies_file "${CMAKE_CURRENT_LIST_DIR}/Zancle${component}Dependencies.cmake")
         if(EXISTS "${dependencies_file}")
             include("${dependencies_file}")
@@ -148,7 +148,7 @@ if(ZA_STATIC_LIBRARIES)
     endforeach()
 endif()
 
-foreach(component ${FIND_SFML_COMPONENTS_SORTED})
+foreach(component ${FIND_ZANCLE_COMPONENTS_SORTED})
     string(TOUPPER "${component}" UPPER_COMPONENT)
     set(targets_config_file "${CMAKE_CURRENT_LIST_DIR}/Zancle${component}${config_name}Targets.cmake")
 
@@ -162,15 +162,15 @@ foreach(component ${FIND_SFML_COMPONENTS_SORTED})
             set(ZA_${UPPER_COMPONENT}_FOUND OFF)
             set(ZA_FOUND OFF)
             if(ZA_FIND_REQUIRED_${component})
-                set(FIND_SFML_ERROR "Found Zancle but requested component '${component}' is missing in the package configuration.")
+                set(FIND_ZANCLE_ERROR "Found Zancle but requested component '${component}' is missing in the package configuration.")
             endif()
         endif()
     else()
-        set(FIND_SFML_ERROR "Requested Zancle configuration (${config_name}) was not found")
+        set(FIND_ZANCLE_ERROR "Requested Zancle configuration (${config_name}) was not found")
         if(config_name STREQUAL "Shared")
-            string(APPEND FIND_SFML_ERROR "\nSet ZA_STATIC_LIBRARIES to ON for static libraries")
+            string(APPEND FIND_ZANCLE_ERROR "\nSet ZA_STATIC_LIBRARIES to ON for static libraries")
         elseif(config_name STREQUAL "Static")
-            string(APPEND FIND_SFML_ERROR "\nSet ZA_STATIC_LIBRARIES to OFF for shared libraries")
+            string(APPEND FIND_ZANCLE_ERROR "\nSet ZA_STATIC_LIBRARIES to OFF for shared libraries")
         endif()
         set(ZA_${UPPER_COMPONENT}_FOUND OFF)
         set(ZA_FOUND OFF)
@@ -182,10 +182,10 @@ if(ZA_FOUND)
 else()
     if(ZA_FIND_REQUIRED)
         # fatal error
-        message(FATAL_ERROR "${FIND_SFML_ERROR}")
+        message(FATAL_ERROR "${FIND_ZANCLE_ERROR}")
     elseif(NOT ZA_FIND_QUIETLY)
         # error but continue
-        message(STATUS "${FIND_SFML_ERROR}")
+        message(STATUS "${FIND_ZANCLE_ERROR}")
     endif()
 endif()
 

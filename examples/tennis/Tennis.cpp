@@ -93,7 +93,7 @@ int main()
     const auto ballSoundBuffer = za::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
     za::Sound  ballSound(playbackDevice, ballSoundBuffer);
 
-    // Create the SFML logo texture:
+    // Create the Zancle logo texture (the asset is the actual Zancle logo image):
     const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
 
     // Create the left paddle
@@ -124,9 +124,9 @@ int main()
                                   {
                                       .position = {170.f, 200.f},
 #ifdef ZA_SYSTEM_IOS
-                              .string = "Welcome to SFML Tennis!\nTouch the screen to start the game.",
+                              .string = "Welcome to Zancle Tennis!\nTouch the screen to start the game.",
 #else
-                              .string = "Welcome to SFML Tennis!\n\nPress space to start the game.",
+                              .string = "Welcome to Zancle Tennis!\n\nPress space to start the game.",
 #endif
                               .characterSize = 40u,
 

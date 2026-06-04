@@ -160,15 +160,15 @@ set(LBT_SOURCES
     ${LBT_SRC}/${LBT_ALLOC_FILE}
 )
 
-add_library(sfml-libbacktrace STATIC ${LBT_SOURCES})
-add_library(sfml::libbacktrace ALIAS sfml-libbacktrace)
+add_library(zancle-libbacktrace STATIC ${LBT_SOURCES})
+add_library(zancle::libbacktrace ALIAS zancle-libbacktrace)
 
-target_include_directories(sfml-libbacktrace
+target_include_directories(zancle-libbacktrace
     PUBLIC  ${LBT_INC}
     PRIVATE ${LBT_SRC} ${LBT_GEN_DIR}
 )
 
-set_target_properties(sfml-libbacktrace PROPERTIES
+set_target_properties(zancle-libbacktrace PROPERTIES
     C_STANDARD 11
     POSITION_INDEPENDENT_CODE ON
     UNITY_BUILD OFF
@@ -177,5 +177,5 @@ set_target_properties(sfml-libbacktrace PROPERTIES
 # Silence libbacktrace's own warnings; upstream uses -Wall -Wextra and we
 # don't want to fight it when their code trips our strict flags.
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-    target_compile_options(sfml-libbacktrace PRIVATE -w)
+    target_compile_options(zancle-libbacktrace PRIVATE -w)
 endif()

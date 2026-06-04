@@ -53,7 +53,7 @@ public:
     ///
     /// Use this overload to attach an OpenGL rendering context
     /// to an already existing OS-level window/control. This is
-    /// useful for embedding SFML rendering inside a larger
+    /// useful for embedding Zancle rendering inside a larger
     /// application built with another GUI toolkit.
     ///
     /// The optional second parameter specifies advanced OpenGL
@@ -106,7 +106,7 @@ public:
     /// Note that these settings may be different from what was
     /// passed to the constructor or the `create()` function,
     /// if one or more settings were not supported. In this case,
-    /// SFML chose the closest match.
+    /// Zancle chose the closest match.
     ///
     /// \return Structure containing the OpenGL context settings
     ///
@@ -142,7 +142,7 @@ public:
     /// If a limit is set, the window will use a small delay after
     /// each call to `display()` to ensure that the current frame
     /// lasted long enough to match the framerate limit.
-    /// SFML will try to match the given limit as much as it can,
+    /// Zancle will try to match the given limit as much as it can,
     /// but since it internally uses `za::ThisThread::sleepFor`, whose precision
     /// depends on the underlying OS, the results may be a little
     /// imprecise as well (for example, you can get 65 FPS when
@@ -236,7 +236,7 @@ private:
 ///
 /// On dual-graphics systems consisting of a low-power integrated GPU
 /// and a powerful discrete GPU, the driver picks which GPU will run an
-/// SFML application. In order to inform the driver that an SFML application
+/// Zancle application. In order to inform the driver that a Zancle application
 /// can benefit from being run on the more powerful discrete GPU,
 /// `#ZA_DEFINE_DISCRETE_GPU_PREFERENCE` can be placed in a source file
 /// that is compiled and linked into the final application. The macro

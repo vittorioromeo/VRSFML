@@ -2,7 +2,7 @@
 
 #include "Zancle/Config.hpp"
 
-TEST_CASE("[System] SFML/Config.hpp")
+TEST_CASE("[System] Zancle/Config.hpp")
 {
     SECTION("Version macros")
     {

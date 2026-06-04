@@ -76,7 +76,7 @@ inline constexpr bool isTriviallyRelocatable = ZB_IS_TRIVIALLY_RELOCATABLE(T);
 ///
 /// Trivial relocation is the property that a type's value can be
 /// transferred between two storage locations by `memcpy` followed by
-/// not running its destructor on the source. SFML containers
+/// not running its destructor on the source. Zancle containers
 /// (`Vector`, `SmallVector`, `InPlaceVector`, etc.) use this property
 /// to skip per-element move-and-destroy loops on grow/relocate.
 ///

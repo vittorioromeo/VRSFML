@@ -25,7 +25,7 @@
 /// their equivalents in GLSL, the OpenGL shading language.
 /// These types are exclusively used by the `za::Shader` class.
 ///
-/// Types that already exist in SFML, such as `za::Vec2<T>`
+/// Types that already exist in Zancle, such as `za::Vec2<T>`
 /// and `za::Vec3<T>`, are reused as type aliases, so you
 /// can use the types in this namespace as well as the original ones.
 /// Others are newly defined, such as `Glsl::Vec4` or `Glsl::Mat3`.

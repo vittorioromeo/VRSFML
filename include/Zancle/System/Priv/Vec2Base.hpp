@@ -96,7 +96,7 @@ struct [[nodiscard]] Vec2
     ///
     /// Returns a vec2 with same length but different direction.
     ///
-    /// In SFML's default coordinate system with +X right and +Y down,
+    /// In Zancle's default coordinate system with +X right and +Y down,
     /// this amounts to a clockwise rotation by `phi`.
     ///
     ////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ struct [[nodiscard]] Vec2
     /// Returns a vec2 starting at the position of the original, but moved by \c r
     /// units in the direction of \c phi.
     ///
-    /// In SFML's default coordinate system with +X rhs and +Y down,
+    /// In Zancle's default coordinate system with +X rhs and +Y down,
     /// this amounts to a clockwise rotation by \c phi.
     ///
     ////////////////////////////////////////////////////////////
@@ -241,7 +241,7 @@ struct [[nodiscard]] Vec2
     /// Returns `*this` rotated by +90 degrees; (x,y) becomes (-y,x).
     /// For example, the vec2 (1,0) is transformed to (0,1).
     ///
-    /// In SFML's default coordinate system with +X rhs and +Y down,
+    /// In Zancle's default coordinate system with +X rhs and +Y down,
     /// this amounts to a clockwise rotation.
     ///
     ////////////////////////////////////////////////////////////

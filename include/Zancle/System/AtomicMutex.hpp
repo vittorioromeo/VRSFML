@@ -30,7 +30,7 @@ namespace za
 /// No recursion, no priority inheritance, no fairness guarantees --
 /// LIFO-ish under contention.
 ///
-/// Use `za::LockGuard` (in `SFML/System/LockGuard.hpp`) for RAII locking.
+/// Use `za::LockGuard` (in `Zancle/System/LockGuard.hpp`) for RAII locking.
 ///
 ////////////////////////////////////////////////////////////
 class AtomicMutex

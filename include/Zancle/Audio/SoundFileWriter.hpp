@@ -71,12 +71,12 @@ public:
 /// \ingroup audio
 ///
 /// This class allows users to write audio file formats not natively
-/// supported by SFML, and thus extend the set of supported writable
+/// supported by Zancle, and thus extend the set of supported writable
 /// audio formats.
 ///
 /// A valid sound file writer must override the `open` and `write`
 /// virtual functions, as well as providing a static `check`
-/// function; the latter is used by SFML to find a suitable writer
+/// function; the latter is used by Zancle to find a suitable writer
 /// for a given filename (typically by extension).
 ///
 /// All sample data exchanged through this interface is 16-bit

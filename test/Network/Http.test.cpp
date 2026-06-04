@@ -105,7 +105,7 @@ TEST_CASE("[Network] za::Http Connection")
 
         SECTION("Request Resource")
         {
-            const za::Http::Response response = http.sendRequest(za::Http::Request("SFML/SFML"), za::milliseconds(250));
+            const za::Http::Response response = http.sendRequest(za::Http::Request("Zancle/Zancle"), za::milliseconds(250));
             const za::Http::Response::Status status = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
@@ -135,7 +135,7 @@ TEST_CASE("[Network] za::Http Connection")
 
         SECTION("Request Resource")
         {
-            const za::Http::Response response = http.sendRequest(za::Http::Request("SFML/SFML"), za::milliseconds(250));
+            const za::Http::Response response = http.sendRequest(za::Http::Request("Zancle/Zancle"), za::milliseconds(250));
             const za::Http::Response::Status status = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
@@ -144,12 +144,12 @@ TEST_CASE("[Network] za::Http Connection")
             CHECK(!response.getField("server").empty());
             CHECK(!response.getField("Content-Type").empty());
             CHECK(!response.getField("content-type").empty());
-            CHECK(response.getBody().find("SFML") != zb::StringView::nPos);
+            CHECK(response.getBody().find("Zancle") != zb::StringView::nPos);
         }
 
         SECTION("Request Non-Existant Resource")
         {
-            const za::Http::Response response = http.sendRequest(za::Http::Request("SFML/REPOSITORYTHATDOESNOTEXIST"),
+            const za::Http::Response response = http.sendRequest(za::Http::Request("Zancle/REPOSITORYTHATDOESNOTEXIST"),
                                                                  za::milliseconds(250));
             const za::Http::Response::Status status = response.getStatus();
 
@@ -163,7 +163,7 @@ TEST_CASE("[Network] za::Http Connection")
         {
             http.setHost("https://codeload.github.com");
 
-            za::Http::Request request("SFML/SFML/zip/refs/heads/master", za::Http::Request::Method::Head);
+            za::Http::Request request("Zancle/Zancle/zip/refs/heads/master", za::Http::Request::Method::Head);
             request.setHttpVersion(1, 1);
 
             const za::Http::Response         response = http.sendRequest(request, za::milliseconds(250));
@@ -174,8 +174,8 @@ TEST_CASE("[Network] za::Http Connection")
             CHECK(status == za::Http::Response::Status::Ok);
             CHECK(response.getField("Content-Type") == "application/zip");
             CHECK(response.getField("content-type") == "application/zip");
-            CHECK(response.getField("Content-Disposition").find("SFML-master.zip") != zb::StringView::nPos);
-            CHECK(response.getField("content-disposition").find("SFML-master.zip") != zb::StringView::nPos);
+            CHECK(response.getField("Content-Disposition").find("Zancle-master.zip") != zb::StringView::nPos);
+            CHECK(response.getField("content-disposition").find("Zancle-master.zip") != zb::StringView::nPos);
         }
     }
 }

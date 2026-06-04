@@ -184,7 +184,7 @@ struct [[nodiscard]] ZA_WINDOW_API VideoMode
 /// za::WindowSettings settings{
 ///     .size         = {1024u, 768u},
 ///     .bitsPerPixel = desktop.bitsPerPixel,
-///     .title        = "SFML window",
+///     .title        = "Zancle window",
 /// };
 /// \endcode
 ///

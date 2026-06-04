@@ -66,14 +66,14 @@ public:
 /// \ingroup system
 ///
 /// This class allows users to define their own file input sources
-/// from which SFML can load resources.
+/// from which Zancle can load resources.
 ///
-/// SFML resource classes like `za::Texture` and
+/// Zancle resource classes like `za::Texture` and
 /// `za::SoundBuffer` provide `loadFromFile` and `loadFromMemory` functions,
 /// which read data from conventional sources. However, if you
 /// have data coming from a different source (over a network,
 /// embedded, encrypted, compressed, etc) you can derive your
-/// own class from `za::InputStream` and load SFML resources with
+/// own class from `za::InputStream` and load Zancle resources with
 /// their `loadFromStream` function.
 ///
 /// Usage example:

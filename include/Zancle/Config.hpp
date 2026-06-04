@@ -4,7 +4,7 @@
 
 
 ////////////////////////////////////////////////////////////
-// SFML version
+// Zancle version
 ////////////////////////////////////////////////////////////
 #define ZA_VERSION_MAJOR      3
 #define ZA_VERSION_MINOR      1
@@ -38,7 +38,7 @@
     #else
 
         // Unsupported Apple system
-        #error This Apple operating system is not supported by SFML library
+        #error This Apple operating system is not supported by Zancle library
 
     #endif
 
@@ -70,14 +70,14 @@
     #else
 
         // Unsupported UNIX system
-        #error This UNIX operating system is not supported by SFML library
+        #error This UNIX operating system is not supported by Zancle library
 
     #endif
 
 #else
 
     // Unsupported system
-    #error This operating system is not supported by SFML library
+    #error This operating system is not supported by Zancle library
 
 #endif
 

@@ -21,7 +21,7 @@
 #include "Zancle/System/Priv/Vec2Base.hpp"
 
 
-// On Emscripten, WebGL contexts cannot share resources. SFML's
+// On Emscripten, WebGL contexts cannot share resources. Zancle's
 // `GLSharedContextGuard` is a no-op there. These tests verify that
 // shaders, textures, and buffers created in that environment still
 // function correctly (uniform uploads, texture sampling, vertex data).

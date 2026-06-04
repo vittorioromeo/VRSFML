@@ -9,7 +9,7 @@ namespace zb
 /// \brief Immediately terminate the current process abnormally
 ///
 /// This function calls `std::abort()`. It is used internally
-/// by SFML for irrecoverable errors, such as failed assertions
+/// by Zancle for irrecoverable errors, such as failed assertions
 /// in debug mode.
 ///
 ////////////////////////////////////////////////////////////

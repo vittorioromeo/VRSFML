@@ -63,7 +63,7 @@ struct [[nodiscard]] Matrix
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct implicitly from SFML transform
+    /// \brief Construct implicitly from Zancle transform
     ///
     /// This constructor is only supported for 3x3 and 4x4
     /// matrices.

@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 
 // We check for this definition in order to avoid multiple definitions of GLAD
-// entities during unity builds of SFML.
+// entities during unity builds of Zancle.
 #ifndef GLAD_GL_IMPLEMENTATION_INCLUDED
 #define GLAD_GL_IMPLEMENTATION_INCLUDED
 #define GLAD_GL_IMPLEMENTATION

@@ -236,7 +236,7 @@ Ftp::Response Ftp::connect(IpAddress server, unsigned short port, Time timeout)
 ////////////////////////////////////////////////////////////
 Ftp::Response Ftp::login()
 {
-    return login("anonymous", "user@zancle-dev.org");
+    return login("anonymous", "user@zancle.org");
 }
 
 

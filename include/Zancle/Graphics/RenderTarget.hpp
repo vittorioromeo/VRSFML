@@ -592,9 +592,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Reset the internal OpenGL states so that the target is ready for drawing
     ///
-    /// This function can be used when you mix SFML drawing
+    /// This function can be used when you mix Zancle drawing
     /// and direct OpenGL rendering. It makes sure that all OpenGL
-    /// states needed by SFML are set, so that subsequent `draw()`
+    /// states needed by Zancle are set, so that subsequent `draw()`
     /// calls will work as expected.
     ///
     /// Example:

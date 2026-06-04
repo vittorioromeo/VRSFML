@@ -92,7 +92,7 @@ int main()
     // Add a button for exiting
     button = CreateWindow(TEXT("BUTTON"), TEXT("Quit"), WS_CHILD | WS_VISIBLE, 560, 440, 80, 40, window, nullptr, instance, nullptr);
 
-    // Create two SFML views
+    // Create two Zancle views
     HWND view1 = CreateWindow(TEXT("STATIC"),
                               nullptr,
                               WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,

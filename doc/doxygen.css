@@ -1141,7 +1141,7 @@ tr.heading h2 {
 
 
 
-/* SFML css */
+/* Zancle css */
 body {
     font-family: 'Ubuntu', 'Arial', sans-serif;
     line-height: 140%;
@@ -1165,7 +1165,7 @@ body {
     text-align: center;
 }
 
-#banner #sfml {
+#banner #zancle {
     display: inline;
     vertical-align: top;
     margin-left: 15px;

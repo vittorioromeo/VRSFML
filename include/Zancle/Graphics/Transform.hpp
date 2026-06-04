@@ -250,7 +250,7 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     /// \brief Transform a rectangle
     ///
-    /// Since SFML doesn't provide support for oriented rectangles,
+    /// Since Zancle doesn't provide support for oriented rectangles,
     /// the result of this function is always an axis-aligned
     /// rectangle. Which means that if the transform contains a
     /// rotation, the bounding rectangle of the transformed rectangle

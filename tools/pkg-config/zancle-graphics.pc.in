@@ -3,9 +3,9 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/@ZA_RELATIVE_INSTALL_LIBDIR@
 includedir=${prefix}/include
 
-Name: SFML-graphics
-Description: The Simple and Fast Multimedia Library, graphics module.
-URL: http://www.zancle-dev.org
+Name: Zancle-graphics
+Description: Zancle, an opinionated fork of SFML, graphics module.
+URL: https://github.com/vittorioromeo/Zancle
 Version: @PROJECT_VERSION@
 Requires: zancle-window
 Requires.private: zancle-system, freetype2

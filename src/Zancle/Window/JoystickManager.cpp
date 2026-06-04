@@ -210,7 +210,7 @@ void JoystickManager::update()
 
         if (count > intMaxCount)
         {
-            priv::errMsg("SDL reported {} joysticks, but SFML supports a maximum of {}", count, intMaxCount);
+            priv::errMsg("SDL reported {} joysticks, but Zancle supports a maximum of {}", count, intMaxCount);
             count = intMaxCount;
         }
 

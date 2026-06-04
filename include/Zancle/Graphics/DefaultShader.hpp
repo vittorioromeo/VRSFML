@@ -29,13 +29,13 @@ class Shader;
 namespace za
 {
 ////////////////////////////////////////////////////////////
-/// \brief Provides access to SFML's built-in default shader sources and creation
+/// \brief Provides access to Zancle's built-in default shader sources and creation
 ///
 /// `za::DefaultShader` is a utility struct that serves two main purposes:
 ///
-/// 1. It stores the GLSL source code for SFML's default vertex (`srcVertex`)
+/// 1. It stores the GLSL source code for Zancle's default vertex (`srcVertex`)
 ///    and fragment (`srcFragment`) shaders. These shaders are used internally
-///    by SFML when no custom shader is specified, providing basic 2D texturing
+///    by Zancle when no custom shader is specified, providing basic 2D texturing
 ///    and coloring.
 ///
 /// 2. It offers a static factory method (`create()`) to easily compile and
@@ -135,7 +135,7 @@ void main()
     /// This static method attempts to compile `srcVertex` and `srcFragment`
     /// and link them into a new `za::Shader` object.
     ///
-    /// This is a convenient way to get a ready-to-use instance of SFML's
+    /// This is a convenient way to get a ready-to-use instance of Zancle's
     /// default shader program.
     ///
     /// \return An `zb::Optional<za::Shader>` containing the compiled
@@ -154,14 +154,14 @@ void main()
 /// \class za::DefaultShader
 /// \ingroup graphics
 ///
-/// `za::DefaultShader` provides access to SFML's built-in
+/// `za::DefaultShader` provides access to Zancle's built-in
 /// default vertex and fragment shader sources. It also offers
 /// a convenient way to create an `za::Shader` object from these
 /// default sources.
 ///
 /// This can be useful if you need a basic shader for rendering
 /// textured and colored 2D objects, or if you want to inspect
-/// or extend SFML's default rendering behavior.
+/// or extend Zancle's default rendering behavior.
 ///
 /// Example:
 /// \code

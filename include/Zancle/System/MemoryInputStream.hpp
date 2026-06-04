@@ -77,7 +77,7 @@ private:
 /// `InputStream` specialization that wraps a chunk of in-memory data,
 /// letting code written against `InputStream` operate on it.
 ///
-/// SFML resource classes can usually be loaded directly from memory,
+/// Zancle resource classes can usually be loaded directly from memory,
 /// so this is mostly useful when writing custom algorithms over
 /// `InputStream`.
 ///

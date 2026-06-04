@@ -25,7 +25,7 @@
     #include <android/native_activity.h>
     #include <jni.h>
 
-    // Since we want to get the native activity from SFML, we'll have to use an
+    // Since we want to get the native activity from Zancle, we'll have to use an
     // extra header here:
     #include "Zancle/System/NativeActivity.hpp"
 

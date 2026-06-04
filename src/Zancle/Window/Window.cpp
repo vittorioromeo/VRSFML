@@ -50,7 +50,7 @@ namespace
 // callback -- i.e. on a display-refresh boundary.
 ////////////////////////////////////////////////////////////
 // clang-format off
-EM_ASYNC_JS(void, sfml_yield_to_raf, (), {
+EM_ASYNC_JS(void, zancle_yield_to_raf, (), {
     await new Promise(resolve => requestAnimationFrame(resolve));
 });
 // clang-format on
@@ -222,7 +222,7 @@ void Window::display()
     //   - vsync disabled -> `setTimeout(0)` (run as fast as the JS task queue
     //     allows -- ~4ms minimum, so still capped, but not display-aligned)
     if (m_impl->glContext->isVerticalSyncEnabled())
-        sfml_yield_to_raf();
+        zancle_yield_to_raf();
     else
         emscripten_sleep(0u);
 #endif

@@ -138,7 +138,7 @@ inline bool ContextSettings::isDebug() const
 /// defaults already select an appropriate version and the
 /// `Core` attribute. Most users only need to touch
 /// `ContextSettings` when they are layering custom OpenGL
-/// rendering on top of SFML and need to request specific
+/// rendering on top of Zancle and need to request specific
 /// extensions or a specific version.
 ///
 /// The `depthBits` and `stencilBits` members define the
@@ -163,7 +163,7 @@ inline bool ContextSettings::isDebug() const
 ///
 /// Please note that these values are only a hint. No failure
 /// will be reported if one or more of these values are not
-/// supported by the system; instead, SFML will try to find
+/// supported by the system; instead, Zancle will try to find
 /// the closest valid match. You can retrieve the settings
 /// that the window actually used to create its context with
 /// `za::Window::getSettings()`.

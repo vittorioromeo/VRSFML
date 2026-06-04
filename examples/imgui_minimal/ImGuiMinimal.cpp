@@ -29,7 +29,7 @@ int main()
 {
     auto graphicsContext = za::GraphicsContext::create().value();
 
-    auto window = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}).value();
+    auto window = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + Zancle = <3", .vsync = true}).value();
 
     za::ImGuiContext imGuiContext;
 
@@ -114,7 +114,7 @@ int main()
             window.setSize({800u, 800u});
 
         if (ImGui::Button("Recreate Window"))
-            window = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true})
+            window = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + Zancle = <3", .vsync = true})
                          .value(); // TODO P0: doesn't work on emscripten
 
         ImGui::Button("Look at this pretty button");

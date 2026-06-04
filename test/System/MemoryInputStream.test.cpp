@@ -63,7 +63,7 @@ TEST_CASE("[System] za::MemoryInputStream")
 
     SECTION("seek()")
     {
-        static constexpr auto input = "We Love SFML!"_sv;
+        static constexpr auto input = "We Love Zancle!"_sv;
         za::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());

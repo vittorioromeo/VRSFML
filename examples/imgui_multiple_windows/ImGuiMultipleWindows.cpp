@@ -21,7 +21,7 @@ int main()
 
     auto window = za::RenderWindow::create({
                                                .size  = {1280u, 720u},
-                                               .title = "ImGui + SFML = <3",
+                                               .title = "ImGui + Zancle = <3",
                                                .vsync = true,
                                            })
                       .value();
@@ -37,7 +37,7 @@ int main()
 
     auto childWindow = za::RenderWindow::create({
         .size  = {640u, 480u},
-        .title = "ImGui-SFML Child window",
+        .title = "ImGui-Zancle Child window",
         .vsync = true,
     });
 

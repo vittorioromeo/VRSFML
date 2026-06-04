@@ -3,9 +3,9 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/@ZA_RELATIVE_INSTALL_LIBDIR@
 includedir=${prefix}/include
 
-Name: SFML-glutils
-Description: The Simple and Fast Multimedia Library, glutils module.
-URL: http://www.zancle-dev.org
+Name: Zancle-glutils
+Description: Zancle, an opinionated fork of SFML, glutils module.
+URL: https://github.com/vittorioromeo/Zancle
 Version: @PROJECT_VERSION@
 Requires: zancle-system
 Libs: -L${libdir} -lzancle-glutils

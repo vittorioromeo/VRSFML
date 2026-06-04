@@ -338,10 +338,10 @@ void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
     // Update the activity states
     states.window = window;
 
-    // Notify SFML mechanism
+    // Notify Zancle mechanism
     states.forwardEvent(za::Event::FocusGained{});
 
-    // Wait for the event to be taken into account by SFML
+    // Wait for the event to be taken into account by Zancle
     states.updated = false;
     while (!(states.updated | states.terminated))
     {
@@ -361,10 +361,10 @@ void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* /* window
     // Update the activity states
     states.window = nullptr;
 
-    // Notify SFML mechanism
+    // Notify Zancle mechanism
     states.forwardEvent(za::Event::FocusLost{});
 
-    // Wait for the event to be taken into account by SFML
+    // Wait for the event to be taken into account by Zancle
     states.updated = false;
     while (!(states.updated | states.terminated))
     {
@@ -513,11 +513,11 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     states->initialized = false;
     states->terminated  = false;
 
-    // Share it across the SFML modules
+    // Share it across the Zancle modules
     za::priv::resetActivity(states);
 
     // These functions will update the activity states and therefore, will allow
-    // SFML to be kept in the know
+    // Zancle to be kept in the know
     activity->callbacks->onStart   = onStart;
     activity->callbacks->onResume  = onResume;
     activity->callbacks->onPause   = onPause;

@@ -167,7 +167,7 @@ Socket::Status UdpSocket::send(Packet& packet, IpAddress remoteAddress, unsigned
     // Sending one datagram is almost safe: it may be lost but if it's received, then its data
     // is guaranteed to be ok. However, splitting a packet into multiple datagrams would be highly
     // unreliable, since datagrams may be reordered, dropped or mixed between different sources.
-    // That's why SFML imposes a limit on packet size so that they can be sent in a single datagram.
+    // That's why Zancle imposes a limit on packet size so that they can be sent in a single datagram.
     // This also removes the overhead associated to packets -- there's no size to send in addition
     // to the packet's data.
 

@@ -101,7 +101,7 @@ inline constexpr struct FromFunc { } fromFunc;
 /// type trivial whenever possible.
 ///
 /// `Optional<T>` propagates trivial relocatability from `T` so that it
-/// can be moved with `memcpy` inside SFML containers when applicable.
+/// can be moved with `memcpy` inside Zancle containers when applicable.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

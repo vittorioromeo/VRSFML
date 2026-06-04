@@ -3,7 +3,7 @@
 
 
 ////////////////////////////////////////////////////////////
-// iOS specific: SFML needs to hook the main function, to
+// iOS specific: Zancle needs to hook the main function, to
 // launch the iOS application (event loop), and then call the
 // user main from inside it.
 //

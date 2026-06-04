@@ -39,7 +39,7 @@ struct Sprite;
 namespace za
 {
 ////////////////////////////////////////////////////////////
-/// \brief Per-window Dear ImGui context bound to an SFML rendering pipeline
+/// \brief Per-window Dear ImGui context bound to an Zancle rendering pipeline
 ///
 ////////////////////////////////////////////////////////////
 class ImGuiContext
@@ -341,9 +341,9 @@ public:
     void setRTriggerAxis(Joystick::Axis rTriggerAxis);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Forward an SFML event to the ImGui context
+    /// \brief Forward an Zancle event to the ImGui context
     ///
-    /// Translates SFML window, mouse, keyboard, text, touch and
+    /// Translates Zancle window, mouse, keyboard, text, touch and
     /// joystick events into the corresponding ImGui input state.
     /// Call this from inside the event polling loop, before
     /// dispatching the event to your own input handlers.
@@ -442,7 +442,7 @@ public:
     ///
     /// The current OpenGL texture and shader bindings of the target
     /// are saved and restored around the call so that ImGui rendering
-    /// does not disturb subsequent SFML draw calls.
+    /// does not disturb subsequent Zancle draw calls.
     ///
     /// \param target Render target to draw the ImGui frame into
     ///
@@ -450,7 +450,7 @@ public:
     void render(RenderTarget& target);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Embed an SFML texture as an ImGui image widget
+    /// \brief Embed an Zancle texture as an ImGui image widget
     ///
     /// Inserts an `ImGui::Image` widget into the current ImGui
     /// window using `texture` at its native size.
@@ -463,7 +463,7 @@ public:
     void image(const Texture& texture, Color tintColor = Color::White, Color borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Embed an SFML texture as an ImGui image widget with a custom size
+    /// \brief Embed an Zancle texture as an ImGui image widget with a custom size
     ///
     /// \param texture     Texture to display
     /// \param size        Display size of the widget, in pixels
@@ -474,7 +474,7 @@ public:
     void image(const Texture& texture, Vec2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Embed an SFML render texture as an ImGui image widget
+    /// \brief Embed an Zancle render texture as an ImGui image widget
     ///
     /// \param texture     Render texture to display, at its native size
     /// \param tintColor   Color multiplied with the texture sampling
@@ -484,7 +484,7 @@ public:
     void image(const RenderTexture& texture, Color tintColor = Color::White, Color borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Embed an SFML render texture as an ImGui image widget with a custom size
+    /// \brief Embed an Zancle render texture as an ImGui image widget with a custom size
     ///
     /// \param texture     Render texture to display
     /// \param size        Display size of the widget, in pixels
@@ -495,7 +495,7 @@ public:
     void image(const RenderTexture& texture, Vec2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Embed a sub-region of an SFML texture as an ImGui image widget
+    /// \brief Embed a sub-region of an Zancle texture as an ImGui image widget
     ///
     /// Uses `sprite.textureRect` to compute UV coordinates so that
     /// only the sub-region described by the sprite is shown. The
@@ -513,7 +513,7 @@ public:
                Color          borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Embed a sub-region of an SFML texture as an ImGui image widget with a custom size
+    /// \brief Embed a sub-region of an Zancle texture as an ImGui image widget with a custom size
     ///
     /// \param sprite      Sprite providing the texture sub-region
     /// \param texture     Texture the sprite samples from
@@ -529,7 +529,7 @@ public:
                Color          borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a clickable ImGui image button from an SFML texture
+    /// \brief Create a clickable ImGui image button from an Zancle texture
     ///
     /// \param id        ImGui identifier string for the button
     /// \param texture   Texture used as the button's image
@@ -547,7 +547,7 @@ public:
                                    Color          tintColor = Color::White);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a clickable ImGui image button from an SFML render texture
+    /// \brief Create a clickable ImGui image button from an Zancle render texture
     ///
     /// \param id        ImGui identifier string for the button
     /// \param texture   Render texture used as the button's image
@@ -565,7 +565,7 @@ public:
                                    Color                tintColor = Color::White);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Create a clickable ImGui image button from a sub-region of an SFML texture
+    /// \brief Create a clickable ImGui image button from a sub-region of an Zancle texture
     ///
     /// Uses `sprite.textureRect` to compute UV coordinates so that
     /// only the sub-region described by the sprite is shown.
@@ -671,9 +671,9 @@ private:
 /// `za::ImGuiContext` is the main entry point of the ImGui module.
 /// It owns a Dear ImGui context together with the bundled OpenGL3
 /// renderer backend, and exposes the small set of glue functions
-/// needed to drive ImGui from an SFML application: forwarding
+/// needed to drive ImGui from a Zancle application: forwarding
 /// events, starting a new frame, rendering, and a few helpers to
-/// embed SFML textures and sprites into ImGui windows.
+/// embed Zancle textures and sprites into ImGui windows.
 ///
 /// One `za::ImGuiContext` instance should generally be created per
 /// `za::RenderWindow`. Multiple instances are supported (see the
@@ -695,7 +695,7 @@ private:
 /// Usage example:
 /// \code
 /// auto graphicsContext = za::GraphicsContext::create().value();
-/// auto window          = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + SFML"}).value();
+/// auto window          = za::RenderWindow::create({.size{1024u, 768u}, .title = "ImGui + Zancle"}).value();
 ///
 /// za::ImGuiContext imGuiContext;
 /// za::Clock        deltaClock;

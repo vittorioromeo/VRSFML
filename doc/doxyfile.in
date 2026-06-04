@@ -42,7 +42,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = SFML
+PROJECT_NAME           = Zancle
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -290,7 +290,7 @@ TAB_SIZE               = 4
 # @} or use a double escape (\\{ and \\})
 
 #---------------------------------------------------------------------------
-# SFML specific aliases
+# Zancle specific aliases
 #---------------------------------------------------------------------------
 
 # sfplatform{platform(s)}
@@ -966,7 +966,8 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = "@PROJECT_SOURCE_DIR@/include/SFML" \
+INPUT                  = "@PROJECT_SOURCE_DIR@/include/Zancle" \
+                         "@PROJECT_SOURCE_DIR@/include/ZancleBase" \
                          "@PROJECT_SOURCE_DIR@/doc/mainpage.hpp"
 
 # This tag can be used to specify the character encoding of the source files
@@ -1515,7 +1516,7 @@ GENERATE_DOCSET        = NO
 # The default value is: Doxygen generated docs.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_FEEDNAME        = "SFML Documentation"
+DOCSET_FEEDNAME        = "Zancle Documentation"
 
 # This tag determines the URL of the docset feed. A documentation feed provides
 # an umbrella under which multiple documentation sets from a single provider
@@ -1530,7 +1531,7 @@ DOCSET_FEEDURL         =
 # The default value is: org.doxygen.Project.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_BUNDLE_ID       = org.zancle-dev.SFML
+DOCSET_BUNDLE_ID       = org.zancle.Zancle
 
 # The DOCSET_PUBLISHER_ID tag specifies a string that should uniquely identify
 # the documentation publisher. This should be a reverse domain-name style
@@ -1538,13 +1539,13 @@ DOCSET_BUNDLE_ID       = org.zancle-dev.SFML
 # The default value is: org.doxygen.Publisher.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_PUBLISHER_ID    = org.zancle-dev.SFML
+DOCSET_PUBLISHER_ID    = org.zancle.Zancle
 
 # The DOCSET_PUBLISHER_NAME tag identifies the documentation publisher.
 # The default value is: Publisher.
 # This tag requires that the tag GENERATE_DOCSET is set to YES.
 
-DOCSET_PUBLISHER_NAME  = SFML
+DOCSET_PUBLISHER_NAME  = Zancle
 
 # If the GENERATE_HTMLHELP tag is set to YES then doxygen generates three
 # additional HTML index files: index.hhp, index.hhc, and index.hhk. The
@@ -1573,7 +1574,7 @@ GENERATE_HTMLHELP      = @DOXYGEN_GENERATE_HTMLHELP@
 # written to the html output directory.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-CHM_FILE               = ../SFML.chm
+CHM_FILE               = ../Zancle.chm
 
 # The HHC_LOCATION tag can be used to specify the location (absolute path
 # including file name) of the HTML help compiler (hhc.exe). If non-empty,
@@ -2482,7 +2483,7 @@ TAGFILES               =
 # tag file that is based on the input files it reads. See section "Linking to
 # external documentation" for more information about the usage of tag files.
 
-GENERATE_TAGFILE       = "@CMAKE_CURRENT_BINARY_DIR@/SFML.tag"
+GENERATE_TAGFILE       = "@CMAKE_CURRENT_BINARY_DIR@/Zancle.tag"
 
 # If the ALLEXTERNALS tag is set to YES, all external classes and namespaces
 # will be listed in the class and namespace index. If set to NO, only the

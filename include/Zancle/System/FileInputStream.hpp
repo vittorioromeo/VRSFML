@@ -148,7 +148,7 @@ private:
 ///
 /// `InputStream` specialization that reads from a file on disk.
 ///
-/// SFML resource classes can usually be loaded directly from a filename,
+/// Zancle resource classes can usually be loaded directly from a filename,
 /// so this is mostly useful when writing custom algorithms over
 /// `InputStream`.
 ///

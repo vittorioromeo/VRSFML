@@ -417,10 +417,10 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
 // Zancle deviation from upstream: the per-frame GL state backup + restore
 // (originally needed to coexist with engines that don't reset state on their
 // own) has been removed. On WebGL each `glGetIntegerv` / `glIsEnabled` is a
-// pipeline-sync (~22 of them upstream, ~1.6 ms / frame on Chrome), and SFML's
+// pipeline-sync (~22 of them upstream, ~1.6 ms / frame on Chrome), and Zancle's
 // `ImGuiContext::render` already brackets this call with
 // `RenderTarget::resetGLStates()` on both sides, which puts the pipeline in
-// a known baseline before, and re-syncs SFML's state cache with reality
+// a known baseline before, and re-syncs Zancle's state cache with reality
 // after.
 //
 // Contract: callers MUST ensure the render target's state cache is reset
@@ -446,7 +446,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     ZB_ASSERT(bd != nullptr);
 
     // ImGui always renders with `GL_TEXTURE0` as the active texture unit;
-    // SFML's baseline is the same, so just set it without querying.
+    // Zancle's baseline is the same, so just set it without querying.
     glCheck(glActiveTexture(GL_TEXTURE0));
 
     // Setup desired GL state
@@ -564,7 +564,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
     #endif
 
     // No state restore here -- the caller (`ImGuiContext::render`) calls
-    // `RenderTarget::resetGLStates()` after this returns to re-sync SFML's
+    // `RenderTarget::resetGLStates()` after this returns to re-sync Zancle's
     // state cache with the GL pipeline.
     (void)bd; // Not all compilation paths use this
 }

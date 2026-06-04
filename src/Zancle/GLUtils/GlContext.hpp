@@ -100,7 +100,7 @@ public:
     /// context has been made current on the calling thread.
     ///
     /// \param sharedGlContext   A sibling context used to resolve GL
-    ///                          function pointers (typically SFML's
+    ///                          function pointers (typically Zancle's
     ///                          shared context)
     /// \param requestedSettings Settings originally requested at
     ///                          context creation time

@@ -446,7 +446,7 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout, con
     Request toSend(request);
 
     if (!toSend.hasField("From"))
-        toSend.setField("From", "user@zancle-dev.org");
+        toSend.setField("From", "user@zancle.org");
 
     if (!toSend.hasField("User-Agent"))
         toSend.setField("User-Agent", "libzancle-network/3.x");

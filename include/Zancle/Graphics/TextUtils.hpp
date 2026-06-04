@@ -583,7 +583,7 @@ inline auto createTextGeometryAndGetBounds(
 /// \brief Utility functions for text processing and geometry generation.
 ///
 /// This namespace provides a collection of helper functions tailored for
-/// advanced text manipulation within SFML. These functions handle tasks
+/// advanced text manipulation within Zancle. These functions handle tasks
 /// such as calculating the bounding box of a string (`precomputeTextLocalBounds`,
 /// `precomputeTextGlobalBounds`), determining the number of quads required to
 /// render a given text (`precomputeTextQuadCount`), generating the vertex data
