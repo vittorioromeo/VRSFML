@@ -30,6 +30,7 @@
 #include "SFML/System/LockGuard.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
+#include "SFML/System/Utf8String.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm/Find.hpp"
@@ -41,6 +42,8 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
+
+#include <SDL3/SDL_hints.h> // TODO P0: move to SDLLayer
 
 
 namespace sf
@@ -815,6 +818,13 @@ unsigned int WindowContext::getActiveThreadLocalGlContextId()
 {
     ensureInstalled();
     return activeGlContext.id;
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowContext::setAppId(const Utf8String& id)
+{
+    SDL_SetHint(SDL_HINT_APP_ID, id.cStr());
 }
 
 
