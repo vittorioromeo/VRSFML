@@ -1,4 +1,5 @@
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/Glyph.hpp"
 
@@ -8,8 +9,6 @@
 #include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Graphics] sf::Glyph")

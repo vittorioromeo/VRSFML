@@ -21,6 +21,9 @@
 #include "SFML/System/Thread.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
+
 #include <android/native_activity.h>
 #include <android/window.h>
 
@@ -548,8 +551,10 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     getScreenSizeInPixels(*activity, states->screenSize.x, states->screenSize.y);
     getFullScreenSizeInPixels(*activity, states->fullScreenSize.x, states->fullScreenSize.y);
 
-    // Redirect error messages to logcat
-    sf::priv::err().rdbuf(&states->logcat);
+    // Redirect error messages to logcat via the Fmt sink hook.
+    sf::priv::setErrSink([](void* /*ctx*/, const char* data, sf::base::SizeT size) {
+        __android_log_write(ANDROID_LOG_INFO, "sfml-error", sf::base::String{data, size}.c_str());
+    }, nullptr);
 
     // Launch the main thread
     sf::Thread{[states] { sf::priv::main(states); }}.detach();

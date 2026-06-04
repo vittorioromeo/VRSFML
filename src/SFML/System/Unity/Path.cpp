@@ -7,8 +7,12 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
 
-#include "SFML/System/PathStreamOp.hpp"
+#include "SFML/System/Fmt/FmtPath.hpp"
+#include "SFML/System/PathUtils.hpp"
 
+#include "SFML/Base/Fmt/FmtResult.hpp"
+#include "SFML/Base/Fmt/FmtSink.hpp"
+#include "SFML/Base/Fmt/FmtSpec.hpp"
 #include "SFML/Base/FunctionRef.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -21,8 +25,6 @@
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 #include <filesystem>
-#include <ios>
-#include <ostream>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -465,14 +467,47 @@ template std::u32string        Path::to<std::u32string>() const;
 template std::wstring          Path::to<std::wstring>() const;
 
 
+// `operator<<(std::ostream&, const Path&)` lives in `PathStreamOp.cpp`
+// -- see the `<ostream>` comment near the top of this file.
+
+
 ////////////////////////////////////////////////////////////
-std::ostream& operator<<(std::ostream& os, const Path& path)
+base::FmtResult fmtArg(base::FmtSink& sink, const Path& path, const base::FmtSpec&)
 {
-    // Use UTF-8 rather than streaming `std::filesystem::path` directly: the latter uses
-    // the C locale, which throws on MinGW/Clang64 for some non-ASCII paths.
+    // Same rationale as the stream-insertion operator above: emit UTF-8 to avoid
+    // locale-dependent encoding of `std::filesystem::path` on Windows.
     const auto u8 = path.to<std::string>();
-    return os.write(u8.data(), static_cast<std::streamsize>(u8.size()));
+    return sink.append(u8.data(), static_cast<base::SizeT>(u8.size()));
 }
+
+} // namespace sf
+
+
+////////////////////////////////////////////////////////////
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+base::FmtResult fmtArg(base::FmtSink& sink, const PathDebugFormatter& dbg, const base::FmtSpec&)
+{
+    // Two debug lines: input path + resolved absolute path (or sentinel).
+    SFML_BASE_FMT_TRY(sink.append("    Provided path: ", 19u));
+    SFML_BASE_FMT_TRY(fmtArg(sink, dbg.path, base::FmtSpec{}));
+    SFML_BASE_FMT_TRY(sink.appendChar('\n'));
+
+    SFML_BASE_FMT_TRY(sink.append("    Absolute path: ", 19u));
+
+    if (const auto abs = dbg.path.getAbsolute(); abs.hasValue())
+        return fmtArg(sink, *abs, base::FmtSpec{});
+
+    return sink.append("<unavailable>", 13u);
+}
+
+} // namespace sf::priv
+
+
+////////////////////////////////////////////////////////////
+namespace sf
+{
 
 
 ////////////////////////////////////////////////////////////

@@ -14,6 +14,8 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/StringView.hpp"
+
 
 namespace
 {
@@ -31,52 +33,61 @@ namespace
     if (id == 131'169 || id == 131'185 || id == 131'218 || id == 131'204 || id == 1 || id == 2)
         return;
 
-    auto& multiLineErr = sf::priv::err(true /* multiLine */);
-
-    multiLineErr << "---------------" << '\n' << "Debug message (" << id << "): " << message << "\nSource: ";
-
-    // clang-format off
-    switch (source)
+    const auto sourceStr = [&]() -> sf::base::StringView
     {
-        case GL_DEBUG_SOURCE_API:             multiLineErr << "API";             break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   multiLineErr << "Window System";   break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: multiLineErr << "Shader Compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     multiLineErr << "Third Party";     break;
-        case GL_DEBUG_SOURCE_APPLICATION:     multiLineErr << "Application";     break;
-        case GL_DEBUG_SOURCE_OTHER:           multiLineErr << "Other";           break;
-    }
-    // clang-format on
+        // clang-format off
+        switch (source)
+        {
+            case GL_DEBUG_SOURCE_API:             return "API";
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   return "Window System";
+            case GL_DEBUG_SOURCE_SHADER_COMPILER: return "Shader Compiler";
+            case GL_DEBUG_SOURCE_THIRD_PARTY:     return "Third Party";
+            case GL_DEBUG_SOURCE_APPLICATION:     return "Application";
+            case GL_DEBUG_SOURCE_OTHER:           return "Other";
+        }
+        // clang-format on
+        return "";
+    }();
 
-    multiLineErr << "\nType: ";
-
-    // clang-format off
-    switch (type)
+    const auto typeStr = [&]() -> sf::base::StringView
     {
-        case GL_DEBUG_TYPE_ERROR:               multiLineErr << "Error";                break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: multiLineErr << "Deprecated Behaviour"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  multiLineErr << "Undefined Behaviour";  break;
-        case GL_DEBUG_TYPE_PORTABILITY:         multiLineErr << "Portability";          break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         multiLineErr << "Performance";          break;
-        case GL_DEBUG_TYPE_MARKER:              multiLineErr << "Marker";               break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          multiLineErr << "Push Group";           break;
-        case GL_DEBUG_TYPE_POP_GROUP:           multiLineErr << "Pop Group";            break;
-        case GL_DEBUG_TYPE_OTHER:               multiLineErr << "Other";                break;
-    }
-    // clang-format on
+        // clang-format off
+        switch (type)
+        {
+            case GL_DEBUG_TYPE_ERROR:               return "Error";
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "Deprecated Behaviour";
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  return "Undefined Behaviour";
+            case GL_DEBUG_TYPE_PORTABILITY:         return "Portability";
+            case GL_DEBUG_TYPE_PERFORMANCE:         return "Performance";
+            case GL_DEBUG_TYPE_MARKER:              return "Marker";
+            case GL_DEBUG_TYPE_PUSH_GROUP:          return "Push Group";
+            case GL_DEBUG_TYPE_POP_GROUP:           return "Pop Group";
+            case GL_DEBUG_TYPE_OTHER:               return "Other";
+        }
+        // clang-format on
+        return "";
+    }();
 
-    multiLineErr << "\nSeverity: ";
-
-    // clang-format off
-    switch (severity)
+    const auto severityStr = [&]() -> sf::base::StringView
     {
-        case GL_DEBUG_SEVERITY_HIGH:         multiLineErr << "High";         break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       multiLineErr << "Medium";       break;
-        case GL_DEBUG_SEVERITY_LOW:          multiLineErr << "Low";          break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: multiLineErr << "Notification"; break;
-    }
-    // clang-format on
+        // clang-format off
+        switch (severity)
+        {
+            case GL_DEBUG_SEVERITY_HIGH:         return "High";
+            case GL_DEBUG_SEVERITY_MEDIUM:       return "Medium";
+            case GL_DEBUG_SEVERITY_LOW:          return "Low";
+            case GL_DEBUG_SEVERITY_NOTIFICATION: return "Notification";
+        }
+        // clang-format on
+        return "";
+    }();
 
-    sf::priv::err() << '\n';
+    sf::priv::errMsg("---------------\nDebug message ({}): {}\nSource: {}\nType: {}\nSeverity: {}",
+                     id,
+                     message,
+                     sourceStr,
+                     typeStr,
+                     severityStr);
 }
 
 } // namespace
@@ -90,15 +101,15 @@ void setupGLDebugCallback()
 #ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: revisit this ifdef
     glCheck(glEnable(GL_DEBUG_OUTPUT));
     if (glGetError() != 0u)
-        err() << "Failed to enable OpenGL debug output";
+        errMsg("Failed to enable OpenGL debug output");
 
     glCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
     if (glGetError() != 0u)
-        err() << "Failed to enable OpenGL synchronous debug output";
+        errMsg("Failed to enable OpenGL synchronous debug output");
 
     glCheck(glDebugMessageCallback(debugGLMessageCallback, nullptr));
     if (glGetError() != 0u)
-        err() << "Failed to setup OpenGL debug output callback";
+        errMsg("Failed to setup OpenGL debug output callback");
 #endif
 }
 

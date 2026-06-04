@@ -4,15 +4,14 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/Utf8String.hpp"
 
-#include <Doctest.hpp>
-
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: clipboard not implemented for emscripten
-TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::Clipboard" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

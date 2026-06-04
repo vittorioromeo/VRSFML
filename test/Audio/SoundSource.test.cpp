@@ -1,5 +1,6 @@
 #include "AudioUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -19,8 +20,6 @@
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
-
-#include <Doctest.hpp>
 
 
 #define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                   \
@@ -45,7 +44,7 @@
     CHECK(!(xSoundSource).isPlaying());
 
 
-TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * tst::skip(skipAudioDeviceTests))
 {
     auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};

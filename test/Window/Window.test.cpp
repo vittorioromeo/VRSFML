@@ -8,6 +8,7 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Base/Optional.hpp"
@@ -17,10 +18,8 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::Window" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

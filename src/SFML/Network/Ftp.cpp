@@ -18,10 +18,13 @@
 
 #include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/Scn/Scn.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
+#include "SFML/Base/Scn/ScnStringSource.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/String.hpp"
@@ -290,9 +293,9 @@ Ftp::DirectoryResponse Ftp::getWorkingDirectory()
 Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
 {
     // Open a data channel on default port (20) using ASCII transfer mode
-    OutStringStream oss;
-    DataChannel     data(*this);
-    Response        response = data.open(TransferMode::Ascii);
+    base::String listing;
+    DataChannel  data(*this);
+    Response     response = data.open(TransferMode::Ascii);
     if (response.isOk())
     {
         // Tell the server to send us the listing
@@ -300,14 +303,14 @@ Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
         if (response.isOk())
         {
             // Receive the listing
-            data.receive(oss);
+            data.receive(listing);
 
             // Get the response from the server
             response = getResponse();
         }
     }
 
-    return {response, oss.to<base::String>()};
+    return {response, SFML_BASE_MOVE(listing)};
 }
 
 
@@ -374,20 +377,19 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
         return response;
 
     // Create the file and truncate it if necessary
-    const Path    filepath = localPath / remoteFile.getFilename();
-    OutFileStream file(filepath.to<base::String>(), FileOpenMode::bin | FileOpenMode::trunc);
+    const Path filepath = localPath / remoteFile.getFilename();
 
-    if (!file)
+    auto optFile = OutFile::open(filepath.to<base::String>(), FileOpenMode::bin | FileOpenMode::trunc);
+    if (!optFile.hasValue())
     {
         response = Response(Response::Status::InvalidFile);
         return response;
     }
 
-    // Receive the file data
-    data.receive(file);
-
-    // Close the file
-    file.close();
+    // Receive the file data. The file's destructor (end of scope below)
+    // closes the OS handle.
+    data.receive(*optFile);
+    optFile.reset();
 
     // Get the response from the server
     response = getResponse();
@@ -395,7 +397,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
     // If the download was unsuccessful, delete the partial file
     if (!response.isOk())
         if (!filepath.removeFromDisk())
-            priv::err() << "Failed to delete '" << filepath << '\'';
+            priv::errMsg("Failed to delete '{}{}", filepath, '\'');
 
     return response;
 }
@@ -407,12 +409,13 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
     Response response; //  Use a single local variable for NRVO
 
     // Get the contents of the file to send
-    InFileStream file(localFile.to<base::String>(), FileOpenMode::bin);
-    if (!file)
+    auto optFile = InFile::open(localFile.to<base::String>(), FileOpenMode::bin);
+    if (!optFile.hasValue())
     {
         response = Response(Response::Status::InvalidFile);
         return response;
     }
+    auto& file = *optFile;
 
     // Open a data channel using the given transfer mode
     DataChannel data(*this);
@@ -495,16 +498,21 @@ Ftp::Response Ftp::getResponse()
         }
 
         // There can be several lines inside the received buffer, extract them all
-        InStringStream in(base::String(buffer, length), FileOpenMode::bin);
-        while (in)
+        base::ScnStringSource scanner{base::StringView{buffer, length}};
+        while (!base::scnAtEnd(scanner))
         {
             // Try to extract the code
             unsigned int code = 0;
-            if (in >> code)
+            if (base::scnInto(scanner, code))
             {
-                // Extract the separator
-                char separator = 0;
-                in.get(separator);
+                // Extract the separator (next byte verbatim, no whitespace skip).
+                // Failure here means the buffer ended right after the code -- the
+                // response is malformed.
+                const auto sep = scanner.peek();
+                if (!sep)
+                    return Response(Response::Status::InvalidResponse);
+                const char separator = *sep;
+                scanner.consume();
 
                 // The '-' character means a multiline response
                 if ((separator == '-') && !isInsideMultiline)
@@ -516,8 +524,10 @@ Ftp::Response Ftp::getResponse()
                     if (lastCode == 0)
                         lastCode = code;
 
-                    // Extract the line
-                    sf::getLine(in, message);
+                    // Extract the line. Failure leaves `message` indeterminate;
+                    // the subsequent `erase(size - 1)` would underflow, so bail.
+                    if (!base::scnReadLine(scanner, message))
+                        return Response(Response::Status::InvalidResponse);
 
                     // Remove the ending '\r' (all lines are terminated by "\r\n")
                     message.erase(message.size() - 1);
@@ -529,9 +539,10 @@ Ftp::Response Ftp::getResponse()
                     // we haven't reached the end of the multiline response
                     if ((separator != '-') && ((code == lastCode) || (lastCode == 0)))
                     {
-                        // Extract the line
+                        // Extract the line; same rationale as above for failing on EOF.
                         base::String line;
-                        sf::getLine(in, line);
+                        if (!base::scnReadLine(scanner, line))
+                            return Response(Response::Status::InvalidResponse);
 
                         // Remove the ending '\r' (all lines are terminated by "\r\n")
                         line.erase(line.size() - 1);
@@ -539,9 +550,7 @@ Ftp::Response Ftp::getResponse()
                         // Append it to the message
                         if (code == lastCode)
                         {
-                            OutStringStream oss;
-                            oss << code << separator << line;
-                            message += oss.to<base::String>();
+                            message += base::fmtToString("{}{}{}", code, base::StringView{&separator, 1u}, line);
                         }
                         else
                         {
@@ -549,8 +558,7 @@ Ftp::Response Ftp::getResponse()
                         }
 
                         // Save the remaining data for the next time getResponse() is called
-                        m_impl->receiveBuffer.assign(buffer + static_cast<base::SizeT>(in.tellg()),
-                                                     length - static_cast<base::SizeT>(in.tellg()));
+                        m_impl->receiveBuffer.assign(buffer + scanner.bytesConsumed(), length - scanner.bytesConsumed());
 
                         // Return the response code and message
                         return Response(static_cast<Response::Status>(code), SFML_BASE_MOVE(message));
@@ -558,10 +566,9 @@ Ftp::Response Ftp::getResponse()
 
                     // The line we just read was actually not a response,
                     // only a new part of the current multiline response
-
-                    // Extract the line
                     base::String line;
-                    sf::getLine(in, line);
+                    if (!base::scnReadLine(scanner, line))
+                        return Response(Response::Status::InvalidResponse);
 
                     if (!line.empty())
                     {
@@ -569,22 +576,19 @@ Ftp::Response Ftp::getResponse()
                         line.erase(line.size() - 1);
 
                         // Append it to the current message
-                        OutStringStream oss;
-                        oss << code << separator << line << '\n';
-                        message += oss.to<base::String>();
+                        message += base::fmtToString("{}{}{}\n", code, base::StringView{&separator, 1u}, line);
                     }
                 }
             }
             else if (lastCode != 0)
             {
-                // It seems we are in the middle of a multiline response
-
-                // Clear the error bits of the stream
-                in.clear();
-
-                // Extract the line
+                // We are in the middle of a multiline response: the current line
+                // didn't start with a numeric code. `scnInto` for the int failed
+                // without consuming any bytes (after the initial whitespace skip),
+                // so the rest of the line is intact below.
                 base::String line;
-                sf::getLine(in, line);
+                if (!base::scnReadLine(scanner, line))
+                    return Response(Response::Status::InvalidResponse);
 
                 if (!line.empty())
                 {
@@ -692,16 +696,28 @@ void Ftp::DataChannel::receive(auto& stream)
 {
     SFML_BASE_ASSERT(m_dataSocket.hasValue() && "DataChannel::receive called without open()");
 
+    // For sinks that report errors (`OutFile`), `write` returns `[[nodiscard]] bool`
+    // and we propagate. For pure-memory sinks (`base::String`), `write` isn't
+    // available -- fall back to `append`, which always succeeds.
+    const auto sinkAccepts = [&stream](const char* data, base::SizeT n) -> bool
+    {
+        if constexpr (requires { stream.write(data, n); })
+            return stream.write(data, n);
+        else
+        {
+            stream.append(data, n);
+            return true;
+        }
+    };
+
     // Receive data
     char        buffer[1024];
     base::SizeT received = 0;
     while (m_dataSocket->receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
     {
-        stream.write(buffer, static_cast<sf::base::PtrDiffT>(received));
-
-        if (!stream.isGood())
+        if (!sinkAccepts(buffer, received))
         {
-            priv::err() << "FTP Error: Writing to the file has failed";
+            priv::errMsg("FTP Error: Writing to the file has failed");
             break;
         }
     }
@@ -717,33 +733,22 @@ void Ftp::DataChannel::send(auto& stream)
     SFML_BASE_ASSERT(m_dataSocket.hasValue() && "DataChannel::send called without open()");
 
     // Send data
-    char        buffer[1024];
-    base::SizeT count = 0;
+    char buffer[1024];
 
     for (;;)
     {
-        // read some data from the stream
-        stream.read(buffer, sizeof(buffer));
-
-        if (!stream.isGood() && !stream.isEOF())
+        base::SizeT count = 0;
+        if (!stream.read(buffer, sizeof(buffer), count))
         {
-            priv::err() << "FTP Error: Reading from the file has failed";
+            priv::errMsg("FTP Error: Reading from the file has failed");
             break;
         }
 
-        count = static_cast<base::SizeT>(stream.gcount());
-
-        if (count > 0)
-        {
-            // we could read more data from the stream: send them
-            if (m_dataSocket->send(buffer, count) != Socket::Status::Done)
-                break;
-        }
-        else
-        {
-            // no more data: exit the loop
+        if (count == 0u) // EOF
             break;
-        }
+
+        if (m_dataSocket->send(buffer, count) != Socket::Status::Done)
+            break;
     }
 
     // Tear down the data socket

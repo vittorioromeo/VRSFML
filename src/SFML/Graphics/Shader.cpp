@@ -91,7 +91,7 @@ struct [[nodiscard]] BufferSlice
 
     if (!sf::appendFromFile(filename, buffer))
     {
-        sf::priv::err() << "Failed to open shader file";
+        sf::priv::errMsg("Failed to open shader file");
         return sf::base::nullOpt;
     }
 
@@ -109,13 +109,13 @@ struct [[nodiscard]] BufferSlice
 
     if (!size.hasValue() || size.value() == 0)
     {
-        sf::priv::err() << "Failed to read shader stream (empty or unsized)";
+        sf::priv::errMsg("Failed to read shader stream (empty or unsized)");
         return sf::base::nullOpt;
     }
 
     if (!stream.seek(0).hasValue())
     {
-        sf::priv::err() << "Failed to seek shader stream";
+        sf::priv::errMsg("Failed to seek shader stream");
         return sf::base::nullOpt;
     }
 
@@ -129,7 +129,7 @@ struct [[nodiscard]] BufferSlice
     {
         // Roll back the size grow so `buffer` is left as the caller saw it.
         buffer.unsafeSetSize(bufferSizeBeforeRead);
-        sf::priv::err() << "Failed to read stream contents into buffer";
+        sf::priv::errMsg("Failed to read stream contents into buffer");
         return sf::base::nullOpt;
     }
 
@@ -164,41 +164,40 @@ static_assert(sizeof(sf::Glsl::Mat4) == 16 * sizeof(float));
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::StringView adjustPreamble(sf::base::StringView src)
+// Returns the static `#version`+precision preamble appropriate for the build.
+//
+// The trailing `#line 1` resets the GLSL compiler's line counter so that any
+// error message the driver reports refers to the user's source line numbers,
+// not preamble-relative ones. The preamble is constant per build, so callers
+// pass it as a separate source string to `glShaderSource(count=2)` and avoid
+// the per-compile concatenation.
+[[nodiscard]] constexpr sf::base::StringView getShaderPreamble()
 {
-    constexpr sf::base::StringView preamble{
+    return
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
-
         // Emscripten/WebGL always requires `#version 300 es` and precision
-        R"glsl(#version 300 es
-
-precision highp float;
-
-)glsl"
-
+        "#version 300 es\n\nprecision highp float;\n\n#line 1\n"
 #elif defined(SFML_OPENGL_ES)
-
         // Desktop/mobile GLES can use `#version 310 es` and precision
-        R"glsl(#version 310 es
-
-precision highp float;
-
-)glsl"
-
+        "#version 310 es\n\nprecision highp float;\n\n#line 1\n"
 #else
-
         // Desktop GL can use `#version 430 core`
-        R"glsl(#version 430 core
-
-)glsl"
-
+        "#version 430 core\n\n#line 1\n"
 #endif
-    };
+        ;
+}
 
+
+////////////////////////////////////////////////////////////
+// Slow-path helper for compile-error reporting: concatenates the preamble and
+// user source into a thread-local buffer so `printLinesWithNumbers` can show
+// the full source as the driver saw it (preamble included).
+[[nodiscard]] sf::base::StringView buildConcatenatedShaderSource(sf::base::StringView preamble, sf::base::StringView src)
+{
     static thread_local sf::base::Vector<char> buffer; // Cannot reuse the other buffer here
     buffer.clear();
 
-    buffer.emplaceRange(preamble.data(), preamble.size() - 1);
+    buffer.emplaceRange(preamble.data(), preamble.size());
     buffer.emplaceRange(src.data(), src.size());
 
     return {buffer.data(), buffer.size()};
@@ -208,7 +207,9 @@ precision highp float;
 ////////////////////////////////////////////////////////////
 void printLinesWithNumbers(sf::base::StringView text)
 {
-    auto os = sf::priv::err(/* multiLine */ true) << "\n\n";
+    sf::priv::ErrMsgScope scope;
+    scope.disableTrailing();
+    scope.append("\n\n");
 
     constexpr sf::base::StringView lineDirectivePrefix{"#line "};
     constexpr sf::base::StringView beginIncludePrefix{"// >>> begin included from \""};
@@ -246,28 +247,16 @@ void printLinesWithNumbers(sf::base::StringView text)
                 lineNumber = parsedLineNumber;
         }
         // Check for include begin/end markers -- print as separator lines
-        else if (line.size() > beginIncludePrefix.size() &&
-                 line.substrByPosLen(0, beginIncludePrefix.size()) == beginIncludePrefix)
+        else if ((line.size() > beginIncludePrefix.size() &&
+                  line.substrByPosLen(0, beginIncludePrefix.size()) == beginIncludePrefix) ||
+                 (line.size() > endIncludePrefix.size() &&
+                  line.substrByPosLen(0, endIncludePrefix.size()) == endIncludePrefix))
         {
-            os << "      | " << line << "\n";
-        }
-        else if (line.size() > endIncludePrefix.size() && line.substrByPosLen(0, endIncludePrefix.size()) == endIncludePrefix)
-        {
-            os << "      | " << line << "\n";
+            scope.fmt("      | {}\n", line);
         }
         else
         {
-            // Right-align line number in a 5-char field
-            if (lineNumber < 10)
-                os << "    ";
-            else if (lineNumber < 100)
-                os << "   ";
-            else if (lineNumber < 1000)
-                os << "  ";
-            else if (lineNumber < 10'000)
-                os << " ";
-
-            os << lineNumber << " | " << line << "\n";
+            scope.fmt("{:>5} | {}\n", lineNumber, line);
             ++lineNumber;
         }
 
@@ -469,7 +458,7 @@ base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings
         optBufferSlice = appendFileContentsToVector(optPath, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::err() << "Failed to open " << typeStr << " shader file\n" << priv::PathDebugFormatter{optPath};
+            priv::errMsg("Failed to open {} shader file\n{}", typeStr, priv::PathDebugFormatter{optPath});
             return false;
         }
 
@@ -550,7 +539,7 @@ base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& sett
         optBufferSlice = appendStreamContentsToVector(*optStream, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::err() << "Failed to open " << typeStr << " shader from stream";
+            priv::errMsg("Failed to open {} shader from stream", typeStr);
             return false;
         }
 
@@ -748,8 +737,8 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
     // New entry, make sure there are enough texture units
     if (m_impl->textures.size() + 1 >= getMaxTextureUnits())
     {
-        priv::err() << "Impossible to use texture \"" << location.m_value << '"'
-                    << " \"for shader: all available texture units are used";
+        priv::errMsg("Impossible to use texture at location {} for shader: all available texture units are used",
+                     location.m_value);
 
         return false;
     }
@@ -873,7 +862,9 @@ bool Shader::isGeometryAvailable()
     return false;
 #else
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    return GL_VERSION_3_2;
+    // `GLAD_GL_VERSION_3_2` is the runtime flag set by glad after `gladLoadGL`.
+    // (Not `GL_VERSION_3_2`, which is a `#define` that always expands to 1.)
+    return GLAD_GL_VERSION_3_2 != 0;
 #endif
 }
 
@@ -903,8 +894,9 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     // Make sure we can use geometry shaders
     if (geometryShaderCode.data() != nullptr && !isGeometryAvailable())
     {
-        priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
-                    << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)";
+        priv::errMsg(
+            "Failed to create a shader: your system doesn't support geometry shaders (you should test "
+            "Shader::isGeometryAvailable() before trying to use geometry shaders)");
 
         return base::nullOpt;
     }
@@ -918,15 +910,17 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 
     const auto makeShader = [&](GLenum type, const char* typeStr, base::StringView shaderCode)
     {
-        // Add `#version` (and float precision if required)
-        const auto adjustedShaderCode = adjustPreamble(shaderCode);
+        // Pass `#version` (+ precision + `#line 1`) and the user source as two
+        // separate source strings -- the preamble is build-time constant, no
+        // per-compile concatenation needed.
+        constexpr base::StringView preamble = getShaderPreamble();
 
         const GLhandle shader = glCheck(glCreateShader(type));
 
-        const GLcharARB* sourceCode       = adjustedShaderCode.data();
-        const auto       sourceCodeLength = static_cast<GLint>(adjustedShaderCode.size());
+        const GLcharARB* sources[2]{preamble.data(), shaderCode.data()};
+        const GLint      lengths[2]{static_cast<GLint>(preamble.size()), static_cast<GLint>(shaderCode.size())};
 
-        glCheck(glShaderSource(shader, 1, &sourceCode, &sourceCodeLength));
+        glCheck(glShaderSource(shader, 2, sources, lengths));
         glCheck(glCompileShader(shader));
         SFML_BASE_ASSERT(glCheck(glIsShader(shader)));
 
@@ -938,10 +932,11 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
             char log[1024]{};
             glCheck(glGetShaderInfoLog(shader, sizeof(log), nullptr, log));
 
-            priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
-                        << static_cast<const char*>(log) << "\n\nSource code:\n";
+            priv::errMsg("Failed to compile {} shader:{}{}\n\nSource code:\n", typeStr, '\n', static_cast<const char*>(log));
 
-            printLinesWithNumbers(adjustedShaderCode);
+            // Build the concatenated source on the slow (error) path so the
+            // numbered listing shows what the GLSL compiler actually saw.
+            printLinesWithNumbers(buildConcatenatedShaderSource(preamble, shaderCode));
 
             glCheck(glDeleteShader(shader));
             glCheck(glDeleteProgram(shaderProgram));
@@ -988,11 +983,12 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
         char log[1024]{};
         glCheck(glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
 
-        priv::err() << "Failed to link shader:" << '\n'
-                    << static_cast<const char*>(log) << "VERTEX SOURCE:\n"
-                    << vertexShaderCode << "\n\nFRAGMENT SOURCE:\n"
-                    << fragmentShaderCode << "\n\nGEOMETRY SOURCE:\n"
-                    << geometryShaderCode;
+        priv::errMsg("Failed to link shader:{}{}VERTEX SOURCE:\n{}\n\nFRAGMENT SOURCE:\n{}\n\nGEOMETRY SOURCE:\n{}",
+                     '\n',
+                     static_cast<const char*>(log),
+                     vertexShaderCode,
+                     fragmentShaderCode,
+                     geometryShaderCode);
 
         glCheck(glDeleteProgram(shaderProgram));
         return base::nullOpt;

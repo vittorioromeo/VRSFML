@@ -7,6 +7,7 @@
 #include "AudioUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/MusicReader.hpp"
 
@@ -25,10 +26,8 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::Music" * tst::skip(skipAudioDeviceTests))
 {
     auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
@@ -86,7 +85,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("openFromMemory()")
     {
-        sf::base::Vector<unsigned char> memory(10);
+        sf::base::Vector<char> memory(10);
         SFML_BASE_MEMSET(memory.data(), 0xCA, 10);
 
         SECTION("Invalid buffer")

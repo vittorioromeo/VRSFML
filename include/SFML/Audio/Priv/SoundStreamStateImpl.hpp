@@ -58,7 +58,7 @@ struct SoundStreamStateImplCallbacks
 ///
 /// This class is a standalone value type; it does NOT inherit
 /// from `MiniaudioSoundSource`. Wrapper classes that need the
-/// public audio API (`play`/`pause`/`setVolume`/…) either
+/// public audio API (`play`/`pause`/`setVolume`/...) either
 /// inherit `MiniaudioSoundSource` themselves (see `sf::Music`)
 /// or use the convenience template `sf::SoundStream<State>`.
 ///

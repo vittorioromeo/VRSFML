@@ -4,6 +4,7 @@
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -26,10 +27,8 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::RenderWindow" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

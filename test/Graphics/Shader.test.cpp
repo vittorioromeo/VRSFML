@@ -1,6 +1,8 @@
 #include "SFML/Graphics/Shader.hpp"
 
 // Other 1st party headers
+#include "Tst/Tst.hpp"
+
 #include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 
@@ -16,8 +18,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 namespace
@@ -148,7 +148,7 @@ constexpr bool skipShaderFullTest = true;
 
 } // namespace
 
-TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
+TEST_CASE("[Graphics] sf::Shader" * tst::skip(skipShaderFullTest))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

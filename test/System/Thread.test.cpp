@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Thread.hpp"
 
@@ -11,8 +12,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 ////////////////////////////////////////////////////////////
@@ -160,7 +159,7 @@ TEST_CASE("[System] SFML/System/Thread.hpp - detach releases joinability")
     }
 
     // Wait for the detached thread to finish before we leave the test
-    // so doctest doesn't see a leaked thread.
+    // so the runner does not see a leaked thread.
     while (done.loadAcquire() == 0)
         sf::ThisThread::yield();
 

@@ -18,28 +18,31 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
 namespace
 {
-// The following functions takes integers in host byte order
-// and writes them to a stream as little endian
+// The following functions take integers in host byte order and write them
+// to a stream as little endian. Each returns `false` on write failure so
+// callers can short-circuit further work on the file.
 
-void encode(sf::OutFileStream& stream, sf::base::I16 value)
+[[nodiscard]] bool encode(sf::OutFile& stream, sf::base::I16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    stream.write(bytes, static_cast<sf::base::PtrDiffT>(sf::base::getArraySize(bytes)));
+    return stream.write(bytes, sf::base::getArraySize(bytes));
 }
 
-void encode(sf::OutFileStream& stream, sf::base::U16 value)
+[[nodiscard]] bool encode(sf::OutFile& stream, sf::base::U16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    stream.write(bytes, static_cast<sf::base::PtrDiffT>(sf::base::getArraySize(bytes)));
+    return stream.write(bytes, sf::base::getArraySize(bytes));
 }
 
-void encode(sf::OutFileStream& stream, sf::base::U32 value)
+[[nodiscard]] bool encode(sf::OutFile& stream, sf::base::U32 value)
 {
     const char bytes[]{
         static_cast<char>((value & 0x00'00'00'FF) >> 0),
@@ -47,7 +50,7 @@ void encode(sf::OutFileStream& stream, sf::base::U32 value)
         static_cast<char>((value & 0x00'FF'00'00) >> 16),
         static_cast<char>((value & 0xFF'00'00'00) >> 24),
     };
-    stream.write(bytes, static_cast<sf::base::PtrDiffT>(sf::base::getArraySize(bytes)));
+    return stream.write(bytes, sf::base::getArraySize(bytes));
 }
 } // namespace
 
@@ -57,9 +60,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileWriterWav::Impl
 {
-    sf::OutFileStream file;             //!< File stream to write to
-    unsigned int      channelCount{};   //!< Channel count of the sound being written
-    base::SizeT       remapTable[18]{}; //!< Table we use to remap source to target channel order
+    base::Optional<sf::OutFile> file;             //!< Output file handle (empty before `open()`)
+    unsigned int                channelCount{};   //!< Channel count of the sound being written
+    base::SizeT                 remapTable[18]{}; //!< Table we use to remap source to target channel order
 };
 
 
@@ -77,20 +80,30 @@ SoundFileWriterWav::SoundFileWriterWav() = default;
 ////////////////////////////////////////////////////////////
 SoundFileWriterWav::~SoundFileWriterWav()
 {
-    if (!m_impl->file.isOpen())
+    if (!m_impl->file.hasValue())
         return;
 
-    // If the file is open, finalize the header and close it
-    m_impl->file.flush();
+    // Best-effort header finalization. Per-step failures get logged but
+    // don't abort the cleanup -- the destructor of `m_impl->file` then
+    // closes the OS handle. Destructors can't propagate errors.
+    const auto reportFailure = [](const char* op) { priv::errMsg("WAV writer cleanup: {} failed", op); };
 
-    // Update the main chunk size and data sub-chunk size
-    const auto fileSize = static_cast<base::U32>(m_impl->file.tellPos());
-    m_impl->file.seekPos(4);
-    encode(m_impl->file, fileSize - 8); // 8 bytes RIFF header
-    m_impl->file.seekPos(40);
-    encode(m_impl->file, fileSize - 44); // 44 bytes RIFF + WAVE headers
+    auto& file = *m_impl->file;
 
-    m_impl->file.close();
+    if (!file.flush())
+        reportFailure("flush");
+
+    base::PtrDiffT fileSizeRaw = 0;
+    if (!file.tellPos(fileSizeRaw))
+        reportFailure("tellPos");
+
+    const auto fileSize = static_cast<base::U32>(fileSizeRaw);
+
+    if (!file.seekPos(4) || !encode(file, fileSize - 8)) // 8 bytes RIFF header
+        reportFailure("RIFF chunk-size patch");
+
+    if (!file.seekPos(40) || !encode(file, fileSize - 44)) // 44 bytes RIFF + WAVE headers
+        reportFailure("data chunk-size patch");
 }
 
 
@@ -101,7 +114,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
     if (channelCount == 0)
     {
-        priv::err() << "WAV sound file channel count 0";
+        priv::errMsg("WAV sound file channel count 0");
         return false;
     }
 
@@ -174,7 +187,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
             if (sf::base::adjacentFind(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
             {
-                priv::err() << "Duplicate channels in channel map";
+                priv::errMsg("Duplicate channels in channel map");
                 return false;
             }
         }
@@ -195,7 +208,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
                 return c.channel == channel;
             }) == targetChannelMap.end())
             {
-                priv::err() << "Could not map all input channels to a channel supported by WAV";
+                priv::errMsg("Could not map all input channels to a channel supported by WAV");
                 return false;
             }
         }
@@ -214,10 +227,10 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
     m_impl->channelCount = channelCount;
 
     // Open the file
-    m_impl->file.open(filename.c_str(), FileOpenMode::bin);
-    if (!m_impl->file)
+    m_impl->file = sf::OutFile::open(filename.c_str(), FileOpenMode::bin);
+    if (!m_impl->file.hasValue())
     {
-        priv::err() << "Failed to open WAV sound file for writing\n" << priv::PathDebugFormatter{filename};
+        priv::errMsg("Failed to open WAV sound file for writing\n{}", priv::PathDebugFormatter{filename});
         return false;
     }
 
@@ -231,16 +244,25 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::write(const base::I16* samples, base::U64 count)
 {
-    SFML_BASE_ASSERT(m_impl->file.isGood() && "Most recent I/O operation failed");
     SFML_BASE_ASSERT(count % m_impl->channelCount == 0);
+    SFML_BASE_ASSERT(m_impl->file.hasValue() && "WAV writer: `write` called before `open`");
 
     if (count % m_impl->channelCount != 0)
-        priv::err() << "Writing samples to WAV sound file requires writing full frames at a time";
+        priv::errMsg("Writing samples to WAV sound file requires writing full frames at a time");
 
+    auto& file = *m_impl->file;
+
+    // The base class's `write` is `void`; we can't propagate per-call errors
+    // upward. Bail on the first encode failure and log via `errMsg` so the
+    // user notices a truncated/corrupt output file.
     while (count >= m_impl->channelCount)
     {
         for (auto i = 0u; i < m_impl->channelCount; ++i)
-            encode(m_impl->file, samples[m_impl->remapTable[i]]);
+            if (!encode(file, samples[m_impl->remapTable[i]]))
+            {
+                priv::errMsg("WAV writer: sample encode failed; output truncated");
+                return;
+            }
 
         samples += m_impl->channelCount;
         count -= m_impl->channelCount;
@@ -251,67 +273,141 @@ void SoundFileWriterWav::write(const base::I16* samples, base::U64 count)
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int channelCount, unsigned int channelMask)
 {
-    SFML_BASE_ASSERT(m_impl->file.isGood() && "Most recent I/O operation failed");
+    SFML_BASE_ASSERT(m_impl->file.hasValue() && "WAV writer: `writeHeader` called before `open`");
 
-    // Write the main chunk ID
+    auto& file = *m_impl->file;
+
+    const auto fail = []()
+    {
+        priv::errMsg("WAV writer: header write failed; output truncated");
+        return false;
+    };
+
     constexpr const char mainChunkId[]{'R', 'I', 'F', 'F'};
-    m_impl->file.write(mainChunkId, static_cast<base::PtrDiffT>(base::getArraySize(mainChunkId)));
+    if (!file.write(mainChunkId, base::getArraySize(mainChunkId)))
+    {
+        (void)fail();
+        return;
+    }
 
-    // Write the main chunk header
-    encode(m_impl->file, base::U32{0}); // 0 is a placeholder, will be written later
+    // Placeholder; main chunk size will be patched in the destructor.
+    if (!encode(file, base::U32{0}))
+    {
+        (void)fail();
+        return;
+    }
+
     constexpr const char mainChunkFormat[]{'W', 'A', 'V', 'E'};
-    m_impl->file.write(mainChunkFormat, static_cast<base::PtrDiffT>(base::getArraySize(mainChunkFormat)));
+    if (!file.write(mainChunkFormat, base::getArraySize(mainChunkFormat)))
+    {
+        (void)fail();
+        return;
+    }
 
-    // Write the sub-chunk 1 ("format") id and size
+    // Sub-chunk 1 ("format") id and size
     constexpr const char fmtChunkId[]{'f', 'm', 't', ' '};
-    m_impl->file.write(fmtChunkId, static_cast<base::PtrDiffT>(base::getArraySize(fmtChunkId)));
+    if (!file.write(fmtChunkId, base::getArraySize(fmtChunkId)))
+    {
+        (void)fail();
+        return;
+    }
 
     if (channelCount > 2)
     {
-        const base::U32 fmtChunkSize = 40;
-        encode(m_impl->file, fmtChunkSize);
-
-        // Write the format (Extensible)
-        const base::U16 format = 65'534;
-        encode(m_impl->file, format);
+        if (!encode(file, base::U32{40}))
+        {
+            (void)fail();
+            return;
+        }
+        if (!encode(file, base::U16{65'534}))
+        {
+            (void)fail();
+            return;
+        } // Extensible
     }
     else
     {
-        const base::U32 fmtChunkSize = 16;
-        encode(m_impl->file, fmtChunkSize);
-
-        // Write the format (PCM)
-        const base::U16 format = 1;
-        encode(m_impl->file, format);
+        if (!encode(file, base::U32{16}))
+        {
+            (void)fail();
+            return;
+        }
+        if (!encode(file, base::U16{1}))
+        {
+            (void)fail();
+            return;
+        } // PCM
     }
 
-    // Write the sound attributes
-    encode(m_impl->file, static_cast<base::U16>(channelCount));
-    encode(m_impl->file, sampleRate);
-    const base::U32 byteRate = sampleRate * channelCount * 2;
-    encode(m_impl->file, byteRate);
-    const auto blockAlign = static_cast<base::U16>(channelCount * 2);
-    encode(m_impl->file, blockAlign);
-    const base::U16 bitsPerSample = 16;
-    encode(m_impl->file, bitsPerSample);
+    // Sound attributes
+    if (!encode(file, static_cast<base::U16>(channelCount)))
+    {
+        (void)fail();
+        return;
+    }
+    if (!encode(file, sampleRate))
+    {
+        (void)fail();
+        return;
+    }
+    if (!encode(file, base::U32{sampleRate * channelCount * 2}))
+    {
+        (void)fail();
+        return;
+    } // byteRate
+    if (!encode(file, static_cast<base::U16>(channelCount * 2)))
+    {
+        (void)fail();
+        return;
+    } // blockAlign
+
+    constexpr base::U16 bitsPerSample = 16;
+    if (!encode(file, bitsPerSample))
+    {
+        (void)fail();
+        return;
+    }
 
     if (channelCount > 2)
     {
-        const base::U16 extensionSize = 16;
-        encode(m_impl->file, extensionSize);
-        encode(m_impl->file, bitsPerSample);
-        encode(m_impl->file, channelMask);
-        // Write the subformat (PCM)
-        char subformat[] =
+        if (!encode(file, base::U16{16}))
+        {
+            (void)fail();
+            return;
+        } // extensionSize
+        if (!encode(file, bitsPerSample))
+        {
+            (void)fail();
+            return;
+        }
+        if (!encode(file, channelMask))
+        {
+            (void)fail();
+            return;
+        }
+
+        // PCM subformat
+        constexpr char subformat[] =
             {'\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x10', '\x00', '\x80', '\x00', '\x00', '\xAA', '\x00', '\x38', '\x9B', '\x71'};
-        m_impl->file.write(subformat, static_cast<base::PtrDiffT>(base::getArraySize(subformat)));
+        if (!file.write(subformat, base::getArraySize(subformat)))
+        {
+            (void)fail();
+            return;
+        }
     }
 
-    // Write the sub-chunk 2 ("data") id and size
-    char dataChunkId[]{'d', 'a', 't', 'a'};
-    m_impl->file.write(dataChunkId, static_cast<base::PtrDiffT>(base::getArraySize(dataChunkId)));
-    const base::U32 dataChunkSize = 0; // placeholder, will be written later
-    encode(m_impl->file, dataChunkSize);
+    // Sub-chunk 2 ("data") id and placeholder size (patched in the destructor)
+    constexpr const char dataChunkId[]{'d', 'a', 't', 'a'};
+    if (!file.write(dataChunkId, base::getArraySize(dataChunkId)))
+    {
+        (void)fail();
+        return;
+    }
+    if (!encode(file, base::U32{0}))
+    {
+        (void)fail();
+        return;
+    }
 }
 
 

@@ -18,6 +18,7 @@
 
 #include "ExampleUtils/Progress.hpp"
 
+#include "SFML/System/Fmt/FmtPath.hpp"
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathStreamOp.hpp" // IWYU pragma: keep
@@ -25,6 +26,8 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Array.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -33,10 +36,12 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
+#include "SFML/Base/Trait/IsEnum.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
 #include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/UnderlyingType.hpp"
 #include "SFML/Base/Vector.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
@@ -109,7 +114,7 @@ template <typename T>
     }
     else
     {
-        static_assert(sizeof(T) == 0, "No toJsonValue overload for T and no DEFINE_TWO_WAY_SERIALIZER block.");
+        static_assert(false, "No toJsonValue overload for T and no DEFINE_TWO_WAY_SERIALIZER block.");
         return nullptr;
     }
 }
@@ -124,7 +129,7 @@ void fromJsonValue(const cJSON* j, T& out)
     }
     else
     {
-        static_assert(sizeof(T) == 0, "No fromJsonValue overload for T and no DEFINE_TWO_WAY_SERIALIZER block.");
+        static_assert(false, "No fromJsonValue overload for T and no DEFINE_TWO_WAY_SERIALIZER block.");
     }
 }
 
@@ -190,18 +195,18 @@ void fromJsonValue(const cJSON* j, T& out)
 // Enum dispatch via compiler builtins (no `<type_traits>` include).
 ////////////////////////////////////////////////////////////
 template <typename T>
-    requires(__is_enum(T))
+    requires(SFML_BASE_IS_ENUM(T))
 cJSON* toJsonValue(const T& v)
 {
-    return cJSON_CreateNumber(static_cast<double>(static_cast<__underlying_type(T)>(v)));
+    return cJSON_CreateNumber(static_cast<double>(static_cast<SFML_BASE_UNDERLYING_TYPE(T)>(v)));
 }
 
 template <typename T>
-    requires(__is_enum(T))
+    requires(SFML_BASE_IS_ENUM(T))
 void fromJsonValue(const cJSON* j, T& out)
 {
     if (cJSON_IsNumber(j))
-        out = static_cast<T>(static_cast<__underlying_type(T)>(cJSON_GetNumberValue(j)));
+        out = static_cast<T>(static_cast<SFML_BASE_UNDERLYING_TYPE(T)>(cJSON_GetNumberValue(j)));
 }
 
 
@@ -1195,7 +1200,7 @@ bool forceCopyFile(const sf::Path& from, const sf::Path& to)
 
     if (!from.copyFileTo(to))
     {
-        sf::cOut() << "Failed to copy file from '" << from << "' to '" << to << "'\n";
+        sf::base::printLn("Failed to copy file from '{}' to '{}'", from, to);
         return false;
     }
 
@@ -1219,7 +1224,7 @@ bool saveProfileToFile(const Profile& profile, const char* filename)
 {
     if (!sf::Path{"userdata"}.createDirectoryTree())
     {
-        sf::cOut() << "Failed to save profile to file '" << filename << "' (createDirectoryTree failed)\n";
+        sf::base::printLn("Failed to save profile to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
@@ -1227,7 +1232,7 @@ bool saveProfileToFile(const Profile& profile, const char* filename)
 
     if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(profile, /* pretty */ false)))
     {
-        sf::cOut() << "Failed to save profile to file '" << filename << "' (writeToFile failed)\n";
+        sf::base::printLn("Failed to save profile to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1240,7 +1245,7 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
 {
     const auto fail = [&](const char* reason)
     {
-        sf::cOut() << "Failed to load profile from file '" << filename << "' (" << reason << ")\n";
+        sf::base::printLn("Failed to load profile from file '{}' ({})", filename, reason);
         return false;
     };
 
@@ -1259,8 +1264,8 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        sf::cOut() << "Profile '" << filename
-                   << "' is in the legacy array format and cannot be loaded. Resetting to defaults.\n";
+        sf::base::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.",
+                          filename);
 
         profile = Profile{};
         return true;
@@ -1277,7 +1282,7 @@ bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* fil
 
     if (path.hasParent() && !path.getParent().createDirectoryTree())
     {
-        sf::cOut() << "Failed to save game constants to file '" << filename << "' (createDirectoryTree failed)\n";
+        sf::base::printLn("Failed to save game constants to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
@@ -1285,7 +1290,7 @@ bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* fil
 
     if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(gameConstants, /* pretty */ true)))
     {
-        sf::cOut() << "Failed to save game constants to file '" << filename << "' (writeToFile failed)\n";
+        sf::base::printLn("Failed to save game constants to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1298,7 +1303,7 @@ bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filenam
 {
     const auto fail = [&](const char* reason)
     {
-        sf::cOut() << "Failed to load game constants from file '" << filename << "' (" << reason << ")\n";
+        sf::base::printLn("Failed to load game constants from file '{}' ({})", filename, reason);
         return false;
     };
 
@@ -1324,7 +1329,7 @@ bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 {
     if (!sf::Path{"userdata"}.createDirectoryTree())
     {
-        sf::cOut() << "Failed to save playthrough to file '" << filename << "' (createDirectoryTree failed)\n";
+        sf::base::printLn("Failed to save playthrough to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
@@ -1332,7 +1337,7 @@ bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 
     if (!sf::writeToFile(sf::base::StringView{filename}, serializeToJsonString(playthrough, /* pretty */ false)))
     {
-        sf::cOut() << "Failed to save playthrough to file '" << filename << "' (writeToFile failed)\n";
+        sf::base::printLn("Failed to save playthrough to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1346,9 +1351,13 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
     if (parsedVersion == currentVersion)
         return "";
 
-    sf::cOut() << "Loaded playthrough version " << parsedVersion.major << "." << parsedVersion.minor << "."
-               << parsedVersion.patch << " does not match current version " << currentVersion.major << "."
-               << currentVersion.minor << "." << currentVersion.patch << '\n';
+    sf::base::printLn("Loaded playthrough version {}.{}.{} does not match current version {}.{}.{}",
+                      parsedVersion.major,
+                      parsedVersion.minor,
+                      parsedVersion.patch,
+                      currentVersion.major,
+                      currentVersion.minor,
+                      currentVersion.patch);
 
     // Prestige point scaling buff compensation
     if (parsedVersion.major == 1 && parsedVersion.minor <= 4)
@@ -1357,7 +1366,7 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
 
         if (loadedPrestigeLevel > 0u)
         {
-            sf::cOut() << "Adding missing prestige points...\n";
+            sf::base::printLn("Adding missing prestige points...");
 
             const auto oldAccumulatedPPs = Playthrough::calculatePrestigePointReward(0u,
                                                                                      loadedPrestigeLevel,
@@ -1366,9 +1375,12 @@ sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersi
                                                                                      loadedPrestigeLevel,
                                                                                      /* levelBias */ 1u);
 
-            sf::cOut() << "Old accumulated pps: " << oldAccumulatedPPs << '\n'
-                       << "New accumulated pps: " << newAccumulatedPPs << '\n'
-                       << "Adding " << newAccumulatedPPs - oldAccumulatedPPs << " prestige points\n";
+            sf::base::printLn("Old accumulated pps: {}{}New accumulated pps: {}{}Adding {} prestige points",
+                              oldAccumulatedPPs,
+                              '\n',
+                              newAccumulatedPPs,
+                              '\n',
+                              newAccumulatedPPs - oldAccumulatedPPs);
 
             playthrough.prestigePoints += newAccumulatedPPs - oldAccumulatedPPs;
 
@@ -1385,7 +1397,7 @@ sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const cha
 {
     const auto fail = [&](const char* reason)
     {
-        sf::cOut() << "Failed to load playthrough from file '" << filename << "' (" << reason << ")\n";
+        sf::base::printLn("Failed to load playthrough from file '{}' ({})", filename, reason);
         return "";
     };
 
@@ -1404,7 +1416,7 @@ sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const cha
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        sf::cOut() << "Playthrough '" << filename << "' is in the legacy array format and cannot be loaded.\n";
+        sf::base::printLn("Playthrough '{}' is in the legacy array format and cannot be loaded.", filename);
         playthrough = Playthrough{};
         return "Your save is from an older version with an incompatible\n"
                "format and could not be loaded. A fresh playthrough has been started.";

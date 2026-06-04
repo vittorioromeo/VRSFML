@@ -1,5 +1,6 @@
 #include "GraphicsUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/TransformableMixin.hpp"
 
@@ -18,8 +19,6 @@
 #include "SFML/Base/Trait/IsTriviallyAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
-
-#include <Doctest.hpp>
 
 
 struct TestTransformable : sf::TransformableMixin

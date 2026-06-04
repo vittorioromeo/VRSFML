@@ -4,6 +4,7 @@
 #include "LoadIntoMemoryUtil.hpp"
 #include "StringifyArrayUtil.hpp" // IWYU pragma: keep
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
@@ -16,8 +17,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Audio] sf::InputSoundFile")

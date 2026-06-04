@@ -1,4 +1,5 @@
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/Color.hpp"
@@ -32,8 +33,6 @@
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/Thread.hpp"
 
-#include <Doctest.hpp>
-
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of
 // `priv::GlContext`'s protected `getId()` so a test-only `TestContext`
@@ -55,13 +54,13 @@ struct TestContext
     TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
     {
         if (!sf::WindowContext::setActiveThreadLocalGlContext(*glContext, true))
-            sf::priv::err() << "Failed to activate TestContext on construction";
+            sf::priv::errMsg("Failed to activate TestContext on construction");
     }
 
     ~TestContext()
     {
         if (glContext != nullptr && !sf::WindowContext::setActiveThreadLocalGlContext(*glContext, false))
-            sf::priv::err() << "Failed to deactivate TestContext on destruction";
+            sf::priv::errMsg("Failed to deactivate TestContext on destruction");
     }
 
     TestContext(const TestContext&)                = delete;
@@ -139,7 +138,7 @@ void main()
 } // namespace
 
 
-TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

@@ -197,7 +197,7 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     // Route the sound through the effect node depending on whether an effect processor is set
     if (!connectEffect(bool{effectProcessor}))
     {
-        priv::err() << "Failed to connect effect node";
+        priv::errMsg("Failed to connect effect node");
         return false;
     }
 
@@ -383,7 +383,7 @@ base::Optional<base::U64> MiniaudioUtils::getFrameIndex(ma_sound& sound, const T
 ////////////////////////////////////////////////////////////
 bool MiniaudioUtils::fail(const char* const what, const int maResult)
 {
-    err() << "Failed to " << what << ": " << ma_result_description(static_cast<ma_result>(maResult));
+    errMsg("Failed to {}: {}", what, ma_result_description(static_cast<ma_result>(maResult)));
     return false;
 }
 

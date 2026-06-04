@@ -1,10 +1,10 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/FromChars.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/ToString.hpp"
-
-#include <Doctest.hpp>
 
 #include <limits>
 
@@ -75,6 +75,19 @@ TEST_CASE("[Base] FromChars.hpp")
             auto             result  = sf::base::fromChars(iMaxStr.cStr(), iMaxStr.cStr() + iMaxStr.size(), iValue);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(iValue == std::numeric_limits<int>::max());
+
+            // Signed int min
+            sf::base::String iMinStr = sf::base::toString(std::numeric_limits<int>::min());
+            result                   = sf::base::fromChars(iMinStr.cStr(), iMinStr.cStr() + iMinStr.size(), iValue);
+            CHECK(result.ec == sf::base::FromCharsError::None);
+            CHECK(iValue == std::numeric_limits<int>::min());
+
+            // Signed long long min
+            long long        llValue  = 0;
+            sf::base::String llMinStr = sf::base::toString(std::numeric_limits<long long>::min());
+            result = sf::base::fromChars(llMinStr.cStr(), llMinStr.cStr() + llMinStr.size(), llValue);
+            CHECK(result.ec == sf::base::FromCharsError::None);
+            CHECK(llValue == std::numeric_limits<long long>::min());
 
             // Unsigned long long max
             unsigned long long ullValue     = 0;
@@ -147,32 +160,32 @@ TEST_CASE("[Base] FromChars.hpp")
             auto        result = sf::base::fromChars(str, str + 7, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(result.ptr == str + 7);
-            CHECK(value == doctest::Approx(123.456));
+            CHECK(value == tst::Approx(123.456));
 
             str    = "-0.123";
             result = sf::base::fromChars(str, str + 6, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(result.ptr == str + 6);
-            CHECK(value == doctest::Approx(-0.123));
+            CHECK(value == tst::Approx(-0.123));
 
             str    = "+789.";
             result = sf::base::fromChars(str, str + 5, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(result.ptr == str + 5);
-            CHECK(value == doctest::Approx(789.0));
+            CHECK(value == tst::Approx(789.0));
 
             str    = "500";
             result = sf::base::fromChars(str, str + 3, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(result.ptr == str + 3);
-            CHECK(value == doctest::Approx(500.0));
+            CHECK(value == tst::Approx(500.0));
 
             float fValue = 0.0f;
             str          = ".25";
             result       = sf::base::fromChars(str, str + 3, fValue);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(result.ptr == str + 3);
-            CHECK(fValue == doctest::Approx(0.25));
+            CHECK(fValue == tst::Approx(0.25));
         }
 
         SECTION("Zero")
@@ -181,12 +194,12 @@ TEST_CASE("[Base] FromChars.hpp")
             const char* str    = "0.0";
             auto        result = sf::base::fromChars(str, str + 3, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
-            CHECK(value == doctest::Approx(0.0));
+            CHECK(value == tst::Approx(0.0));
 
             str    = "0";
             result = sf::base::fromChars(str, str + 1, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
-            CHECK(value == doctest::Approx(0.0));
+            CHECK(value == tst::Approx(0.0));
         }
 
         SECTION("Partial Parsing")
@@ -196,7 +209,7 @@ TEST_CASE("[Base] FromChars.hpp")
             auto        result = sf::base::fromChars(str, str + 18, value);
             CHECK(result.ec == sf::base::FromCharsError::None);
             CHECK(result.ptr == str + 7); // Should point to 'a'
-            CHECK(value == doctest::Approx(3.14159));
+            CHECK(value == tst::Approx(3.14159));
         }
 
         SECTION("Error: Invalid Argument")
@@ -205,27 +218,27 @@ TEST_CASE("[Base] FromChars.hpp")
             const char* str    = "";
             auto        result = sf::base::fromChars(str, str, value);
             CHECK(result.ec == sf::base::FromCharsError::InvalidArgument);
-            CHECK(value == doctest::Approx(1.0));
+            CHECK(value == tst::Approx(1.0));
 
             str    = "+";
             result = sf::base::fromChars(str, str + 1, value);
             CHECK(result.ec == sf::base::FromCharsError::InvalidArgument);
-            CHECK(value == doctest::Approx(1.0));
+            CHECK(value == tst::Approx(1.0));
 
             str    = "-";
             result = sf::base::fromChars(str, str + 1, value);
             CHECK(result.ec == sf::base::FromCharsError::InvalidArgument);
-            CHECK(value == doctest::Approx(1.0));
+            CHECK(value == tst::Approx(1.0));
 
             str    = ".";
             result = sf::base::fromChars(str, str + 1, value);
             CHECK(result.ec == sf::base::FromCharsError::InvalidArgument);
-            CHECK(value == doctest::Approx(1.0));
+            CHECK(value == tst::Approx(1.0));
 
             str    = "xyz";
             result = sf::base::fromChars(str, str + 3, value);
             CHECK(result.ec == sf::base::FromCharsError::InvalidArgument);
-            CHECK(value == doctest::Approx(1.0));
+            CHECK(value == tst::Approx(1.0));
         }
     }
 }

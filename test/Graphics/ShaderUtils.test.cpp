@@ -1,5 +1,6 @@
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/ShaderUtils.hpp"
 
@@ -11,8 +12,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <Doctest.hpp>
 
 
 using sf::testing::TemporaryFile;
@@ -269,14 +268,14 @@ TEST_CASE("[Graphics] sf::ShaderUtils::preprocessGlslIncludes")
 
         {
             constexpr sf::base::StringView contentA = "#include \"sfml_circular_b.glsl\"\n";
-            sf::OutFileStream              ofs(pathA);
-            ofs.write(contentA.data(), static_cast<sf::base::PtrDiffT>(contentA.size()));
+            auto                           optFile  = sf::OutFile::open(pathA);
+            [[maybe_unused]] const bool    ok       = optFile->write(contentA.data(), contentA.size());
         }
 
         {
             constexpr sf::base::StringView contentB = "#include \"sfml_circular_a.glsl\"\n";
-            sf::OutFileStream              ofs(pathB);
-            ofs.write(contentB.data(), static_cast<sf::base::PtrDiffT>(contentB.size()));
+            auto                           optFile  = sf::OutFile::open(pathB);
+            [[maybe_unused]] const bool    ok       = optFile->write(contentB.data(), contentB.size());
         }
 
         const sf::base::StringView source = "#include \"sfml_circular_b.glsl\"\n";

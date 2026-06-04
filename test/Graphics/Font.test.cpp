@@ -11,6 +11,7 @@
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
@@ -25,10 +26,8 @@
 #include "SFML/Base/Trait/IsMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsMoveConstructible.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::Font" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

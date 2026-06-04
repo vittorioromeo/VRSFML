@@ -1,4 +1,5 @@
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/GlyphMapping.hpp"
@@ -13,10 +14,8 @@
 
 #include "SFML/Base/SizeT.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Graphics] sf::GlyphMapping" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::GlyphMapping" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
     auto fontFace        = sf::FontFace::openFromFile("tuffy.ttf").value();

@@ -2,18 +2,5 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <DoctestFwd.hpp>
-
-namespace doctest
-{
-
-template <typename T>
-struct StringMaker<sf::base::Optional<T>>
-{
-    static doctest::String convert(const sf::base::Optional<T>&)
-    {
-        return ""; // TODO P3:
-    }
-};
-
-} // namespace doctest
+// The test runner renders this type as "<?>" via the catch-all in
+// `Tst/Detail/StringifyValue.hpp`; no dedicated stringifier is needed.

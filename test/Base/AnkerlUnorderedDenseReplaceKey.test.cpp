@@ -1,8 +1,8 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Base] sf::base::ankerl::map::replace_key")
@@ -223,7 +223,7 @@ TEST_CASE("[Base] sf::base::ankerl::segmented_vector iterator is random-access")
     {
         const auto a = v.begin();
         const auto b = a + 3;
-        // Wrap each comparison in `static_cast<bool>` so doctest's expression
+        // Wrap each comparison in `static_cast<bool>` so the framework's expression
         // decomposer doesn't need to stringify iterator operands.
         CHECK(static_cast<bool>(a < b));
         CHECK(static_cast<bool>(b > a));

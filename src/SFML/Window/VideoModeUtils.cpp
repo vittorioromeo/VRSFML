@@ -38,7 +38,7 @@ VideoMode VideoModeUtils::getDesktopMode()
     const auto* desktopDisplayMode = sdlLayer.getPrimaryDisplayDesktopDisplayMode();
     if (desktopDisplayMode == nullptr)
     {
-        priv::err() << "`getDesktopMode` failed, returning default video mode";
+        priv::errMsg("`getDesktopMode` failed, returning default video mode");
         return {};
     }
 

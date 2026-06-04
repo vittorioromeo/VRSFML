@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -23,13 +24,11 @@
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
-
 
 namespace
 {
 
-const sf::base::Vector<unsigned char>& sharedLogoBytes()
+const sf::base::Vector<char>& sharedLogoBytes()
 {
     static auto bytes = loadIntoMemory("sfml-logo-big.png");
     return bytes;
@@ -38,7 +37,7 @@ const sf::base::Vector<unsigned char>& sharedLogoBytes()
 } // namespace
 
 
-TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::Texture" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

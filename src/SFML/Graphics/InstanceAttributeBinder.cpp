@@ -64,7 +64,7 @@ namespace
     if (type == sf::GlDataType::Double)
     {
 #ifdef SFML_OPENGL_ES
-        sf::priv::err() << "FATAL ERROR: per-instance `double` attributes are unsupported on OpenGL ES";
+        sf::priv::errMsg("FATAL ERROR: per-instance `double` attributes are unsupported on OpenGL ES");
         sf::base::abort();
 #else
         glCheck(glVertexAttribLPointer(/*  index */ location,

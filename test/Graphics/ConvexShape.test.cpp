@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 
@@ -12,8 +13,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Graphics] sf::ConvexShape")
@@ -111,8 +110,8 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         convex.setPoint(0, {-100'000.f, 0.f});
         convex.setPoint(1, {100'000.f, 0.f});
         convex.setPoint(2, {100'000.f, 0.000001f});
-        CHECK(convex.getGeometricCenter().x == Catch::Approx(100'000. / 3.).margin(1e-2));
-        CHECK(convex.getGeometricCenter().y == Catch::Approx(0).margin(1e-5));
+        CHECK(convex.getGeometricCenter().x == tst::Approx(100'000. / 3.).margin(1e-2));
+        CHECK(convex.getGeometricCenter().y == tst::Approx(0).margin(1e-5));
     }
 
     SECTION("Geometric center for aligned points")

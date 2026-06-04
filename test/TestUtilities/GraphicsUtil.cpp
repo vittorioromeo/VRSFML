@@ -1,5 +1,6 @@
 #include "GraphicsViewUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -11,37 +12,37 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/String.hpp"
 #include "SFML/Base/ToChars.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
-
-#include <DoctestFwd.hpp>
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-doctest::String floatToString(const float value, const int precision = 6)
+sf::base::String gfxFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
     char*      end = sf::base::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<doctest::String::size_type>(end - buf);
-    return {buf, len};
+    const auto len = static_cast<sf::base::SizeT>(end - buf);
+    return sf::base::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-doctest::String intToString(const T value)
+sf::base::String gfxIntToString(const T value)
 {
     char       buf[32];
     char*      end = sf::base::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<doctest::String::size_type>(end - buf);
-    return {buf, len};
+    const auto len = static_cast<sf::base::SizeT>(end - buf);
+    return sf::base::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
-doctest::String hexToString(const sf::base::U32 value)
+sf::base::String hexToString(const sf::base::U32 value)
 {
     char buf[10];
     buf[0]    = '0';
@@ -54,95 +55,116 @@ doctest::String hexToString(const sf::base::U32 value)
         const unsigned nibble = (value >> shift) & 0xFu;
         buf[pos++]            = static_cast<char>(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
     } while (shift > 0);
-    return {buf, static_cast<doctest::String::size_type>(pos)};
-}
-
-} // namespace
-
-
-namespace doctest
-{
-////////////////////////////////////////////////////////////
-String StringMaker<sf::BlendMode>::convert(const sf::BlendMode& blendMode)
-{
-    return String("( ") + intToString(static_cast<int>(blendMode.colorSrcFactor)) + ", " +
-           intToString(static_cast<int>(blendMode.colorDstFactor)) + ", " +
-           intToString(static_cast<int>(blendMode.colorEquation)) + ", " +
-           intToString(static_cast<int>(blendMode.alphaSrcFactor)) + ", " +
-           intToString(static_cast<int>(blendMode.alphaDstFactor)) + ", " +
-           intToString(static_cast<int>(blendMode.alphaEquation)) + " )";
+    return sf::base::String{buf, static_cast<sf::base::SizeT>(pos)};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::StencilComparison>::convert(const sf::StencilComparison comparison)
+sf::base::String stencilComparisonToString(const sf::StencilComparison comparison)
 {
     switch (comparison)
     {
         case sf::StencilComparison::Never:
-            return "Never";
+            return sf::base::String{"Never"};
         case sf::StencilComparison::Less:
-            return "Less";
+            return sf::base::String{"Less"};
         case sf::StencilComparison::LessEqual:
-            return "LessEqual";
+            return sf::base::String{"LessEqual"};
         case sf::StencilComparison::Greater:
-            return "Greater";
+            return sf::base::String{"Greater"};
         case sf::StencilComparison::GreaterEqual:
-            return "GreaterEqual";
+            return sf::base::String{"GreaterEqual"};
         case sf::StencilComparison::Equal:
-            return "Equal";
+            return sf::base::String{"Equal"};
         case sf::StencilComparison::NotEqual:
-            return "NotEqual";
+            return sf::base::String{"NotEqual"};
         case sf::StencilComparison::Always:
-            return "Always";
+            return sf::base::String{"Always"};
     }
-    return "";
+    return sf::base::String{};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::StencilUpdateOperation>::convert(const sf::StencilUpdateOperation updateOperation)
+sf::base::String stencilUpdateOperationToString(const sf::StencilUpdateOperation updateOperation)
 {
     switch (updateOperation)
     {
         case sf::StencilUpdateOperation::Keep:
-            return "Keep";
+            return sf::base::String{"Keep"};
         case sf::StencilUpdateOperation::Zero:
-            return "Zero";
+            return sf::base::String{"Zero"};
         case sf::StencilUpdateOperation::Replace:
-            return "Replace";
+            return sf::base::String{"Replace"};
         case sf::StencilUpdateOperation::Increment:
-            return "Increment";
+            return sf::base::String{"Increment"};
         case sf::StencilUpdateOperation::Decrement:
-            return "Decrement";
+            return sf::base::String{"Decrement"};
         case sf::StencilUpdateOperation::Invert:
-            return "Invert";
+            return sf::base::String{"Invert"};
     }
-    return "";
+    return sf::base::String{};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::StencilMode>::convert(const sf::StencilMode& stencilMode)
+sf::base::String vec2ToString(const sf::Vec2<float> v)
 {
-    return String("( ") + StringMaker<sf::StencilComparison>::convert(stencilMode.stencilComparison) + ", " +
-           StringMaker<sf::StencilUpdateOperation>::convert(stencilMode.stencilUpdateOperation) + ", " +
-           (stencilMode.stencilOnly ? "true" : "false") + ", " +
-           intToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + ", " +
-           intToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + " )";
+    return sf::base::String{"("} + gfxFloatToString(v.x) + sf::base::String{", "} + gfxFloatToString(v.y) +
+           sf::base::String{")"};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Color>::convert(const sf::Color color)
+template <typename T>
+sf::base::String rectToString(const sf::Rect2<T>& rect)
 {
-    return hexToString(color.toInteger()) + " (r=" + intToString(int{color.r}) + ", g=" + intToString(int{color.g}) +
-           ", b=" + intToString(int{color.b}) + ", a=" + intToString(int{color.a}) + ")";
+    if constexpr (sf::base::isFloatingPoint<T>)
+        return sf::base::String{"(position=("} + gfxFloatToString(rect.position.x) + sf::base::String{", "} +
+               gfxFloatToString(rect.position.y) + sf::base::String{"), size=("} + gfxFloatToString(rect.size.x) +
+               sf::base::String{", "} + gfxFloatToString(rect.size.y) + sf::base::String{"))"};
+    else
+        return sf::base::String{"(position=("} + gfxIntToString(rect.position.x) + sf::base::String{", "} +
+               gfxIntToString(rect.position.y) + sf::base::String{"), size=("} + gfxIntToString(rect.size.x) +
+               sf::base::String{", "} + gfxIntToString(rect.size.y) + sf::base::String{"))"};
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::Transform>::convert(const sf::Transform& transform)
+sf::base::String blendModeToString(const sf::BlendMode& blendMode)
+{
+    return sf::base::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) +
+           sf::base::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) +
+           sf::base::String{", "} + gfxIntToString(static_cast<int>(blendMode.colorEquation)) + sf::base::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaSrcFactor)) + sf::base::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaDstFactor)) + sf::base::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaEquation)) + sf::base::String{" )"};
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::String stencilModeToString(const sf::StencilMode& stencilMode)
+{
+    return sf::base::String{"( "} + stencilComparisonToString(stencilMode.stencilComparison) + sf::base::String{", "} +
+           stencilUpdateOperationToString(stencilMode.stencilUpdateOperation) + sf::base::String{", "} +
+           sf::base::String{stencilMode.stencilOnly ? "true" : "false"} + sf::base::String{", "} +
+           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + sf::base::String{", "} +
+           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + sf::base::String{" )"};
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::String colorToString(const sf::Color color)
+{
+    return hexToString(color.toInteger()) + sf::base::String{" (r="} + gfxIntToString(int{color.r}) +
+           sf::base::String{", g="} + gfxIntToString(int{color.g}) + sf::base::String{", b="} +
+           gfxIntToString(int{color.b}) + sf::base::String{", a="} + gfxIntToString(int{color.a}) +
+           sf::base::String{")"};
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::String transformToString(const sf::Transform& transform)
 {
     // clang-format off
     float matrix[]{{},  {},  0.f, 0.f,
@@ -153,78 +175,92 @@ String StringMaker<sf::Transform>::convert(const sf::Transform& transform)
 
     transform.writeTo4x4Matrix(matrix);
 
-    return floatToString(matrix[0]) + ", " + floatToString(matrix[4]) + ", " + floatToString(matrix[12]) + ", " +
-           floatToString(matrix[1]) + ", " + floatToString(matrix[5]) + ", " + floatToString(matrix[13]) + ", " +
-           floatToString(matrix[3]) + ", " + floatToString(matrix[7]) + ", " + floatToString(matrix[15]);
+    return gfxFloatToString(matrix[0]) + sf::base::String{", "} + gfxFloatToString(matrix[4]) + sf::base::String{", "} +
+           gfxFloatToString(matrix[12]) + sf::base::String{", "} + gfxFloatToString(matrix[1]) +
+           sf::base::String{", "} + gfxFloatToString(matrix[5]) + sf::base::String{", "} +
+           gfxFloatToString(matrix[13]) + sf::base::String{", "} + gfxFloatToString(matrix[3]) +
+           sf::base::String{", "} + gfxFloatToString(matrix[7]) + sf::base::String{", "} + gfxFloatToString(matrix[15]);
 }
 
 
 ////////////////////////////////////////////////////////////
-namespace
+sf::base::String viewToString(const sf::View& view)
 {
-doctest::String vec2ToString(const sf::Vec2<float> v)
-{
-    return doctest::String("(") + floatToString(v.x) + ", " + floatToString(v.y) + ")";
+    return sf::base::String{"( center="} + vec2ToString(view.center) + sf::base::String{", size="} +
+           vec2ToString(view.size) + sf::base::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) +
+           sf::base::String{" deg"} + sf::base::String{", viewport="} + rectToString(view.viewport) +
+           sf::base::String{", scissor="} + rectToString(view.scissor) + sf::base::String{" )"};
 }
 
-template <typename T>
-doctest::String rectToString(const sf::Rect2<T>& rect)
-{
-    if constexpr (sf::base::isFloatingPoint<T>)
-        return doctest::String("(position=(") + floatToString(rect.position.x) + ", " + floatToString(rect.position.y) +
-               "), size=(" + floatToString(rect.size.x) + ", " + floatToString(rect.size.y) + "))";
-    else
-        return doctest::String("(position=(") + intToString(rect.position.x) + ", " + intToString(rect.position.y) +
-               "), size=(" + intToString(rect.size.x) + ", " + intToString(rect.size.y) + "))";
-}
 } // namespace
 
 
-////////////////////////////////////////////////////////////
-String StringMaker<sf::View>::convert(const sf::View& view)
+namespace sf
 {
-    return String("( center=") + vec2ToString(view.center) + ", size=" + vec2ToString(view.size) +
-           ", rotation=" + floatToString(view.rotation.asDegrees()) + " deg" +
-           ", viewport=" + rectToString(view.viewport) + ", scissor=" + rectToString(view.scissor) + " )";
+////////////////////////////////////////////////////////////
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::BlendMode& blendMode) noexcept
+{
+    const sf::base::String s = blendModeToString(blendMode);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-String StringMaker<sf::Rect2<T>>::convert(const sf::Rect2<T>& rect)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::StencilComparison comparison) noexcept
 {
-    return rectToString(rect);
+    const sf::base::String s = stencilComparisonToString(comparison);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-String StringMaker<sf::View::ScissorRect>::convert(const sf::View::ScissorRect& scissorRect)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::StencilUpdateOperation updateOperation) noexcept
 {
-    return rectToString(static_cast<const sf::Rect2<float>&>(scissorRect));
+    const sf::base::String s = stencilUpdateOperationToString(updateOperation);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-// Explicit instantiations for the rect types actually used by tests.
-template struct StringMaker<sf::Rect2<int>>;
-template struct StringMaker<sf::Rect2<float>>;
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::StencilMode& stencilMode) noexcept
+{
+    const sf::base::String s = stencilModeToString(stencilMode);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
+}
 
 
 ////////////////////////////////////////////////////////////
-// Defined out-of-line so the explicit instantiations below see the
-// `StringMaker<sf::Transform>` / `<sf::Color>` / `<sf::Rect2<float>>`
-// specializations (which only this TU includes).
-template <typename T>
-String StringMaker<::Approx<T>>::convert(const ::Approx<T>& approx)
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Color& color) noexcept
 {
-    return toString(approx.value);
+    const sf::base::String s = colorToString(color);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
-template struct StringMaker<::Approx<sf::Transform>>;
-template struct StringMaker<::Approx<sf::Color>>;
-template struct StringMaker<::Approx<sf::Rect2<float>>>;
 
-} // namespace doctest
+////////////////////////////////////////////////////////////
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::Transform& transform) noexcept
+{
+    const sf::base::String s = transformToString(transform);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::View& view) noexcept
+{
+    const sf::base::String s = viewToString(view);
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::SizeT stringifyValue(char* buf, sf::base::SizeT cap, const sf::View::ScissorRect& scissorRect) noexcept
+{
+    const sf::base::String s = rectToString(static_cast<const sf::Rect2<float>&>(scissorRect));
+    return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
+}
+
+} // namespace sf
 
 
 ////////////////////////////////////////////////////////////

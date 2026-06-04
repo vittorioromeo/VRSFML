@@ -44,7 +44,6 @@ function(sfml_add_imgui_dependencies)
     # imgui has no CMake support, so we create our own target
 
     file(GLOB imgui_sources "${imgui_SOURCE_DIR}/*.cpp")
-    file(GLOB imgui_sources_cpp "${imgui_SOURCE_DIR}/misc/cpp/*.cpp")
 
     set(IMGUI_FOUND TRUE)
     set(IMGUI_INCLUDE_DIRS ${imgui_SOURCE_DIR})

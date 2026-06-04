@@ -1,13 +1,12 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU pragma: keep
 #include "StringifyVectorUtil.hpp"       // IWYU pragma: keep
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/Algorithm/Sort.hpp"
 
 #include "SFML/Base/Algorithm/IsSorted.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <Doctest.hpp>
 
 
 namespace

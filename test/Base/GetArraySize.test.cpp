@@ -1,6 +1,6 @@
-#include "SFML/Base/GetArraySize.hpp"
+#include "Tst/Tst.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/GetArraySize.hpp"
 
 
 TEST_CASE("[Base] Base/Algorithm.hpp")

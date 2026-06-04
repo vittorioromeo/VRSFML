@@ -1,8 +1,8 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/ThreadPool.hpp"
 
 #include "SFML/System/Atomic.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Base] Base/ThreadPool.hpp")

@@ -2,12 +2,16 @@
 #include "StringifyStdStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/IO.hpp"
 
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/Scn/Scn.hpp"
+#include "SFML/Base/Scn/ScnString.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -18,485 +22,342 @@
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <Doctest.hpp>
-
 #include <string>
 
 
 using sf::testing::TemporaryFile;
 
 
-TEST_CASE("[System] sf::OutStringStream")
+TEST_CASE("[System] sf::OutFile and sf::InFile")
 {
     using namespace sf::base::literals;
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::OutStringStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::OutStringStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::OutStringStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::OutStringStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::OutStringStream));
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::OutFile));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::OutFile));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::OutFile));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::OutFile));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::OutFile));
+
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::InFile));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::InFile));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::InFile));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::InFile));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::InFile));
     }
 
-    SECTION("Default construction")
+    SECTION("openFromFile returns nullOpt on non-openable path")
     {
-        const sf::OutStringStream oss;
-        CHECK(oss.isGood());
-        CHECK(static_cast<bool>(oss));
-        CHECK(oss.getString().empty());
+        // A clearly bogus path; the factory should report failure rather than
+        // returning a half-constructed object.
+        const auto opt = sf::InFile::open(sf::Path{"/this/path/does/not/exist__"}, sf::FileOpenMode::bin);
+        CHECK(!opt.hasValue());
     }
 
-    SECTION("Write fundamental types")
-    {
-        sf::OutStringStream oss;
-        oss << "Hello " << 42 << ' ' << true;
-        CHECK(oss.getString() == "Hello 42 1");
-    }
-
-    SECTION("Write base::StringView")
-    {
-        SECTION("Empty")
-        {
-            sf::OutStringStream oss;
-            oss << ""_sv;
-            CHECK(oss.getString().empty());
-        }
-
-        SECTION("Single value")
-        {
-            sf::OutStringStream oss;
-            oss << "abc"_sv;
-            CHECK(oss.getString() == "abc");
-        }
-
-        SECTION("Chained with other types")
-        {
-            sf::OutStringStream oss;
-            oss << "prefix:"_sv << 42 << '|' << "suffix"_sv;
-            CHECK(oss.getString() == "prefix:42|suffix");
-        }
-
-        SECTION("Embedded null bytes are preserved")
-        {
-            const char                 data[] = {'a', '\0', 'b'};
-            const sf::base::StringView view(data, 3);
-
-            sf::OutStringStream oss;
-            oss << view;
-
-            const std::string result = oss.getString();
-            CHECK(result.size() == 3);
-            CHECK(result[0] == 'a');
-            CHECK(result[1] == '\0');
-            CHECK(result[2] == 'b');
-        }
-    }
-
-    SECTION("Write base::String")
-    {
-        SECTION("Empty")
-        {
-            sf::OutStringStream oss;
-            oss << sf::base::String{};
-            CHECK(oss.getString().empty());
-        }
-
-        SECTION("Single value")
-        {
-            sf::OutStringStream oss;
-            oss << sf::base::String{"hello"};
-            CHECK(oss.getString() == "hello");
-        }
-
-        SECTION("Chained with other types")
-        {
-            sf::OutStringStream oss;
-            oss << "n="_sv << 7 << ' ' << sf::base::String{"value"};
-            CHECK(oss.getString() == "n=7 value");
-        }
-
-        SECTION("Multiple base::String writes")
-        {
-            sf::OutStringStream oss;
-            oss << sf::base::String{"foo"} << sf::base::String{"bar"} << sf::base::String{"baz"};
-            CHECK(oss.getString() == "foobarbaz");
-        }
-
-        SECTION("Embedded null bytes are preserved")
-        {
-            const char             data[] = {'x', '\0', 'y'};
-            const sf::base::String s(data, 3);
-
-            sf::OutStringStream oss;
-            oss << s;
-
-            const std::string result = oss.getString();
-            CHECK(result.size() == 3);
-            CHECK(result[0] == 'x');
-            CHECK(result[1] == '\0');
-            CHECK(result[2] == 'y');
-        }
-    }
-
-    SECTION("to<T>() conversion")
-    {
-        sf::OutStringStream oss;
-        oss << "answer=" << 42;
-
-        CHECK(oss.to<std::string>() == "answer=42");
-        CHECK(oss.to<sf::base::String>() == sf::base::String{"answer=42"});
-    }
-
-    SECTION("setStr replaces buffer contents")
-    {
-        sf::OutStringStream oss;
-        oss << "garbage";
-        oss.setStr("clean"_sv);
-        CHECK(oss.getString() == "clean");
-    }
-
-    SECTION("Manipulators - SetWidth and SetFill")
-    {
-        sf::OutStringStream oss;
-        oss << sf::SetFill{'0'} << sf::SetWidth{4} << 7;
-        CHECK(oss.getString() == "0007");
-    }
-
-    SECTION("Manipulators - Hex")
-    {
-        sf::OutStringStream oss;
-        oss << sf::Hex{} << 255;
-        CHECK(oss.getString() == "ff");
-    }
-
-    SECTION("setPrecision")
-    {
-        sf::OutStringStream oss;
-        oss.setPrecision(3);
-        oss << 3.14159;
-        CHECK(oss.getString() == "3.14");
-    }
-
-    SECTION("setFormatFlags")
-    {
-        sf::OutStringStream oss;
-        oss.setFormatFlags(sf::FormatFlags::boolalpha);
-        oss << true;
-        CHECK(oss.getString() == "true");
-    }
-
-    SECTION("Move semantics")
-    {
-        SECTION("Move constructor")
-        {
-            sf::OutStringStream moved;
-            moved << "moved";
-            sf::OutStringStream oss = SFML_BASE_MOVE(moved);
-            CHECK(oss.getString() == "moved");
-        }
-
-        SECTION("Move assignment")
-        {
-            sf::OutStringStream moved;
-            moved << "moved";
-            sf::OutStringStream oss;
-            oss << "original";
-            oss = SFML_BASE_MOVE(moved);
-            CHECK(oss.getString() == "moved");
-        }
-    }
-}
-
-
-TEST_CASE("[System] sf::InStringStream")
-{
-    using namespace sf::base::literals;
-
-    SECTION("Type traits")
-    {
-        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::InStringStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::InStringStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::InStringStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::InStringStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::InStringStream));
-    }
-
-    SECTION("Default construction")
-    {
-        sf::InStringStream iss;
-        CHECK(iss.isGood());
-        CHECK(static_cast<bool>(iss));
-        CHECK(!iss.isEOF());
-    }
-
-    SECTION("Construct from std::string")
-    {
-        sf::InStringStream iss(std::string{"42 hello"});
-        int                value = 0;
-        std::string        word;
-        iss >> value >> word;
-        CHECK(value == 42);
-        CHECK(word == "hello");
-    }
-
-    SECTION("Construct from base::String")
-    {
-        sf::InStringStream iss(sf::base::String{"3.5 world"});
-        float              value = 0.f;
-        sf::base::String   word;
-        iss >> value >> word;
-        CHECK(value == 3.5f);
-        CHECK(word == sf::base::String{"world"});
-    }
-
-    SECTION("get and read")
-    {
-        sf::InStringStream iss(std::string{"abcdef"});
-
-        char ch = '\0';
-        iss.get(ch);
-        CHECK(ch == 'a');
-
-        char buffer[3] = {};
-        iss.read(buffer, 3);
-        CHECK(iss.gcount() == 3);
-        CHECK(sf::base::StringView(buffer, 3) == "bcd"_sv);
-    }
-
-    SECTION("ignore advances past delimiter")
-    {
-        sf::InStringStream iss(std::string{"prefix:value"});
-        iss.ignore(100, ':');
-
-        std::string rest;
-        iss >> rest;
-        CHECK(rest == "value");
-    }
-
-    SECTION("tellg, EOF and clear")
-    {
-        sf::InStringStream iss(std::string{"abc"});
-
-        CHECK(iss.tellg() == 0);
-
-        char buffer[4] = {};
-        iss.read(buffer, 3);
-        CHECK(iss.tellg() == 3);
-        CHECK(iss.gcount() == 3);
-
-        // One more read should hit EOF.
-        char extra = '\0';
-        iss.get(extra);
-        CHECK(iss.isEOF());
-        CHECK(!iss.isGood());
-
-        iss.clear();
-        CHECK(iss.isGood());
-    }
-
-    SECTION("Hex extraction")
-    {
-        sf::InStringStream iss(std::string{"ff"});
-        int                value = 0;
-        iss >> sf::Hex{} >> value;
-        CHECK(value == 255);
-    }
-
-    SECTION("Move semantics")
-    {
-        SECTION("Move constructor")
-        {
-            sf::InStringStream moved(std::string{"42"});
-            sf::InStringStream iss   = SFML_BASE_MOVE(moved);
-            int                value = 0;
-            iss >> value;
-            CHECK(value == 42);
-        }
-
-        SECTION("Move assignment")
-        {
-            sf::InStringStream moved(std::string{"42"});
-            sf::InStringStream iss(std::string{"99"});
-            iss       = SFML_BASE_MOVE(moved);
-            int value = 0;
-            iss >> value;
-            CHECK(value == 42);
-        }
-    }
-}
-
-
-TEST_CASE("[System] sf::OutFileStream and sf::InFileStream")
-{
-    using namespace sf::base::literals;
-
-    SECTION("Type traits")
-    {
-        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::OutFileStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::OutFileStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::OutFileStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::OutFileStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::OutFileStream));
-
-        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::InFileStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::InFileStream));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::InFileStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::InFileStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::InFileStream));
-    }
-
-    SECTION("Default-constructed OutFileStream is not open")
-    {
-        const sf::OutFileStream ofs;
-        CHECK(!ofs.isOpen());
-    }
-
-    SECTION("Default-constructed InFileStream is not open")
-    {
-        const sf::InFileStream ifs;
-        CHECK(!ifs.isOpen());
-    }
-
-    SECTION("Write then read text")
+    SECTION("Write then read binary payload")
     {
         const TemporaryFile temporaryFile;
 
         {
-            sf::OutFileStream ofs(temporaryFile.getPath());
-            CHECK(ofs.isOpen());
-            CHECK(ofs.isGood());
-            CHECK(static_cast<bool>(ofs));
+            auto optOfs = sf::OutFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+            REQUIRE(optOfs.hasValue());
 
-            ofs << "Hello "_sv << 42 << ' ' << "world"_sv;
-            ofs.flush();
-            ofs.close();
-            CHECK(!ofs.isOpen());
+            constexpr sf::base::StringView payload = "Hello 42 world"_sv;
+            CHECK(optOfs->write(payload.data(), payload.size()));
+            CHECK(optOfs->flush());
+            // Destructor closes when `optOfs` goes out of scope below.
         }
 
         {
-            sf::InFileStream ifs(temporaryFile.getPath(), sf::FileOpenMode::in);
-            CHECK(ifs.isOpen());
-            CHECK(ifs.isGood());
-            CHECK(static_cast<bool>(ifs));
+            auto optIfs = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+            REQUIRE(optIfs.hasValue());
 
-            std::string word;
-            int         number = 0;
-            ifs >> word >> number;
-            CHECK(word == "Hello");
-            CHECK(number == 42);
-
-            ifs >> word;
-            CHECK(word == "world");
+            char            buffer[14] = {};
+            sf::base::SizeT got        = 0;
+            CHECK(optIfs->read(buffer, 14, got));
+            CHECK(got == 14u);
+            CHECK(sf::base::StringView(buffer, 14) == "Hello 42 world"_sv);
         }
     }
 
-    SECTION("OutFileStream tellPos and seekPos")
+    SECTION("OutFile tellPos and seekPos")
     {
         const TemporaryFile temporaryFile;
 
-        sf::OutFileStream ofs(temporaryFile.getPath());
-        ofs << "abcdef"_sv;
-        CHECK(ofs.tellPos() == 6);
+        auto optOfs = sf::OutFile::open(temporaryFile.getPath());
+        REQUIRE(optOfs.hasValue());
+        CHECK(optOfs->write("abcdef", 6));
 
-        ofs.seekPos(3);
-        CHECK(ofs.tellPos() == 3);
+        sf::base::PtrDiffT pos = 0;
+        CHECK(optOfs->tellPos(pos));
+        CHECK(pos == 6);
 
-        ofs.write("XYZ", 3);
-        CHECK(ofs.tellPos() == 6);
-        ofs.close();
+        CHECK(optOfs->seekPos(3));
+        CHECK(optOfs->tellPos(pos));
+        CHECK(pos == 3);
 
-        sf::InFileStream ifs(temporaryFile.getPath(), sf::FileOpenMode::in);
-        char             buffer[7] = {};
-        ifs.read(buffer, 6);
-        CHECK(ifs.gcount() == 6);
+        CHECK(optOfs->write("XYZ", 3));
+        CHECK(optOfs->tellPos(pos));
+        CHECK(pos == 6);
+        optOfs.reset(); // explicit close before reopening for read
+
+        auto optIfs = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optIfs.hasValue());
+        char            buffer[7] = {};
+        sf::base::SizeT got       = 0;
+        CHECK(optIfs->read(buffer, 6, got));
+        CHECK(got == 6u);
         CHECK(sf::base::StringView(buffer, 6) == "abcXYZ"_sv);
     }
 
-    SECTION("InFileStream seekg and tellg")
+    SECTION("InFile seekPos and tellPos")
     {
         const TemporaryFile temporaryFile("Hello world");
 
-        sf::InFileStream ifs(temporaryFile.getPath(), sf::FileOpenMode::in);
-        CHECK(ifs.tellg() == 0);
+        auto optIfs = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optIfs.hasValue());
 
-        ifs.seekg(6);
-        CHECK(ifs.tellg() == 6);
+        sf::base::PtrDiffT pos = -1;
+        CHECK(optIfs->tellPos(pos));
+        CHECK(pos == 0);
 
-        char buffer[6] = {};
-        ifs.read(buffer, 5);
-        CHECK(ifs.gcount() == 5);
+        CHECK(optIfs->seekPos(6));
+        CHECK(optIfs->tellPos(pos));
+        CHECK(pos == 6);
+
+        char            buffer[6] = {};
+        sf::base::SizeT got       = 0;
+        CHECK(optIfs->read(buffer, 5, got));
+        CHECK(got == 5u);
         CHECK(sf::base::StringView(buffer, 5) == "world"_sv);
 
-        ifs.seekg(0, sf::SeekDir::beg);
-        CHECK(ifs.tellg() == 0);
+        CHECK(optIfs->seekPos(0, sf::SeekDir::beg));
+        CHECK(optIfs->tellPos(pos));
+        CHECK(pos == 0);
 
-        ifs.seekg(0, sf::SeekDir::end);
-        CHECK(ifs.tellg() == 11);
+        CHECK(optIfs->seekPos(0, sf::SeekDir::end));
+        CHECK(optIfs->tellPos(pos));
+        CHECK(pos == 11);
     }
 
-    SECTION("InFileStream EOF")
+    SECTION("InFile seekPos(cur) compensates for a live peek cache")
+    {
+        // Regression: after `peek()` the raw FILE* cursor is one byte
+        // ahead of the logical cursor. `seekPos(N, cur)` must seek from
+        // the *logical* position, not the raw FILE* position.
+        const TemporaryFile temporaryFile("abcdef");
+
+        auto optIfs = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optIfs.hasValue());
+
+        const auto peeked = optIfs->peek();
+        REQUIRE(peeked.hasValue());
+        CHECK(*peeked == 'a');
+
+        // Logical cursor is at 0 (we peeked but didn't consume).
+        // `seekPos(1, cur)` should land at logical position 1 -> next read 'b'.
+        CHECK(optIfs->seekPos(1, sf::SeekDir::cur));
+
+        char            ch  = '\0';
+        sf::base::SizeT got = 0;
+        CHECK(optIfs->read(&ch, 1, got));
+        CHECK(got == 1u);
+        CHECK(ch == 'b');
+    }
+
+    SECTION("InFile reports EOF after reading past the end")
     {
         const TemporaryFile temporaryFile("abc");
 
-        sf::InFileStream ifs(temporaryFile.getPath(), sf::FileOpenMode::in);
-        char             buffer[8] = {};
-        ifs.read(buffer, 8);
-        CHECK(ifs.isEOF());
+        auto optIfs = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optIfs.hasValue());
+
+        char            buffer[8] = {};
+        sf::base::SizeT got       = 0;
+
+        // The read returns success with a short count -- EOF is normal,
+        // not an error.
+        CHECK(optIfs->read(buffer, 8, got));
+        CHECK(got == 3u);
+        CHECK(optIfs->isEOF());
     }
 
-    SECTION("Open with explicit mode")
+    SECTION("InFile open with FileOpenMode::ate seeks to end")
     {
-        const TemporaryFile temporaryFile;
+        const TemporaryFile temporaryFile("abc");
 
-        sf::OutFileStream ofs;
-        CHECK(!ofs.isOpen());
-        ofs.open(temporaryFile.getPath(), sf::FileOpenMode::out | sf::FileOpenMode::bin);
-        CHECK(ofs.isOpen());
+        auto optIfs = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin | sf::FileOpenMode::ate);
+        REQUIRE(optIfs.hasValue());
 
-        const char data[] = {'b', 'i', 'n'};
-        ofs.write(data, 3);
-        ofs.close();
-
-        sf::InFileStream ifs;
-        ifs.open(temporaryFile.getPath(), sf::FileOpenMode::in | sf::FileOpenMode::bin);
-        CHECK(ifs.isOpen());
-
-        char buffer[3] = {};
-        ifs.read(buffer, 3);
-        CHECK(sf::base::StringView(buffer, 3) == "bin"_sv);
+        sf::base::PtrDiffT pos = 0;
+        CHECK(optIfs->tellPos(pos));
+        CHECK(pos == 3);
     }
 
     SECTION("Move semantics")
     {
         const TemporaryFile temporaryFile("Hello world");
 
-        SECTION("OutFileStream move constructor")
+        SECTION("OutFile move constructor")
         {
             const TemporaryFile target;
 
-            sf::OutFileStream moved(target.getPath());
-            sf::OutFileStream ofs = SFML_BASE_MOVE(moved);
-            CHECK(ofs.isOpen());
-            ofs << "moved"_sv;
-            ofs.close();
+            auto optMoved = sf::OutFile::open(target.getPath());
+            REQUIRE(optMoved.hasValue());
 
-            sf::InFileStream ifs(target.getPath(), sf::FileOpenMode::in);
-            char             buffer[5] = {};
-            ifs.read(buffer, 5);
+            sf::OutFile ofs = SFML_BASE_MOVE(*optMoved);
+            CHECK(ofs.write("moved", 5));
+            // ofs's destructor closes when this scope ends.
+            {
+                sf::OutFile temp = SFML_BASE_MOVE(ofs);
+                (void)temp;
+            }
+
+            auto optIfs = sf::InFile::open(target.getPath(), sf::FileOpenMode::bin);
+            REQUIRE(optIfs.hasValue());
+
+            char            buffer[5] = {};
+            sf::base::SizeT got       = 0;
+            CHECK(optIfs->read(buffer, 5, got));
+            CHECK(got == 5u);
             CHECK(sf::base::StringView(buffer, 5) == "moved"_sv);
         }
 
-        SECTION("InFileStream move constructor")
+        SECTION("InFile move constructor")
         {
-            sf::InFileStream moved(temporaryFile.getPath(), sf::FileOpenMode::in);
-            sf::InFileStream ifs = SFML_BASE_MOVE(moved);
-            CHECK(ifs.isOpen());
+            auto optMoved = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+            REQUIRE(optMoved.hasValue());
 
-            char buffer[5] = {};
-            ifs.read(buffer, 5);
+            sf::InFile ifs = SFML_BASE_MOVE(*optMoved);
+
+            char            buffer[5] = {};
+            sf::base::SizeT got       = 0;
+            CHECK(ifs.read(buffer, 5, got));
+            CHECK(got == 5u);
             CHECK(sf::base::StringView(buffer, 5) == "Hello"_sv);
         }
+    }
+}
+
+
+TEST_CASE("[System] sf::InFile peek/consume cache semantics")
+{
+    using namespace sf::base::literals;
+
+    const TemporaryFile temporaryFile("ABCD"_sv);
+
+    SECTION("peek without consume is idempotent")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(*optFile->peek() == 'A');
+        CHECK(*optFile->peek() == 'A'); // Still 'A' -- cache hit, no advance.
+
+        optFile->consume();
+        CHECK(*optFile->peek() == 'B');
+    }
+
+    SECTION("peek + read delivers cached byte first")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(*optFile->peek() == 'A');
+
+        char            buf[4]{};
+        sf::base::SizeT got = 0u;
+        CHECK(optFile->read(buf, 3, got));
+        CHECK(got == 3u);
+        CHECK(sf::base::StringView(buf, 3) == "ABC"_sv);
+    }
+
+    SECTION("tellPos accounts for peeked-but-not-consumed byte")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        sf::base::PtrDiffT pos = -1;
+        CHECK(optFile->tellPos(pos));
+        CHECK(pos == 0);
+
+        CHECK(*optFile->peek() == 'A');
+        CHECK(optFile->tellPos(pos));
+        CHECK(pos == 0); // The peek must not advance the visible position.
+
+        optFile->consume();
+        CHECK(optFile->tellPos(pos));
+        CHECK(pos == 1);
+    }
+
+    SECTION("seekPos drops the peek cache")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(*optFile->peek() == 'A');
+        CHECK(optFile->seekPos(2)); // jump to 'C'
+        CHECK(*optFile->peek() == 'C');
+    }
+
+    SECTION("peek at EOF returns nullOpt")
+    {
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        CHECK(optFile->seekPos(4));
+        CHECK_FALSE(optFile->peek().hasValue());
+        CHECK(optFile->isEOF());
+    }
+}
+
+
+TEST_CASE("[System] sf::InFile as sf::base::ScnSource")
+{
+    using namespace sf::base::literals;
+
+    SECTION("scnReadLine over a multi-KiB file")
+    {
+        // Big enough to exercise the FILE* internal buffer transitioning
+        // mid-line (stdio default buffer is typically 4-8 KiB).
+        sf::base::String          payload;
+        constexpr sf::base::SizeT longLineSize = 16u * 1024u;
+        payload.reserve(longLineSize + 16u);
+        for (sf::base::SizeT i = 0u; i < longLineSize; ++i)
+            payload.append('x');
+        payload.append("\nshort\n");
+
+        const TemporaryFile temporaryFile(payload.toStringView());
+
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        sf::base::String line;
+        CHECK(sf::base::scnReadLine(*optFile, line));
+        CHECK(line.size() == longLineSize);
+
+        CHECK(sf::base::scnReadLine(*optFile, line));
+        CHECK(line == sf::base::String{"short"});
+
+        CHECK(!sf::base::scnReadLine(*optFile, line));
+        CHECK(sf::base::scnAtEnd(*optFile));
+    }
+
+    SECTION("scn<int> / scn<String> from a file")
+    {
+        const TemporaryFile temporaryFile("42 hello\n3.14 world"_sv);
+
+        auto optFile = sf::InFile::open(temporaryFile.getPath(), sf::FileOpenMode::bin);
+        REQUIRE(optFile.hasValue());
+
+        const auto v = sf::base::scn<int>(*optFile);
+        REQUIRE(v.hasValue());
+        CHECK(*v == 42);
+
+        const auto tok = sf::base::scn<sf::base::String>(*optFile);
+        REQUIRE(tok.hasValue());
+        CHECK(*tok == sf::base::String{"hello"});
     }
 }
 
@@ -909,114 +770,6 @@ TEST_CASE("[System] sf::getThreadLocalScratchCharBuffer")
 }
 
 
-TEST_CASE("[System] sf::getLine")
-{
-    using namespace sf::base::literals;
-
-    SECTION("Read lines into std::string")
-    {
-        sf::InStringStream iss(std::string{"first\nsecond\nthird"});
-
-        std::string line;
-
-        CHECK(sf::getLine(iss, line));
-        CHECK(line == "first");
-
-        CHECK(sf::getLine(iss, line));
-        CHECK(line == "second");
-
-        CHECK(sf::getLine(iss, line));
-        CHECK(line == "third");
-
-        CHECK(!sf::getLine(iss, line));
-    }
-
-    SECTION("Read lines into base::String")
-    {
-        sf::InStringStream iss(std::string{"alpha\nbeta"});
-
-        sf::base::String line;
-
-        CHECK(sf::getLine(iss, line));
-        CHECK(line == sf::base::String{"alpha"});
-
-        CHECK(sf::getLine(iss, line));
-        CHECK(line == sf::base::String{"beta"});
-
-        CHECK(!sf::getLine(iss, line));
-    }
-}
-
-
-TEST_CASE("[System] sf::IOStreamOutput")
-{
-    using namespace sf::base::literals;
-
-    // `IOStreamOutput` is intended to be used through `sf::cOut()` / `sf::cErr()`,
-    // so we redirect those streams' rdbuf to a local `OutStringStream` for the
-    // duration of each section and restore the original buffer afterwards.
-    auto* const previousBuffer = sf::cOut().rdbuf();
-    CHECK(previousBuffer != nullptr);
-
-    SECTION("Identity of cOut, cErr, cIn")
-    {
-        CHECK(&sf::cOut() == &sf::cOut());
-        CHECK(&sf::cErr() == &sf::cErr());
-        CHECK(&sf::cIn() == &sf::cIn());
-        CHECK(sf::cErr().rdbuf() != nullptr);
-    }
-
-    SECTION("Redirect cOut to OutStringStream and write fundamentals")
-    {
-        const sf::OutStringStream stream;
-        sf::cOut().rdbuf(stream.rdbuf());
-
-        sf::cOut() << "Hello " << 42;
-        sf::cOut().flush();
-        CHECK(stream.to<std::string>() == "Hello 42");
-    }
-
-    SECTION("rdbuf setter redirects output")
-    {
-        const sf::OutStringStream first;
-        const sf::OutStringStream second;
-
-        sf::cOut().rdbuf(first.rdbuf());
-        sf::cOut() << "to first";
-        sf::cOut().flush();
-
-        sf::cOut().rdbuf(second.rdbuf());
-        sf::cOut() << "to second";
-        sf::cOut().flush();
-
-        CHECK(first.to<std::string>() == "to first");
-        CHECK(second.to<std::string>() == "to second");
-    }
-
-    SECTION("endL writes newline and flushes")
-    {
-        const sf::OutStringStream stream;
-        sf::cOut().rdbuf(stream.rdbuf());
-
-        sf::cOut() << "line" << sf::endL;
-        CHECK(stream.to<std::string>() == "line\n");
-    }
-
-    SECTION("flush manipulator")
-    {
-        const sf::OutStringStream stream;
-        sf::cOut().rdbuf(stream.rdbuf());
-
-        sf::cOut() << "data" << sf::flush;
-        CHECK(stream.to<std::string>() == "data");
-    }
-
-    // Restore the original buffer so subsequent tests are not affected.
-    sf::cOut().rdbuf(previousBuffer);
-    CHECK(sf::cOut().rdbuf() == previousBuffer);
-}
-
-
 TEST_CASE("[System] sf::FileOpenMode")
 {
     SECTION("Bitwise operations")
@@ -1025,31 +778,5 @@ TEST_CASE("[System] sf::FileOpenMode")
         STATIC_CHECK((combined & sf::FileOpenMode::in) == sf::FileOpenMode::in);
         STATIC_CHECK((combined & sf::FileOpenMode::bin) == sf::FileOpenMode::bin);
         STATIC_CHECK((combined & sf::FileOpenMode::out) == sf::FileOpenMode::none);
-    }
-}
-
-
-TEST_CASE("[System] sf::FormatFlags")
-{
-    SECTION("Bitwise operations")
-    {
-        constexpr auto combined = sf::FormatFlags::hex | sf::FormatFlags::showbase;
-        STATIC_CHECK((combined & sf::FormatFlags::hex) == sf::FormatFlags::hex);
-        STATIC_CHECK((combined & sf::FormatFlags::showbase) == sf::FormatFlags::showbase);
-        STATIC_CHECK((combined & sf::FormatFlags::dec) == sf::FormatFlags::none);
-    }
-
-    SECTION("Composite masks")
-    {
-        STATIC_CHECK((sf::FormatFlags::adjustfield & sf::FormatFlags::left) == sf::FormatFlags::left);
-        STATIC_CHECK((sf::FormatFlags::adjustfield & sf::FormatFlags::right) == sf::FormatFlags::right);
-        STATIC_CHECK((sf::FormatFlags::adjustfield & sf::FormatFlags::internal) == sf::FormatFlags::internal);
-
-        STATIC_CHECK((sf::FormatFlags::basefield & sf::FormatFlags::dec) == sf::FormatFlags::dec);
-        STATIC_CHECK((sf::FormatFlags::basefield & sf::FormatFlags::oct) == sf::FormatFlags::oct);
-        STATIC_CHECK((sf::FormatFlags::basefield & sf::FormatFlags::hex) == sf::FormatFlags::hex);
-
-        STATIC_CHECK((sf::FormatFlags::floatfield & sf::FormatFlags::scientific) == sf::FormatFlags::scientific);
-        STATIC_CHECK((sf::FormatFlags::floatfield & sf::FormatFlags::fixed) == sf::FormatFlags::fixed);
     }
 }

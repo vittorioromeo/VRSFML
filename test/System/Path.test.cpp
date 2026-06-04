@@ -1,12 +1,14 @@
 #include "StringifySfBaseStringUtil.hpp" // IWYU: pragma keep
 #include "StringifyStdStringUtil.hpp"    // IWYU: pragma keep
 #include "TemporaryFile.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/Path.hpp"
 
+#include "SFML/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
 #include "SFML/System/IO.hpp"
-#include "SFML/System/PathStreamOp.hpp" // IWYU pragma: keep -- doctest stringification uses `operator<<`
 
+#include "SFML/Base/Fmt/FmtToString.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -15,8 +17,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 #include <filesystem>
 #include <string>
@@ -289,7 +289,7 @@ TEST_CASE("[System] sf::Path")
 
     SECTION("operator== / operator!= against const wchar_t*")
     {
-        // Extra parens force the expression to evaluate to `bool` before doctest's
+        // Extra parens force the expression to evaluate to `bool` before the framework.s
         // expression decomposer runs, avoiding stringification of `wchar_t[N]`.
         CHECK((sf::Path(L"a.txt") == L"a.txt"));
         CHECK((sf::Path(L"a.txt") != L"b.txt"));
@@ -302,11 +302,9 @@ TEST_CASE("[System] sf::Path")
         CHECK(sf::Path("b.txt") != rhs);
     }
 
-    SECTION("Path streams to OutStringStream via to<base::String>()")
+    SECTION("Path formats via fmtToString(\"{}\", path)")
     {
-        sf::OutStringStream oss;
-        oss << sf::Path("hello.txt").to<sf::base::String>();
-        CHECK(oss.to<sf::base::String>() == sf::base::String("hello.txt"));
+        CHECK(sf::base::fmtToString("{}", sf::Path("hello.txt")) == sf::base::String("hello.txt"));
     }
 
     SECTION("tempDirectoryPath() returns an existing directory")
@@ -529,12 +527,10 @@ TEST_CASE("[System] sf::Path")
         CHECK(sf::Path(U"hello-日.txt").to<std::u32string>() == U"hello-日.txt");
     }
 
-    SECTION("Path streaming with non-ASCII does not throw")
+    SECTION("Path formatting with non-ASCII does not throw")
     {
-        // If streaming threw, doctest catches it and fails the test -- no explicit guard needed.
-        sf::OutStringStream oss;
-        oss << sf::Path(U"hello-🐌.txt").to<sf::base::String>();
-        CHECK(!oss.to<sf::base::String>().empty());
+        // If formatting threw, the test runner catches it and fails the test -- no explicit guard needed.
+        CHECK(!sf::base::fmtToString("{}", sf::Path(U"hello-🐌.txt")).empty());
     }
 
     SECTION("extensionIs() does not throw on non-ASCII paths")

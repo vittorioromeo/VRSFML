@@ -1,6 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -22,10 +23,8 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::RenderTexture" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

@@ -8,8 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
-#include "SFML/Base/StringView.hpp"
-
 #include <cstdio>
 
 
@@ -25,5 +23,6 @@ class Path;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_SYSTEM_API std::FILE* openFile(const Path& filename, base::StringView mode);
+[[nodiscard]] SFML_SYSTEM_API std::FILE* openFile(const Path& filename, const char* mode);
+
 } // namespace sf

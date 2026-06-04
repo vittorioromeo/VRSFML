@@ -90,7 +90,7 @@ bool touchIndexPool[32]{}; // Keeps track of which finger indices are in use
         if (!touchIndexPool[i])
             return static_cast<int>(i);
 
-    sf::priv::err() << "No available touch index\n";
+    sf::priv::errMsg("No available touch index\n");
     return -1;
 }
 
@@ -189,7 +189,7 @@ struct SDLWindowImpl::Impl
     {
         if (!sdlWindow)
         {
-            err() << "Failed to create window created from " << context << ": " << SDL_GetError();
+            errMsg("Failed to create window created from {}: {}", context, SDL_GetError());
             return;
         }
 
@@ -197,7 +197,7 @@ struct SDLWindowImpl::Impl
         // the on-screen keyboard immediately; defer that to `Keyboard::setVirtualKeyboardVisible`.
         // On desktop it just enables `TEXT_INPUT` events without any visual side-effect.
         if (!SDL_HasScreenKeyboardSupport() && !SDL_StartTextInput(sdlWindow))
-            err() << "Failed to start text input for window created from " << context << ": " << SDL_GetError();
+            errMsg("Failed to start text input for window created from {}: {}", context, SDL_GetError());
     }
 
     Impl(const Impl&)            = delete;
@@ -212,7 +212,7 @@ struct SDLWindowImpl::Impl
         // we defer `SDL_StartTextInput` to `Keyboard::setVirtualKeyboardVisible`, so it may
         // never have been enabled for this window.
         if (SDL_TextInputActive(sdlWindow) && !SDL_StopTextInput(sdlWindow))
-            err() << "Failed to stop text input for window: " << SDL_GetError();
+            errMsg("Failed to stop text input for window: {}", SDL_GetError());
 
         if (!isExternal)
             SDL_DestroyWindow(sdlWindow);
@@ -224,7 +224,7 @@ struct SDLWindowImpl::Impl
         const auto result = SDL_GetWindowID(sdlWindow);
 
         if (result == 0)
-            err() << "Failed to get window ID: " << SDL_GetError();
+            errMsg("Failed to get window ID: {}", SDL_GetError());
 
         return result;
     }
@@ -523,7 +523,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
     if (!WindowContext::getSDLLayer().applyGLContextSettings(windowSettings.contextSettings))
-        err() << "Failed to apply SDL GL context settings for SDL window";
+        errMsg("Failed to apply SDL GL context settings for SDL window");
 
     // Fullscreen style requires some tests
     if (windowSettings.fullscreen)
@@ -531,7 +531,7 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
         // Make sure there's not already a fullscreen window (only one is allowed)
         if (SDLWindowImplImpl::fullscreenWindow != nullptr)
         {
-            err() << "Creating two fullscreen windows is not allowed, switching to windowed mode";
+            errMsg("Creating two fullscreen windows is not allowed, switching to windowed mode");
             windowSettings.fullscreen = false;
         }
         else
@@ -549,19 +549,29 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
             // Make sure that the chosen video mode is compatible
             if (!videoMode.isValid())
             {
-                const auto streamVideoMode = [](auto& os, const VideoMode& mode)
+                const auto formatVideoMode = [](ErrMsgScope& s, const VideoMode& mode)
                 {
-                    os << "{ size: { " << mode.size.x << ", " << mode.size.y << " }, bitsPerPixel: " << mode.bitsPerPixel
-                       << ", pixelDensity: " << mode.pixelDensity << ", refreshRate: " << mode.refreshRate << " }";
+                    s.fmt("{{ size: {{ {}, {} }}, bitsPerPixel: {}, pixelDensity: {}, refreshRate: {} }}",
+                          mode.size.x,
+                          mode.size.y,
+                          mode.bitsPerPixel,
+                          mode.pixelDensity,
+                          mode.refreshRate);
                 };
 
-                err(/* multiLine */ true) << "The requested video mode (";
-                streamVideoMode(err(/* multiLine */ true), videoMode);
-                err(/* multiLine */ true) << ") is not available, switching to a valid mode";
+                {
+                    ErrMsgScope scope;
+                    scope.append("The requested video mode (");
+                    formatVideoMode(scope, videoMode);
+                    scope.append(") is not available, switching to a valid mode");
+                }
 
-                err(/* multiLine */ true) << "Selected video mode (";
-                streamVideoMode(err(/* multiLine */ true), bestFullscreenMode);
-                err(/* multiLine */ true) << ")";
+                {
+                    ErrMsgScope scope;
+                    scope.append("Selected video mode (");
+                    formatVideoMode(scope, bestFullscreenMode);
+                    scope.append(")");
+                }
 
                 // TODO P1: actually switch?
             }
@@ -583,8 +593,9 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 
     if (sdlWindowPtr == nullptr)
     {
-        err() << "Failed to create window: " << SDL_GetError()
-              << " (Window settings: " << SDLWindowImplImpl::windowSettingsToString(windowSettings) << ")";
+        errMsg("Failed to create window: {} (Window settings: {})",
+               SDL_GetError(),
+               SDLWindowImplImpl::windowSettingsToString(windowSettings));
 
         return nullptr;
     }
@@ -645,7 +656,7 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 
     if (sdlWindowPtr == nullptr)
     {
-        err() << "Failed to create window from handle: " << SDL_GetError();
+        errMsg("Failed to create window from handle: {}", SDL_GetError());
         return nullptr;
     }
 
@@ -915,7 +926,7 @@ Vec2i SDLWindowImpl::getPosition() const
     Vec2i result;
 
     if (!SDL_GetWindowPosition(m_impl->sdlWindow, &result.x, &result.y))
-        err() << "Failed to get window position: " << SDL_GetError();
+        errMsg("Failed to get window position: {}", SDL_GetError());
 
     return result;
 }
@@ -925,7 +936,7 @@ Vec2i SDLWindowImpl::getPosition() const
 void SDLWindowImpl::setPosition(const Vec2i position)
 {
     if (!SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y))
-        err() << "Failed to set window position: " << SDL_GetError();
+        errMsg("Failed to set window position: {}", SDL_GetError());
 }
 
 
@@ -952,7 +963,7 @@ void SDLWindowImpl::setSize(const Vec2u size)
 void SDLWindowImpl::setTitle(const Utf8String& title)
 {
     if (!SDL_SetWindowTitle(m_impl->sdlWindow, title.cStr()))
-        err() << "Failed to set window title: " << SDL_GetError();
+        errMsg("Failed to set window title: {}", SDL_GetError());
 }
 
 
@@ -962,12 +973,12 @@ void SDLWindowImpl::setIcon(const base::U8* pixels, const Vec2u size)
     auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
     {
-        err() << "Failed to set icon";
+        errMsg("Failed to set icon");
         return;
     }
 
     if (!SDL_SetWindowIcon(m_impl->sdlWindow, surface.get()))
-        err() << "Failed to set window icon: " << SDL_GetError();
+        errMsg("Failed to set window icon: {}", SDL_GetError());
 }
 
 
@@ -977,12 +988,12 @@ void SDLWindowImpl::setVisible(const bool visible)
     if (visible)
     {
         if (!SDL_ShowWindow(m_impl->sdlWindow))
-            err() << "Failed to show window: " << SDL_GetError();
+            errMsg("Failed to show window: {}", SDL_GetError());
     }
     else
     {
         if (!SDL_HideWindow(m_impl->sdlWindow))
-            err() << "Failed to hide window: " << SDL_GetError();
+            errMsg("Failed to hide window: {}", SDL_GetError());
     }
 }
 
@@ -993,12 +1004,12 @@ void SDLWindowImpl::setMouseCursorVisible(const bool visible)
     if (visible)
     {
         if (!SDL_ShowCursor())
-            err() << "Failed to show cursor: " << SDL_GetError();
+            errMsg("Failed to show cursor: {}", SDL_GetError());
     }
     else
     {
         if (!SDL_HideCursor())
-            err() << "Failed to hide cursor: " << SDL_GetError();
+            errMsg("Failed to hide cursor: {}", SDL_GetError());
     }
 }
 
@@ -1007,7 +1018,7 @@ void SDLWindowImpl::setMouseCursorVisible(const bool visible)
 void SDLWindowImpl::setMouseCursorGrabbed(const bool grabbed)
 {
     if (!SDL_SetWindowMouseGrab(m_impl->sdlWindow, grabbed))
-        err() << "Failed to set window mouse grab: " << SDL_GetError();
+        errMsg("Failed to set window mouse grab: {}", SDL_GetError());
 }
 
 
@@ -1029,7 +1040,7 @@ void SDLWindowImpl::setKeyRepeatEnabled(const bool enabled)
 void SDLWindowImpl::requestFocus()
 {
     if (!SDL_RaiseWindow(m_impl->sdlWindow))
-        err() << "Failed to raise window: " << SDL_GetError();
+        errMsg("Failed to raise window: {}", SDL_GetError());
 }
 
 
@@ -1072,7 +1083,7 @@ bool SDLWindowImpl::hasTitlebar() const
 void SDLWindowImpl::setResizable(const bool resizable)
 {
     if (!SDL_SetWindowResizable(m_impl->sdlWindow, resizable))
-        err() << "Failed to set window resizable: " << SDL_GetError();
+        errMsg("Failed to set window resizable: {}", SDL_GetError());
 }
 
 
@@ -1080,7 +1091,7 @@ void SDLWindowImpl::setResizable(const bool resizable)
 void SDLWindowImpl::setHasTitlebar(const bool hasTitleBar)
 {
     if (!SDL_SetWindowBordered(m_impl->sdlWindow, hasTitleBar))
-        err() << "Failed to set window titlebar: " << SDL_GetError();
+        errMsg("Failed to set window titlebar: {}", SDL_GetError());
 }
 
 

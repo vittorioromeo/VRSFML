@@ -3,6 +3,7 @@
 #ifdef SFML_SYSTEM_WINDOWS
 // Other 1st party headers
     #include "SystemUtil.hpp"
+    #include "Tst/Tst.hpp"
 
     #include "SFML/Graphics/RenderWindow.hpp"
 
@@ -15,8 +16,6 @@
     #include "SFML/System/WindowsHeader.hpp" // IWYU pragma: keep
 
     #include "SFML/Base/Optional.hpp"
-
-    #include <Doctest.hpp>
 
 
 namespace

@@ -1,10 +1,9 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Window/Joystick.hpp"
 
 #include "SFML/Window/WindowContext.hpp"
-
-#include <Doctest.hpp>
 
 TEST_CASE("[Window] sf::Joystick")
 {

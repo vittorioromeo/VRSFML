@@ -11,7 +11,6 @@
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Trait/IsSame.hpp"
 
 
 namespace sf::base
@@ -213,22 +212,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT find(const char* cStr,
-                                                                      const SizeT startPos,
-                                                                      const SizeT count) const noexcept
-    {
-        return find(StringView{cStr, count}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT find(const char* cStr, const SizeT startPos = 0u) const noexcept
-    {
-        return find(StringView{cStr}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT rfind(const StringView v, const SizeT startPos = nPos) const noexcept
     {
         if (v.theSize > theSize)
@@ -267,22 +250,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT rfind(const char* cStr,
-                                                                       const SizeT startPos,
-                                                                       const SizeT count) const noexcept
-    {
-        return rfind(StringView{cStr, count}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT rfind(const char* cStr, const SizeT startPos = nPos) const noexcept
-    {
-        return rfind(StringView{cStr}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstOf(const StringView v,
                                                                              const SizeT startPos = 0u) const noexcept
     {
@@ -300,23 +267,6 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstOf(const char c, const SizeT startPos = 0u) const noexcept
     {
         return find(c, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstOf(const char* const cStr,
-                                                                             const SizeT       startPos,
-                                                                             const SizeT       count) const noexcept
-    {
-        return findFirstOf(StringView{cStr, count}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstOf(const char* const cStr,
-                                                                             const SizeT startPos = 0u) const noexcept
-    {
-        return findFirstOf(StringView{cStr}, startPos);
     }
 
 
@@ -347,23 +297,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findLastOf(const char* const cStr,
-                                                                            const SizeT       startPos,
-                                                                            const SizeT       count) const noexcept
-    {
-        return findLastOf(StringView{cStr, count}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findLastOf(const char* const cStr,
-                                                                            const SizeT startPos = nPos) const noexcept
-    {
-        return findLastOf(StringView{cStr}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstNotOf(const StringView v,
                                                                                 const SizeT startPos = 0u) const noexcept
     {
@@ -385,23 +318,6 @@ public:
                 return i;
 
         return nPos;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstNotOf(const char* const cStr,
-                                                                                const SizeT       startPos,
-                                                                                const SizeT       count) const noexcept
-    {
-        return findFirstNotOf(StringView{cStr, count}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstNotOf(const char* const cStr,
-                                                                                const SizeT startPos = 0u) const noexcept
-    {
-        return findFirstNotOf(StringView{cStr}, startPos);
     }
 
 
@@ -443,23 +359,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findLastNotOf(const char* const cStr,
-                                                                               const SizeT       startPos,
-                                                                               const SizeT       count) const noexcept
-    {
-        return findLastNotOf(StringView{cStr, count}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findLastNotOf(const char* const cStr,
-                                                                               const SizeT startPos = nPos) const noexcept
-    {
-        return findLastNotOf(StringView{cStr}, startPos);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool startsWith(const StringView prefix) const noexcept
     {
         return theSize >= prefix.theSize && constexprMemCmp(theData, prefix.theData, prefix.theSize) == 0;
@@ -470,13 +369,6 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool startsWith(const char c) const noexcept
     {
         return theSize > 0u && theData[0] == c;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool startsWith(const char* const cStr) const noexcept
-    {
-        return startsWith(StringView{cStr});
     }
 
 
@@ -496,13 +388,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool endsWith(const char* const cStr) const noexcept
-    {
-        return endsWith(StringView{cStr});
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool contains(const StringView needle) const noexcept
     {
         return find(needle) != nPos;
@@ -516,40 +401,9 @@ public:
     }
 
 
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool contains(const char* const cStr) const noexcept
-    {
-        return find(StringView{cStr}) != nPos;
-    }
-
-
 private:
-    // Pre: when `Splitter == StringView`, `splitter` must be non-empty (the
-    // public `forSplits(StringView)` overload asserts this before calling here).
-    // The single-char overload can't pass an empty splitter by construction.
     template <typename Splitter, typename F>
-    [[gnu::always_inline]] constexpr void forSplitsImpl(Splitter splitter, F&& f) const
-    {
-        SizeT segStart = 0u;
-
-        while (segStart < theSize)
-        {
-            const SizeT splitPos = find(splitter, segStart);
-
-            if (splitPos == nPos)
-            {
-                f(StringView{theData + segStart, theSize - segStart});
-                return;
-            }
-
-            f(StringView{theData + segStart, splitPos - segStart});
-
-            if constexpr (SFML_BASE_IS_SAME(Splitter, char))
-                segStart = splitPos + 1u;
-            else
-                segStart = splitPos + splitter.theSize;
-        }
-    }
+    constexpr void forSplitsImpl(Splitter splitter, F&& f) const;
 
 
 public:
@@ -564,13 +418,12 @@ public:
     /// empty segments. Multi-character splitters use the standard
     /// non-overlapping convention. `splitter` must be non-empty.
     ///
+    /// Definitions live in `StringViewSplits.hpp`; include that header to
+    /// call these methods.
+    ///
     ////////////////////////////////////////////////////////////
     template <typename F>
-    [[gnu::always_inline, gnu::flatten]] constexpr void forSplits(const StringView splitter, F&& f) const
-    {
-        SFML_BASE_ASSERT(!splitter.empty() && "Splitter must be non-empty");
-        forSplitsImpl(splitter, static_cast<F&&>(f));
-    }
+    constexpr void forSplits(StringView splitter, F&& f) const;
 
 
     ////////////////////////////////////////////////////////////
@@ -579,12 +432,12 @@ public:
     /// Same semantics as the `StringView`-splitter overload, but uses the
     /// faster single-character `find(char)` path internally.
     ///
+    /// Definitions live in `StringViewSplits.hpp`; include that header to
+    /// call these methods.
+    ///
     ////////////////////////////////////////////////////////////
     template <typename F>
-    [[gnu::always_inline, gnu::flatten]] constexpr void forSplits(const char splitter, F&& f) const
-    {
-        forSplitsImpl(splitter, static_cast<F&&>(f));
-    }
+    constexpr void forSplits(char splitter, F&& f) const;
 
 
     ////////////////////////////////////////////////////////////
@@ -595,12 +448,12 @@ public:
     /// empty final line. Carriage returns in CRLF endings remain part of
     /// the line view.
     ///
+    /// Definitions live in `StringViewSplits.hpp`; include that header to
+    /// call these methods.
+    ///
     ////////////////////////////////////////////////////////////
     template <typename F>
-    [[gnu::always_inline, gnu::flatten]] constexpr void forLines(F&& f) const
-    {
-        forSplits('\n', static_cast<F&&>(f));
-    }
+    constexpr void forLines(F&& f) const;
 
 
     ////////////////////////////////////////////////////////////

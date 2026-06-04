@@ -70,6 +70,8 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FloatMax.hpp"
+#include "SFML/Base/Fmt/Fmt.hpp"
+#include "SFML/Base/Fmt/FmtNumeric.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -192,7 +194,7 @@ void Main::saveMainPlaythroughToFile()
     {
         if (ptMain.fullVersion)
         {
-            sf::cOut() << "Cannot save non-demo playthrough in demo version!\n";
+            sf::base::printLn("Cannot save non-demo playthrough in demo version!");
             return;
         }
     }
@@ -224,9 +226,8 @@ void Main::log(const char* format, ...) // NOLINT(modernize-avoid-variadic-funct
 #pragma GCC diagnostic pop
     va_end(args);
 
-    logFile << static_cast<const char*>(timeBuffer) << static_cast<const char*>(" - ")
-            << static_cast<const char*>(messageBuffer) << '\n';
-    logFile.flush();
+    sf::base::printLn(*logFile, "{} - {}", static_cast<const char*>(timeBuffer), static_cast<const char*>(messageBuffer));
+    (void)logFile->flush();
 }
 
 

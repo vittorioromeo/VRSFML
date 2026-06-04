@@ -1,4 +1,5 @@
 #include "AudioUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/ChannelMap.hpp"
 
@@ -10,10 +11,8 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Audio] sf::ChannelMap" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::ChannelMap" * tst::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {

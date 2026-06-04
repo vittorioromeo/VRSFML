@@ -5,6 +5,7 @@
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -12,10 +13,8 @@
 
 #include "SFML/System/Priv/Vec2Base.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] sf::TextureAtlas" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

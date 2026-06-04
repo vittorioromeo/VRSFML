@@ -1,11 +1,10 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/Macros.hpp"
-
-#include <Doctest.hpp>
 
 #if defined(SFML_ENABLE_LIFETIME_TRACKING)
 

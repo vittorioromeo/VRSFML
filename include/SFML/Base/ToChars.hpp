@@ -7,12 +7,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtin/Clzll.hpp"
 #include "SFML/Base/Builtin/IsInf.hpp"
 #include "SFML/Base/Builtin/IsNan.hpp"
 #include "SFML/Base/Builtin/Signbit.hpp"
 #include "SFML/Base/Math/Rint.hpp"
 #include "SFML/Base/Trait/IsFloatingPoint.hpp"
 #include "SFML/Base/Trait/IsIntegral.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Trait/IsUnsigned.hpp"
 #include "SFML/Base/Trait/MakeUnsigned.hpp"
 
@@ -20,9 +22,7 @@
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Precomputed powers of 10 for performance
-///
-/// Supports up to 10 decimal places.
+/// \brief Precomputed powers of 10 (supports up to 10 decimal places)
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr const long long powersOf10[] = {
@@ -41,47 +41,144 @@ inline constexpr const long long powersOf10[] = {
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Reverses the character sequence in the given range.
+/// \brief 200-byte ASCII table: bytes `[2*N .. 2*N+1]` hold the two-digit
+/// representation of `N` for `0 <= N < 100` (e.g. index 7 -> `"07"`)
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] inline constexpr void reverseChars(char* first, char* last)
-{
-    // `last` is one-past-the-end, so decrement it to point to the last character.
-    --last;
+inline constexpr char digitPairs[201] =
+    "0001020304050607080910111213141516171819"
+    "2021222324252627282930313233343536373839"
+    "4041424344454647484950515253545556575859"
+    "6061626364656667686970717273747576777879"
+    "8081828384858687888990919293949596979899";
 
-    while (first < last)
-    {
-        const char tmp = *first;
-        *first++       = *last;
-        *last--        = tmp;
-    }
+
+////////////////////////////////////////////////////////////
+/// \brief Maps a value's top set-bit index (0..63) to its decimal digit count
+///
+/// `decimalDigitsFromTopBit[b]` is the digit count of the largest 64-bit value
+/// whose highest set bit is `b`. Because all values sharing a top bit span at
+/// most one decimal-length boundary, this is the exact digit count or an
+/// over-estimate by exactly one, corrected by a single comparison below.
+///
+////////////////////////////////////////////////////////////
+inline constexpr unsigned char decimalDigitsFromTopBit[64] =
+    {1,  1,  1,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,  6,  6,  6,  7,  7,  7,
+     7,  8,  8,  8,  9,  9,  9,  10, 10, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 13, 14,
+     14, 14, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 18, 18, 18, 19, 19, 19, 19, 20};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Smallest values requiring a given decimal digit count
+///
+/// `decimalThreshold[t] == 10^(t-1)` is the smallest `t`-digit number, used to
+/// correct the over-estimate from `decimalDigitsFromTopBit`. Indices `0` and `1`
+/// are `0` so the correction is a no-op for the single-digit / zero case.
+///
+////////////////////////////////////////////////////////////
+inline constexpr unsigned long long decimalThreshold[21] =
+    {0ull,
+     0ull,
+     10ull,
+     100ull,
+     1000ull,
+     10'000ull,
+     100'000ull,
+     1'000'000ull,
+     10'000'000ull,
+     100'000'000ull,
+     1'000'000'000ull,
+     10'000'000'000ull,
+     100'000'000'000ull,
+     1'000'000'000'000ull,
+     10'000'000'000'000ull,
+     100'000'000'000'000ull,
+     1'000'000'000'000'000ull,
+     10'000'000'000'000'000ull,
+     100'000'000'000'000'000ull,
+     1'000'000'000'000'000'000ull,
+     10'000'000'000'000'000'000ull};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Number of decimal digits needed to represent `value`
+///
+/// Branchless: one count-leading-zeros to find the top set bit, a table lookup
+/// for a digit-count estimate (exact or one too high), and a single comparison
+/// to correct the off-by-one. Latency is independent of the input's magnitude.
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr int decimalDigitCount(const T x) noexcept
+{
+    static_assert(SFML_BASE_IS_UNSIGNED(T));
+
+    // Widen to 64-bit so a single `clzll`-based path covers every unsigned width.
+    const unsigned long long n = x;
+
+    // `n | 1ull` keeps the operand nonzero: `__builtin_clzll(0)` is UB and the
+    // `0` and `1` cases share digit count `1`, so the `| 1` is load-bearing.
+    const int t = decimalDigitsFromTopBit[63 - SFML_BASE_CLZLL(n | 1ull)];
+
+    // Subtract one when the estimate over-counts (i.e. `n` is below the smallest
+    // `t`-digit value); `decimalThreshold[1] == 0` makes this a no-op for `t == 1`.
+    return t - (n < decimalThreshold[t]);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Write the decimal representation of an unsigned `value` into `[first, last)`
+/// \brief Jeaiii-style: write the decimal representation of an unsigned
+/// `value` into `[first, last)` using a 200-byte digit-pair lookup table.
 ///
-/// \return Pointer one past the last written character, or `nullptr` if the buffer is too small
+/// Halves the number of `divide-by-10` operations vs. the naïve loop and
+/// avoids the in-place reverse pass: computes digit count up front, then
+/// writes pairs right-to-left straight into the destination.
+///
+/// \return Pointer one past the last written character, or `nullptr` if
+/// the buffer is too small.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr char* unsignedToChars(char* const first, const char* const last, T value)
 {
-    // `do-while` covers `value == 0` without a separate branch: we always emit
-    // at least one digit, then keep dividing while bits remain.
-    char* p = first;
+    static_assert(SFML_BASE_IS_UNSIGNED(T));
 
-    do
+    const int digits = decimalDigitCount(value);
+
+    if (last - first < digits)
+        return nullptr; // Buffer too small
+
+    char* const end = first + digits;
+    char*       p   = end;
+
+    // Two-at-a-time loop: divide by 100, look up the pair. Use literal `100u`
+    // for the comparison (rather than `T{100}`) so a narrow type like
+    // `unsigned char` doesn't trip the brace-init narrowing check.
+    while (value >= 100u)
     {
-        if (p >= last)
-            return nullptr; // Buffer too small
+        const auto pairIdx = static_cast<unsigned>(value % 100u) * 2u;
+        value              = static_cast<T>(value / 100u);
+        p -= 2;
 
-        *p++ = '0' + static_cast<char>(value % 10);
-        value /= 10;
-    } while (value > T{0});
+        p[0] = digitPairs[pairIdx];
+        p[1] = digitPairs[pairIdx + 1u];
+    }
 
-    reverseChars(first, p);
-    return p;
+    // Tail: one or two digits left.
+    if (value >= 10u)
+    {
+        const auto pairIdx = static_cast<unsigned>(value) * 2u;
+        p -= 2;
+
+        p[0] = digitPairs[pairIdx];
+        p[1] = digitPairs[pairIdx + 1u];
+    }
+    else
+    {
+        *--p = static_cast<char>('0' + static_cast<unsigned>(value));
+    }
+
+    return end;
 }
 
 } // namespace sf::base::priv
@@ -99,7 +196,15 @@ template <typename T>
 [[nodiscard]] constexpr char* toChars(char* first, const char* const last, const T value)
     requires isIntegral<T>
 {
-    if constexpr (isUnsigned<T>)
+    if constexpr (SFML_BASE_IS_SAME(T, bool))
+    {
+        if (first >= last)
+            return nullptr;
+
+        *first++ = value ? '1' : '0';
+        return first;
+    }
+    else if constexpr (isUnsigned<T>)
     {
         return priv::unsignedToChars(first, last, value);
     }
@@ -218,7 +323,9 @@ template <typename T>
         if (value > safeLLongUpper) [[unlikely]]
             return nullptr;
 
-        const auto roundedAsInt = static_cast<long long>(base::rint(value));
+        // `value` is non-negative here (signbit branch already negated it),
+        // so the unsigned cast is well-defined.
+        const auto roundedAsInt = static_cast<unsigned long long>(base::rint(value));
         return priv::unsignedToChars(p, last, roundedAsInt);
     }
 
@@ -229,10 +336,10 @@ template <typename T>
         return nullptr;
 
     // `value` is non-negative at this point (signbit branch already negated it)
-    // and `scaled <= 9e18 < LLONG_MAX`, so signed cast is well-defined.
-    const auto roundedScaledValue = static_cast<long long>(base::rint(scaled));
-    const auto finalIntPart       = roundedScaledValue / multiplier;
-    auto       finalFracPart      = roundedScaledValue % multiplier;
+    // and `scaled <= 9e18 < LLONG_MAX`, so the unsigned cast is well-defined.
+    const auto roundedScaledValue = static_cast<unsigned long long>(base::rint(scaled));
+    const auto finalIntPart       = roundedScaledValue / static_cast<unsigned long long>(multiplier);
+    auto       finalFracPart      = roundedScaledValue % static_cast<unsigned long long>(multiplier);
 
     p = priv::unsignedToChars(p, last, finalIntPart);
 

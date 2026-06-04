@@ -25,7 +25,9 @@
 #include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Atomic.hpp"
+#include "SFML/System/AtomicMutex.hpp"
 #include "SFML/System/Err.hpp"
+#include "SFML/System/LockGuard.hpp"
 #include "SFML/System/Priv/Vec2Base.hpp"
 #include "SFML/System/SignalErrHandler.hpp"
 #include "SFML/System/Utf8String.hpp"
@@ -41,9 +43,7 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <SDL3/SDL_hints.h>
-
-#include <mutex>
+#include <SDL3/SDL_hints.h> // TODO P0: move to SDLLayer
 
 
 namespace sf
@@ -125,13 +125,13 @@ struct UnsharedContextResources
 class UnsharedContextResourcesManager
 {
 private:
-    mutable std::mutex                                                   m_mutex;
+    mutable AtomicMutex                                                  m_mutex;
     ankerl::unordered_dense::map<unsigned int, UnsharedContextResources> m_mapping;
 
     ////////////////////////////////////////////////////////////
     void registerImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id)
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
         auto& idsSet    = (resources.*idsPmr);
@@ -145,7 +145,7 @@ private:
     ////////////////////////////////////////////////////////////
     void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id, auto fGlDeleteFunc)
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
         auto& idsSet    = (resources.*idsPmr);
@@ -161,7 +161,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool allEmpty() const
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         for (const auto& [glContextId, resources] : m_mapping)
             if (!resources.allEmpty())
@@ -173,7 +173,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool allNonSharedEmpty() const
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         for (const auto& [glContextId, resources] : m_mapping)
             if (glContextId != 1u && !resources.allEmpty())
@@ -185,7 +185,7 @@ public:
     ////////////////////////////////////////////////////////////
     void unregisterAllResources(const unsigned int glContextId)
     {
-        std::lock_guard lock(m_mutex);
+        LockGuard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
         if (resources.allEmpty())
@@ -248,7 +248,7 @@ struct ContextTransferScratch
 class TransferScratchManager
 {
 private:
-    std::mutex                                                         m_mutex;
+    AtomicMutex                                                        m_mutex;
     ankerl::unordered_dense::map<unsigned int, ContextTransferScratch> m_byContext;
 
     ////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ private:
         glCheck(glGenFramebuffers(1, &framebufferId));
 
         if (framebufferId == 0u)
-            sf::priv::err() << "Failed to create transfer scratch " << what;
+            priv::errMsg("Failed to create transfer scratch {}", what);
 
         return framebufferId;
     }
@@ -310,7 +310,7 @@ private:
 
         if (scratch.flipTexture == 0u)
         {
-            sf::priv::err() << "Failed to create transfer scratch flip texture";
+            priv::errMsg("Failed to create transfer scratch flip texture");
             return 0u;
         }
 
@@ -342,8 +342,7 @@ public:
         // Verify that everything is already released for all contexts
         if (!m_byContext.empty())
         {
-            sf::priv::err() << "TransferScratchManager destroyed with unreleased resources for " << m_byContext.size()
-                            << " contexts";
+            priv::errMsg("TransferScratchManager destroyed with unreleased resources for {} contexts", m_byContext.size());
 
             sf::base::abort();
         }
@@ -352,7 +351,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getReadFramebuffer()
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFramebuffer(scratch.readFramebuffer, "read framebuffer");
@@ -361,7 +360,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getDrawFramebuffer()
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFramebuffer(scratch.drawFramebuffer, "draw framebuffer");
@@ -370,7 +369,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int ensureFlipTexture(const sf::Vec2u size, const bool sRgb)
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
         return ensureFlipTexture(scratch, size, sRgb);
@@ -392,7 +391,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int ensureFlipFramebufferReady(const sf::Vec2u size, const bool sRgb)
     {
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         auto& scratch = getOrCreateForActiveContext();
 
@@ -418,7 +417,7 @@ public:
 
             if (glCheck(glCheckFramebufferStatus(GL_FRAMEBUFFER)) != GL_FRAMEBUFFER_COMPLETE)
             {
-                sf::priv::err() << "Failure to complete intermediate FBO in `copyFlippedFramebuffer`";
+                priv::errMsg("Failure to complete intermediate FBO in `copyFlippedFramebuffer`");
                 return 0u;
             }
 
@@ -434,7 +433,7 @@ public:
         if (!sf::WindowContext::isInstalled() || !sf::WindowContext::hasActiveThreadLocalGlContext())
             return;
 
-        const std::lock_guard lock(m_mutex);
+        const LockGuard lock(m_mutex);
 
         const unsigned int contextId = getActiveContextId();
         auto*              it        = m_byContext.find(contextId);
@@ -547,8 +546,8 @@ struct WindowContextImpl
     UnsharedContextResourcesManager unsharedContextResourcesManager;
 
     ////////////////////////////////////////////////////////////
-    priv::SDLGlContext   sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
-    std::recursive_mutex sharedGlContextMutex;
+    priv::SDLGlContext sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
+    AtomicMutex        sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
     base::Vector<sf::base::StringView> extensions; //!< Supported OpenGL extensions
@@ -576,7 +575,7 @@ WindowContextImpl& ensureInstalled()
 {
     if (!installedWindowContext.hasValue()) [[unlikely]]
     {
-        priv::err() << "`sf::WindowContext` not installed -- did you forget to create one in `main`?";
+        priv::errMsg("`sf::WindowContext` not installed -- did you forget to create one in `main`?");
         base::abort();
     }
 
@@ -590,7 +589,7 @@ base::Optional<WindowContext> WindowContext::create()
 {
     const auto fail = [](const char* what)
     {
-        priv::err() << "Error creating `sf::WindowContext`: " << what;
+        priv::errMsg("Error creating `sf::WindowContext`: {}", what);
         return base::nullOpt;
     };
 
@@ -763,7 +762,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
     {
         // Make this context active so resources can be freed
         if (!setActiveThreadLocalGlContext(glContext, true))
-            priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
+            priv::errMsg("Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()");
 
         wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
         wc.transferScratchManager.releaseForActiveContext();
@@ -859,7 +858,7 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, co
     // Activate/deactivate the context
     if (!glContext.makeCurrent(active))
     {
-        priv::err() << "`glContext.makeCurrent` failure in `WindowContext::setActiveThreadLocalGlContext`";
+        priv::errMsg("`glContext.makeCurrent` failure in `WindowContext::setActiveThreadLocalGlContext`");
         return false;
     }
 
@@ -901,7 +900,7 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
 
     if (!setActiveThreadLocalGlContextToSharedContext())
     {
-        priv::err() << "Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`";
+        priv::errMsg("Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`");
         SFML_BASE_ASSERT(false);
     }
 }
@@ -933,7 +932,7 @@ void WindowContext::disableSharedGlContext()
 
     if (!wc.sharedGlContext.makeCurrent(false))
     {
-        priv::err() << "Could not disable shared GL context in `WindowContext::disableSharedGlContext()`";
+        priv::errMsg("Could not disable shared GL context in `WindowContext::disableSharedGlContext()`");
         return;
     }
 
@@ -967,10 +966,10 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 {
     auto& wc = ensureInstalled();
 
-    const std::lock_guard lock(wc.sharedGlContextMutex);
+    const LockGuard lock(wc.sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext())
-        priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
+        priv::errMsg("Error enabling shared GL context in WindowContext::createGlContext()");
 
     auto glContext = base::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
                                                           &wc.sharedGlContext,
@@ -979,13 +978,13 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
-        priv::err() << "Error enabling newly created GL context in GlContext::initialize()";
+        priv::errMsg("Error enabling newly created GL context in GlContext::initialize()");
         return nullptr;
     }
 
     if (!glContext->initialize(wc.sharedGlContext, contextSettings))
     {
-        priv::err() << "Error initializing newly created GL context in WindowContext::createGlContext()";
+        priv::errMsg("Error initializing newly created GL context in WindowContext::createGlContext()");
         return nullptr;
     }
 

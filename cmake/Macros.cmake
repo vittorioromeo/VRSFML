@@ -576,12 +576,18 @@ function(sfml_add_test target SOURCES DEPENDS)
     # Add the test
     if(NOT SFML_OS_EMSCRIPTEN)
         # Wire up LSan suppressions for the dbus / GL driver / Vulkan leaks that
-        # surface during graphics-context teardown. The suppressions list lives in
-        # `lsan_suppressions.txt` at the project root; without this wiring those
-        # known-benign leaks cause ctest failures on sanitizer builds.
-        doctest_discover_tests(${target}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-            PROPERTIES ENVIRONMENT "LSAN_OPTIONS=suppressions=${PROJECT_SOURCE_DIR}/lsan_suppressions.txt")
+        # surface during graphics-context teardown. The suppressions list lives
+        # in `lsan_suppressions.txt` at the project root.
+        #
+        # The bespoke testing library runs every test case from a single
+        # binary entry point; the binary's exit code reports overall pass/fail
+        # and per-case diagnostics go to stderr. One ctest entry per target
+        # is sufficient (and faster to register than per-case discovery).
+        add_test(NAME ${target}
+                 COMMAND ${target}
+                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+        set_tests_properties(${target} PROPERTIES
+            ENVIRONMENT "LSAN_OPTIONS=suppressions=${PROJECT_SOURCE_DIR}/lsan_suppressions.txt")
     endif()
 endfunction()
 

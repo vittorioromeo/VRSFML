@@ -137,15 +137,6 @@ public:
     using Window::setIcon;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell if the window will use sRGB encoding when drawing on it
-    ///
-    /// \return Always `false`. Modern window swapchains do not use sRGB.
-    ///         Use an `sf::RenderTexture` if you need sRGB encoding.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isSrgb() const override;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Activate or deactivate the window as the current target
     ///        for OpenGL rendering
     ///

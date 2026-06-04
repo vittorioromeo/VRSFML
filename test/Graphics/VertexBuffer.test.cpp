@@ -4,6 +4,7 @@
 
 // Other 1st party headers
 #include "GraphicsUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -15,8 +16,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowSwappable.hpp"
-
-#include <Doctest.hpp>
 
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run

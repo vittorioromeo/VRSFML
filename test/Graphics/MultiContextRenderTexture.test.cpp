@@ -1,6 +1,7 @@
 #include "GraphicsUtil.hpp"
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Graphics/DrawIndexedVerticesSettings.hpp"
@@ -16,8 +17,6 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <Doctest.hpp>
 
 
 #if defined(_WIN32)
@@ -45,7 +44,7 @@ extern "C"
 
 namespace
 {
-constexpr GLenum GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT = 0x8C'D6u; // NOLINT(readability-identifier-naming)
+constexpr GLenum kGlFramebufferIncompleteAttachment = 0x8C'D6u; // NOLINT(readability-identifier-naming)
 
 
 struct ScopedFramebufferHooks
@@ -64,7 +63,7 @@ struct ScopedFramebufferHooks
         ++checkFramebufferStatusCallCount;
 
         if (failOnSecondFramebufferStatusCheck && checkFramebufferStatusCallCount == 2u)
-            return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+            return kGlFramebufferIncompleteAttachment;
 
         return originalCheckFramebufferStatus(target);
     }
@@ -117,7 +116,7 @@ struct ScopedFramebufferHooks
 // Emscripten/WebGL does not support multiple GL contexts, which this entire
 // test case exercises.
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
 {
     sf::Vertex   vertices[]{{.position = {0.f, 0.f}}};
     unsigned int indices[] = {0};

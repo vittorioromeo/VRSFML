@@ -1,12 +1,11 @@
 #include "StringifyStringViewUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/ToChars.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include <Doctest.hpp>
 
 #include <limits>
 
@@ -61,8 +60,8 @@ TEST_CASE("[Base] ToChars.hpp")
     {
         // For types narrower than `int`, unary `-` on the unsigned counterpart
         // promotes to `int` first; without an explicit cast back, the result
-        // would be a negative `int` and `unsignedToChars` would print nothing
-        // after the leading '-'.
+        // would be a negative `int` and the digit-extraction loop would
+        // silently print nothing after the leading '-'.
         CHECK_INTEGER_CONVERSION(static_cast<short>(-32'000), "-32000");
         CHECK_INTEGER_CONVERSION(static_cast<short>(32'000), "32000");
         CHECK_INTEGER_CONVERSION(std::numeric_limits<short>::min(), "-32768");
@@ -71,6 +70,163 @@ TEST_CASE("[Base] ToChars.hpp")
         CHECK_INTEGER_CONVERSION(static_cast<signed char>(-100), "-100");
         CHECK_INTEGER_CONVERSION(std::numeric_limits<signed char>::min(), "-128");
         CHECK_INTEGER_CONVERSION(std::numeric_limits<signed char>::max(), "127");
+    }
+
+    SECTION("bool")
+    {
+        CHECK_INTEGER_CONVERSION(false, "0");
+        CHECK_INTEGER_CONVERSION(true, "1");
+    }
+
+    SECTION("Narrow unsigned types: bool / unsigned char / unsigned short")
+    {
+        // bool
+        CHECK_INTEGER_CONVERSION(static_cast<bool>(0), "0");
+        CHECK_INTEGER_CONVERSION(static_cast<bool>(1), "1");
+
+        // unsigned char: digit-count transitions 0/9, 9/10, 99/100, max
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned char>(0), "0");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned char>(9), "9");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned char>(10), "10");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned char>(99), "99");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned char>(100), "100");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned char>(200), "200");
+        CHECK_INTEGER_CONVERSION(std::numeric_limits<unsigned char>::max(), "255");
+
+        // unsigned short
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned short>(0), "0");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned short>(999), "999");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned short>(1000), "1000");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned short>(9999), "9999");
+        CHECK_INTEGER_CONVERSION(static_cast<unsigned short>(10'000), "10000");
+        CHECK_INTEGER_CONVERSION(std::numeric_limits<unsigned short>::max(), "65535");
+    }
+
+    SECTION("u32 / i32 digit-count transitions")
+    {
+        // u32: every 10^N boundary, both sides
+        CHECK_INTEGER_CONVERSION(0u, "0");
+        CHECK_INTEGER_CONVERSION(1u, "1");
+        CHECK_INTEGER_CONVERSION(9u, "9");
+        CHECK_INTEGER_CONVERSION(10u, "10");
+        CHECK_INTEGER_CONVERSION(99u, "99");
+        CHECK_INTEGER_CONVERSION(100u, "100");
+        CHECK_INTEGER_CONVERSION(999u, "999");
+        CHECK_INTEGER_CONVERSION(1000u, "1000");
+        CHECK_INTEGER_CONVERSION(9999u, "9999");
+        CHECK_INTEGER_CONVERSION(10'000u, "10000");
+        CHECK_INTEGER_CONVERSION(99'999u, "99999");
+        CHECK_INTEGER_CONVERSION(100'000u, "100000");
+        CHECK_INTEGER_CONVERSION(999'999u, "999999");
+        CHECK_INTEGER_CONVERSION(1'000'000u, "1000000");
+        CHECK_INTEGER_CONVERSION(9'999'999u, "9999999");
+        CHECK_INTEGER_CONVERSION(10'000'000u, "10000000");
+        CHECK_INTEGER_CONVERSION(99'999'999u, "99999999");
+        CHECK_INTEGER_CONVERSION(100'000'000u, "100000000");
+        CHECK_INTEGER_CONVERSION(999'999'999u, "999999999");
+        CHECK_INTEGER_CONVERSION(1'000'000'000u, "1000000000");
+        CHECK_INTEGER_CONVERSION(4'294'967'295u, "4294967295");
+
+        // i32: negative side digit-count transitions
+        CHECK_INTEGER_CONVERSION(-1, "-1");
+        CHECK_INTEGER_CONVERSION(-9, "-9");
+        CHECK_INTEGER_CONVERSION(-10, "-10");
+        CHECK_INTEGER_CONVERSION(-99, "-99");
+        CHECK_INTEGER_CONVERSION(-100, "-100");
+        CHECK_INTEGER_CONVERSION(-999, "-999");
+        CHECK_INTEGER_CONVERSION(-1000, "-1000");
+        CHECK_INTEGER_CONVERSION(-1'000'000, "-1000000");
+        CHECK_INTEGER_CONVERSION(-2'147'483'647, "-2147483647");
+    }
+
+    SECTION("u64 / i64 digit-count transitions")
+    {
+        using sf::base::I64;
+        using sf::base::U64;
+
+        // Every 10^N boundary for u64 (digits 10..20)
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(9'999'999'999ull), "9999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(10'000'000'000ull), "10000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(99'999'999'999ull), "99999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(100'000'000'000ull), "100000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(999'999'999'999ull), "999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(1'000'000'000'000ull), "1000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(9'999'999'999'999ull), "9999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(10'000'000'000'000ull), "10000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(99'999'999'999'999ull), "99999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(100'000'000'000'000ull), "100000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(999'999'999'999'999ull), "999999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(1'000'000'000'000'000ull), "1000000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(9'999'999'999'999'999ull), "9999999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(10'000'000'000'000'000ull), "10000000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(99'999'999'999'999'999ull), "99999999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(100'000'000'000'000'000ull), "100000000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(999'999'999'999'999'999ull), "999999999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(1'000'000'000'000'000'000ull), "1000000000000000000");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(9'999'999'999'999'999'999ull), "9999999999999999999");
+        CHECK_INTEGER_CONVERSION(static_cast<U64>(10'000'000'000'000'000'000ull), "10000000000000000000");
+        CHECK_INTEGER_CONVERSION(std::numeric_limits<U64>::max(), "18446744073709551615");
+
+        // i64: T_MAX and a negative T_MAX
+        CHECK_INTEGER_CONVERSION(static_cast<I64>(9'223'372'036'854'775'807ll), "9223372036854775807");
+        CHECK_INTEGER_CONVERSION(static_cast<I64>(-9'223'372'036'854'775'807ll), "-9223372036854775807");
+        // T_MIN already covered in the "Signed Integers" section.
+    }
+
+    SECTION("Integer buffer overrun: exact-size & undersize at multiple digit counts")
+    {
+        char              buffer[32];
+        const char* const last = buffer + sizeof(buffer);
+        (void)last;
+
+        // 1-digit (worst case for the "tail" branch)
+        REQUIRE(sf::base::toChars(buffer, buffer + 0, 7u) == nullptr);
+        REQUIRE(sf::base::toChars(buffer, buffer + 1, 7u) == buffer + 1);
+        CHECK(buffer[0] == '7');
+
+        // 2-digit (boundary of the digit-pair lookup)
+        REQUIRE(sf::base::toChars(buffer, buffer + 1, 42u) == nullptr);
+        REQUIRE(sf::base::toChars(buffer, buffer + 2, 42u) == buffer + 2);
+        CHECK(sf::base::StringView(buffer, 2) == "42");
+
+        // 3-digit (one loop iter + tail)
+        REQUIRE(sf::base::toChars(buffer, buffer + 2, 999u) == nullptr);
+        REQUIRE(sf::base::toChars(buffer, buffer + 3, 999u) == buffer + 3);
+        CHECK(sf::base::StringView(buffer, 3) == "999");
+
+        // 4-digit (two pair writes via the loop)
+        REQUIRE(sf::base::toChars(buffer, buffer + 3, 1234u) == nullptr);
+        REQUIRE(sf::base::toChars(buffer, buffer + 4, 1234u) == buffer + 4);
+        CHECK(sf::base::StringView(buffer, 4) == "1234");
+
+        // 20-digit max u64
+        const auto u64Max = std::numeric_limits<sf::base::U64>::max();
+        REQUIRE(sf::base::toChars(buffer, buffer + 19, u64Max) == nullptr);
+        REQUIRE(sf::base::toChars(buffer, buffer + 20, u64Max) == buffer + 20);
+        CHECK(sf::base::StringView(buffer, 20) == "18446744073709551615");
+
+        // Negative buffer-overrun (sign char doesn't fit)
+        REQUIRE(sf::base::toChars(buffer, buffer + 0, -1) == nullptr);
+        REQUIRE(sf::base::toChars(buffer, buffer + 1, -1) == nullptr); // '-' fits, digit doesn't
+        REQUIRE(sf::base::toChars(buffer, buffer + 2, -1) == buffer + 2);
+        CHECK(sf::base::StringView(buffer, 2) == "-1");
+    }
+
+    SECTION("Compile-time evaluation (constexpr)")
+    {
+        // Verify `toChars` works in a `consteval`-friendly context.
+        constexpr auto fmt = [](auto v)
+        {
+            char        buf[32]{};
+            char* const end = sf::base::toChars(buf, buf + sizeof(buf), v);
+            return end != nullptr && (end - buf) > 0;
+        };
+
+        static_assert(fmt(0));
+        static_assert(fmt(42u));
+        static_assert(fmt(-12'345));
+        static_assert(fmt(std::numeric_limits<sf::base::U64>::max()));
+        static_assert(fmt(std::numeric_limits<sf::base::I64>::min()));
     }
 
     SECTION("Buffer Overrun Checks")

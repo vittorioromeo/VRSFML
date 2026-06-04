@@ -67,7 +67,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 
     if (!glGetIntegervFunc || !glGetErrorFunc)
     {
-        err() << "Could not load necessary function to initialize OpenGL context";
+        errMsg("Could not load necessary function to initialize OpenGL context");
         return false;
     }
 
@@ -87,7 +87,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 
     if (m_settings.majorVersion < 3)
     {
-        err() << "Context major version below 3.x is not supported";
+        errMsg("Context major version below 3.x is not supported");
         return false;
     }
 
@@ -156,14 +156,24 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
     if ((m_settings.attributeFlags != requestedSettings.attributeFlags) || (version < requestedVersion) ||
         (m_settings.stencilBits < requestedSettings.stencilBits) || (m_settings.depthBits < requestedSettings.depthBits))
     {
-        err() << "Warning: The created OpenGL context does not fully meet the settings that were requested" << '\n'
-              << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
-              << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
-              << " ; core = " << boolToString(requestedSettings.isCore())
-              << " ; debug = " << boolToString(requestedSettings.isDebug()) << '\n'
-              << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
-              << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; core = " << boolToString(m_settings.isCore()) << " ; debug = " << boolToString(m_settings.isDebug());
+        errMsg(
+            "Warning: The created OpenGL context does not fully meet the settings that were requested{}Requested: "
+            "version = {}.{} ; depth bits = {} ; stencil bits = {} ; core = {} ; debug = {}{}Created: version = {}.{} "
+            "; depth bits = {} ; stencil bits = {} ; core = {} ; debug = {}",
+            '\n',
+            requestedSettings.majorVersion,
+            requestedSettings.minorVersion,
+            requestedSettings.depthBits,
+            requestedSettings.stencilBits,
+            boolToString(requestedSettings.isCore()),
+            boolToString(requestedSettings.isDebug()),
+            '\n',
+            m_settings.majorVersion,
+            m_settings.minorVersion,
+            m_settings.depthBits,
+            m_settings.stencilBits,
+            boolToString(m_settings.isCore()),
+            boolToString(m_settings.isDebug()));
     }
 }
 

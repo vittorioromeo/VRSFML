@@ -1,6 +1,7 @@
 #include "StringifyIpAddressUtil.hpp"
 #include "StringifyOptionalUtil.hpp"
 #include "StringifySfBaseStringUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Socket.hpp"
@@ -18,8 +19,6 @@
 #include "SFML/Base/String.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <Doctest.hpp>
 
 
 namespace

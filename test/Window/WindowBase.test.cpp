@@ -3,6 +3,7 @@
 // Other 1st party headers
 #include "StringifyOptionalUtil.hpp"
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Window/Event.hpp"
@@ -20,8 +21,6 @@
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
 
-#include <Doctest.hpp>
-
 
 namespace
 {
@@ -35,7 +34,7 @@ constexpr const T& asConst(T& t) noexcept
 } // namespace
 
 
-TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::WindowBase" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

@@ -7,7 +7,7 @@
 /// \brief Internal helper for `SFML_BASE_TOKEN_PASTE`; do not use directly
 ///
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_TOKEN_PASTE_IMPL(x, y) x##y
+#define SFML_BASE_PRIV_TOKEN_PASTE_IMPL(x, y) x##y
 
 
 ////////////////////////////////////////////////////////////
@@ -18,4 +18,4 @@
 /// from `__LINE__` (e.g. inside `SFML_BASE_SCOPE_GUARD`).
 ///
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_TOKEN_PASTE(x, y) SFML_BASE_TOKEN_PASTE_IMPL(x, y)
+#define SFML_BASE_TOKEN_PASTE(x, y) SFML_BASE_PRIV_TOKEN_PASTE_IMPL(x, y)

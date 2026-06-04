@@ -646,7 +646,7 @@ private:
     struct Impl;
     base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
 
-    mutable base::U8 m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
+    mutable base::U32 m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
 
     bool m_hasBuiltInUniformMVPRow0;        //!< Whether the shader has the built-in `sf_u_mvpRow0` uniform
     bool m_hasBuiltInUniformMVPRow1;        //!< Whether the shader has the built-in `sf_u_mvpRow1` uniform

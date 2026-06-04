@@ -1,3 +1,4 @@
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/GLUtils/GLPersistentBuffer.hpp"
@@ -20,8 +21,6 @@
 #include "SFML/Base/Trait/IsCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 #ifndef SFML_OPENGL_ES
@@ -91,7 +90,7 @@ struct ScopedPersistentBuffer
 } // namespace
 
 
-TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * doctest::skip(skipDisplayTests))
+TEST_CASE("[GLUtils] sf::GLPersistentBuffer" * tst::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
 

@@ -1,3 +1,5 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Trait/IsCopyAssignable.hpp"
@@ -12,8 +14,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <Doctest.hpp>
 
 
 namespace

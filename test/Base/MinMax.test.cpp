@@ -1,6 +1,6 @@
-#include "SFML/Base/MinMax.hpp"
+#include "Tst/Tst.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/MinMax.hpp"
 
 
 TEST_CASE("[Base] Base/MinMax.hpp")

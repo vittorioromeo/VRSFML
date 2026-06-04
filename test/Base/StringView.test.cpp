@@ -1,11 +1,13 @@
 #include "StringifySfBaseStringUtil.hpp"
 #include "StringifyStringViewUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Base/StringView.hpp"
 
 #include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/String.hpp"
+#include "SFML/Base/StringViewSplits.hpp" // IWYU pragma: keep
 #include "SFML/Base/Trait/IsAggregate.hpp"
 #include "SFML/Base/Trait/IsStandardLayout.hpp"
 #include "SFML/Base/Trait/IsTrivial.hpp"
@@ -18,8 +20,6 @@
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyRelocatable.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Base] Base/StringView.hpp")

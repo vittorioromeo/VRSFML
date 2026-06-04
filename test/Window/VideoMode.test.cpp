@@ -1,4 +1,5 @@
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
 #include "SFML/Window/VideoMode.hpp"
@@ -21,10 +22,8 @@
 #include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
-#include <Doctest.hpp>
 
-
-TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
+TEST_CASE("[Window] sf::VideoMode" * tst::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
 

@@ -19,7 +19,7 @@ namespace sf::priv
 /// \brief Decode and log a known OpenGL error
 ///
 /// Translates a previously retrieved OpenGL error code into a human-readable
-/// description and writes it to `sf::priv::err()` along with the source
+/// description and writes it to `priv::errMsg` along with the source
 /// location of the offending call. When `SFML_FATAL_OPENGL_ERRORS` is
 /// defined the function additionally triggers an assertion failure.
 ///

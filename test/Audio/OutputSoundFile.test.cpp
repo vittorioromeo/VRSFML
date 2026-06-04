@@ -1,4 +1,5 @@
 #include "AudioUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Audio/OutputSoundFile.hpp"
 
@@ -12,8 +13,6 @@
 #include "SFML/Base/Trait/IsDefaultConstructible.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsNothrowMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Audio] sf::OutputSoundFile")

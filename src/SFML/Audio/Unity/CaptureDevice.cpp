@@ -116,7 +116,7 @@ struct CaptureDevice::Impl
 CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
     if (!m_impl->initialize())
-        priv::err() << "Failed to initialize the capture device";
+        priv::errMsg("Failed to initialize the capture device");
 }
 
 
@@ -148,12 +148,12 @@ bool CaptureDevice::setSampleRate(unsigned int sampleRate)
     m_impl->deinitialize();
     if (!m_impl->initialize())
     {
-        priv::err() << "Failed to set audio capture device sample rate to " << sampleRate;
+        priv::errMsg("Failed to set audio capture device sample rate to {}", sampleRate);
 
         // Roll back to old config and try to restore the previous device
         m_impl->sampleRate = oldSampleRate;
         if (!m_impl->initialize())
-            priv::err() << "Failed to restore previous audio capture device after failed sample rate change";
+            priv::errMsg("Failed to restore previous audio capture device after failed sample rate change");
 
         return false;
     }
@@ -215,8 +215,8 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     // We only bother supporting mono/stereo recording for now
     if (channelCount < 1 || channelCount > 2)
     {
-        priv::err() << "Unsupported channel count: " << channelCount
-                    << " Currently only mono (1) and stereo (2) recording is supported.";
+        priv::errMsg("Unsupported channel count: {} Currently only mono (1) and stereo (2) recording is supported.",
+                     channelCount);
 
         return false;
     }
@@ -236,13 +236,13 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     m_impl->deinitialize();
     if (!m_impl->initialize())
     {
-        priv::err() << "Failed to set audio capture device channel count to " << channelCount;
+        priv::errMsg("Failed to set audio capture device channel count to {}", channelCount);
 
         // Roll back to old config and try to restore the previous device
         m_impl->channelMap = SFML_BASE_MOVE(oldChannelMap);
 
         if (!m_impl->initialize())
-            priv::err() << "Failed to restore previous audio capture device after failed channel count change";
+            priv::errMsg("Failed to restore previous audio capture device after failed channel count change");
 
         return false;
     }

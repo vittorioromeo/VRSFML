@@ -192,7 +192,7 @@ private:
     [[nodiscard]] bool createFail(const char* what)
     {
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0u));
-        priv::err() << "Impossible to create render texture (" << what << ")";
+        priv::errMsg("Impossible to create render texture ({})", what);
         return false;
     }
 
@@ -293,9 +293,10 @@ public:
 
         const auto fail = [&](const auto&... what)
         {
-            priv::err(/* multiline */ true) << "Impossible to create render texture (";
-            (priv::err(/* multiline */ true) << ... << what);
-            priv::err(/* multiline */ true) << ")\n";
+            sf::priv::ErrMsgScope scope;
+            scope.append("Impossible to create render texture (");
+            (scope.fmt("{}", what), ...);
+            scope.append(")");
 
             return false;
         };
@@ -423,7 +424,7 @@ public:
 
         // Blit from the auxiliary (multisample or temp) FBO to the main FBO, flipping Y axis
         if (!WindowContext::copyFlippedFramebuffer(texture.isSrgb(), size, auxFramebufferIt->second, framebufferIt->second))
-            priv::err() << "Error flipping render texture during FBO copy";
+            priv::errMsg("Error flipping render texture during FBO copy");
 
         if (scissorEnabledCached)
             glCheck(glEnable(GL_SCISSOR_TEST));
@@ -473,7 +474,7 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Rend
     auto texture = sf::Texture::create(size, {.sRgb = rtCreateSettings.sRgbCapable});
     if (!texture.hasValue())
     {
-        priv::err() << "Impossible to create render texture (failed to create the target texture)";
+        priv::errMsg("Impossible to create render texture (failed to create the target texture)");
         return result; // Empty optional
     }
 
@@ -489,7 +490,7 @@ base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Rend
     // Initialize the render texture
     if (!result->m_impl->create(rtCreateSettings))
     {
-        priv::err() << "Impossible to create render texture (failed to create render texture renderTextureImpl)";
+        priv::errMsg("Impossible to create render texture (failed to create render texture renderTextureImpl)");
 
         result.reset();
         return result; // Empty optional
@@ -587,13 +588,6 @@ Vec2u RenderTexture::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTexture::isSrgb() const
-{
-    return m_impl->sRgb;
-}
-
-
-////////////////////////////////////////////////////////////
 const Texture& RenderTexture::getTexture() const
 {
     return m_impl->texture;
@@ -601,7 +595,9 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) : m_impl(SFML_BASE_MOVE(texture))
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
+    RenderTarget{texture.isSrgb()},
+    m_impl(SFML_BASE_MOVE(texture))
 {
 }
 

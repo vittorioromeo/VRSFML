@@ -1,8 +1,8 @@
+#include "Tst/Tst.hpp"
+
 #include "SFML/Base/FunctionRef.hpp"
 
 #include "SFML/Base/Macros.hpp"
-
-#include <Doctest.hpp>
 
 
 namespace

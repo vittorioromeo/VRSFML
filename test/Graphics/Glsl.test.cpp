@@ -2,6 +2,7 @@
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
+#include "Tst/Tst.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Transform.hpp"
@@ -10,8 +11,6 @@
 #include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
-
-#include <Doctest.hpp>
 
 
 TEST_CASE("[Graphics] sf::Glsl")
