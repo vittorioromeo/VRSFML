@@ -1,5 +1,5 @@
 /* ============================================================== */
-/* VRSFML landing page -- custom styles on top of pico.css           */
+/* Zancle landing page -- custom styles on top of pico.css           */
 /* ============================================================== */
 
 :root {
@@ -434,7 +434,7 @@ footer small {
 }
 
 /* ============================================================== */
-/* SFML vs VRSFML decision table                                    */
+/* SFML vs Zancle decision table                                    */
 /* ============================================================== */
 .compare-table-wrap {
     margin: 1.25rem 0 0.75rem;
@@ -471,8 +471,8 @@ footer small {
     font-weight: 600;
 }
 
-.compare-table thead th.col-vrsfml,
-.compare-table tbody td.col-vrsfml {
+.compare-table thead th.col-zancle,
+.compare-table tbody td.col-zancle {
     background: color-mix(in srgb, var(--pico-primary) 5%, transparent);
 }
 
@@ -491,7 +491,7 @@ footer small {
     background: color-mix(in srgb, var(--pico-primary) 4%, transparent);
 }
 
-.compare-table tbody tr:hover td.col-vrsfml {
+.compare-table tbody tr:hover td.col-zancle {
     background: color-mix(in srgb, var(--pico-primary) 9%, transparent);
 }
 
@@ -618,7 +618,7 @@ footer small {
     match exactly, then scale the iframe element itself with `transform: scale(...)`
     so it fits the wrapper. The browser routes mouse events through the inverse
     of the transform, so the canvas keeps receiving coordinates in its native
-    0..DEMO_W / 0..DEMO_H space -- which is what fixed-size SFML demos expect.
+    0..DEMO_W / 0..DEMO_H space -- which is what fixed-size Zancle demos expect.
     Override `--demo-w` / `--demo-h` per-iframe if a demo uses other dimensions.
 */
 .demo-frame {
@@ -655,7 +655,7 @@ footer small {
 }
 
 /* ============================================================== */
-/* SFML::Base batteries                                             */
+/* Zancle::Base batteries                                             */
 /* ============================================================== */
 .batteries-grid {
     display: grid;
@@ -720,7 +720,7 @@ footer small {
 }
 
 /* ============================================================== */
-/* Built with VRSFML                                                */
+/* Built with Zancle                                                */
 /* ============================================================== */
 .games-grid {
     display: grid;

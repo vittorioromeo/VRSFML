@@ -94,7 +94,7 @@ int main()
     za::Sound  ballSound(playbackDevice, ballSoundBuffer);
 
     // Create the Zancle logo texture (the asset is the actual Zancle logo image):
-    const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
+    const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "zancle_logo.png").value();
 
     // Create the left paddle
     za::RectangleShape leftPaddle{

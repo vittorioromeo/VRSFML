@@ -366,7 +366,7 @@ zb::Optional<Edge> tryLoadEdge()
         return zb::nullOpt;
 
     // Load the background texture
-    auto backgroundTexture = za::Texture::loadFromFile("resources/sfml.png", {.smooth = true});
+    auto backgroundTexture = za::Texture::loadFromFile("resources/zancle.png", {.smooth = true});
     if (!backgroundTexture.hasValue())
         return zb::nullOpt;
 

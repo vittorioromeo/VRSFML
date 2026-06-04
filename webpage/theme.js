@@ -1,6 +1,6 @@
 // Minimal theme toggle: persists choice in localStorage, falls back to OS preference.
 (function () {
-    var STORAGE_KEY = "vrsfml-theme";
+    var STORAGE_KEY = "zancle-theme";
     var root = document.documentElement;
     var btn = document.getElementById("theme-toggle");
     if (!btn) return;

@@ -5,15 +5,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VRSFML -- an opinionated fork of SFML</title>
-    <meta name="description" content="VRSFML is an opinionated fork of SFML: built-in Emscripten support, modern OpenGL, type-safe APIs, aggregate-based design, auto-batching, and far faster compile times.">
+    <title>Zancle -- an opinionated fork of SFML</title>
+    <meta name="description" content="Zancle is an opinionated fork of SFML: built-in Emscripten support, modern OpenGL, type-safe APIs, aggregate-based design, auto-batching, and far faster compile times.">
     <meta name="color-scheme" content="dark light">
 
     <!-- Avoid FOUC when applying the saved theme -->
     <script>
         (function () {
             try {
-                var t = localStorage.getItem("vrsfml-theme");
+                var t = localStorage.getItem("zancle-theme");
                 if (t === "light" || t === "dark") {
                     document.documentElement.setAttribute("data-theme", t);
                 }
@@ -81,7 +81,7 @@
                 </button>
 
         <hgroup>
-            <h1>VRSFML</h1>
+            <h1>Zancle</h1>
             <p><i>an opinionated fork of SFML</i></p>
         </hgroup>
         <p class="hero-pitch">
@@ -90,7 +90,7 @@
             of <strong>Dear ImGui</strong>, highly-optimized even for low-end devices, and exceptionally fast to compile.
         </p>
         <div class="hero-cta">
-            <a href="https://github.com/vittorioromeo/VRSFML" target="_blank" rel="noopener" role="button">Browse on GitHub</a>
+            <a href="https://github.com/vittorioromeo/Zancle" target="_blank" rel="noopener" role="button">Browse on GitHub</a>
             <a href="https://vittorioromeo.github.io/VRSFML_HTML5_Examples/" target="_blank" rel="noopener" role="button" class="secondary">Try examples in your browser</a>
         </div>
     </section>
@@ -159,7 +159,7 @@
             <article>
                 <h3>Built-in ImGui</h3>
                 <p>
-                    A first-class <code>SFML::ImGui</code> module replaces the
+                    A first-class <code>Zancle::ImGui</code> module replaces the
                     out-of-tree <code>imgui-sfml</code>. One CMake option, ImGui works
                     on every supported platform including the web.
                 </p>
@@ -179,7 +179,7 @@
                 <p>
                     Native Wayland, smoother resize, expanded scancodes, and far
                     better controller mapping than upstream's hand-rolled platform
-                    code. Free upgrade, same SFML feel.
+                    code. Free upgrade, same familiar feel.
                 </p>
             </article>
 
@@ -202,10 +202,10 @@
     </section>
 
     <!-- ============================================================== -->
-    <!-- SFML vs VRSFML -- decision table                                  -->
+    <!-- SFML vs Zancle -- decision table                                  -->
     <!-- ============================================================== -->
     <section id="pick">
-        <h2>SFML or VRSFML -- which should I pick?</h2>
+        <h2>SFML or Zancle -- which should I pick?</h2>
         <p>
             Both libraries are good at what they aim for; they aim at different
             things. Use this table to decide before reading further.
@@ -217,89 +217,89 @@
                     <tr>
                         <th>Dimension</th>
                         <th>SFML 3.x</th>
-                        <th class="col-vrsfml">VRSFML</th>
+                        <th class="col-zancle">Zancle</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>Best for</td>
                         <td>Beginners learning C++ and 2D graphics; small projects that want wide platform support today.</td>
-                        <td class="col-vrsfml">Experienced C++ devs after modern APIs, web deployment, and aggressive performance.</td>
+                        <td class="col-zancle">Experienced C++ devs after modern APIs, web deployment, and aggressive performance.</td>
                     </tr>
                     <tr>
                         <td>C++ knowledge required</td>
                         <td>Modest. C++17 features, forgiving API.</td>
-                        <td class="col-vrsfml">Solid intermediate-to-advanced. C++23, designated initializers, optional-based control flow, aggregate idioms.</td>
+                        <td class="col-zancle">Solid intermediate-to-advanced. C++23, designated initializers, optional-based control flow, aggregate idioms.</td>
                     </tr>
                     <tr>
                         <td>Stability</td>
                         <td>Stable, semver-tracked releases. Public API rarely breaks within a minor version.</td>
-                        <td class="col-vrsfml">Experimental. Used in shipped games but evolving -- expect occasional API breakage.</td>
+                        <td class="col-zancle">Experimental. Used in shipped games but evolving -- expect occasional API breakage.</td>
                     </tr>
                     <tr>
                         <td>API style</td>
                         <td>Classic OOP. Class hierarchies, virtual <code>draw</code>, getter / setter pairs.</td>
-                        <td class="col-vrsfml">Multi-paradigm and data-oriented friendly. Aggregates with public fields, designated initializers; OOP available where it actually helps.</td>
+                        <td class="col-zancle">Multi-paradigm and data-oriented friendly. Aggregates with public fields, designated initializers; OOP available where it actually helps.</td>
                     </tr>
                     <tr>
                         <td>Error handling</td>
                         <td>Exceptions; resources have empty default states.</td>
-                        <td class="col-vrsfml"><code>sf::base::Optional</code> factories; no empty states; the public API does not throw.</td>
+                        <td class="col-zancle"><code>sf::base::Optional</code> factories; no empty states; the public API does not throw.</td>
                     </tr>
                     <tr>
                         <td>Lifetime safety</td>
                         <td>Manual. The "white-square problem" is documented behavior.</td>
-                        <td class="col-vrsfml">Compile-time for sprites and shapes; runtime tracker for the rest of the resource graph in debug builds.</td>
+                        <td class="col-zancle">Compile-time for sprites and shapes; runtime tracker for the rest of the resource graph in debug builds.</td>
                     </tr>
                     <tr>
                         <td>Web (Emscripten / WebGL)</td>
                         <td>Not supported.</td>
-                        <td class="col-vrsfml">First-class. Same source compiles native and WebGL2; every example runs in a browser tab.</td>
+                        <td class="col-zancle">First-class. Same source compiles native and WebGL2; every example runs in a browser tab.</td>
                     </tr>
                     <tr>
                         <td>Mobile (Android / iOS)</td>
                         <td>Supported.</td>
-                        <td class="col-vrsfml">Not yet shipped. The SDL3 backend should make porting straightforward -- contributions welcome.</td>
+                        <td class="col-zancle">Not yet shipped. The SDL3 backend should make porting straightforward -- contributions welcome.</td>
                     </tr>
                     <tr>
                         <td>Platform backend</td>
                         <td>Hand-rolled per-OS code.</td>
-                        <td class="col-vrsfml">SDL3. Battle-tested; native Wayland, better controller mapping, smoother resize.</td>
+                        <td class="col-zancle">SDL3. Battle-tested; native Wayland, better controller mapping, smoother resize.</td>
                     </tr>
                     <tr>
                         <td>OpenGL pipeline</td>
                         <td>Mix of modern and legacy calls (<code>glBegin</code>, <code>glMatrixMode</code>, &hellip;).</td>
-                        <td class="col-vrsfml">Modern OpenGL ES 3.1 only.</td>
+                        <td class="col-zancle">Modern OpenGL ES 3.1 only.</td>
                     </tr>
                     <tr>
                         <td>Drawable batching</td>
                         <td>None. One draw call per drawable.</td>
-                        <td class="col-vrsfml">Transparent auto-batching, plus manual <code>DrawableBatch</code> and <code>TextureAtlas</code>.</td>
+                        <td class="col-zancle">Transparent auto-batching, plus manual <code>DrawableBatch</code> and <code>TextureAtlas</code>.</td>
                     </tr>
                     <tr>
                         <td>ImGui integration</td>
                         <td>Out-of-tree <code>imgui-sfml</code> compatibility layer.</td>
-                        <td class="col-vrsfml">Built-in <code>SFML::ImGui</code> module.</td>
+                        <td class="col-zancle">Built-in <code>Zancle::ImGui</code> module.</td>
                     </tr>
                     <tr>
                         <td>Multi-device audio</td>
                         <td>One active playback device at a time.</td>
-                        <td class="col-vrsfml">Multiple simultaneous playback devices.</td>
+                        <td class="col-zancle">Multiple simultaneous playback devices.</td>
                     </tr>
                     <tr>
                         <td>Compile times</td>
                         <td>Standard.</td>
-                        <td class="col-vrsfml">Notably faster on clean rebuilds (custom vocabulary types, header hygiene, PImpl everywhere).</td>
+                        <td class="col-zancle">Notably faster on clean rebuilds (custom vocabulary types, header hygiene, PImpl everywhere).</td>
                     </tr>
                     <tr>
                         <td>Reference docs</td>
                         <td>Full Doxygen reference plus official tutorials.</td>
-                        <td class="col-vrsfml">Migration guide and commented examples; reference docs are sparse.</td>
+                        <td class="col-zancle">Migration guide and commented examples; reference docs are sparse.</td>
                     </tr>
                     <tr>
                         <td>Community &amp; bindings</td>
                         <td>Large, established. Many third-party language bindings (Python, Rust, &hellip;).</td>
-                        <td class="col-vrsfml">Small. No third-party bindings yet -- reach out to the author for help.</td>
+                        <td class="col-zancle">Small. No third-party bindings yet -- reach out to the author for help.</td>
                     </tr>
                 </tbody>
             </table>
@@ -308,7 +308,7 @@
         <p class="pick-summary">
             <strong>Short version:</strong> pick SFML if you want the safer,
             better-documented, beginner-friendly option with mobile support
-            today. Pick VRSFML if you want the web, modern OpenGL,
+            today. Pick Zancle if you want the web, modern OpenGL,
             auto-batching, and faster builds, and you're comfortable on the
             bleeding edge.
         </p>
@@ -319,7 +319,7 @@
     <!-- ============================================================== -->
     <section id="compare">
         <h2>Code, side by side</h2>
-        <p class="muted">Same task, written in upstream SFML and in VRSFML.</p>
+        <p class="muted">Same task, written in upstream SFML and in Zancle.</p>
 
         <article class="compare-block">
             <h3>Loading a font and rendering some text</h3>
@@ -341,7 +341,7 @@ window.draw(text);
 </code></pre>
                 </figure>
                 <figure>
-                    <figcaption>VRSFML</figcaption>
+                    <figcaption>Zancle</figcaption>
 <pre><code class="lang-cpp"><span class="cmt">// type-safe resource management</span>
 const auto font = sf::Font::openFromFile("arial.ttf").value();
 
@@ -376,7 +376,7 @@ window.draw(sprite);
 </code></pre>
                 </figure>
                 <figure>
-                    <figcaption>VRSFML</figcaption>
+                    <figcaption>Zancle</figcaption>
 <pre><code class="lang-cpp"><span class="cmt">// immediate drawing API with automatic batching</span>
 window.draw(texture, {
     .position = (logicalPosition + drawOffset).clampMinX(0.f),
@@ -405,7 +405,7 @@ window.draw(texture, {
 </code></pre>
                 </figure>
                 <figure>
-                    <figcaption>VRSFML</figcaption>
+                    <figcaption>Zancle</figcaption>
 <pre><code class="lang-cpp">for (int i = 0; i &lt; 10000; ++i)
 {
     // ... update drawable objects ...
@@ -436,7 +436,7 @@ window.draw(makeSprite()); <span class="cmt">// dangling texture, UB</span>
 </code></pre>
                 </figure>
                 <figure>
-                    <figcaption>VRSFML</figcaption>
+                    <figcaption>Zancle</figcaption>
 <pre><code class="lang-cpp">const sf::Sprite sprite{ .textureRect = texture.getRect() };
 
 <span class="cmt">// texture is passed at draw time, never stored on the sprite</span>
@@ -620,12 +620,12 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
                 <span class="bench-value">~3 FPS</span>
             </div>
             <div class="bench-row">
-                <span class="bench-label">VRSFML<br><small>autobatching (CPU buffer)</small></span>
+                <span class="bench-label">Zancle<br><small>autobatching (CPU buffer)</small></span>
                 <div class="bench-bar"><div class="fill" style="width: 76.5%;"></div></div>
                 <span class="bench-value">~62 FPS</span>
             </div>
             <div class="bench-row">
-                <span class="bench-label">VRSFML<br><small>autobatching (GPU buffer)</small></span>
+                <span class="bench-label">Zancle<br><small>autobatching (GPU buffer)</small></span>
                 <div class="bench-bar"><div class="fill" style="width: 100%;"></div></div>
                 <span class="bench-value">~81 FPS</span>
             </div>
@@ -638,7 +638,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
         <div class="demo-frame">
             <iframe
                 src="batching_embed.html"
-                title="VRSFML batching benchmark, running in your browser"
+                title="Zancle batching benchmark, running in your browser"
                 loading="lazy"
                 credentialless
                 allow="cross-origin-isolated; autoplay; gamepad"
@@ -654,7 +654,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
         <h3 class="size-subhead">Smaller objects, better cache</h3>
         <table>
             <thead>
-                <tr><th>Type</th><th>SFML</th><th>VRSFML</th></tr>
+                <tr><th>Type</th><th>SFML</th><th>Zancle</th></tr>
             </thead>
             <tbody>
                 <tr><td><code>sf::Transform</code></td><td>64 B</td><td>24 B</td></tr>
@@ -670,7 +670,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
     <section id="compile">
         <h2>Compile times that don't ruin your day</h2>
         <p>
-            VRSFML treats compile-time as a first-class concern. Catch-all headers
+            Zancle treats compile-time as a first-class concern. Catch-all headers
             are gone, every translation unit gets aggressive PImpl, and the public
             API uses <code>sf::base</code> vocabulary types instead of pulling in
             <code>&lt;optional&gt;</code>, <code>&lt;memory&gt;</code>,
@@ -679,7 +679,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
 
         <p>
             The chart below is the scenario closest to a real edit-build inner loop:
-            the SFML library is already compiled, and you rebuild six small example
+            the Zancle library is already compiled, and you rebuild six small example
             programs (<code>island</code>, <code>shader</code>, <code>stencil</code>,
             <code>tennis</code>, <code>keyboard</code>, <code>joystick</code>) from
             scratch.
@@ -692,7 +692,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
                 <span class="bench-value">726 ms</span>
             </div>
             <div class="bench-row">
-                <span class="bench-label">VRSFML</span>
+                <span class="bench-label">Zancle</span>
                 <div class="bench-bar reverse"><div class="fill good" style="width: 39.6%;"></div></div>
                 <span class="bench-value">288 ms</span>
             </div>
@@ -706,7 +706,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
         <p class="muted">
             Selective rebuild: third-party deps (freetype, vorbis, ogg, flac,
             harfbuzz, imgui, &hellip;) are kept on disk between iterations, so the
-            measurement reflects only SFML's own code plus the chosen examples and
+            measurement reflects only Zancleown code plus the chosen examples and
             tests -- the workflow you actually have when iterating on a project.
         </p>
 
@@ -716,7 +716,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
                     <th>Scenario</th>
                     <th>TUs</th>
                     <th>SFML</th>
-                    <th>VRSFML</th>
+                    <th>Zancle</th>
                     <th>Speedup</th>
                 </tr>
             </thead>
@@ -752,9 +752,9 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             </tbody>
         </table>
         <p class="muted small">
-            TUs column shows <em>SFML / VRSFML</em>. VRSFML compiles
+            TUs column shows <em>SFML / Zancle</em>. Zancle compiles
             <em>more</em> translation units in the first three rows (extra
-            <code>SFML::ImGui</code> module, more bundled examples, larger test
+            <code>Zancle::ImGui</code> module, more bundled examples, larger test
             suite), and is still ~2x faster overall -- meaning per-TU compiler
             work is roughly 3-4x lower. The fourth row, where both projects
             compile the same six user-side TUs, isolates that effect cleanly.
@@ -764,7 +764,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             <code>clang++</code>, debug build, <code>-fuse-ld=lld</code>,
             <code>BUILD_SHARED_LIBS=OFF</code>, <code>SFML_USE_SYSTEM_DEPS=OFF</code>,
             ccache disabled, <code>-j 16</code>, ninja. Between iterations only
-            SFML-owned object files and archives are deleted; bundled deps stay
+            Zancle-owned object files and archives are deleted; bundled deps stay
             built. Replace with your own measurements on your own hardware.
         </p>
 
@@ -778,12 +778,12 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
     </section>
 
     <!-- ============================================================== -->
-    <!-- SFML::Base -- bring your own batteries                            -->
+    <!-- Zancle::Base -- bring your own batteries                            -->
     <!-- ============================================================== -->
     <section id="batteries">
-        <h2>Bring your own batteries: <code>SFML::Base</code></h2>
+        <h2>Bring your own batteries: <code>Zancle::Base</code></h2>
         <p>
-            VRSFML ships a small standalone utilities library used internally and
+            Zancle ships a small standalone utilities library used internally and
             re-exported for users. Compile-time-friendly, allocation-conscious, and
             independent from the C++ standard library where it matters.
         </p>
@@ -843,7 +843,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
         </div>
 
         <p class="muted small">
-            See the <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/rockets" target="_blank" rel="noopener"><code>rockets</code> example</a>
+            See the <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/rockets" target="_blank" rel="noopener"><code>rockets</code> example</a>
             for a struct-of-arrays container generated from a plain aggregate via <code>MiniPFR</code>.
         </p>
     </section>
@@ -854,7 +854,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
     <section id="upstream">
         <h2>Features upstream couldn't accept</h2>
         <p>
-            VRSFML exists because some changes felt too disruptive for upstream's
+            Zancle exists because some changes felt too disruptive for upstream's
             roadmap. Each of the following was proposed, discussed, and ultimately
             shelved or reverted on master. They all ship here.
         </p>
@@ -894,10 +894,10 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
     </section>
 
     <!-- ============================================================== -->
-    <!-- Built with VRSFML                                                -->
+    <!-- Built with Zancle                                                -->
     <!-- ============================================================== -->
     <section id="built-with">
-        <h2>Built with VRSFML</h2>
+        <h2>Built with Zancle</h2>
         <p>
             Real games, on real storefronts, in production.
         </p>
@@ -907,7 +907,7 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
             <a class="game-card" href="https://store.steampowered.com/app/3499760/BubbleByte/" target="_blank" rel="noopener">
                 <h3>BubbleByte</h3>
                 <p>
-                    Idle / incremental game. Uses VRSFML's autobatching to render
+                    Idle / incremental game. Uses Zancle's autobatching to render
                     thousands of moving bubbles, cats, and particles per frame.
                 </p>
                 <div class="game-tags">
@@ -934,13 +934,13 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
 
         <p class="in-tree-link">
             In-repo, full-game examples worth reading:
-            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/tetris_survivors" target="_blank" rel="noopener"><code>tetris_survivors</code></a>,
-            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/bubble_idle" target="_blank" rel="noopener"><code>bubble_idle</code></a>
+            <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/tetris_survivors" target="_blank" rel="noopener"><code>tetris_survivors</code></a>,
+            <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/bubble_idle" target="_blank" rel="noopener"><code>bubble_idle</code></a>
             (BubbleByte's source),
-            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/rockets" target="_blank" rel="noopener"><code>rockets</code></a>
+            <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/rockets" target="_blank" rel="noopener"><code>rockets</code></a>
             (SoA + reflection),
-            <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/coroutine_dialogue" target="_blank" rel="noopener"><code>coroutine_dialogue</code></a>
-            (stackless coroutines on top of VRSFML).
+            <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/coroutine_dialogue" target="_blank" rel="noopener"><code>coroutine_dialogue</code></a>
+            (stackless coroutines on top of Zancle).
         </p>
     </section>
 
@@ -949,18 +949,18 @@ auto p = bounds.getAnchorPoint({0.25f, 0.75f});
     <!-- ============================================================== -->
     <section id="start">
         <h2>Get started</h2>
-        <pre><code class="lang-bash">git clone https://github.com/vittorioromeo/VRSFML
-cd VRSFML
+        <pre><code class="lang-bash">git clone https://github.com/vittorioromeo/Zancle
+cd Zancle
 cmake --preset vrdev_clang
 cd build_vrdev_clang
 ninja
 </code></pre>
         <p>
             Coming from upstream SFML? The
-            <a href="https://github.com/vittorioromeo/VRSFML/blob/master/vrsfml_migration.md" target="_blank" rel="noopener">migration guide</a>
+            <a href="https://github.com/vittorioromeo/Zancle/blob/master/zancle_migration.md" target="_blank" rel="noopener">migration guide</a>
             walks through every breaking change with before / after snippets.
             Detailed build instructions for Windows, Ubuntu, and Emscripten live in
-            the <a href="https://github.com/vittorioromeo/VRSFML#how-to-build" target="_blank" rel="noopener">repo README</a>.
+            the <a href="https://github.com/vittorioromeo/Zancle#how-to-build" target="_blank" rel="noopener">repo README</a>.
         </p>
     </section>
 
@@ -971,7 +971,7 @@ ninja
         <h2>Further reading</h2>
         <ul class="reading-list">
             <li>
-                <a href="https://vittorioromeo.com/index/blog/vrsfml.html" target="_blank" rel="noopener">VRSFML -- design philosophy and motivation</a>
+                <a href="https://vittorioromeo.com/index/blog/vrsfml.html" target="_blank" rel="noopener">Zancle -- design philosophy and motivation</a>
                 <small>Why this fork exists, what upstream rejected, and what was rebuilt.</small>
             </li>
             <li>
@@ -983,15 +983,15 @@ ninja
                 <small>How <code>RenderTarget</code> collapses sequential draw calls into one.</small>
             </li>
             <li>
-                <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/showcase" target="_blank" rel="noopener">Shape showcase example</a>
+                <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/showcase" target="_blank" rel="noopener">Shape showcase example</a>
                 <small>Renders every built-in shape primitive in one program.</small>
             </li>
             <li>
-                <a href="https://github.com/vittorioromeo/VRSFML/tree/master/examples/vulkan" target="_blank" rel="noopener">Vulkan interop example</a>
-                <small>Drop down to Vulkan from inside an SFML window when you need to.</small>
+                <a href="https://github.com/vittorioromeo/Zancle/tree/master/examples/vulkan" target="_blank" rel="noopener">Vulkan interop example</a>
+                <small>Drop down to Vulkan from inside a Zancle window when you need to.</small>
             </li>
             <li>
-                <a href="https://github.com/vittorioromeo/VRSFML/blob/master/vrsfml_migration.md" target="_blank" rel="noopener">SFML → VRSFML migration guide</a>
+                <a href="https://github.com/vittorioromeo/Zancle/blob/master/zancle_migration.md" target="_blank" rel="noopener">SFML → Zancle migration guide</a>
                 <small>Every breaking change with before / after snippets.</small>
             </li>
         </ul>
@@ -1002,7 +1002,7 @@ ninja
 <footer class="container">
     <hr>
     <small>
-        VRSFML is released under the <a href="https://github.com/vittorioromeo/VRSFML/blob/master/license.md" target="_blank" rel="noopener">zlib license</a>,
+        Zancle is released under the <a href="https://github.com/vittorioromeo/Zancle/blob/master/license.md" target="_blank" rel="noopener">zlib license</a>,
         inherited from <a href="https://github.com/SFML/SFML" target="_blank" rel="noopener">upstream SFML</a>.
         Built by <a href="https://vittorioromeo.com" target="_blank" rel="noopener">Vittorio Romeo</a>.
     </small>

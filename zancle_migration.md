@@ -190,11 +190,11 @@ int main()
 ```cpp
 //
 // BEFORE (upstream SFML)
-const za::Texture zancleLogoTexture(resourcesDir() / "sfml_logo.png");
+const za::Texture zancleLogoTexture(resourcesDir() / "zancle_logo.png");
 
 //
 // AFTER (Zancle)
-const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
+const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "zancle_logo.png").value();
 ```
 
 - This change applies to all resources: textures, sound buffers, music, fonts, images, etc...
@@ -215,7 +215,7 @@ const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_
 ```cpp
 //
 // BEFORE (upstream SFML)
-const za::Texture zancleLogoTexture(resourcesDir() / "sfml_logo.png");
+const za::Texture zancleLogoTexture(resourcesDir() / "zancle_logo.png");
 za::Sprite        zancleLogo(zancleLogoTexture);
 zancleLogo.setPosition({170.f, 50.f});
 // ...
@@ -226,7 +226,7 @@ window.draw(ball);
 
 //
 // AFTER (Zancle)
-const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
+const auto zancleLogoTexture = za::Texture::loadFromFile(resourcesDir() / "zancle_logo.png").value();
 const za::Sprite zancleLogo({.position = {170.f, 50.f}});
 // ...
 window.draw(zancleLogo, {.texture = &zancleLogoTexture});

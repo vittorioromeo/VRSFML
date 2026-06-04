@@ -20,7 +20,7 @@ from source under a typical day-to-day development configuration.
 
 ### Selective clean
 
-Between hyperfine iterations the `--prepare` step removes only SFML-owned
+Between hyperfine iterations the `--prepare` step removes only Zancle-owned
 build outputs, not third-party dependencies -- that matches what a developer
 actually does when iterating on their own code (you don't recompile
 `freetype` or `harfbuzz` on every keystroke).
@@ -41,19 +41,19 @@ libharfbuzzd.a            # upstream only
 libimgui.a / libSDL3.a    # Zancle only
 libvorbisd.a / liboggd.a / libFLACd.a   # both
 libmbed*.a                # both (SFTP example)
-src/SFML/ImGui/CMakeFiles/imgui.dir/**/*.o    # Zancle's bundled imgui code
+src/Zancle/ImGui/CMakeFiles/imgui.dir/**/*.o    # Zancle's bundled imgui code
 ```
 
 ## Scenarios
 
 | # | Name                              | What it builds                                                          |
 |---|-----------------------------------|-------------------------------------------------------------------------|
-| 1 | Library only                      | All SFML modules (no examples, no tests)                                |
-| 2 | Library + examples                | All SFML modules and every example app                                  |
-| 3 | Library + examples + tests        | All SFML modules, every example, the full test suite                    |
+| 1 | Library only                      | All Zancle modules (no examples, no tests)                                |
+| 2 | Library + examples                | All Zancle modules and every example app                                  |
+| 3 | Library + examples + tests        | All Zancle modules, every example, the full test suite                    |
 | 4 | Six user TUs from scratch         | `island`, `shader`, `stencil`, `tennis`, `keyboard`, `joystick` only    |
 
-For scenario 4 the SFML library is fully built once up-front; the prepare
+For scenario 4 the Zancle library is fully built once up-front; the prepare
 step deletes only the six example object files and binaries.
 
 ## Results
