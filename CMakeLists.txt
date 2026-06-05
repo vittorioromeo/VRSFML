@@ -311,6 +311,49 @@ target_compile_definitions(zancle-build-options INTERFACE
 )
 
 # =============================================================================
+# Module catalogue
+#
+# The 17 flat topical utility modules that get aggregated into the
+# `zancle-system` target by src/Zancle/System/CMakeLists.txt. Defined here at
+# the top level so both the per-module install helper (cmake/Macros.cmake)
+# and the framework branch below can enumerate them without re-importing the
+# list from System's CMakeLists.txt.
+#
+# The list is ordered bottom-up by Lakos level (Base = level 0).
+# =============================================================================
+set(UTILITY_MODULES
+    Base
+    Trait
+    Math
+    Diagnostic
+    Vocabulary
+    Container
+    Algorithm
+    String
+    Geometry
+    Chrono
+    Concurrency
+    Fmt
+    IO
+    Scn
+    Err
+    Lifetime
+    Mixin
+)
+
+# Multimedia modules and their corresponding ZA_BUILD_* gate.
+# Used by the framework branch to assemble the aggregate `Zancle` header set.
+set(MULTIMEDIA_MODULES
+    GLUtils
+    Window
+    Network
+    Graphics
+    ImGui
+    Audio
+)
+
+
+# =============================================================================
 # Platform libraries + Zancle subdirectory
 # =============================================================================
 # Resolve platform-library lists (GL backend, Apple frameworks) once.
@@ -324,10 +367,9 @@ add_subdirectory(src/Zancle)
 # Install + export (and the macOS framework variant)
 # =============================================================================
 if(NOT ZA_BUILD_FRAMEWORKS)
-    install(DIRECTORY include/
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            COMPONENT devel
-            FILES_MATCHING PATTERN "*.hpp" PATTERN "*.inl")
+    # Public headers are attached to each module target via FILE_SET HEADERS
+    # in _zancle_install_and_export (cmake/Macros.cmake) and installed
+    # transitively; no `install(DIRECTORY include/ ...)` needed.
     install(DIRECTORY cmake/Modules/
             DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Zancle
             COMPONENT devel)
@@ -339,112 +381,73 @@ if(NOT ZA_BUILD_FRAMEWORKS)
                 FILES_MATCHING PATTERN "*.pdb")
     endif()
 else()
-    # find only "root" headers
-    file(GLOB ZA_HEADERS RELATIVE ${PROJECT_SOURCE_DIR} "include/Zancle/*")
-
-    # Because we use generator expressions in the post build scripts we need to
-    # suppress the generation of "EFFECTIVE_PLATFORM_NAME" as it will fail
+    # Generator expressions in the post-build steps below confuse Xcode's
+    # EFFECTIVE_PLATFORM_NAME handling; suppress it.
     set_property(GLOBAL PROPERTY XCODE_EMIT_EFFECTIVE_PLATFORM_NAME OFF)
 
-    # in fact we have to fool cmake to copy all the headers in subdirectories
-    # to do that we have to add the "root" headers to the PUBLIC_HEADER
-    # then we can run a post script to copy the remaining headers
-
-    # we need a dummy file in order to compile the framework
+    # An empty translation unit is enough to satisfy CMake's requirement that
+    # a library target have at least one source.
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp
                        COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp
                        VERBATIM)
+    add_library(Zancle ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp)
 
-    set(ZA_SOURCES ${ZA_HEADERS})
-    list(APPEND ZA_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp)
-
-    # create Zancle.framework
-    add_library(Zancle ${ZA_SOURCES})
-
-    # enable C++23 support
     target_compile_features(Zancle PUBLIC cxx_std_23)
-
-    # set the target flags to use the appropriate C++ standard library
     zancle_set_stdlib(Zancle)
 
-    # edit target properties
     set_target_properties(Zancle PROPERTIES
-                          FRAMEWORK ON
-                          FRAMEWORK_VERSION ${PROJECT_VERSION}
-                          MACOSX_FRAMEWORK_IDENTIFIER org.zancle.Zancle
-                          MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
-                          MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
-                          PUBLIC_HEADER "${ZA_HEADERS}")
-
-    # add the non-optional Zancle headers
-    add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                       ${PROJECT_SOURCE_DIR}/include/Zancle/Config.hpp
-                       ${PROJECT_SOURCE_DIR}/include/Zancle/OpenGL.hpp
-                       ${PROJECT_SOURCE_DIR}/include/Zancle/GpuPreference.hpp
-                       ${PROJECT_SOURCE_DIR}/include/Zancle/Main.hpp
-                       ${PROJECT_SOURCE_DIR}/include/Zancle/System
-                       $<TARGET_FILE_DIR:Zancle>/Headers
-                       VERBATIM)
-
-    # add glutils module headers if enabled
-    if(ZA_BUILD_GLUTILS)
-        add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/Zancle/GLUtils
-                           $<TARGET_FILE_DIR:Zancle>/Headers
-                           VERBATIM)
-    endif()
-
-    # add window module headers if enabled
-    if(ZA_BUILD_WINDOW)
-        add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/Zancle/Window
-                           $<TARGET_FILE_DIR:Zancle>/Headers
-                           VERBATIM)
-    endif()
-
-    # add network module headers if enabled
-    if(ZA_BUILD_NETWORK)
-        add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/Zancle/Network
-                           $<TARGET_FILE_DIR:Zancle>/Headers
-                           VERBATIM)
-    endif()
-
-     # add graphics module headers if enabled
-    if(ZA_BUILD_GRAPHICS)
-        add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/Zancle/Graphics
-                           $<TARGET_FILE_DIR:Zancle>/Headers
-                           VERBATIM)
-    endif()
-
-    # add imgui module headers if enabled
-    if(ZA_BUILD_IMGUI)
-        add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/Zancle/ImGui
-                           $<TARGET_FILE_DIR:Zancle>/Headers
-                           VERBATIM)
-    endif()
-
-     # add audio module headers if enabled
-    if(ZA_BUILD_AUDIO)
-        add_custom_command(TARGET Zancle POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/Zancle/Audio
-                           $<TARGET_FILE_DIR:Zancle>/Headers
-                           VERBATIM)
-    endif()
-
-    # adapt install directory to allow distributing dylibs/frameworks in user's frameworks/application bundle
-    # NOTE: it's not required to link against Zancle.framework
-    set_target_properties(Zancle PROPERTIES INSTALL_NAME_DIR "@rpath")
+        FRAMEWORK                             ON
+        FRAMEWORK_VERSION                     ${PROJECT_VERSION}
+        MACOSX_FRAMEWORK_IDENTIFIER           org.zancle.Zancle
+        MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
+        MACOSX_FRAMEWORK_BUNDLE_VERSION       ${PROJECT_VERSION}
+        # Let dylibs/frameworks ship inside user app bundles.
+        INSTALL_NAME_DIR                      "@rpath"
+    )
     if(NOT CMAKE_SKIP_BUILD_RPATH)
         set_target_properties(Zancle PROPERTIES BUILD_WITH_INSTALL_NAME_DIR ON)
     endif()
 
-    # install rule
+    # Assemble the framework header set:
+    #   - umbrella headers at include/Zancle/
+    #   - all 17 utility modules (always built, aggregated under System)
+    #   - each enabled multimedia module
+    # BASE_DIRS = include/Zancle means relative paths preserve the
+    # `<Module>/Foo.hpp` layout that consumers expect via the framework-style
+    # `#include <Zancle/<Module>/Foo.hpp>` import (resolved by macOS as
+    # Zancle.framework/Headers/<Module>/Foo.hpp).
+    set(_zancle_framework_headers
+        ${PROJECT_SOURCE_DIR}/include/Zancle/Config.hpp
+        ${PROJECT_SOURCE_DIR}/include/Zancle/OpenGL.hpp
+        ${PROJECT_SOURCE_DIR}/include/Zancle/GpuPreference.hpp
+        ${PROJECT_SOURCE_DIR}/include/Zancle/Main.hpp)
+
+    foreach(_mod IN LISTS UTILITY_MODULES)
+        file(GLOB_RECURSE _h CONFIGURE_DEPENDS
+            "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.inl")
+        list(APPEND _zancle_framework_headers ${_h})
+    endforeach()
+
+    foreach(_mod IN LISTS MULTIMEDIA_MODULES)
+        string(TOUPPER "${_mod}" _flag)
+        if(ZA_BUILD_${_flag})
+            file(GLOB_RECURSE _h CONFIGURE_DEPENDS
+                "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.hpp"
+                "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.inl")
+            list(APPEND _zancle_framework_headers ${_h})
+        endif()
+    endforeach()
+
+    target_sources(Zancle PUBLIC
+        FILE_SET zancle_framework_headers
+        TYPE HEADERS
+        BASE_DIRS "${PROJECT_SOURCE_DIR}/include/Zancle"
+        FILES ${_zancle_framework_headers})
+
     install(TARGETS Zancle
-            FRAMEWORK DESTINATION "."
-            COMPONENT devel)
+            FRAMEWORK     DESTINATION "."     COMPONENT devel
+            FILE_SET      zancle_framework_headers)
 endif()
 
 install(FILES license.md DESTINATION ${CMAKE_INSTALL_DOCDIR})

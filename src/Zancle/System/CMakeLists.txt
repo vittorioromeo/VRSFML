@@ -1,22 +1,5 @@
-set(UTILITY_MODULES
-    Base
-    Trait
-    Math
-    Diagnostic
-    Vocabulary
-    Container
-    Algorithm
-    String
-    Geometry
-    Chrono
-    Concurrency
-    Fmt
-    IO
-    Scn
-    Err
-    Lifetime
-    Mixin
-)
+# UTILITY_MODULES is declared at the top-level CMakeLists.txt so the install
+# helper (and the framework branch) can enumerate the modules from one source.
 
 set(SRC "")
 foreach(mod ${UTILITY_MODULES})

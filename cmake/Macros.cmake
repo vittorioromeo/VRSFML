@@ -347,11 +347,64 @@ function(_zancle_install_and_export target module)
         set(config_name "Static")
     endif()
 
-    install(TARGETS ${target} EXPORT Zancle${module}${config_name}Targets
-            RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
-            LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
-            ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
-            FRAMEWORK DESTINATION "."                     COMPONENT bin)
+    # Declare the module's public headers as a FILE_SET. Each module installs
+    # only its own `include/Zancle/<Module>/` tree; disabling a module via
+    # -DZA_BUILD_X=OFF therefore omits its headers from the install, which the
+    # older `install(DIRECTORY include/ ...)` dump-everything pattern could
+    # not do.
+    #
+    # Special-case "System": that target aggregates the 17 flat utility
+    # modules listed in `UTILITY_MODULES` (set by src/Zancle/System/
+    # CMakeLists.txt before it calls zancle_add_library), so glob across all
+    # of them. System also owns the four top-level umbrella headers
+    # (Config/OpenGL/GpuPreference/Main).
+    #
+    # Framework builds keep the existing add_custom_command-based POST_BUILD
+    # copy in the top-level CMakeLists, so the FILE_SET install line below is
+    # gated on NOT ZA_BUILD_FRAMEWORKS.
+    set(_module_headers "")
+    if(${module} STREQUAL "System")
+        foreach(_um IN LISTS UTILITY_MODULES)
+            file(GLOB_RECURSE _um_headers CONFIGURE_DEPENDS
+                "${PROJECT_SOURCE_DIR}/include/Zancle/${_um}/*.hpp"
+                "${PROJECT_SOURCE_DIR}/include/Zancle/${_um}/*.inl"
+            )
+            list(APPEND _module_headers ${_um_headers})
+        endforeach()
+        list(APPEND _module_headers
+            "${PROJECT_SOURCE_DIR}/include/Zancle/Config.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/OpenGL.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/GpuPreference.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/Main.hpp"
+        )
+    else()
+        file(GLOB_RECURSE _module_headers CONFIGURE_DEPENDS
+            "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.inl"
+        )
+    endif()
+    target_sources(${target} PUBLIC
+        FILE_SET zancle_public_headers
+        TYPE HEADERS
+        BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+        FILES ${_module_headers}
+    )
+
+    if(ZA_BUILD_FRAMEWORKS)
+        install(TARGETS ${target} EXPORT Zancle${module}${config_name}Targets
+                RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
+                LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
+                ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
+                FRAMEWORK DESTINATION "."                     COMPONENT bin)
+    else()
+        install(TARGETS ${target} EXPORT Zancle${module}${config_name}Targets
+                RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR}      COMPONENT bin
+                LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR}      COMPONENT bin
+                ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR}      COMPONENT devel
+                FRAMEWORK DESTINATION "."                          COMPONENT bin
+                FILE_SET zancle_public_headers
+                          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}  COMPONENT devel)
+    endif()
 
     # pkg-config
     if(ZA_INSTALL_PKGCONFIG_FILES AND NOT ${target} STREQUAL "zancle-main")
