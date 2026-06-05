@@ -3,23 +3,23 @@
 
 #include "Zancle/Graphics/CircleShape.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::CircleShape")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::CircleShape));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::CircleShape));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::CircleShape));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::CircleShape));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::CircleShape));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::CircleShape));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::CircleShape));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::CircleShape));
     }
 
     SECTION("Default constructor")
@@ -27,7 +27,7 @@ TEST_CASE("[Graphics] za::CircleShape")
         const za::CircleShape circle{{.radius = 0.f}};
         CHECK(circle.getRadius() == 0.f);
         CHECK(circle.getPointCount() == 30);
-        for (zb::SizeT i = 0; i < circle.getPointCount(); ++i)
+        for (za::SizeT i = 0; i < circle.getPointCount(); ++i)
             CHECK(circle.getPoint(i) == za::Vec2f{0, 0});
         CHECK(circle.getGeometricCenter() == za::Vec2f{0, 0});
     }

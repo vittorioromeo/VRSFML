@@ -11,7 +11,7 @@
 
 #include "Zancle/System/Vector2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 #include <SDL3/SDL_video.h>
 
@@ -107,7 +107,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const zb::U8* pixels) override;
+    void setIcon(Vector2u size, const za::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

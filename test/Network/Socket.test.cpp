@@ -4,26 +4,26 @@
 
 #include "Zancle/Network/UdpSocket.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Network] za::Socket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Socket));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Socket));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Socket));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Socket));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Socket));
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::Socket));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Socket));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Socket));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Socket));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Socket));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Socket));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::Socket));
     }
 
     SECTION("Constants")
@@ -63,7 +63,7 @@ TEST_CASE("[Network] za::Socket")
             movedOpt->setBlocking(false);
 
 
-            const za::UdpSocket socket(ZB_MOVE(*movedOpt));
+            const za::UdpSocket socket(ZA_MOVE(*movedOpt));
             CHECK(!socket.isBlocking());
         }
 
@@ -77,7 +77,7 @@ TEST_CASE("[Network] za::Socket")
             auto targetOpt = za::UdpSocket::create(/* isBlocking */ true);
             REQUIRE(targetOpt.hasValue());
 
-            *targetOpt = ZB_MOVE(*movedOpt);
+            *targetOpt = ZA_MOVE(*movedOpt);
             CHECK(!targetOpt->isBlocking());
         }
     }

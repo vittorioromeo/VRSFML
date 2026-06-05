@@ -37,13 +37,13 @@
 
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] FrameViewState Main::gameLoopComputeViews()
@@ -78,7 +78,7 @@
 ////////////////////////////////////////////////////////////
 void Main::gameLoopRenderFrame(const float             deltaTimeMs,
                                const bool              shouldDrawUI,
-                               const zb::U8            shouldDrawUIAlpha,
+                               const za::U8            shouldDrawUIAlpha,
                                const FrameInput&       frameInput,
                                const FrameUpdateState& frameUpdate,
                                const FrameViewState&   frameViews)
@@ -242,11 +242,11 @@ void Main::gameLoopRenderFrame(const float             deltaTimeMs,
 
         const float lineSpacing = fontSuperBakery.getLineSpacing(demoInfoTextData.characterSize);
 
-        const zb::StringView lines[3] = {"Only one prestige and two shrines",
+        const za::StringView lines[3] = {"Only one prestige and two shrines",
                                          "Full version available on Steam",
                                          "Your progress will carry over!"};
 
-        for (zb::SizeT i = 0u; i < 3u; ++i)
+        for (za::SizeT i = 0u; i < 3u; ++i)
         {
             demoInfoTextData.string = lines[i].data();
             demoInfoTextData.position = demoText.getGlobalBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
@@ -469,7 +469,7 @@ void Main::gameLoopPresentFrame(const FrameViewState& frameViews)
 
     {
         const float ratio         = frameViews.resolution.x / 1250.f;
-        const float fixedBgScroll = txFixedBg.getSize().toVec2f().x * 0.5f * zb::remainder(fixedBgSlide, 3.f);
+        const float fixedBgScroll = txFixedBg.getSize().toVec2f().x * 0.5f * za::remainder(fixedBgSlide, 3.f);
 
         window.draw(txFixedBg,
                     {.position    = {0.f, 0.f},

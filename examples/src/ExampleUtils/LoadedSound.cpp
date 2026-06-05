@@ -2,7 +2,7 @@
 
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/Path.hpp"
 
 
 ////////////////////////////////////////////////////////////

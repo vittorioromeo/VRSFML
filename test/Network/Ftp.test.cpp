@@ -4,31 +4,31 @@
 
 #include "Zancle/Network/Ftp.hpp"
 
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Network] za::Ftp")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Ftp));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Ftp));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Ftp));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Ftp));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Ftp));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Ftp));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Ftp));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Ftp));
     }
 
     SECTION("Response")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Ftp::Response));
-            STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Ftp::Response));
-            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Ftp::Response));
-            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Ftp::Response));
+            STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Ftp::Response));
+            STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Ftp::Response));
+            STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Ftp::Response));
+            STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Ftp::Response));
         }
 
         SECTION("Construction")
@@ -104,7 +104,7 @@ TEST_CASE("[Network] za::Ftp")
             const za::Ftp::ListingResponse listingResponse(za::Ftp::Response(za::Ftp::Response::Status::Ok),
                                                            "foo\r\nbar\r\nbaz");
 
-            const zb::String vec[]{"foo", "bar"};
+            const za::String vec[]{"foo", "bar"};
             CHECK(listingResponse.getListing().valueEquals(vec, 2));
         }
     }

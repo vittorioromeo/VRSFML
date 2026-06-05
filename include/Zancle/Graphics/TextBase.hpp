@@ -14,15 +14,15 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
 
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
-#include "Zancle/System/LocalAnchorPointMixin.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ public:
     ///
     /// The `string` argument is a `za::Utf8String`. It can be
     /// implicitly constructed from a UTF-8 encoded `const char*`,
-    /// `zb::StringView`, or `zb::String`. For text containing
+    /// `za::StringView`, or `za::String`. For text containing
     /// non-ASCII characters, the source bytes must already be UTF-8.
     ///
     /// \code
@@ -188,7 +188,7 @@ public:
     /// \see `getFillColorAlpha`
     ///
     ////////////////////////////////////////////////////////////
-    void setFillColorAlpha(zb::U8 alpha);
+    void setFillColorAlpha(za::U8 alpha);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the outline color alpha channel of the text
@@ -198,13 +198,13 @@ public:
     /// \see `getOutlineColorAlpha`
     ///
     ////////////////////////////////////////////////////////////
-    void setOutlineColorAlpha(zb::U8 alpha);
+    void setOutlineColorAlpha(za::U8 alpha);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the text's string
     ///
     /// The returned string is a `za::Utf8String`. It implicitly
-    /// converts to `zb::StringView` for any byte-oriented sink.
+    /// converts to `za::StringView` for any byte-oriented sink.
     ///
     /// \return Text's string (UTF-8)
     ///
@@ -291,7 +291,7 @@ public:
     /// \see `setFillColorAlpha`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U8 getFillColorAlpha() const;
+    [[nodiscard]] za::U8 getFillColorAlpha() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline color alpha channel of the text
@@ -301,7 +301,7 @@ public:
     /// \see `setOutlineColorAlpha`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U8 getOutlineColorAlpha() const;
+    [[nodiscard]] za::U8 getOutlineColorAlpha() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the position of the `index`-th character
@@ -319,7 +319,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Self>
-    [[nodiscard]] Vec2f findCharacterPos(this const Self& self, zb::SizeT index);
+    [[nodiscard]] Vec2f findCharacterPos(this const Self& self, za::SizeT index);
 
 
     ////////////////////////////////////////////////////////////
@@ -395,7 +395,7 @@ public:
     /// \return Start index of the fill vertex sub-range
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] zb::SizeT getFillVerticesStartIndex() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] za::SizeT getFillVerticesStartIndex() const
     {
         return m_fillVerticesStartIndex;
     }
@@ -458,9 +458,9 @@ protected:
     ////////////////////////////////////////////////////////////
     Utf8String m_string; //!< String to display
 
-    mutable zb::Vector<Vertex> m_vertices;                 //!< Vertex array containing the outline and fill geometry
+    mutable za::Vector<Vertex> m_vertices;                 //!< Vertex array containing the outline and fill geometry
     mutable Rect2f             m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
-    mutable zb::SizeT          m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable za::SizeT          m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
 
     float m_letterSpacing{1.f};         //!< Spacing factor between letters
     float m_lineSpacing{1.f};           //!< Spacing factor between lines

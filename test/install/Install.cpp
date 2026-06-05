@@ -15,12 +15,12 @@
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 // Instantiate some types from each module to test for linker issues. This program is not meant be ran.
@@ -41,7 +41,7 @@ int main()
     [[maybe_unused]] const za::Ftp                     ftp;
     [[maybe_unused]] const za::Http                    http;
     [[maybe_unused]] const za::Packet                  packet;
-    [[maybe_unused]] const zb::Optional<za::UdpSocket> udpSocket = za::UdpSocket::create(/* isBlocking */ true);
+    [[maybe_unused]] const za::Optional<za::UdpSocket> udpSocket = za::UdpSocket::create(/* isBlocking */ true);
 
     // System
     [[maybe_unused]] const za::Angle      angle;

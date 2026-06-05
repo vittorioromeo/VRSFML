@@ -4,14 +4,14 @@
 
 #include "Zancle/Graphics/ShaderUtils.hpp"
 
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 using za::testing::TemporaryFile;
@@ -19,7 +19,7 @@ using za::testing::TemporaryFile;
 namespace
 {
 ////////////////////////////////////////////////////////////
-zb::StringView bufferToView(const zb::Vector<char>& buffer)
+za::StringView bufferToView(const za::Vector<char>& buffer)
 {
     return {buffer.data(), buffer.size()};
 }
@@ -155,7 +155,7 @@ TEST_CASE("[Graphics] za::ShaderUtils::emitLineDirective")
 {
     SECTION("Line 1")
     {
-        zb::Vector<char> buffer;
+        za::Vector<char> buffer;
         za::ShaderUtils::emitLineDirective(buffer, 1);
 
         CHECK(bufferToView(buffer) == "#line 1\n");
@@ -163,7 +163,7 @@ TEST_CASE("[Graphics] za::ShaderUtils::emitLineDirective")
 
     SECTION("Line 42")
     {
-        zb::Vector<char> buffer;
+        za::Vector<char> buffer;
         za::ShaderUtils::emitLineDirective(buffer, 42);
 
         CHECK(bufferToView(buffer) == "#line 42\n");
@@ -171,7 +171,7 @@ TEST_CASE("[Graphics] za::ShaderUtils::emitLineDirective")
 
     SECTION("Line 0")
     {
-        zb::Vector<char> buffer;
+        za::Vector<char> buffer;
         za::ShaderUtils::emitLineDirective(buffer, 0);
 
         CHECK(bufferToView(buffer) == "#line 0\n");
@@ -179,7 +179,7 @@ TEST_CASE("[Graphics] za::ShaderUtils::emitLineDirective")
 
     SECTION("Appends to existing buffer")
     {
-        zb::Vector<char> buffer;
+        za::Vector<char> buffer;
         buffer.pushBack('X');
         za::ShaderUtils::emitLineDirective(buffer, 5);
 
@@ -192,19 +192,19 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
 {
     SECTION("No includes -- passthrough")
     {
-        const zb::StringView source = "uniform float time;\nvoid main() {}\n";
+        const za::StringView source = "uniform float time;\nvoid main() {}\n";
 
         TemporaryFile mainFile(source);
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(source, mainFile.getPath(), output));
 
         const auto result = bufferToView(output);
 
         // Should contain #line 1 at the start and all original lines
-        CHECK(result.find("#line 1") != zb::StringView::nPos);
-        CHECK(result.find("uniform float time;") != zb::StringView::nPos);
-        CHECK(result.find("void main() {}") != zb::StringView::nPos);
+        CHECK(result.find("#line 1") != za::StringView::nPos);
+        CHECK(result.find("uniform float time;") != za::StringView::nPos);
+        CHECK(result.find("void main() {}") != za::StringView::nPos);
     }
 
     SECTION("Single include")
@@ -212,9 +212,9 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
         TemporaryFile includedFile("float helper() { return 1.0; }\n");
 
         // Build the #include line pointing to the temp file's filename
-        const auto includedFilename = includedFile.getPath().getFilename().to<zb::String>();
+        const auto includedFilename = includedFile.getPath().getFilename().to<za::String>();
 
-        zb::String source;
+        za::String source;
         source.append("uniform float time;\n");
         source.append("#include \"");
         source.append(includedFilename);
@@ -224,36 +224,36 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
         // Main file in the same directory as the included file
         TemporaryFile mainFile(source.toStringView());
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(source.toStringView(), mainFile.getPath(), output));
 
         const auto result = bufferToView(output);
 
         // Should contain the included content
-        CHECK(result.find("float helper()") != zb::StringView::nPos);
+        CHECK(result.find("float helper()") != za::StringView::nPos);
         // Should contain #line directives to restore numbering
-        CHECK(result.find("#line 3") != zb::StringView::nPos);
+        CHECK(result.find("#line 3") != za::StringView::nPos);
         // Should contain the line after the include
-        CHECK(result.find("void main() {}") != zb::StringView::nPos);
+        CHECK(result.find("void main() {}") != za::StringView::nPos);
     }
 
     SECTION("Missing include file returns false")
     {
-        const zb::StringView source = "#include \"nonexistent_file_12345.glsl\"\n";
+        const za::StringView source = "#include \"nonexistent_file_12345.glsl\"\n";
 
         TemporaryFile mainFile(source);
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK_FALSE(za::ShaderUtils::preprocessGlslIncludes(source, mainFile.getPath(), output));
     }
 
     SECTION("Malformed include returns false")
     {
-        const zb::StringView source = "#include <bad.glsl>\n";
+        const za::StringView source = "#include <bad.glsl>\n";
 
         TemporaryFile mainFile(source);
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK_FALSE(za::ShaderUtils::preprocessGlslIncludes(source, mainFile.getPath(), output));
     }
 
@@ -267,20 +267,20 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
         const auto pathB = za::Path::getTempDirectory().value() / za::Path("zancle_circular_b.glsl");
 
         {
-            constexpr zb::StringView    contentA = "#include \"zancle_circular_b.glsl\"\n";
+            constexpr za::StringView    contentA = "#include \"zancle_circular_b.glsl\"\n";
             auto                        optFile  = za::OutFile::open(pathA);
             [[maybe_unused]] const bool ok       = optFile->write(contentA.data(), contentA.size());
         }
 
         {
-            constexpr zb::StringView    contentB = "#include \"zancle_circular_a.glsl\"\n";
+            constexpr za::StringView    contentB = "#include \"zancle_circular_a.glsl\"\n";
             auto                        optFile  = za::OutFile::open(pathB);
             [[maybe_unused]] const bool ok       = optFile->write(contentB.data(), contentB.size());
         }
 
-        const zb::StringView source = "#include \"zancle_circular_b.glsl\"\n";
+        const za::StringView source = "#include \"zancle_circular_b.glsl\"\n";
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK_FALSE(za::ShaderUtils::preprocessGlslIncludes(source, pathA, output));
 
         // Cleanup
@@ -292,9 +292,9 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
     {
         TemporaryFile innerFile("int inner_val = 42;\n");
 
-        const auto innerFilename = innerFile.getPath().getFilename().to<zb::String>();
+        const auto innerFilename = innerFile.getPath().getFilename().to<za::String>();
 
-        zb::String outerSource;
+        za::String outerSource;
         outerSource.append("#include \"");
         outerSource.append(innerFilename);
         outerSource.append("\"\n");
@@ -302,9 +302,9 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
 
         TemporaryFile outerFile(outerSource.toStringView());
 
-        const auto outerFilename = outerFile.getPath().getFilename().to<zb::String>();
+        const auto outerFilename = outerFile.getPath().getFilename().to<za::String>();
 
-        zb::String mainSource;
+        za::String mainSource;
         mainSource.append("#include \"");
         mainSource.append(outerFilename);
         mainSource.append("\"\n");
@@ -312,53 +312,53 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
 
         TemporaryFile mainFile(mainSource.toStringView());
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(mainSource.toStringView(), mainFile.getPath(), output));
 
         const auto result = bufferToView(output);
 
-        CHECK(result.find("int inner_val = 42;") != zb::StringView::nPos);
-        CHECK(result.find("int outer_val = 1;") != zb::StringView::nPos);
-        CHECK(result.find("void main() {}") != zb::StringView::nPos);
+        CHECK(result.find("int inner_val = 42;") != za::StringView::nPos);
+        CHECK(result.find("int outer_val = 1;") != za::StringView::nPos);
+        CHECK(result.find("void main() {}") != za::StringView::nPos);
     }
 
     SECTION("Source with trailing null is handled")
     {
         const char           sourceWithNull[] = "uniform float x;\n\0";
-        const zb::StringView source{sourceWithNull, sizeof(sourceWithNull) - 1}; // includes the \0
+        const za::StringView source{sourceWithNull, sizeof(sourceWithNull) - 1}; // includes the \0
 
         TemporaryFile mainFile(source);
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(source, mainFile.getPath(), output));
 
         const auto result = bufferToView(output);
-        CHECK(result.find("uniform float x;") != zb::StringView::nPos);
+        CHECK(result.find("uniform float x;") != za::StringView::nPos);
     }
 
     SECTION("Windows line endings (CRLF) are handled")
     {
-        const zb::StringView source = "uniform float a;\r\nvoid main() {}\r\n";
+        const za::StringView source = "uniform float a;\r\nvoid main() {}\r\n";
 
         TemporaryFile mainFile(source);
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(source, mainFile.getPath(), output));
 
         const auto result = bufferToView(output);
-        CHECK(result.find("uniform float a;") != zb::StringView::nPos);
-        CHECK(result.find("void main() {}") != zb::StringView::nPos);
+        CHECK(result.find("uniform float a;") != za::StringView::nPos);
+        CHECK(result.find("void main() {}") != za::StringView::nPos);
         // Should not contain \r in the output
-        CHECK(result.find('\r') == zb::StringView::nPos);
+        CHECK(result.find('\r') == za::StringView::nPos);
     }
 
     SECTION("Empty source")
     {
-        const zb::StringView source = "";
+        const za::StringView source = "";
 
         TemporaryFile mainFile("");
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(source, mainFile.getPath(), output));
     }
 
@@ -366,9 +366,9 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
     {
         TemporaryFile includedFile("// included line 1\n// included line 2\n");
 
-        const auto includedFilename = includedFile.getPath().getFilename().to<zb::String>();
+        const auto includedFilename = includedFile.getPath().getFilename().to<za::String>();
 
-        zb::String source;
+        za::String source;
         source.append("// line 1\n"); // line 1
         source.append("// line 2\n"); // line 2
         source.append("#include \""); // line 3
@@ -378,12 +378,12 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
 
         TemporaryFile mainFile(source.toStringView());
 
-        zb::Vector<char> output;
+        za::Vector<char> output;
         CHECK(za::ShaderUtils::preprocessGlslIncludes(source.toStringView(), mainFile.getPath(), output));
 
         const auto result = bufferToView(output);
 
         // After the include, #line 4 should be emitted to restore parent numbering
-        CHECK(result.find("#line 4") != zb::StringView::nPos);
+        CHECK(result.find("#line 4") != za::StringView::nPos);
     }
 }

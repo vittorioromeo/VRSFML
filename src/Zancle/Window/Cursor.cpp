@@ -10,12 +10,12 @@
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_mouse.h>
@@ -25,7 +25,7 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Cursor::reloadFromPixels(const zb::U8* pixels, const Vec2u size, const Vec2u hotspot)
+[[nodiscard]] bool Cursor::reloadFromPixels(const za::U8* pixels, const Vec2u size, const Vec2u hotspot)
 {
     auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)
@@ -68,7 +68,7 @@ namespace za
 
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor(zb::PassKey<Cursor>&&) : m_sdlCursor{nullptr}
+Cursor::Cursor(za::PassKey<Cursor>&&) : m_sdlCursor{nullptr}
 {
 }
 
@@ -105,14 +105,14 @@ Cursor& Cursor::operator=(Cursor&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Cursor> Cursor::loadFromPixels(const zb::U8* pixels, Vec2u size, Vec2u hotspot)
+za::Optional<Cursor> Cursor::loadFromPixels(const za::U8* pixels, Vec2u size, Vec2u hotspot)
 {
-    zb::Optional<Cursor> cursor; // Use a single local variable for NRVO
+    za::Optional<Cursor> cursor; // Use a single local variable for NRVO
 
     if ((pixels == nullptr) || (size.x == 0) || (size.y == 0))
         return cursor; // Empty optional
 
-    cursor.emplace(zb::PassKey<Cursor>{});
+    cursor.emplace(za::PassKey<Cursor>{});
 
     if (!cursor->reloadFromPixels(pixels, size, hotspot))
     {
@@ -127,9 +127,9 @@ zb::Optional<Cursor> Cursor::loadFromPixels(const zb::U8* pixels, Vec2u size, Ve
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Cursor> Cursor::loadFromSystem(Type type)
+za::Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
-    auto cursor = zb::makeOptional<Cursor>(zb::PassKey<Cursor>{}); // Use a single local variable for NRVO
+    auto cursor = za::makeOptional<Cursor>(za::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
     if (!cursor->reloadFromSystem(type))
     {

@@ -13,12 +13,12 @@
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Algorithm/AnyOf.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Algorithm/AnyOf.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 // TODO P1: move to SDLLayer
 #include <SDL3/SDL_dialog.h>
@@ -143,7 +143,7 @@ struct JoystickImpl
 ////////////////////////////////////////////////////////////
 struct JoystickManager::Impl
 {
-    zb::Optional<JoystickImpl> impls[Joystick::MaxCount];           //!< Joystick implementations
+    za::Optional<JoystickImpl> impls[Joystick::MaxCount];           //!< Joystick implementations
     JoystickState              states[Joystick::MaxCount];          //!< Joystick states
     JoystickCapabilities       capabilities[Joystick::MaxCount];    //!< Joystick capabilities
     JoystickIdentification     identifications[Joystick::MaxCount]; //!< Joystick identifications
@@ -153,7 +153,7 @@ struct JoystickManager::Impl
 ////////////////////////////////////////////////////////////
 const JoystickCapabilities& JoystickManager::getCapabilities(const unsigned int joystickId) const
 {
-    ZB_ASSERT(joystickId < Joystick::MaxCount);
+    ZA_ASSERT(joystickId < Joystick::MaxCount);
     return m_impl->capabilities[joystickId];
 }
 
@@ -161,7 +161,7 @@ const JoystickCapabilities& JoystickManager::getCapabilities(const unsigned int 
 ////////////////////////////////////////////////////////////
 const JoystickState& JoystickManager::getState(const unsigned int joystickId) const
 {
-    ZB_ASSERT(joystickId < Joystick::MaxCount);
+    ZA_ASSERT(joystickId < Joystick::MaxCount);
     return m_impl->states[joystickId];
 }
 
@@ -169,7 +169,7 @@ const JoystickState& JoystickManager::getState(const unsigned int joystickId) co
 ////////////////////////////////////////////////////////////
 const JoystickIdentification& JoystickManager::getIdentification(const unsigned int joystickId) const
 {
-    ZB_ASSERT(joystickId < Joystick::MaxCount);
+    ZA_ASSERT(joystickId < Joystick::MaxCount);
     return m_impl->identifications[joystickId];
 }
 
@@ -177,7 +177,7 @@ const JoystickIdentification& JoystickManager::getIdentification(const unsigned 
 ////////////////////////////////////////////////////////////
 bool JoystickManager::isConnected(const unsigned int joystickId) const
 {
-    ZB_ASSERT(joystickId < Joystick::MaxCount);
+    ZA_ASSERT(joystickId < Joystick::MaxCount);
     return m_impl->impls[joystickId].hasValue();
 }
 
@@ -197,8 +197,8 @@ void JoystickManager::update()
         SDL_GUID       guid;
     };
 
-    zb::Optional<JoystickInfo> connectedJoystickInfos[Joystick::MaxCount];
-    zb::SizeT                  nextInfoIdx = 0u;
+    za::Optional<JoystickInfo> connectedJoystickInfos[Joystick::MaxCount];
+    za::SizeT                  nextInfoIdx = 0u;
 
     ////////////////////////////////////////////////////////////
     SDL_LockJoysticks();
@@ -217,9 +217,9 @@ void JoystickManager::update()
         for (int i = 0; i < count; ++i)
         {
             const auto guid = SDL_GetJoystickGUIDForID(ids[i]);
-            ZB_ASSERT(!sdlLayer.areGUIDsEqual(guid, SDL_GUID{}));
+            ZA_ASSERT(!sdlLayer.areGUIDsEqual(guid, SDL_GUID{}));
 
-            ZB_ASSERT(nextInfoIdx < Joystick::MaxCount);
+            ZA_ASSERT(nextInfoIdx < Joystick::MaxCount);
             connectedJoystickInfos[nextInfoIdx++].emplace(ids[i], guid);
         }
 
@@ -229,28 +229,28 @@ void JoystickManager::update()
 
     ////////////////////////////////////////////////////////////
     // Find newly disconnected joysticks
-    for (zb::SizeT i = 0u; i < Joystick::MaxCount; ++i)
+    for (za::SizeT i = 0u; i < Joystick::MaxCount; ++i)
     {
         auto& joyImpl = m_impl->impls[i];
 
         if (!joyImpl.hasValue())
             continue; // Empty slot
 
-        if (zb::anyOf(connectedJoystickInfos,
+        if (za::anyOf(connectedJoystickInfos,
                       connectedJoystickInfos + nextInfoIdx,
-                      [&](const zb::Optional<JoystickInfo>& info)
+                      [&](const za::Optional<JoystickInfo>& info)
         {
-            ZB_ASSERT(info.hasValue());
+            ZA_ASSERT(info.hasValue());
             return info->id == joyImpl->id;
         }))
         {
             continue; // Not newly disconnected
         }
 
-        ZB_ASSERT(joyImpl->handle != nullptr);
+        ZA_ASSERT(joyImpl->handle != nullptr);
         SDL_CloseJoystick(joyImpl->handle);
 
-        ZB_ASSERT(joyImpl.hasValue());
+        ZA_ASSERT(joyImpl.hasValue());
         joyImpl.reset();
 
         m_impl->capabilities[i]    = {};
@@ -260,18 +260,18 @@ void JoystickManager::update()
 
     ////////////////////////////////////////////////////////////
     // Find newly connected joysticks
-    for (zb::SizeT iInfo = 0u; iInfo < nextInfoIdx; ++iInfo)
+    for (za::SizeT iInfo = 0u; iInfo < nextInfoIdx; ++iInfo)
     {
-        ZB_ASSERT(connectedJoystickInfos[iInfo].hasValue());
+        ZA_ASSERT(connectedJoystickInfos[iInfo].hasValue());
         const auto& [id, guid] = *connectedJoystickInfos[iInfo];
 
-        if (zb::anyOf(m_impl->impls, m_impl->impls + Joystick::MaxCount, [&](const zb::Optional<JoystickImpl>& impl) {
+        if (za::anyOf(m_impl->impls, m_impl->impls + Joystick::MaxCount, [&](const za::Optional<JoystickImpl>& impl) {
             return impl.hasValue() && impl->id == id;
         }))
             continue; // Not newly connected
 
         // Find an empty slot
-        for (zb::SizeT iImpl = 0u; iImpl < Joystick::MaxCount; ++iImpl)
+        for (za::SizeT iImpl = 0u; iImpl < Joystick::MaxCount; ++iImpl)
         {
             auto& joyImpl = m_impl->impls[iImpl];
 
@@ -307,7 +307,7 @@ void JoystickManager::update()
         if (!impls[i].hasValue())
             continue;
 
-        ZB_ASSERT(impls[i]->handle != nullptr);
+        ZA_ASSERT(impls[i]->handle != nullptr);
         states[i] = getStateFromSDL(sdlLayer, *impls[i]->handle);
     }
 }

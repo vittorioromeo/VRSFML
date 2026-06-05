@@ -22,23 +22,23 @@
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
 
-#include "Zancle/System/Atomic.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Exchange.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Swap.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Exchange.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Swap.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -72,7 +72,7 @@ constinit za::Atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no 
 namespace za
 {
 ////////////////////////////////////////////////////////////
-Texture::Texture(zb::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb) :
+Texture::Texture(za::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb) :
     m_size(size),
     m_texture(texture),
     m_sRgb(sRgb),
@@ -88,7 +88,7 @@ Texture::Texture(const Texture& rhs) :
     m_wrapMode(rhs.m_wrapMode),
     m_cacheId(TextureImpl::getUniqueId())
 {
-    zb::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
+    za::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
 
     if (!texture.hasValue())
     {
@@ -96,7 +96,7 @@ Texture::Texture(const Texture& rhs) :
         return;
     }
 
-    *this = ZB_MOVE(*texture);
+    *this = ZA_MOVE(*texture);
 
     if (!update(rhs))
         priv::errMsg("Failed to copy texture, failed to update from new texture");
@@ -110,7 +110,7 @@ Texture::~Texture()
     if (!m_texture)
         return;
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     {
         // Always destroy the texture on the shared context
@@ -130,14 +130,14 @@ Texture::~Texture()
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(Texture&& rhs) noexcept :
-    m_size(zb::exchange(rhs.m_size, {})),
-    m_texture(zb::exchange(rhs.m_texture, 0u)),
-    m_isSmooth(zb::exchange(rhs.m_isSmooth, false)),
-    m_sRgb(zb::exchange(rhs.m_sRgb, false)),
-    m_wrapMode(zb::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
-    m_fboAttachment(zb::exchange(rhs.m_fboAttachment, false)),
-    m_hasMipmap(zb::exchange(rhs.m_hasMipmap, false)),
-    m_cacheId(zb::exchange(rhs.m_cacheId, 0u))
+    m_size(za::exchange(rhs.m_size, {})),
+    m_texture(za::exchange(rhs.m_texture, 0u)),
+    m_isSmooth(za::exchange(rhs.m_isSmooth, false)),
+    m_sRgb(za::exchange(rhs.m_sRgb, false)),
+    m_wrapMode(za::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
+    m_fboAttachment(za::exchange(rhs.m_fboAttachment, false)),
+    m_hasMipmap(za::exchange(rhs.m_hasMipmap, false)),
+    m_cacheId(za::exchange(rhs.m_cacheId, 0u))
 {
 }
 
@@ -151,30 +151,30 @@ Texture& Texture::operator=(Texture&& rhs) noexcept
     // Destroy the OpenGL texture
     if (m_texture)
     {
-        ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
     }
 
     // Move old to new.
-    m_size          = zb::exchange(rhs.m_size, {});
-    m_texture       = zb::exchange(rhs.m_texture, 0u);
-    m_isSmooth      = zb::exchange(rhs.m_isSmooth, false);
-    m_sRgb          = zb::exchange(rhs.m_sRgb, false);
-    m_wrapMode      = zb::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp);
-    m_fboAttachment = zb::exchange(rhs.m_fboAttachment, false);
-    m_hasMipmap     = zb::exchange(rhs.m_hasMipmap, false);
-    m_cacheId       = zb::exchange(rhs.m_cacheId, 0u);
+    m_size          = za::exchange(rhs.m_size, {});
+    m_texture       = za::exchange(rhs.m_texture, 0u);
+    m_isSmooth      = za::exchange(rhs.m_isSmooth, false);
+    m_sRgb          = za::exchange(rhs.m_sRgb, false);
+    m_wrapMode      = za::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp);
+    m_fboAttachment = za::exchange(rhs.m_fboAttachment, false);
+    m_hasMipmap     = za::exchange(rhs.m_hasMipmap, false);
+    m_cacheId       = za::exchange(rhs.m_cacheId, 0u);
 
     return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& settings)
+za::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& settings)
 {
-    zb::Optional<Texture> result; // Use a single local variable for NRVO
+    za::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Check if texture parameters are valid before creating it
     if ((size.x == 0) || (size.y == 0))
@@ -183,7 +183,7 @@ zb::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& s
         return result; // Empty optional
     }
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Check the maximum texture size
     const unsigned int maxSize = getMaximumSize();
@@ -206,11 +206,11 @@ zb::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& s
         priv::GLSharedContextGuard guard;
 
         glCheck(glGenTextures(1, &glTexture));
-        ZB_ASSERT(glTexture);
+        ZA_ASSERT(glTexture);
     }
 
     // All the validity checks passed, we can store the new texture settings
-    result.emplace(zb::PassKey<Texture>{}, size, glTexture, settings.sRgb);
+    result.emplace(za::PassKey<Texture>{}, size, glTexture, settings.sRgb);
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -228,42 +228,42 @@ zb::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& s
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Texture> Texture::loadFromFile(const Path& filename, const TextureLoadSettings& settings)
+za::Optional<Texture> Texture::loadFromFile(const Path& filename, const TextureLoadSettings& settings)
 {
-    if (const zb::Optional image = za::Image::loadFromFile(filename))
+    if (const za::Optional image = za::Image::loadFromFile(filename))
         return loadFromImage(*image, settings);
 
     priv::errMsg("Failed to load texture from file");
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Texture> Texture::loadFromMemory(const void* data, zb::SizeT size, const TextureLoadSettings& settings)
+za::Optional<Texture> Texture::loadFromMemory(const void* data, za::SizeT size, const TextureLoadSettings& settings)
 {
-    if (const zb::Optional image = za::Image::loadFromMemory(data, size))
+    if (const za::Optional image = za::Image::loadFromMemory(data, size))
         return loadFromImage(*image, settings);
 
     priv::errMsg("Failed to load texture from memory");
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Texture> Texture::loadFromStream(InputStream& stream, const TextureLoadSettings& settings)
+za::Optional<Texture> Texture::loadFromStream(InputStream& stream, const TextureLoadSettings& settings)
 {
-    if (const zb::Optional image = za::Image::loadFromStream(stream))
+    if (const za::Optional image = za::Image::loadFromStream(stream))
         return loadFromImage(*image, settings);
 
     priv::errMsg("Failed to load texture from stream");
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLoadSettings& settings)
+za::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLoadSettings& settings)
 {
-    zb::Optional<Texture> result; // Use a single local variable for NRVO
+    za::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
     const auto size = image.getSize().toVec2i();
@@ -286,29 +286,29 @@ zb::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLo
     }
 
     // Load a sub-area of the image
-    ZB_ASSERT(settings.area.size.x > 0);
-    ZB_ASSERT(settings.area.size.y > 0);
-    ZB_ASSERT(settings.area.position.x < size.x);
-    ZB_ASSERT(settings.area.position.y < size.y);
+    ZA_ASSERT(settings.area.size.x > 0);
+    ZA_ASSERT(settings.area.size.y > 0);
+    ZA_ASSERT(settings.area.position.x < size.x);
+    ZA_ASSERT(settings.area.position.y < size.y);
 
     // Adjust the rectangle to the size of the image
     Rect2i rectangle     = settings.area;
-    rectangle.position.x = zb::max(rectangle.position.x, 0);
-    rectangle.position.y = zb::max(rectangle.position.y, 0);
-    rectangle.size.x     = zb::min(rectangle.size.x, size.x - rectangle.position.x);
-    rectangle.size.y     = zb::min(rectangle.size.y, size.y - rectangle.position.y);
+    rectangle.position.x = za::max(rectangle.position.x, 0);
+    rectangle.position.y = za::max(rectangle.position.y, 0);
+    rectangle.size.x     = za::min(rectangle.size.x, size.x - rectangle.position.x);
+    rectangle.size.y     = za::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
     if ((result = za::Texture::create(rectangle.size.toVec2u(),
                                       {.sRgb = settings.sRgb, .smooth = settings.smooth, .wrapMode = settings.wrapMode})))
     {
-        ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
 
         // Copy the pixels to the texture
-        const zb::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
+        const za::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
 
         glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x)); // restore after
@@ -340,15 +340,15 @@ Vec2u Texture::getSize() const
 Image Texture::copyToImage() const
 {
     // Easy case: empty texture
-    ZB_ASSERT(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
+    ZA_ASSERT(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    zb::Vector<zb::U8> pixels(m_size.x * m_size.y * 4);
+    za::Vector<za::U8> pixels(m_size.x * m_size.y * 4);
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
@@ -370,17 +370,17 @@ Image Texture::copyToImage() const
     else
     {
         priv::errMsg("Failed to copy texture to image, failed to create frame buffer object");
-        zb::abort();
+        za::abort();
     }
 
     auto result = za::Image::create(m_size, pixels.data());
-    ZB_ASSERT(result.hasValue());
-    return ZB_MOVE(*result);
+    ZA_ASSERT(result.hasValue());
+    return ZA_MOVE(*result);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const zb::U8* pixels)
+void Texture::update(const za::U8* pixels)
 {
     // Update the whole texture
     update(pixels, m_size, {0, 0});
@@ -392,17 +392,17 @@ void Texture::update(const zb::U8* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const zb::U8* pixels, Vec2u size, Vec2u dest)
+void Texture::update(const za::U8* pixels, Vec2u size, Vec2u dest)
 {
-    ZB_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
-    ZB_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
+    ZA_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
+    ZA_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
-    ZB_ASSERT(pixels != nullptr);
+    ZA_ASSERT(pixels != nullptr);
 
-    ZB_ASSERT(m_texture);
-    ZB_ASSERT(glCheck(glIsTexture(m_texture)));
+    ZA_ASSERT(m_texture);
+    ZA_ASSERT(glCheck(glIsTexture(m_texture)));
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -433,16 +433,16 @@ void Texture::update(const zb::U8* pixels, Vec2u size, Vec2u dest)
 ////////////////////////////////////////////////////////////
 bool Texture::update(const Texture& texture, Vec2u dest)
 {
-    ZB_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
-    ZB_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
+    ZA_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
+    ZA_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
 
-    ZB_ASSERT(m_texture);
-    ZB_ASSERT(glCheck(glIsTexture(m_texture)));
+    ZA_ASSERT(m_texture);
+    ZA_ASSERT(glCheck(glIsTexture(m_texture)));
 
-    ZB_ASSERT(texture.m_texture);
-    ZB_ASSERT(glCheck(glIsTexture(texture.m_texture)));
+    ZA_ASSERT(texture.m_texture);
+    ZA_ASSERT(glCheck(glIsTexture(texture.m_texture)));
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     const auto sourceFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchReadFramebuffer());
     if (sourceFrameBuffer == 0u)
@@ -518,11 +518,11 @@ void Texture::update(const Image& image, Vec2u dest)
 ////////////////////////////////////////////////////////////
 bool Texture::update(const Window& window, Vec2u dest)
 {
-    ZB_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
-    ZB_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
+    ZA_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
+    ZA_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
 
-    ZB_ASSERT(m_texture);
-    ZB_ASSERT(glCheck(glIsTexture(m_texture)));
+    ZA_ASSERT(m_texture);
+    ZA_ASSERT(glCheck(glIsTexture(m_texture)));
 
     if (!window.setActive(true))
     {
@@ -530,7 +530,7 @@ bool Texture::update(const Window& window, Vec2u dest)
         return false;
     }
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     const auto destFrameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
     if (destFrameBuffer == 0u)
@@ -595,7 +595,7 @@ bool Texture::update(const Window& window, Vec2u dest)
 ////////////////////////////////////////////////////////////
 void Texture::setSmooth(bool smooth)
 {
-    ZB_ASSERT(m_texture);
+    ZA_ASSERT(m_texture);
 
     if (smooth == m_isSmooth)
         return;
@@ -603,7 +603,7 @@ void Texture::setSmooth(bool smooth)
     m_isSmooth = smooth;
     ++m_destructiveGeneration; // sampler state change visible to any in-flight batched draw
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -641,7 +641,7 @@ bool Texture::isSrgb() const
 ////////////////////////////////////////////////////////////
 void Texture::setWrapMode(TextureWrapMode wrapMode)
 {
-    ZB_ASSERT(m_texture);
+    ZA_ASSERT(m_texture);
 
     if (wrapMode == m_wrapMode)
         return;
@@ -649,7 +649,7 @@ void Texture::setWrapMode(TextureWrapMode wrapMode)
     m_wrapMode = wrapMode;
     ++m_destructiveGeneration; // sampler state change visible to any in-flight batched draw
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -670,10 +670,10 @@ TextureWrapMode Texture::getWrapMode() const
 ////////////////////////////////////////////////////////////
 void Texture::generateMipmap()
 {
-    ZB_ASSERT(m_texture);
-    ZB_ASSERT(glCheck(glIsTexture(m_texture)));
+    ZA_ASSERT(m_texture);
+    ZA_ASSERT(glCheck(glIsTexture(m_texture)));
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -695,7 +695,7 @@ void Texture::invalidateMipmap()
     if (!m_hasMipmap)
         return;
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -711,8 +711,8 @@ void Texture::invalidateMipmap()
 ////////////////////////////////////////////////////////////
 void Texture::bind() const
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(m_texture);
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(m_texture);
 
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
 }
@@ -721,7 +721,7 @@ void Texture::bind() const
 ////////////////////////////////////////////////////////////
 void Texture::unbind()
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
@@ -729,7 +729,7 @@ void Texture::unbind()
 ////////////////////////////////////////////////////////////
 unsigned int Texture::getMaximumSize()
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     static const auto size = static_cast<unsigned int>(priv::getGLInteger(GL_MAX_TEXTURE_SIZE));
     return size;
@@ -750,14 +750,14 @@ Texture& Texture::operator=(const Texture& rhs)
 ////////////////////////////////////////////////////////////
 void Texture::swap(Texture& rhs) noexcept
 {
-    zb::genericSwap(m_size, rhs.m_size);
-    zb::genericSwap(m_texture, rhs.m_texture);
-    zb::genericSwap(m_isSmooth, rhs.m_isSmooth);
-    zb::genericSwap(m_sRgb, rhs.m_sRgb);
-    zb::genericSwap(m_wrapMode, rhs.m_wrapMode);
-    zb::genericSwap(m_fboAttachment, rhs.m_fboAttachment);
-    zb::genericSwap(m_hasMipmap, rhs.m_hasMipmap);
-    zb::genericSwap(m_cacheId, rhs.m_cacheId);
+    za::genericSwap(m_size, rhs.m_size);
+    za::genericSwap(m_texture, rhs.m_texture);
+    za::genericSwap(m_isSmooth, rhs.m_isSmooth);
+    za::genericSwap(m_sRgb, rhs.m_sRgb);
+    za::genericSwap(m_wrapMode, rhs.m_wrapMode);
+    za::genericSwap(m_fboAttachment, rhs.m_fboAttachment);
+    za::genericSwap(m_hasMipmap, rhs.m_hasMipmap);
+    za::genericSwap(m_cacheId, rhs.m_cacheId);
 
     // Both textures' content/state was just replaced wholesale; bump on each.
     ++m_destructiveGeneration;

@@ -10,11 +10,11 @@
 
 #include "Zancle/Audio/ChannelMap.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -254,14 +254,14 @@ private:
     /// hook into the device's data callback.
     ///
     ////////////////////////////////////////////////////////////
-    using ProcessSamplesFunc = bool (*)(void* userData, const zb::I16* samples, zb::SizeT sampleCount);
+    using ProcessSamplesFunc = bool (*)(void* userData, const za::I16* samples, za::SizeT sampleCount);
     void setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 5728> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 5728> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

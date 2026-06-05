@@ -8,13 +8,13 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -90,12 +90,12 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return Sound buffer on success, `zb::nullOpt` otherwise
+    /// \return Sound buffer on success, `za::nullOpt` otherwise
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `loadFromSamples`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<SoundBuffer> loadFromFile(const Path& filename);
+    [[nodiscard]] static za::Optional<SoundBuffer> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a file in memory
@@ -106,12 +106,12 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Sound buffer on success, `zb::nullOpt` otherwise
+    /// \return Sound buffer on success, `za::nullOpt` otherwise
     ///
     /// \see `loadFromFile`, `loadFromStream`, `loadFromSamples`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<SoundBuffer> loadFromMemory(const void* data, zb::SizeT sizeInBytes);
+    [[nodiscard]] static za::Optional<SoundBuffer> loadFromMemory(const void* data, za::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from a custom stream
@@ -121,12 +121,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Sound buffer on success, `zb::nullOpt` otherwise
+    /// \return Sound buffer on success, `za::nullOpt` otherwise
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromSamples`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<SoundBuffer> loadFromStream(InputStream& stream);
+    [[nodiscard]] static za::Optional<SoundBuffer> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the sound buffer from an array of audio samples
@@ -138,14 +138,14 @@ public:
     /// \param channelMap   Map of position in sample frame to sound channel
     /// \param sampleRate   Sample rate (number of samples to play per second)
     ///
-    /// \return Sound buffer on success, `zb::nullOpt` otherwise
+    /// \return Sound buffer on success, `za::nullOpt` otherwise
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<SoundBuffer> loadFromSamples(
-        const zb::I16*    samples,
-        zb::SizeT         sampleCount,
+    [[nodiscard]] static za::Optional<SoundBuffer> loadFromSamples(
+        const za::I16*    samples,
+        za::SizeT         sampleCount,
         const ChannelMap& channelMap,
         unsigned int      sampleRate);
 
@@ -176,7 +176,7 @@ public:
     /// \see `getSampleCount`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const zb::I16* getSamples() const;
+    [[nodiscard]] const za::I16* getSamples() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of samples stored in the buffer
@@ -189,7 +189,7 @@ public:
     /// \see `getSamples`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U64 getSampleCount() const;
+    [[nodiscard]] za::U64 getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sample rate of the sound
@@ -257,8 +257,8 @@ public:
     /// happens during construction based on `sampleCount`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(zb::PassKey<SoundBuffer>&&,
-                                       zb::SizeT         sampleCount,
+    [[nodiscard]] explicit SoundBuffer(za::PassKey<SoundBuffer>&&,
+                                       za::SizeT         sampleCount,
                                        const ChannelMap& channelMap,
                                        unsigned int      sampleRate);
 
@@ -267,7 +267,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

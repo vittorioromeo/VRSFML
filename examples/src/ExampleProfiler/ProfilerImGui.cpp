@@ -5,27 +5,27 @@
 
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "ZancleBase/Algorithm/Sort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-using ChildrenMap = zb::Vector<zb::Vector<sfex::NodeId>>;
+using ChildrenMap = za::Vector<za::Vector<sfex::NodeId>>;
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SamplerVec = zb::Vector<Sampler<T>>;
+using SamplerVec = za::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const, gnu::always_inline]] inline double calcPercentage(const zb::I64 part, const zb::I64 total)
+[[nodiscard, gnu::const, gnu::always_inline]] inline double calcPercentage(const za::I64 part, const za::I64 total)
 {
     return total == 0 ? 0.0 : (static_cast<double>(part) * 100.0) / static_cast<double>(total);
 }
@@ -39,7 +39,7 @@ using SamplerVec = zb::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] int calcDelta(const SamplerVec<zb::U64>& timeSamplers,
+[[nodiscard]] int calcDelta(const SamplerVec<za::U64>& timeSamplers,
                             const SamplerVec<double>&  percentSamplers,
                             const sfex::ScopeInfo&     infoA,
                             const sfex::ScopeInfo&     infoB,
@@ -76,10 +76,10 @@ using SamplerVec = zb::Vector<Sampler<T>>;
 
 
 ////////////////////////////////////////////////////////////
-void renderNode(const SamplerVec<zb::U64>&             timeSamplers,
+void renderNode(const SamplerVec<za::U64>&             timeSamplers,
                 const SamplerVec<double>&              percentSamplers,
                 const sfex::NodeId                     nodeId,
-                const zb::Span<const sfex::ScopeInfo>& allNodes,
+                const za::Span<const sfex::ScopeInfo>& allNodes,
                 const ChildrenMap&                     childrenMap)
 {
     const auto& info     = allNodes[nodeId];
@@ -100,7 +100,7 @@ void renderNode(const SamplerVec<zb::U64>&             timeSamplers,
 
     constexpr const char spaces[33] = "                                ";
 
-    ZB_ASSERT(info.depth < 32); // We have 32 spaces, and we indent by 1 space per level, so max depth is 31 (0-based)
+    ZA_ASSERT(info.depth < 32); // We have 32 spaces, and we indent by 1 space per level, so max depth is 31 (0-based)
     const char* const spacesPtr = spaces + sizeof(spaces) - 1u - (info.depth * 2); // points to the null terminator
 
     // We use the node's ID as a unique identifier for ImGui
@@ -165,8 +165,8 @@ void showImguiProfiler()
 
     // Pre-process the flat list into a tree structure
     static thread_local ChildrenMap              childrenMap(sfex::maxNodes);
-    static thread_local zb::Vector<sfex::NodeId> rootNodes;
-    static thread_local SamplerVec<zb::U64>      nodeTimeSamplers(sfex::maxNodes, Sampler<zb::U64>{/* capacity */ 64u});
+    static thread_local za::Vector<sfex::NodeId> rootNodes;
+    static thread_local SamplerVec<za::U64>      nodeTimeSamplers(sfex::maxNodes, Sampler<za::U64>{/* capacity */ 64u});
     static thread_local SamplerVec<double> nodePercentSamplers(sfex::maxNodes, Sampler<double>{/* capacity */ 64u});
 
     sfex::populateNodes(scopeInfos, childrenMap, rootNodes); // Clears as the first step
@@ -176,7 +176,7 @@ void showImguiProfiler()
         if (scopeInfos[i].timeUs < 0)
             continue;
 
-        nodeTimeSamplers[i].record(static_cast<zb::U64>(scopeInfos[i].timeUs));
+        nodeTimeSamplers[i].record(static_cast<za::U64>(scopeInfos[i].timeUs));
         nodePercentSamplers[i].record(calcNodePercentage(scopeInfos, scopeInfos[i]));
     }
 
@@ -217,9 +217,9 @@ void showImguiProfiler()
         };
 
         for (auto& vec : childrenMap)
-            zb::quickSort(vec.begin(), vec.end(), nodeComparer);
+            za::quickSort(vec.begin(), vec.end(), nodeComparer);
 
-        zb::quickSort(rootNodes.begin(), rootNodes.end(), nodeComparer);
+        za::quickSort(rootNodes.begin(), rootNodes.end(), nodeComparer);
     }
 
     // Kick off rendering for each root node

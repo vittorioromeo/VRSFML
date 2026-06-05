@@ -1,6 +1,6 @@
 #include "BubbleIdleApp.hpp"
 
-#include "ZancleBase/Builtin/Strcmp.hpp"
+#include "Zancle/Base/Strcmp.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////
 int main(int argc, const char** argv)
 {
-    if (argc >= 2 && ZB_STRCMP(argv[1], "dev") == 0)
+    if (argc >= 2 && ZA_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
     runBubbleIdleApp();

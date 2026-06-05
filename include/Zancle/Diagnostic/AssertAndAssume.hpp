@@ -1,0 +1,15 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "Zancle/Diagnostic/Assert.hpp"
+
+
+////////////////////////////////////////////////////////////
+#define ZA_ASSERT_AND_ASSUME(...) \
+    ZA_ASSERT(__VA_ARGS__);       \
+    [[assume(__VA_ARGS__)]]

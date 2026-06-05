@@ -7,20 +7,20 @@
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Algorithm/IsSorted.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Algorithm/IsSorted.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 
 TEST_CASE("[Window] za::VideoMode" * tst::skip(skipDisplayTests))
@@ -29,18 +29,18 @@ TEST_CASE("[Window] za::VideoMode" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_DEFAULT_CONSTRUCTIBLE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_DEFAULT_CONSTRUCTIBLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::VideoMode));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::VideoMode)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::VideoMode));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::VideoMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::VideoMode, za::VideoMode));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::VideoMode)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::VideoMode));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::VideoMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::VideoMode, za::VideoMode));
     }
 
     SECTION("Construction")
@@ -67,7 +67,7 @@ TEST_CASE("[Window] za::VideoMode" * tst::skip(skipDisplayTests))
     SECTION("getFullscreenModes()")
     {
         const auto& modes = za::VideoModeUtils::getFullscreenModes();
-        CHECK(zb::isSorted(modes.begin(), modes.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; }));
+        CHECK(za::isSorted(modes.begin(), modes.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; }));
     }
 
     SECTION("Operators")

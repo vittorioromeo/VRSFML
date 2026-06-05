@@ -114,9 +114,7 @@ IncludeCategories:
   - Priority: 9
     Regex: '^\"Zancle\/GLUtils'
   - Priority: 10
-    Regex: '^\"Zancle\/System'
-  - Priority: 11
-    Regex: '^\"ZancleBase'
+    Regex: '^\"Zancle\/(Mixin|Lifetime|Err|Scn|IO|Fmt|Concurrency|Chrono|Geometry|String|Algorithm|Container|Vocabulary|Diagnostic|Math|Trait|Base)\/'
   - Priority: 12
     Regex: '^\"ExampleUtils'
   - Priority: -100

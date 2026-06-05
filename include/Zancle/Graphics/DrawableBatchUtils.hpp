@@ -12,13 +12,13 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Restrict.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Restrict.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za::DrawableBatchUtils
@@ -72,7 +72,7 @@ namespace za::DrawableBatchUtils
 // 4-vertex strip in this order, so the rendered result is identical
 // regardless of which path (immediate strip vs. batched indexed) the
 // caller chose -- including winding.
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType * ZB_RESTRICT & ZB_RESTRICT indexPtr,
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType * ZA_RESTRICT & ZA_RESTRICT indexPtr,
                                                                              const IndexType startIndex) noexcept
 {
     // Triangle 0 (Top-left, Bottom-left, Top-right)
@@ -92,12 +92,12 @@ namespace za::DrawableBatchUtils
     const Transform&          transform,
     const Rect2f&             textureRect,
     const Color               color,
-    Vertex* ZB_RESTRICT const vertexPtr)
+    Vertex* ZA_RESTRICT const vertexPtr)
 {
     const auto& [position, size] = textureRect;
 
-    const float absSizeX = ZB_MATH_FABSF(size.x);
-    const float absSizeY = ZB_MATH_FABSF(size.y);
+    const float absSizeX = ZA_MATH_FABSF(size.x);
+    const float absSizeY = ZA_MATH_FABSF(size.y);
 
     // Position
     vertexPtr[0].position.x = transform.a02;
@@ -128,12 +128,12 @@ namespace za::DrawableBatchUtils
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedTextQuadVertices(
-    Vertex* const ZB_RESTRICT vertexPtr,
+    Vertex* const ZA_RESTRICT vertexPtr,
     const Transform&          transform,
-    const Vertex& ZB_RESTRICT a,
-    const Vertex& ZB_RESTRICT b,
-    const Vertex& ZB_RESTRICT c,
-    const Vertex& ZB_RESTRICT d) noexcept
+    const Vertex& ZA_RESTRICT a,
+    const Vertex& ZA_RESTRICT b,
+    const Vertex& ZA_RESTRICT c,
+    const Vertex& ZA_RESTRICT d) noexcept
 {
     vertexPtr[0] = {transform.transformPoint(a.position), a.color, a.texCoords};
     vertexPtr[1] = {transform.transformPoint(b.position), b.color, b.texCoords};
@@ -146,8 +146,8 @@ namespace za::DrawableBatchUtils
 [[gnu::always_inline, gnu::flatten]] inline void appendSpriteIndicesAndVertices(
     const Sprite&             sprite,
     const IndexType           nextIndex,
-    IndexType* ZB_RESTRICT    indexPtr,
-    Vertex* ZB_RESTRICT const vertexPtr) noexcept
+    IndexType* ZA_RESTRICT    indexPtr,
+    Vertex* ZA_RESTRICT const vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
     appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
@@ -157,11 +157,11 @@ namespace za::DrawableBatchUtils
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTextIndicesAndVertices(
     const Transform&                transform,
-    const Vertex* ZB_RESTRICT const data,
+    const Vertex* ZA_RESTRICT const data,
     const IndexType                 numQuads,
     const IndexType                 nextIndex,
     IndexType*                      indexPtr,
-    Vertex* ZB_RESTRICT             vertexPtr) noexcept
+    Vertex* ZA_RESTRICT             vertexPtr) noexcept
 {
     for (IndexType i = 0u; i < numQuads; ++i)
         appendQuadIndices(indexPtr, nextIndex + (i * 4u));
@@ -179,9 +179,9 @@ namespace za::DrawableBatchUtils
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTransformedVertices(
     const Transform&          transform,
-    const Vertex* ZB_RESTRICT data,
-    const zb::SizeT           size,
-    Vertex* ZB_RESTRICT       vertexPtr)
+    const Vertex* ZA_RESTRICT data,
+    const za::SizeT           size,
+    Vertex* ZA_RESTRICT       vertexPtr)
 {
     for (const auto* const target = data + size; data != target; ++data)
         *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
@@ -191,13 +191,13 @@ namespace za::DrawableBatchUtils
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeFillIndicesAndVertices(
     const Transform&                transform,
-    const Vertex* ZB_RESTRICT const fillData,
+    const Vertex* ZA_RESTRICT const fillData,
     const IndexType                 fillSize,
     const IndexType                 nextFillIndex,
     IndexType*                      indexPtr,
-    Vertex* ZB_RESTRICT             vertexPtr) noexcept
+    Vertex* ZA_RESTRICT             vertexPtr) noexcept
 {
-    ZB_ASSERT(fillSize > 2u);
+    ZA_ASSERT(fillSize > 2u);
 
     for (IndexType i = 1u; i < fillSize - 1u; ++i)
         appendTriangleFanIndices(indexPtr, nextFillIndex, i);
@@ -216,13 +216,13 @@ namespace za::DrawableBatchUtils
 // the outline if the user enables face culling.
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeOutlineIndicesAndVertices(
     const Transform&                transform,
-    const Vertex* ZB_RESTRICT const outlineData,
+    const Vertex* ZA_RESTRICT const outlineData,
     const IndexType                 outlineSize,
     const IndexType                 nextOutlineIndex,
     IndexType*                      indexPtr,
-    Vertex* ZB_RESTRICT             vertexPtr) noexcept
+    Vertex* ZA_RESTRICT             vertexPtr) noexcept
 {
-    ZB_ASSERT(outlineSize > 2u);
+    ZA_ASSERT(outlineSize > 2u);
 
     for (IndexType i = 0u; i < outlineSize - 2u; ++i)
         appendTriangleStripIndices(indexPtr, nextOutlineIndex, i);

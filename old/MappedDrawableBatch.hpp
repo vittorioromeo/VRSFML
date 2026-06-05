@@ -18,7 +18,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename BatchableObject>
     [[gnu::always_inline, gnu::flatten]] void add(const BatchableObject& batchableObject)
-        requires(!zb::isBaseOf<Shape, BatchableObject>)
+        requires(!za::isBaseOf<Shape, BatchableObject>)
     {
         const auto [data, size] = batchableObject.getVertices();
 
@@ -48,37 +48,37 @@ private:
     [[gnu::always_inline, gnu::flatten]] void reallocAndRemapBufferIfNeeded(
         unsigned int type,
         void*&       bufferPtr,
-        zb::SizeT& allocatedBytes,
-        zb::SizeT  targetBytes);
+        za::SizeT& allocatedBytes,
+        za::SizeT  targetBytes);
 
-    void reallocAndRemapVerticesIfNeeded(zb::SizeT moreCount);
-    void reallocAndRemapIndicesIfNeeded(zb::SizeT moreCount);
+    void reallocAndRemapVerticesIfNeeded(za::SizeT moreCount);
+    void reallocAndRemapIndicesIfNeeded(za::SizeT moreCount);
 
-    [[nodiscard, gnu::always_inline, gnu::flatten]] void* mapBuffer(unsigned int type, zb::SizeT allocatedBytes) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten]] void* mapBuffer(unsigned int type, za::SizeT allocatedBytes) const;
     [[gnu::always_inline, gnu::flatten]] void unmapBuffer(unsigned int type) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void addSubsequentIndices(zb::SizeT count);
+    void addSubsequentIndices(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void appendTransformedVertices(const Vertex*    data,
-                                                                           zb::SizeT      count,
+                                                                           za::SizeT      count,
                                                                            const Transform& transform);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     RenderTarget& m_renderTarget;
-    zb::SizeT   m_allocatedVertexBytes{0u};
-    zb::SizeT   m_allocatedIndexBytes{0u};
-    zb::SizeT   m_vertexCount{0u};
-    zb::SizeT   m_indexCount{0u};
+    za::SizeT   m_allocatedVertexBytes{0u};
+    za::SizeT   m_allocatedIndexBytes{0u};
+    za::SizeT   m_vertexCount{0u};
+    za::SizeT   m_indexCount{0u};
     void*         m_mappedVertices{};
     void*         m_mappedIndices{};
 };

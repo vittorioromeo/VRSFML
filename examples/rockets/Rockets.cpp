@@ -39,19 +39,19 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Algorithm/SwapAndPop.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/SwapAndPop.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -118,7 +118,7 @@ za::Shader*                        instanceRenderingShader        = nullptr;
 const za::Shader::UniformLocation* instanceRenderingULTextureRect = nullptr;
 za::VAOHandle*                     instanceRenderingVAOGroup      = nullptr;
 za::VBOHandle*                     instanceRenderingVBOs          = nullptr; // points to array of 4
-zb::Vector<ParticleInstanceData>   instanceRenderingDataBuffer[2];
+za::Vector<ParticleInstanceData>   instanceRenderingDataBuffer[2];
 
 
 ////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ za::Rect2f   txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] za::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const zb::SizeT nInstances)
+[[nodiscard]] za::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const za::SizeT nInstances)
 {
     return {
         .vaoHandle     = *instanceRenderingVAOGroup,
@@ -169,7 +169,7 @@ za::Rect2f   txrRocket;
             .origin      = txr.size / 2.f,
             .rotation    = za::radians(rotation),
             .textureRect = txr,
-            .color       = za::Color::whiteWithAlpha(static_cast<zb::U8>(opacity * 255.f)),
+            .color       = za::Color::whiteWithAlpha(static_cast<za::U8>(opacity * 255.f)),
         },
         za::RenderStates{.view = view, .texture = txAtlas});
 }
@@ -224,17 +224,17 @@ struct Entity
 ////////////////////////////////////////////////////////////
 struct World
 {
-    zb::Vector<zb::UniquePtr<Entity>> entities;
+    za::Vector<za::UniquePtr<Entity>> entities;
 
     void cleanup()
     {
-        zb::vectorSwapAndPopIf(entities, [](const auto& entity) { return !entity->alive; });
+        za::vectorSwapAndPopIf(entities, [](const auto& entity) { return !entity->alive; });
     }
 
     void update(float dt)
     {
         // Cannot use range-based `for` as new elements are created while updating
-        for (zb::SizeT i = 0u; i < entities.size(); ++i) // NOLINT(modernize-loop-convert)
+        for (za::SizeT i = 0u; i < entities.size(); ++i) // NOLINT(modernize-loop-convert)
             entities[i]->update(dt);
     }
 
@@ -247,10 +247,10 @@ struct World
     template <typename T>
     T& addEntity()
     {
-        auto  newEntity = zb::makeUnique<T>();
+        auto  newEntity = za::makeUnique<T>();
         auto& result    = *newEntity;
 
-        entities.emplaceBack(ZB_MOVE(newEntity));
+        entities.emplaceBack(ZA_MOVE(newEntity));
 
         result.world = this;
         return result;
@@ -510,21 +510,21 @@ struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
     za::Vec2f velocity;
     za::Vec2f acceleration;
 
-    zb::SizeT smokeEmitterIdx;
-    zb::SizeT fireEmitterIdx;
+    za::SizeT smokeEmitterIdx;
+    za::SizeT fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World
 {
-    zb::Vector<zb::Optional<Emitter>> emitters;
-    zb::Vector<Particle>              particles;
-    zb::Vector<Rocket>                rockets;
+    za::Vector<za::Optional<Emitter>> emitters;
+    za::Vector<Particle>              particles;
+    za::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT addEmitter(const Emitter& emitter)
+    [[nodiscard]] za::SizeT addEmitter(const Emitter& emitter)
     {
-        for (zb::SizeT i = 0u; i < emitters.size(); ++i)
+        for (za::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
@@ -579,7 +579,7 @@ struct World
 
         {
             SFEX_PROFILE_SCOPE("emitters");
-            for (zb::Optional<Emitter>& e : emitters)
+            for (za::Optional<Emitter>& e : emitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -608,10 +608,10 @@ struct World
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (zb::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
+                if (za::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
                     se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (zb::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
+                if (za::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
                     fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
@@ -620,9 +620,9 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        zb::vectorSwapAndPopIf(particles, [](const Particle& p) { return p.opacity <= 0.f; });
+        za::vectorSwapAndPopIf(particles, [](const Particle& p) { return p.opacity <= 0.f; });
 
-        zb::vectorSwapAndPopIf(rockets,
+        za::vectorSwapAndPopIf(rockets,
                                [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -700,17 +700,17 @@ template <typename TEmitter>
 struct AddU16EmitterMixin
 {
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U16 addEmitter(zb::Vector<zb::Optional<TEmitter>>& emitters, const TEmitter& emitter)
+    [[nodiscard]] za::U16 addEmitter(za::Vector<za::Optional<TEmitter>>& emitters, const TEmitter& emitter)
     {
-        for (zb::SizeT i = 0u; i < emitters.size(); ++i)
+        for (za::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
-                return static_cast<zb::U16>(i);
+                return static_cast<za::U16>(i);
             }
 
         emitters.emplaceBack(emitter);
-        return static_cast<zb::U16>(emitters.size() - 1);
+        return static_cast<za::U16>(emitters.size() - 1);
     }
 };
 
@@ -785,18 +785,18 @@ struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
     za::Vec2f velocity;
     za::Vec2f acceleration;
 
-    zb::U16 smokeEmitterIdx;
-    zb::U16 fireEmitterIdx;
+    za::U16 smokeEmitterIdx;
+    za::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
-    zb::Vector<zb::Optional<Emitter>> smokeEmitters;
-    zb::Vector<zb::Optional<Emitter>> fireEmitters;
-    zb::Vector<Particle>              smokeParticles;
-    zb::Vector<Particle>              fireParticles;
-    zb::Vector<Rocket>                rockets;
+    za::Vector<za::Optional<Emitter>> smokeEmitters;
+    za::Vector<za::Optional<Emitter>> fireEmitters;
+    za::Vector<Particle>              smokeParticles;
+    za::Vector<Particle>              fireParticles;
+    za::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -810,7 +810,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             p.rotation += p.angularVelocity * dt;
         };
 
-        const auto updateEmitter = [&](zb::Optional<Emitter>& e, auto&& fSpawn)
+        const auto updateEmitter = [&](za::Optional<Emitter>& e, auto&& fSpawn)
         {
             if (!e.hasValue())
                 return;
@@ -840,14 +840,14 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
 
-            for (zb::Optional<Emitter>& e : smokeEmitters)
+            for (za::Optional<Emitter>& e : smokeEmitters)
                 updateEmitter(e, [&] { smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position)); });
         }
 
         {
             SFEX_PROFILE_SCOPE("fire emitters");
 
-            for (zb::Optional<Emitter>& e : fireEmitters)
+            for (za::Optional<Emitter>& e : fireEmitters)
                 updateEmitter(e, [&] { fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position)); });
         }
 
@@ -859,10 +859,10 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (zb::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                if (za::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
                     se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (zb::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                if (za::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
                     fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
@@ -871,10 +871,10 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        zb::vectorSwapAndPopIf(smokeParticles, [](const Particle& p) { return p.opacity <= 0.f; });
-        zb::vectorSwapAndPopIf(fireParticles, [](const Particle& p) { return p.opacity <= 0.f; });
+        za::vectorSwapAndPopIf(smokeParticles, [](const Particle& p) { return p.opacity <= 0.f; });
+        za::vectorSwapAndPopIf(fireParticles, [](const Particle& p) { return p.opacity <= 0.f; });
 
-        zb::vectorSwapAndPopIf(rockets,
+        za::vectorSwapAndPopIf(rockets,
                                [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -897,7 +897,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             instanceRenderingDataBuffer[0].clear();
             instanceRenderingDataBuffer[0].reserve(nParticles);
 
-            for (zb::SizeT i = 0u; i < nParticles; ++i)
+            for (za::SizeT i = 0u; i < nParticles; ++i)
                 instanceRenderingDataBuffer[0]
                     .emplaceBack(particles[i].position, particles[i].scale, particles[i].rotation, particles[i].opacity);
 
@@ -947,17 +947,17 @@ namespace SOAManual
 ////////////////////////////////////////////////////////////
 struct ParticleSoA
 {
-    zb::Vector<za::Vec2f> positions;
-    zb::Vector<za::Vec2f> velocities;
-    zb::Vector<za::Vec2f> accelerations;
+    za::Vector<za::Vec2f> positions;
+    za::Vector<za::Vec2f> velocities;
+    za::Vector<za::Vec2f> accelerations;
 
-    zb::Vector<float> scales;
-    zb::Vector<float> opacities;
-    zb::Vector<float> rotations;
+    za::Vector<float> scales;
+    za::Vector<float> opacities;
+    za::Vector<float> rotations;
 
-    zb::Vector<float> scaleRates;
-    zb::Vector<float> opacityChanges;
-    zb::Vector<float> angularVelocities;
+    za::Vector<float> scaleRates;
+    za::Vector<float> opacityChanges;
+    za::Vector<float> angularVelocities;
 
     ////////////////////////////////////////////////////////////
     void forEachVector(auto&& f)
@@ -976,7 +976,7 @@ struct ParticleSoA
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] zb::SizeT getSize() const
+    [[nodiscard, gnu::always_inline]] za::SizeT getSize() const
     {
         return positions.size();
     }
@@ -1000,18 +1000,18 @@ struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
     za::Vec2f velocity;
     za::Vec2f acceleration;
 
-    zb::U16 smokeEmitterIdx;
-    zb::U16 fireEmitterIdx;
+    za::U16 smokeEmitterIdx;
+    za::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
-    zb::Vector<zb::Optional<Emitter>> smokeEmitters;
-    zb::Vector<zb::Optional<Emitter>> fireEmitters;
+    za::Vector<za::Optional<Emitter>> smokeEmitters;
+    za::Vector<za::Optional<Emitter>> fireEmitters;
     ParticleSoA                       smokeParticles;
     ParticleSoA                       fireParticles;
-    zb::Vector<Rocket>                rockets;
+    za::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1020,7 +1020,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             const auto nParticles = soa.getSize();
 
-            for (zb::SizeT i = 0u; i < nParticles; ++i)
+            for (za::SizeT i = 0u; i < nParticles; ++i)
             {
                 soa.velocities[i] += soa.accelerations[i] * dt;
                 soa.positions[i] += soa.velocities[i] * dt;
@@ -1043,7 +1043,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
 
-            for (zb::Optional<Emitter>& e : smokeEmitters)
+            for (za::Optional<Emitter>& e : smokeEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1070,7 +1070,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("fire emitters");
 
-            for (zb::Optional<Emitter>& e : fireEmitters)
+            for (za::Optional<Emitter>& e : fireEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1102,10 +1102,10 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (zb::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                if (za::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
                     se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (zb::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                if (za::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
                     fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
@@ -1115,24 +1115,24 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     {
         const auto soaEraseIf = [&](ParticleSoA& soa, auto&& predicate)
         {
-            zb::SizeT currentSize = soa.positions.size();
+            za::SizeT currentSize = soa.positions.size();
 
-            for (zb::SizeT i = currentSize; i-- > 0u;)
+            for (za::SizeT i = currentSize; i-- > 0u;)
             {
                 if (!predicate(soa, i))
                     continue;
 
                 --currentSize;
-                soa.forEachVector([&](auto& vec) { vec[i] = ZB_MOVE(vec[currentSize]); });
+                soa.forEachVector([&](auto& vec) { vec[i] = ZA_MOVE(vec[currentSize]); });
             }
 
             soa.forEachVector([&](auto& vec) { vec.resize(currentSize); });
         };
 
-        soaEraseIf(smokeParticles, [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
-        soaEraseIf(fireParticles, [](const ParticleSoA& soa, const zb::SizeT i) { return soa.opacities[i] <= 0.f; });
+        soaEraseIf(smokeParticles, [](const ParticleSoA& soa, const za::SizeT i) { return soa.opacities[i] <= 0.f; });
+        soaEraseIf(fireParticles, [](const ParticleSoA& soa, const za::SizeT i) { return soa.opacities[i] <= 0.f; });
 
-        zb::vectorSwapAndPopIf(rockets,
+        za::vectorSwapAndPopIf(rockets,
                                [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -1236,18 +1236,18 @@ struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
     za::Vec2f velocity;
     za::Vec2f acceleration;
 
-    zb::U16 smokeEmitterIdx;
-    zb::U16 fireEmitterIdx;
+    za::U16 smokeEmitterIdx;
+    za::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
 struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
-    zb::Vector<zb::Optional<Emitter>> smokeEmitters;
-    zb::Vector<zb::Optional<Emitter>> fireEmitters;
+    za::Vector<za::Optional<Emitter>> smokeEmitters;
+    za::Vector<za::Optional<Emitter>> fireEmitters;
     ParticleSoA                       smokeParticles;
     ParticleSoA                       fireParticles;
-    zb::Vector<Rocket>                rockets;
+    za::Vector<Rocket>                rockets;
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1286,7 +1286,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
 
-            for (zb::Optional<Emitter>& e : smokeEmitters)
+            for (za::Optional<Emitter>& e : smokeEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1307,7 +1307,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             SFEX_PROFILE_SCOPE("fire emitters");
 
-            for (zb::Optional<Emitter>& e : fireEmitters)
+            for (za::Optional<Emitter>& e : fireEmitters)
             {
                 if (!e.hasValue())
                     continue;
@@ -1333,10 +1333,10 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 r.position += r.velocity * dt;
                 r.velocity += r.acceleration * dt;
 
-                if (zb::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                if (za::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
                     se->position = r.position - za::Vec2f{12.f, 0.f};
 
-                if (zb::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                if (za::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
                     fe->position = r.position - za::Vec2f{12.f, 0.f};
             }
         }
@@ -1348,7 +1348,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         smokeParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
         fireParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
 
-        zb::vectorSwapAndPopIf(rockets,
+        za::vectorSwapAndPopIf(rockets,
                                [&](const Rocket& r)
         {
             if (r.position.x <= 1680.f + 64.f)
@@ -1608,7 +1608,7 @@ int main()
         ////////////////////////////////////////////////////////////
         // ---
         {
-            while (zb::Optional event = window.pollEvent())
+            while (za::Optional event = window.pollEvent())
             {
                 imGuiContext.processEvent(window, *event);
 

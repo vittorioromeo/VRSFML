@@ -6,17 +6,17 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ struct [[nodiscard]] Cat
     //
     // TODO P2: when more cat-specific structs accumulate, replace
     // `Optional<WardenBonkState>` (and friends like `astroState`) with a
-    // single `zb::Variant<...>` keyed off `CatType`.
+    // single `za::Variant<...>` keyed off `CatType`.
     struct [[nodiscard]] WardenBonkState
     {
         // Sequential phases: Windup raises the baton up-and-behind; Travel
@@ -58,7 +58,7 @@ struct [[nodiscard]] Cat
         //   - Return start = `cat.pawPosition`
         //   - Return end   = idle paw pose
         // Per-phase durations live in `GameConstants` so they're tunable.
-        enum class [[nodiscard]] Phase : zb::U8
+        enum class [[nodiscard]] Phase : za::U8
         {
             Windup,
             Travel,
@@ -68,7 +68,7 @@ struct [[nodiscard]] Cat
 
         Phase                   phase   = Phase::Windup;
         float                   phaseMs = 0.f; // counts down to 0
-        zb::Optional<zb::SizeT> pendingTargetIdx{zb::nullOpt};
+        za::Optional<za::SizeT> pendingTargetIdx{za::nullOpt};
     };
 
     ////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ struct [[nodiscard]] Cat
 
     // Wardencat bonk animation state: lazily emplaced when a wardencat
     // starts a bonk action, reset when the return phase completes.
-    zb::Optional<WardenBonkState> wardenBonk{zb::nullOpt};
+    za::Optional<WardenBonkState> wardenBonk{za::nullOpt};
 
     // While > 0 the cat rocks side-to-side like a struck pendulum -- used by
     // the Warden's bonk to give the target a visible reaction. Ticked down
@@ -104,21 +104,21 @@ struct [[nodiscard]] Cat
     Countdown inspiredCountdown{};
     Countdown boostCountdown{};
 
-    zb::SizeT nameIdx;
+    za::SizeT nameIdx;
 
     TextShakeEffect textStatusShakeEffect{};
     TextShakeEffect textMoneyShakeEffect{};
 
-    zb::U32 hits = 0u;
+    za::U32 hits = 0u;
 
     CatType type;
 
-    zb::Optional<Transition> hexedTimer{zb::nullOpt};
-    zb::Optional<Transition> hexedCopyTimer{zb::nullOpt};
+    za::Optional<Transition> hexedTimer{za::nullOpt};
+    za::Optional<Transition> hexedCopyTimer{za::nullOpt};
 
     MoneyType moneyEarned = 0u;
 
-    zb::Optional<AstroState> astroState{zb::nullOpt};
+    za::Optional<AstroState> astroState{za::nullOpt};
 
     Countdown blinkCountdown{};
     Countdown blinkAnimCountdown{};
@@ -135,8 +135,8 @@ struct [[nodiscard]] Cat
     // the cat early by grabbing and shaking it: `napShakeProgress` (0..1)
     // accumulates drag motion and triggers wake-up on reaching 1.
     // `napWakeWobble` is a transient feedback rotation that decays to zero.
-    zb::Optional<Transition> napTransition{zb::nullOpt};
-    zb::Optional<Countdown>  napSleepCountdown{zb::nullOpt};
+    za::Optional<Transition> napTransition{za::nullOpt};
+    za::Optional<Countdown>  napSleepCountdown{za::nullOpt};
     float                    napShakeProgress{0.f};
     float                    napWakeWobble{0.f};
 
@@ -171,7 +171,7 @@ struct [[nodiscard]] Cat
     {
         textStatusShakeEffect.update(deltaTime);
         textMoneyShakeEffect.update(deltaTime);
-        wobbleRadians = zb::remainder(wobbleRadians + deltaTime * 0.002f, zb::tau);
+        wobbleRadians = za::remainder(wobbleRadians + deltaTime * 0.002f, za::tau);
     }
 
     ////////////////////////////////////////////////////////////
@@ -193,23 +193,23 @@ struct [[nodiscard]] Cat
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline zb::Optional<Transition>& getHexedTimer()
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline za::Optional<Transition>& getHexedTimer()
     {
-        ZB_ASSERT(isHexedOrCopyHexed());
+        ZA_ASSERT(isHexedOrCopyHexed());
         return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline const zb::Optional<Transition>& getHexedTimer() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline const za::Optional<Transition>& getHexedTimer() const
     {
-        ZB_ASSERT(isHexedOrCopyHexed());
+        ZA_ASSERT(isHexedOrCopyHexed());
         return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline za::Vec2f getDrawPosition(const bool enableBobbing) const
     {
-        return enableBobbing ? position + za::Vec2f{0.f, zb::sin(wobbleRadians) * 7.f} : position;
+        return enableBobbing ? position + za::Vec2f{0.f, za::sin(wobbleRadians) * 7.f} : position;
     }
 
     ////////////////////////////////////////////////////////////
@@ -241,10 +241,10 @@ struct [[nodiscard]] Cat
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isCloseToStartX() const noexcept
     {
-        ZB_ASSERT(type == CatType::Astro);
-        ZB_ASSERT(astroState.hasValue());
+        ZA_ASSERT(type == CatType::Astro);
+        ZA_ASSERT(astroState.hasValue());
 
-        return astroState->wrapped && zb::fabs(position.x - astroState->startX) < 400.f;
+        return astroState->wrapped && za::fabs(position.x - astroState->startX) < 400.f;
     }
 
     ////////////////////////////////////////////////////////////

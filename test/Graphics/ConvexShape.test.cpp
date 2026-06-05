@@ -6,23 +6,23 @@
 
 #include "Zancle/Graphics/CircleShape.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::ConvexShape")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::ConvexShape));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::ConvexShape));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::ConvexShape));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::ConvexShape));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::ConvexShape));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::ConvexShape));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::ConvexShape));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::ConvexShape));
     }
 
     SECTION("Default constructor")
@@ -35,7 +35,7 @@ TEST_CASE("[Graphics] za::ConvexShape")
     {
         const za::ConvexShape convex{{.pointCount = 15u}};
         CHECK(convex.getPointCount() == 15);
-        for (zb::SizeT i = 0; i < convex.getPointCount(); ++i)
+        for (za::SizeT i = 0; i < convex.getPointCount(); ++i)
             CHECK(convex.getPoint(i) == za::Vec2f{0, 0});
     }
 
@@ -44,7 +44,7 @@ TEST_CASE("[Graphics] za::ConvexShape")
         za::ConvexShape convex{{.pointCount = 0u}};
         convex.setPointCount(42);
         CHECK(convex.getPointCount() == 42);
-        for (zb::SizeT i = 0; i < convex.getPointCount(); ++i)
+        for (za::SizeT i = 0; i < convex.getPointCount(); ++i)
             CHECK(convex.getPoint(i) == za::Vec2f{0, 0});
     }
 

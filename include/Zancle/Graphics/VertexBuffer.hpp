@@ -10,7 +10,7 @@
 
 #include "Zancle/Graphics/PrimitiveType.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ public:
     /// \return `true` if creation was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool create(zb::SizeT vertexCount);
+    [[nodiscard]] bool create(za::SizeT vertexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the vertex count
@@ -128,7 +128,7 @@ public:
     /// \return Number of vertices in the vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT getVertexCount() const;
+    [[nodiscard]] za::SizeT getVertexCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the whole buffer from an array of vertices
@@ -181,7 +181,7 @@ public:
     /// \return `true` if the update was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Vertex* vertices, zb::SizeT vertexCount, unsigned int offset);
+    [[nodiscard]] bool update(const Vertex* vertices, za::SizeT vertexCount, unsigned int offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the contents of another buffer into this buffer
@@ -323,7 +323,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     unsigned int  m_buffer{};                             //!< Internal buffer identifier
-    zb::SizeT     m_size{};                               //!< Size in Vertices of the currently allocated buffer
+    za::SizeT     m_size{};                               //!< Size in Vertices of the currently allocated buffer
     PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
     Usage         m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };

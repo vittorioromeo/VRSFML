@@ -3,20 +3,20 @@
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "Zancle/System/Fmt/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
-#include "Zancle/System/IO.hpp"
+#include "Zancle/Err/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
+#include "Zancle/IO/IO.hpp"
 
-#include "ZancleBase/Fmt/FmtToString.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Fmt/FmtToString.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 #include <filesystem>
 #include <string>
@@ -29,11 +29,11 @@ TEST_CASE("[System] za::Path")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Path));
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Path));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Path));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Path));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Path));
+        STATIC_CHECK(ZA_IS_DEFAULT_CONSTRUCTIBLE(za::Path));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Path));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Path));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Path));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Path));
     }
 
     SECTION("Default construction")
@@ -83,11 +83,11 @@ TEST_CASE("[System] za::Path")
         CHECK(p.to<std::u32string>() == s);
     }
 
-    SECTION("Construction from zb::String")
+    SECTION("Construction from za::String")
     {
-        const zb::String s("hello.txt");
+        const za::String s("hello.txt");
         const za::Path   p(s);
-        CHECK(p.to<zb::String>() == zb::String("hello.txt"));
+        CHECK(p.to<za::String>() == za::String("hello.txt"));
     }
 
     SECTION("Construction from std::filesystem::path")
@@ -121,7 +121,7 @@ TEST_CASE("[System] za::Path")
     SECTION("Move construction transfers state")
     {
         za::Path       src("foo.txt");
-        const za::Path dst(ZB_MOVE(src));
+        const za::Path dst(ZA_MOVE(src));
         CHECK(dst.to<std::string>() == "foo.txt");
     }
 
@@ -129,7 +129,7 @@ TEST_CASE("[System] za::Path")
     {
         za::Path src("foo.txt");
         za::Path dst("bar.txt");
-        dst = ZB_MOVE(src);
+        dst = ZA_MOVE(src);
         CHECK(dst.to<std::string>() == "foo.txt");
     }
 
@@ -182,7 +182,7 @@ TEST_CASE("[System] za::Path")
         CHECK(p.to<std::u32string>() == std::u32string(U"hello.txt"));
         // Round-trip through std::filesystem::path and back via za::Path
         CHECK(za::Path(p.to<std::filesystem::path>()) == p);
-        CHECK(p.to<zb::String>() == zb::String("hello.txt"));
+        CHECK(p.to<za::String>() == za::String("hello.txt"));
     }
 
     SECTION("empty()")
@@ -304,7 +304,7 @@ TEST_CASE("[System] za::Path")
 
     SECTION("Path formats via fmtToString(\"{}\", path)")
     {
-        CHECK(zb::fmtToString("{}", za::Path("hello.txt")) == zb::String("hello.txt"));
+        CHECK(za::fmtToString("{}", za::Path("hello.txt")) == za::String("hello.txt"));
     }
 
     SECTION("tempDirectoryPath() returns an existing directory")
@@ -514,11 +514,11 @@ TEST_CASE("[System] za::Path")
         CHECK(static_cast<unsigned char>(s[1]) == 0xB1);
     }
 
-    SECTION("to<zb::String>() with non-ASCII paths does not throw")
+    SECTION("to<za::String>() with non-ASCII paths does not throw")
     {
-        CHECK_NOTHROW((void)za::Path(U"hello-ñ.txt").to<zb::String>());
-        CHECK_NOTHROW((void)za::Path(U"hello-日.txt").to<zb::String>());
-        CHECK_NOTHROW((void)za::Path(U"hello-🐌.txt").to<zb::String>());
+        CHECK_NOTHROW((void)za::Path(U"hello-ñ.txt").to<za::String>());
+        CHECK_NOTHROW((void)za::Path(U"hello-日.txt").to<za::String>());
+        CHECK_NOTHROW((void)za::Path(U"hello-🐌.txt").to<za::String>());
     }
 
     SECTION("to<std::u32string>() round-trips non-ASCII exactly")
@@ -530,7 +530,7 @@ TEST_CASE("[System] za::Path")
     SECTION("Path formatting with non-ASCII does not throw")
     {
         // If formatting threw, the test runner catches it and fails the test -- no explicit guard needed.
-        CHECK(!zb::fmtToString("{}", za::Path(U"hello-🐌.txt")).empty());
+        CHECK(!za::fmtToString("{}", za::Path(U"hello-🐌.txt")).empty());
     }
 
     SECTION("extensionIs() does not throw on non-ASCII paths")

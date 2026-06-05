@@ -12,17 +12,17 @@
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 
-#include "Zancle/System/Atomic.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -50,9 +50,9 @@ struct SoundStreamStateImpl::Internals
     ////////////////////////////////////////////////////////////
     ChannelMap          channelMap;
     unsigned int        sampleRate{};
-    zb::Vector<zb::I16> sampleBuffer;
-    zb::SizeT           sampleBufferCursor{};
-    zb::U64             samplesProcessed{};
+    za::Vector<za::I16> sampleBuffer;
+    za::SizeT           sampleBufferCursor{};
+    za::U64             samplesProcessed{};
     za::Atomic<bool>    streaming{true};
 
     ////////////////////////////////////////////////////////////
@@ -128,17 +128,17 @@ struct SoundStreamStateImpl::Internals
 
         const auto channelCount = internals.channelMap.getSize();
 
-        *framesRead = zb::min(frameCount,
+        *framesRead = za::min(frameCount,
                               static_cast<ma_uint64>(
                                   (internals.sampleBuffer.size() - internals.sampleBufferCursor) / channelCount));
 
         const auto sampleCount = *framesRead * channelCount;
 
-        ZB_MEMCPY(framesOut,
+        ZA_MEMCPY(framesOut,
                   internals.sampleBuffer.data() + internals.sampleBufferCursor,
-                  static_cast<zb::SizeT>(sampleCount) * sizeof(internals.sampleBuffer[0]));
+                  static_cast<za::SizeT>(sampleCount) * sizeof(internals.sampleBuffer[0]));
 
-        internals.sampleBufferCursor += static_cast<zb::SizeT>(sampleCount);
+        internals.sampleBufferCursor += static_cast<za::SizeT>(sampleCount);
         internals.samplesProcessed += sampleCount;
 
         if (internals.sampleBufferCursor >= internals.sampleBuffer.size())
@@ -151,7 +151,7 @@ struct SoundStreamStateImpl::Internals
             // position resumes from there.
             if (!internals.streaming.loadAcquire())
             {
-                if (const zb::Optional seekPositionAfterLoop = internals.callbacks.onLoop(internals.statePtr))
+                if (const za::Optional seekPositionAfterLoop = internals.callbacks.onLoop(internals.statePtr))
                 {
                     internals.streaming.storeRelease(true);
                     internals.samplesProcessed = *seekPositionAfterLoop;
@@ -166,10 +166,10 @@ struct SoundStreamStateImpl::Internals
     [[nodiscard]] static ma_result seek(ma_data_source* const dataSource, const ma_uint64 frameIndex)
     {
         auto& internals = *static_cast<Internals*>(dataSource);
-        ZB_ASSERT(internals.sampleRate > 0u);
+        ZA_ASSERT(internals.sampleRate > 0u);
 
         const auto channelCount = internals.channelMap.getSize();
-        ZB_ASSERT(channelCount > 0u);
+        ZA_ASSERT(channelCount > 0u);
 
         internals.streaming.storeRelease(true);
 
@@ -191,13 +191,13 @@ struct SoundStreamStateImpl::Internals
         ma_uint32* const      outChannels,
         ma_uint32* const      outSampleRate,
         ma_channel* const,
-        const zb::SizeT)
+        const za::SizeT)
     {
         const auto& internals = *static_cast<const Internals*>(dataSource);
-        ZB_ASSERT(internals.sampleRate > 0u);
+        ZA_ASSERT(internals.sampleRate > 0u);
 
         const auto channelCount = internals.channelMap.getSize();
-        ZB_ASSERT(channelCount > 0u);
+        ZA_ASSERT(channelCount > 0u);
 
         *outFormat     = ma_format_s16;
         *outChannels   = static_cast<ma_uint32>(channelCount);
@@ -212,7 +212,7 @@ struct SoundStreamStateImpl::Internals
         auto& internals = *static_cast<Internals*>(dataSource);
 
         const auto channelCount = internals.channelMap.getSize();
-        ZB_ASSERT(channelCount > 0u);
+        ZA_ASSERT(channelCount > 0u);
 
         *cursor = internals.samplesProcessed / channelCount;
         return MA_SUCCESS;
@@ -244,8 +244,8 @@ SoundStreamStateImpl::SoundStreamStateImpl(PlaybackDevice&                     p
                                            const SoundStreamStateImplCallbacks callbacks) :
     m_internals(playbackDevice, channelMap, sampleRate, statePtr, callbacks)
 {
-    ZB_ASSERT(channelMap.getSize() > 0u);
-    ZB_ASSERT(sampleRate > 0u);
+    ZA_ASSERT(channelMap.getSize() > 0u);
+    ZA_ASSERT(sampleRate > 0u);
 }
 
 
@@ -257,8 +257,8 @@ SoundStreamStateImpl::~SoundStreamStateImpl() = default; // `Internals::~Interna
 void SoundStreamStateImpl::setPlayingOffset(const Time playingOffset)
 {
     auto& sound = m_internals->soundBase.getSound();
-    ZB_ASSERT(sound.pDataSource != nullptr);
-    ZB_ASSERT(sound.engineNode.pEngine != nullptr);
+    ZA_ASSERT(sound.pDataSource != nullptr);
+    ZA_ASSERT(sound.engineNode.pEngine != nullptr);
 
     const auto frameIndex = MiniaudioUtils::getFrameIndex(sound, playingOffset).value();
 

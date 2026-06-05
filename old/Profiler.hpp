@@ -6,14 +6,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 namespace za::profiler
@@ -21,12 +21,12 @@ namespace za::profiler
 ////////////////////////////////////////////////////////////
 struct ScopeInfo
 {
-    zb::StringView label;
-    zb::StringView file;
-    zb::StringView func;
-    zb::StringView line;
+    za::StringView label;
+    za::StringView file;
+    za::StringView func;
+    za::StringView line;
 
-    zb::I64 timeUs;
+    za::I64 timeUs;
 };
 
 } // namespace za::profiler
@@ -35,7 +35,7 @@ struct ScopeInfo
 namespace za::profiler::priv
 {
 ////////////////////////////////////////////////////////////
-inline constexpr zb::SizeT maxNodes = 128u;
+inline constexpr za::SizeT maxNodes = 128u;
 
 
 ////////////////////////////////////////////////////////////
@@ -43,16 +43,16 @@ struct [[nodiscard]] Database
 {
     ////////////////////////////////////////////////////////////
     ScopeInfo   nodes[priv::maxNodes]{};
-    zb::SizeT nextNodeId = 0u;
+    za::SizeT nextNodeId = 0u;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ScopeInfo& initNode(const zb::StringView label,
-                                      const zb::StringView file,
-                                      const zb::StringView func,
-                                      const zb::StringView line)
+    [[nodiscard]] ScopeInfo& initNode(const za::StringView label,
+                                      const za::StringView file,
+                                      const za::StringView func,
+                                      const za::StringView line)
     {
-        const zb::SizeT id = nextNodeId++;
-        ZB_ASSERT(id < priv::maxNodes);
+        const za::SizeT id = nextNodeId++;
+        ZA_ASSERT(id < priv::maxNodes);
 
         nodes[id] = ScopeInfo{
             .label  = label,
@@ -101,9 +101,9 @@ struct [[nodiscard]] ScopeGuard
 namespace za::profiler
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline zb::Span<const ScopeInfo> getScopeInfos()
+[[nodiscard, gnu::always_inline]] inline za::Span<const ScopeInfo> getScopeInfos()
 {
-    return zb::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
+    return za::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
 }
 
 } // namespace za::profiler

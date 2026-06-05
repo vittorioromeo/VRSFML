@@ -11,29 +11,29 @@
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
 
-#include "Zancle/System/InputStream.hpp"
+#include "Zancle/IO/InputStream.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 
 
 namespace
 {
-ma_result onRead(ma_decoder* decoder, void* buffer, zb::SizeT bytesToRead, zb::SizeT* bytesRead)
+ma_result onRead(ma_decoder* decoder, void* buffer, za::SizeT bytesToRead, za::SizeT* bytesRead)
 {
     auto*              stream = static_cast<za::InputStream*>(decoder->pUserData);
-    const zb::Optional count  = stream->read(buffer, bytesToRead);
+    const za::Optional count  = stream->read(buffer, bytesToRead);
 
     if (!count.hasValue())
         return MA_ERROR;
 
-    *bytesRead = static_cast<zb::SizeT>(*count);
+    *bytesRead = static_cast<za::SizeT>(*count);
     return MA_SUCCESS;
 }
 
@@ -45,7 +45,7 @@ ma_result onSeek(ma_decoder* decoder, ma_int64 byteOffset, ma_seek_origin origin
     {
         case ma_seek_origin_start:
         {
-            if (!stream->seek(static_cast<zb::SizeT>(byteOffset)).hasValue())
+            if (!stream->seek(static_cast<za::SizeT>(byteOffset)).hasValue())
                 return MA_ERROR;
 
             return MA_SUCCESS;
@@ -55,7 +55,7 @@ ma_result onSeek(ma_decoder* decoder, ma_int64 byteOffset, ma_seek_origin origin
             if (!stream->tell().hasValue())
                 return MA_ERROR;
 
-            if (!stream->seek(stream->tell().value() + static_cast<zb::SizeT>(byteOffset)).hasValue())
+            if (!stream->seek(stream->tell().value() + static_cast<za::SizeT>(byteOffset)).hasValue())
                 return MA_ERROR;
 
             return MA_SUCCESS;
@@ -73,7 +73,7 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileReaderWav::Impl
 {
-    zb::Optional<ma_decoder> decoder;        //!< wav decoder
+    za::Optional<ma_decoder> decoder;        //!< wav decoder
     ma_uint32                channelCount{}; //!< Number of channels
 };
 
@@ -112,14 +112,14 @@ SoundFileReaderWav::~SoundFileReaderWav()
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream)
+za::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream)
 {
     if (m_impl->decoder.hasValue())
     {
         if (const ma_result result = ma_decoder_uninit(m_impl->decoder.asPtr()); result != MA_SUCCESS)
         {
             priv::MiniaudioUtils::fail("uninitialize wav decoder", result);
-            return zb::nullOpt;
+            return za::nullOpt;
         }
     }
     else
@@ -135,15 +135,15 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
         result != MA_SUCCESS)
     {
         priv::MiniaudioUtils::fail("initialize wav decoder", result);
-        m_impl->decoder = zb::nullOpt;
-        return zb::nullOpt;
+        m_impl->decoder = za::nullOpt;
+        return za::nullOpt;
     }
 
     ma_uint64 frameCount{};
     if (const ma_result result = ma_decoder_get_available_frames(m_impl->decoder.asPtr(), &frameCount); result != MA_SUCCESS)
     {
         priv::MiniaudioUtils::fail("get available frames from wav decoder", result);
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     auto       format = ma_format_unknown;
@@ -155,26 +155,26 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stream
                                                             &m_impl->channelCount,
                                                             &sampleRate,
                                                             channelMap,
-                                                            zb::getArraySize(channelMap));
+                                                            za::getArraySize(channelMap));
         result != MA_SUCCESS)
     {
         priv::MiniaudioUtils::fail("get data format from wav decoder", result);
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     ChannelMap soundChannels;
 
     for (auto i = 0u; i < m_impl->channelCount; ++i)
-        soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(zb::U8{channelMap[i]}));
+        soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(za::U8{channelMap[i]}));
 
-    return zb::makeOptional<Info>({frameCount * m_impl->channelCount, sampleRate, ZB_MOVE(soundChannels)});
+    return za::makeOptional<Info>({frameCount * m_impl->channelCount, sampleRate, ZA_MOVE(soundChannels)});
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderWav::seek(zb::U64 sampleOffset)
+void SoundFileReaderWav::seek(za::U64 sampleOffset)
 {
-    ZB_ASSERT(m_impl->decoder.hasValue() &&
+    ZA_ASSERT(m_impl->decoder.hasValue() &&
               "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     if (const ma_result result = ma_decoder_seek_to_pcm_frame(m_impl->decoder.asPtr(), sampleOffset / m_impl->channelCount);
@@ -184,9 +184,9 @@ void SoundFileReaderWav::seek(zb::U64 sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-zb::U64 SoundFileReaderWav::read(zb::I16* samples, zb::U64 maxCount)
+za::U64 SoundFileReaderWav::read(za::I16* samples, za::U64 maxCount)
 {
-    ZB_ASSERT(m_impl->decoder.hasValue() &&
+    ZA_ASSERT(m_impl->decoder.hasValue() &&
               "wav decoder not initialized. Call SoundFileReaderWav::open() to initialize it.");
 
     ma_uint64 framesRead{};

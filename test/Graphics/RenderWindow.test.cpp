@@ -15,17 +15,17 @@
 #include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::RenderWindow" * tst::skip(skipDisplayTests))
@@ -34,11 +34,11 @@ TEST_CASE("[Graphics] za::RenderWindow" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(za::RenderWindow)); // because of RenderTarget, not WindowBase
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::RenderWindow));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::RenderWindow));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderWindow));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderWindow));
+        STATIC_CHECK(ZA_HAS_VIRTUAL_DESTRUCTOR(za::RenderWindow)); // because of RenderTarget, not WindowBase
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::RenderWindow));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::RenderWindow));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderWindow));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderWindow));
     }
 
     SECTION("Construction")
@@ -129,7 +129,7 @@ TEST_CASE("[Graphics] za::RenderWindow" * tst::skip(skipDisplayTests))
         auto window0 = za::RenderWindow::create({.size{128u, 128u}, .title = "A"}).value();
         auto window1 = za::RenderWindow::create({.size{256u, 256u}, .title = "B"}).value();
 
-        window1 = ZB_MOVE(window0);
+        window1 = ZA_MOVE(window0);
         CHECK(window1.getSize() == za::Vec2u{128u, 128u});
     }
 

@@ -1,9 +1,9 @@
 #include "StringifyStringViewUtil.hpp" // IWYU pragma: keep
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/MiniPFR.hpp"
+#include "Zancle/Trait/MiniPFR.hpp"
 
-#include "ZancleBase/Trait/IsSame.hpp"
+#include "Zancle/Trait/IsSame.hpp"
 
 
 namespace
@@ -87,24 +87,24 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
 {
     SECTION("NumFields")
     {
-        STATIC_CHECK(zb::minipfr::numFields<S0> == 0);
-        STATIC_CHECK(zb::minipfr::numFields<S1> == 1);
-        STATIC_CHECK(zb::minipfr::numFields<S2> == 2);
-        STATIC_CHECK(zb::minipfr::numFields<S3> == 3);
+        STATIC_CHECK(za::minipfr::numFields<S0> == 0);
+        STATIC_CHECK(za::minipfr::numFields<S1> == 1);
+        STATIC_CHECK(za::minipfr::numFields<S2> == 2);
+        STATIC_CHECK(za::minipfr::numFields<S3> == 3);
     }
 
     SECTION("TieAsTuple")
     {
         {
             S0   obj{};
-            auto tpl = zb::minipfr::tieAsTuple(obj);
+            auto tpl = za::minipfr::tieAsTuple(obj);
 
             STATIC_CHECK(decltype(tpl)::memberCount == 0);
         }
 
         {
             S1   obj{42};
-            auto tpl = zb::minipfr::tieAsTuple(obj);
+            auto tpl = za::minipfr::tieAsTuple(obj);
 
             STATIC_CHECK(decltype(tpl)::memberCount == 1);
 
@@ -116,7 +116,7 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
 
         {
             S2   obj{42, 10.f};
-            auto tpl = zb::minipfr::tieAsTuple(obj);
+            auto tpl = za::minipfr::tieAsTuple(obj);
 
             STATIC_CHECK(decltype(tpl)::memberCount == 2);
 
@@ -129,7 +129,7 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
 
         {
             S3   obj{42, 10.f, 'x'};
-            auto tpl = zb::minipfr::tieAsTuple(obj);
+            auto tpl = za::minipfr::tieAsTuple(obj);
 
             STATIC_CHECK(decltype(tpl)::memberCount == 3);
 
@@ -147,44 +147,44 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         {
             S1 obj{42};
 
-            CHECK(zb::minipfr::getField<0>(obj) == 42);
+            CHECK(za::minipfr::getField<0>(obj) == 42);
 
-            zb::minipfr::getField<0>(obj) = 4;
+            za::minipfr::getField<0>(obj) = 4;
             CHECK(obj.i == 4);
         }
 
         {
             S2 obj{42, 10.f};
 
-            CHECK(zb::minipfr::getField<0>(obj) == 42);
-            CHECK(zb::minipfr::getField<1>(obj) == 10.f);
+            CHECK(za::minipfr::getField<0>(obj) == 42);
+            CHECK(za::minipfr::getField<1>(obj) == 10.f);
 
-            zb::minipfr::getField<0>(obj) = 4;
+            za::minipfr::getField<0>(obj) = 4;
             CHECK(obj.i == 4);
         }
 
         {
             S3 obj{42, 10.f, 'x'};
 
-            CHECK(zb::minipfr::getField<0>(obj) == 42);
-            CHECK(zb::minipfr::getField<1>(obj) == 10.f);
-            CHECK(zb::minipfr::getField<2>(obj) == 'x');
+            CHECK(za::minipfr::getField<0>(obj) == 42);
+            CHECK(za::minipfr::getField<1>(obj) == 10.f);
+            CHECK(za::minipfr::getField<2>(obj) == 'x');
 
-            zb::minipfr::getField<0>(obj) = 10;
+            za::minipfr::getField<0>(obj) = 10;
             CHECK(obj.i == 10);
         }
     }
 
     SECTION("GetFieldName")
     {
-        STATIC_CHECK(zb::minipfr::getFieldName<S1, 0>() == "i");
+        STATIC_CHECK(za::minipfr::getFieldName<S1, 0>() == "i");
 
-        STATIC_CHECK(zb::minipfr::getFieldName<S2, 0>() == "i");
-        STATIC_CHECK(zb::minipfr::getFieldName<S2, 1>() == "f");
+        STATIC_CHECK(za::minipfr::getFieldName<S2, 0>() == "i");
+        STATIC_CHECK(za::minipfr::getFieldName<S2, 1>() == "f");
 
-        STATIC_CHECK(zb::minipfr::getFieldName<S3, 0>() == "i");
-        STATIC_CHECK(zb::minipfr::getFieldName<S3, 1>() == "f");
-        STATIC_CHECK(zb::minipfr::getFieldName<S3, 2>() == "c");
+        STATIC_CHECK(za::minipfr::getFieldName<S3, 0>() == "i");
+        STATIC_CHECK(za::minipfr::getFieldName<S3, 1>() == "f");
+        STATIC_CHECK(za::minipfr::getFieldName<S3, 2>() == "c");
 
         struct TestNames
         {
@@ -192,8 +192,8 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
             char world;
         };
 
-        STATIC_CHECK(zb::minipfr::getFieldName<TestNames, 0>() == "hello");
-        STATIC_CHECK(zb::minipfr::getFieldName<TestNames, 1>() == "world");
+        STATIC_CHECK(za::minipfr::getFieldName<TestNames, 0>() == "hello");
+        STATIC_CHECK(za::minipfr::getFieldName<TestNames, 1>() == "world");
     }
 
     SECTION("ForEachField")
@@ -201,20 +201,20 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         {
             S3  obj{42, 10.f, 'x'};
             int visitCount = 0;
-            zb::minipfr::forEachField(obj, [&](auto&) { ++visitCount; });
+            za::minipfr::forEachField(obj, [&](auto&) { ++visitCount; });
             CHECK(visitCount == 3);
         }
 
         {
             S3 obj{1, 2.f, 'a'};
-            zb::minipfr::forEachField(obj,
+            za::minipfr::forEachField(obj,
                                       [](auto& v)
             {
-                if constexpr (zb::isSame<decltype(v), int&>)
+                if constexpr (za::isSame<decltype(v), int&>)
                     v = 100;
-                else if constexpr (zb::isSame<decltype(v), float&>)
+                else if constexpr (za::isSame<decltype(v), float&>)
                     v = 200.f;
-                else if constexpr (zb::isSame<decltype(v), char&>)
+                else if constexpr (za::isSame<decltype(v), char&>)
                     v = 'z';
             });
             CHECK(obj.i == 100);
@@ -225,12 +225,12 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         {
             const S2 obj{7, 1.5f};
             int      sum = 0;
-            zb::minipfr::forEachField(obj,
+            za::minipfr::forEachField(obj,
                                       [&](const auto& v)
             {
-                if constexpr (zb::isSame<decltype(v), const int&>)
+                if constexpr (za::isSame<decltype(v), const int&>)
                     sum += v;
-                else if constexpr (zb::isSame<decltype(v), const float&>)
+                else if constexpr (za::isSame<decltype(v), const float&>)
                     sum += static_cast<int>(v);
             });
             CHECK(sum == 8);
@@ -239,27 +239,27 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
 
     SECTION("FieldType")
     {
-        STATIC_CHECK(zb::isSame<zb::minipfr::FieldType<0, S1>, int>);
-        STATIC_CHECK(zb::isSame<zb::minipfr::FieldType<0, S3>, int>);
-        STATIC_CHECK(zb::isSame<zb::minipfr::FieldType<1, S3>, float>);
-        STATIC_CHECK(zb::isSame<zb::minipfr::FieldType<2, S3>, char>);
-        STATIC_CHECK(zb::isSame<zb::minipfr::FieldType<0, SWithPtrRef>, int*>);
-        STATIC_CHECK(zb::isSame<zb::minipfr::FieldType<1, SWithPtrRef>, const char*>);
+        STATIC_CHECK(za::isSame<za::minipfr::FieldType<0, S1>, int>);
+        STATIC_CHECK(za::isSame<za::minipfr::FieldType<0, S3>, int>);
+        STATIC_CHECK(za::isSame<za::minipfr::FieldType<1, S3>, float>);
+        STATIC_CHECK(za::isSame<za::minipfr::FieldType<2, S3>, char>);
+        STATIC_CHECK(za::isSame<za::minipfr::FieldType<0, SWithPtrRef>, int*>);
+        STATIC_CHECK(za::isSame<za::minipfr::FieldType<1, SWithPtrRef>, const char*>);
     }
 
     SECTION("TieAsFieldNamesTuple")
     {
-        constexpr auto names1 = zb::minipfr::tieAsFieldNamesTuple<S1>();
+        constexpr auto names1 = za::minipfr::tieAsFieldNamesTuple<S1>();
         STATIC_CHECK(decltype(names1)::memberCount == 1);
         STATIC_CHECK(names1.template get<0>() == "i");
 
-        constexpr auto names3 = zb::minipfr::tieAsFieldNamesTuple<S3>();
+        constexpr auto names3 = za::minipfr::tieAsFieldNamesTuple<S3>();
         STATIC_CHECK(decltype(names3)::memberCount == 3);
         STATIC_CHECK(names3.template get<0>() == "i");
         STATIC_CHECK(names3.template get<1>() == "f");
         STATIC_CHECK(names3.template get<2>() == "c");
 
-        constexpr auto namesNested = zb::minipfr::tieAsFieldNamesTuple<SNested>();
+        constexpr auto namesNested = za::minipfr::tieAsFieldNamesTuple<SNested>();
         STATIC_CHECK(decltype(namesNested)::memberCount == 2);
         STATIC_CHECK(namesNested.template get<0>() == "inner");
         STATIC_CHECK(namesNested.template get<1>() == "outer");
@@ -269,24 +269,24 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
     {
         const S3 obj{42, 10.f, 'x'};
 
-        auto tpl = zb::minipfr::tieAsTuple(obj);
-        STATIC_CHECK(zb::isSame<decltype(tpl.template get<0>()), const int&>);
-        STATIC_CHECK(zb::isSame<decltype(tpl.template get<1>()), const float&>);
-        STATIC_CHECK(zb::isSame<decltype(tpl.template get<2>()), const char&>);
+        auto tpl = za::minipfr::tieAsTuple(obj);
+        STATIC_CHECK(za::isSame<decltype(tpl.template get<0>()), const int&>);
+        STATIC_CHECK(za::isSame<decltype(tpl.template get<1>()), const float&>);
+        STATIC_CHECK(za::isSame<decltype(tpl.template get<2>()), const char&>);
 
         CHECK(tpl.template get<0>() == 42);
         CHECK(tpl.template get<1>() == 10.f);
         CHECK(tpl.template get<2>() == 'x');
 
-        STATIC_CHECK(zb::isSame<decltype(zb::minipfr::getField<0>(obj)), const int&>);
+        STATIC_CHECK(za::isSame<decltype(za::minipfr::getField<0>(obj)), const int&>);
     }
 
     SECTION("NestedAggregate")
     {
-        STATIC_CHECK(zb::minipfr::numFields<SNested> == 2);
+        STATIC_CHECK(za::minipfr::numFields<SNested> == 2);
 
         SNested obj{{1, 2.f}, 99};
-        auto    tpl = zb::minipfr::tieAsTuple(obj);
+        auto    tpl = za::minipfr::tieAsTuple(obj);
 
         CHECK(tpl.get<0>().i == 1);
         CHECK(tpl.get<0>().f == 2.f);
@@ -295,8 +295,8 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         tpl.get<0>().i = 123;
         CHECK(obj.inner.i == 123);
 
-        STATIC_CHECK(zb::minipfr::getFieldName<SNested, 0>() == "inner");
-        STATIC_CHECK(zb::minipfr::getFieldName<SNested, 1>() == "outer");
+        STATIC_CHECK(za::minipfr::getFieldName<SNested, 0>() == "inner");
+        STATIC_CHECK(za::minipfr::getFieldName<SNested, 1>() == "outer");
     }
 
     SECTION("PointerAndReferenceMembers")
@@ -305,38 +305,38 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         const char* s = "hi";
         SWithPtrRef obj{&n, s};
 
-        STATIC_CHECK(zb::minipfr::numFields<SWithPtrRef> == 2);
-        CHECK(zb::minipfr::getField<0>(obj) == &n);
-        CHECK(*zb::minipfr::getField<0>(obj) == 5);
-        CHECK(zb::minipfr::getField<1>(obj) == s);
+        STATIC_CHECK(za::minipfr::numFields<SWithPtrRef> == 2);
+        CHECK(za::minipfr::getField<0>(obj) == &n);
+        CHECK(*za::minipfr::getField<0>(obj) == 5);
+        CHECK(za::minipfr::getField<1>(obj) == s);
 
-        STATIC_CHECK(zb::minipfr::getFieldName<SWithPtrRef, 0>() == "p");
-        STATIC_CHECK(zb::minipfr::getFieldName<SWithPtrRef, 1>() == "s");
+        STATIC_CHECK(za::minipfr::getFieldName<SWithPtrRef, 0>() == "p");
+        STATIC_CHECK(za::minipfr::getFieldName<SWithPtrRef, 1>() == "s");
     }
 
     SECTION("NoUniqueAddressEmptyMember")
     {
-        STATIC_CHECK(zb::minipfr::numFields<SWithEmpty> == 2);
+        STATIC_CHECK(za::minipfr::numFields<SWithEmpty> == 2);
 
         SWithEmpty obj{};
         obj.x = 7;
 
-        auto tpl = zb::minipfr::tieAsTuple(obj);
+        auto tpl = za::minipfr::tieAsTuple(obj);
         CHECK(tpl.get<1>() == 7);
 
-        STATIC_CHECK(zb::minipfr::getFieldName<SWithEmpty, 0>() == "e");
-        STATIC_CHECK(zb::minipfr::getFieldName<SWithEmpty, 1>() == "x");
+        STATIC_CHECK(za::minipfr::getFieldName<SWithEmpty, 0>() == "e");
+        STATIC_CHECK(za::minipfr::getFieldName<SWithEmpty, 1>() == "x");
     }
 
     SECTION("MaxFieldCount")
     {
-        STATIC_CHECK(zb::minipfr::numFields<S32> == 32);
+        STATIC_CHECK(za::minipfr::numFields<S32> == 32);
 
         S32 obj{};
         obj.a = 1;
         obj.F = 32;
 
-        auto tpl = zb::minipfr::tieAsTuple(obj);
+        auto tpl = za::minipfr::tieAsTuple(obj);
         STATIC_CHECK(decltype(tpl)::memberCount == 32);
 
         CHECK(tpl.get<0>() == 1);
@@ -346,19 +346,19 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
         CHECK(obj.p == 1616);
 
         int visitCount = 0;
-        zb::minipfr::forEachField(obj, [&](auto&) { ++visitCount; });
+        za::minipfr::forEachField(obj, [&](auto&) { ++visitCount; });
         CHECK(visitCount == 32);
 
-        STATIC_CHECK(zb::minipfr::getFieldName<S32, 0>() == "a");
-        STATIC_CHECK(zb::minipfr::getFieldName<S32, 25>() == "z");
-        STATIC_CHECK(zb::minipfr::getFieldName<S32, 26>() == "A");
-        STATIC_CHECK(zb::minipfr::getFieldName<S32, 31>() == "F");
+        STATIC_CHECK(za::minipfr::getFieldName<S32, 0>() == "a");
+        STATIC_CHECK(za::minipfr::getFieldName<S32, 25>() == "z");
+        STATIC_CHECK(za::minipfr::getFieldName<S32, 26>() == "A");
+        STATIC_CHECK(za::minipfr::getFieldName<S32, 31>() == "F");
     }
 
     SECTION("NameParsingEdgeCases")
     {
-        STATIC_CHECK(zb::minipfr::getFieldName<SUnderscoreNames, 0>() == "_leading");
-        STATIC_CHECK(zb::minipfr::getFieldName<SUnderscoreNames, 1>() == "trailing_");
-        STATIC_CHECK(zb::minipfr::getFieldName<SUnderscoreNames, 2>() == "mix_ed");
+        STATIC_CHECK(za::minipfr::getFieldName<SUnderscoreNames, 0>() == "_leading");
+        STATIC_CHECK(za::minipfr::getFieldName<SUnderscoreNames, 1>() == "trailing_");
+        STATIC_CHECK(za::minipfr::getFieldName<SUnderscoreNames, 2>() == "mix_ed");
     }
 }

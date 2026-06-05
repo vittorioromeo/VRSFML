@@ -16,11 +16,11 @@
 #include "Zancle/System/String.hpp"
 #include "Zancle/System/Vector2.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_surface.h>
@@ -116,7 +116,7 @@ struct SDLWindowBase::Impl
         SDL_SetWindowPosition(sdlWindow, position.x, position.y);
     }
 
-    void setMinimumSize(const zb::Optional<Vector2u> minimumSize) const
+    void setMinimumSize(const za::Optional<Vector2u> minimumSize) const
     {
         if (minimumSize.hasValue())
             SDL_SetWindowMinimumSize(sdlWindow, static_cast<int>(minimumSize->x), static_cast<int>(minimumSize->y));
@@ -124,7 +124,7 @@ struct SDLWindowBase::Impl
             SDL_SetWindowMinimumSize(sdlWindow, 0, 0);
     }
 
-    void setMaximumSize(const zb::Optional<Vector2u> maximumSize) const
+    void setMaximumSize(const za::Optional<Vector2u> maximumSize) const
     {
         if (maximumSize.hasValue())
             SDL_SetWindowMaximumSize(sdlWindow, static_cast<int>(maximumSize->x), static_cast<int>(maximumSize->y));
@@ -140,20 +140,20 @@ struct SDLWindowBase::Impl
         return {x, y};
     }
 
-    [[nodiscard]] zb::Optional<Vector2u> getMinimumSize() const
+    [[nodiscard]] za::Optional<Vector2u> getMinimumSize() const
     {
         int w{};
         int h{};
         SDL_GetWindowMinimumSize(sdlWindow, &w, &h);
-        return zb::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
+        return za::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
     }
 
-    [[nodiscard]] zb::Optional<Vector2u> getMaximumSize() const
+    [[nodiscard]] za::Optional<Vector2u> getMaximumSize() const
     {
         int w{};
         int h{};
         SDL_GetWindowMaximumSize(sdlWindow, &w, &h);
-        return zb::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
+        return za::makeOptional<Vector2u>(static_cast<unsigned int>(w), static_cast<unsigned int>(h));
     }
 
     void setSize(const Vector2u size) const
@@ -233,7 +233,7 @@ struct SDLWindowBase::Impl
         SDL_SetWindowTitle(sdlWindow, title.toAnsiString<std::string>().data());
     }
 
-    void setIcon(const Vector2u size, const zb::U8* pixels) const
+    void setIcon(const Vector2u size, const za::U8* pixels) const
     {
         SDL_Surface* iconSurface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
                                                          static_cast<int>(size.y),
@@ -249,7 +249,7 @@ struct SDLWindowBase::Impl
 
 
 ////////////////////////////////////////////////////////////
-SDLWindowBase::SDLWindowBase(zb::UniquePtr<Impl>&& impl) : m_impl(ZB_MOVE(impl))
+SDLWindowBase::SDLWindowBase(za::UniquePtr<Impl>&& impl) : m_impl(ZA_MOVE(impl))
 {
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);
@@ -263,13 +263,13 @@ SDLWindowBase::SDLWindowBase(zb::UniquePtr<Impl>&& impl) : m_impl(ZB_MOVE(impl))
 
 ////////////////////////////////////////////////////////////
 SDLWindowBase::SDLWindowBase(const Settings& windowSettings) :
-SDLWindowBase(zb::makeUnique<Impl>(nullifyContextSettings(windowSettings)))
+SDLWindowBase(za::makeUnique<Impl>(nullifyContextSettings(windowSettings)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-SDLWindowBase::SDLWindowBase(WindowHandle handle) : SDLWindowBase(zb::makeUnique<Impl>(handle))
+SDLWindowBase::SDLWindowBase(WindowHandle handle) : SDLWindowBase(za::makeUnique<Impl>(handle))
 {
 }
 
@@ -279,14 +279,14 @@ SDLWindowBase::~SDLWindowBase() = default;
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> SDLWindowBase::pollEvent()
+za::Optional<Event> SDLWindowBase::pollEvent()
 {
     return filterEvent(m_impl->pollEvent());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> SDLWindowBase::waitEvent(Time timeout)
+za::Optional<Event> SDLWindowBase::waitEvent(Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -343,21 +343,21 @@ void SDLWindowBase::setMinimumSize(const Vector2u& minimumSize)
         return minimumSize.x <= m_impl->getMaximumSize()->x && minimumSize.y <= m_impl->getMaximumSize()->y;
     };
 
-    ZB_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
+    ZA_ASSERT(validateMinimumSize() && "Minimum size cannot be bigger than the maximum size along either axis");
 
-    m_impl->setMinimumSize(zb::makeOptional(minimumSize));
+    m_impl->setMinimumSize(za::makeOptional(minimumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowBase::setMinimumSize(const zb::Optional<Vector2u>& minimumSize)
+void SDLWindowBase::setMinimumSize(const za::Optional<Vector2u>& minimumSize)
 {
     if (minimumSize.hasValue())
         setMinimumSize(*minimumSize);
     else
     {
-        m_impl->setMinimumSize(zb::nullOpt);
+        m_impl->setMinimumSize(za::nullOpt);
         setSize(getSize());
     }
 }
@@ -374,21 +374,21 @@ void SDLWindowBase::setMaximumSize(const Vector2u& maximumSize)
         return maximumSize.x >= m_impl->getMinimumSize()->x && maximumSize.y >= m_impl->getMinimumSize()->y;
     };
 
-    ZB_ASSERT(validateMaximumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
+    ZA_ASSERT(validateMaximumSize() && "Maximum size cannot be smaller than the minimum size along either axis");
 
-    m_impl->setMaximumSize(zb::makeOptional(maximumSize));
+    m_impl->setMaximumSize(za::makeOptional(maximumSize));
     setSize(getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowBase::setMaximumSize(const zb::Optional<Vector2u>& maximumSize)
+void SDLWindowBase::setMaximumSize(const za::Optional<Vector2u>& maximumSize)
 {
     if (maximumSize.hasValue())
         setMinimumSize(*maximumSize);
     else
     {
-        m_impl->setMaximumSize(zb::nullOpt);
+        m_impl->setMaximumSize(za::nullOpt);
         setSize(getSize());
     }
 }
@@ -402,7 +402,7 @@ void SDLWindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowBase::setIcon(Vector2u size, const zb::U8* pixels)
+void SDLWindowBase::setIcon(Vector2u size, const za::U8* pixels)
 {
     m_impl->setIcon(size, pixels);
 }
@@ -487,7 +487,7 @@ bool SDLWindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanS
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> SDLWindowBase::filterEvent(zb::Optional<Event> event)
+za::Optional<Event> SDLWindowBase::filterEvent(za::Optional<Event> event)
 {
     // Cache the new size if needed
     if (event.hasValue() && event->getIf<Event::Resized>())

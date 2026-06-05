@@ -9,9 +9,9 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Builtin/Strlen.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,7 +37,7 @@ void ExampleTextComparison::imgui()
 
     if (ImGui::InputTextMultiline("Text", m_inputBuffer, sizeof(m_inputBuffer)))
     {
-        m_convertedStr = za::Utf8String{m_inputBuffer, ZB_STRLEN(m_inputBuffer)};
+        m_convertedStr = za::Utf8String{m_inputBuffer, ZA_STRLEN(m_inputBuffer)};
 
         m_legacyText.setString(m_convertedStr);
         m_mappedText.setString(m_convertedStr);

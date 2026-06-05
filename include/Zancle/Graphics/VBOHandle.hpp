@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ private:
     /// \brief Internal helper for per-frame streaming uploads
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT uploadStreamingData(const void* data, zb::SizeT byteCount);
+    [[nodiscard]] za::SizeT uploadStreamingData(const void* data, za::SizeT byteCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Commit the staged uploads associated with the current draw
@@ -93,7 +93,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details (PImpl)
+    za::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details (PImpl)
 };
 
 } // namespace za

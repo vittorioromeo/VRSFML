@@ -20,16 +20,16 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/FloatMax.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/FloatMax.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -75,9 +75,9 @@ void drawNinePatchInImGui(ImDrawList&            drawList,
 
     drawList.PushClipRectFullScreen();
 
-    for (zb::SizeT iy = 0; iy < 3u; ++iy)
+    for (za::SizeT iy = 0; iy < 3u; ++iy)
     {
-        for (zb::SizeT ix = 0; ix < 3u; ++ix)
+        for (za::SizeT ix = 0; ix < 3u; ++ix)
         {
             if (srcX[ix] <= 0.f || srcY[iy] <= 0.f || dstX[ix] <= 0.f || dstY[iy] <= 0.f)
                 continue;
@@ -289,16 +289,16 @@ void Main::uiDraw(const za::Vec2f mousePos)
     }
     else
     {
-        uiState.uiMenuHideTimer = zb::clamp(uiState.uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
+        uiState.uiMenuHideTimer = za::clamp(uiState.uiMenuHideTimer - deltaTime, 0.f, uiMenuAutoHideDelaySeconds);
     }
 
     const float uiMenuRevealTarget = uiState.uiMenuHideTimer > 0.f ? 1.f : 0.f;
     const float uiMenuRevealStep   = uiMenuRevealDuration > 0.f ? deltaTime / uiMenuRevealDuration : 1.f;
 
     if (uiState.uiMenuRevealT < uiMenuRevealTarget)
-        uiState.uiMenuRevealT = zb::clamp(uiState.uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
+        uiState.uiMenuRevealT = za::clamp(uiState.uiMenuRevealT + uiMenuRevealStep, 0.f, 1.f);
     else if (uiState.uiMenuRevealT > uiMenuRevealTarget)
-        uiState.uiMenuRevealT = zb::clamp(uiState.uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
+        uiState.uiMenuRevealT = za::clamp(uiState.uiMenuRevealT - uiMenuRevealStep, 0.f, 1.f);
 
     const float  uiMenuRevealEased = easeInOutBack(uiState.uiMenuRevealT);
     const float  uiMenuDrawX       = menuHiddenX + (uiOpenWindowPos.x - menuHiddenX) * uiMenuRevealEased;
@@ -411,7 +411,7 @@ void Main::uiDraw(const za::Vec2f mousePos)
             const za::Vec2f pMin{winPos.x - 8.f, winPos.y - 8.f};
             const za::Vec2f pMax{winPos.x + winSize.x + 8.f, winPos.y + winSize.y + 8.f};
 
-            const auto tintColor = za::Color::whiteWithAlpha(static_cast<zb::U8>(opacity * 255.f));
+            const auto tintColor = za::Color::whiteWithAlpha(static_cast<za::U8>(opacity * 255.f));
 
             cpuCloudUiDrawableBatch.add(za::RectangleShapeData{
                 .position  = pMin,
@@ -419,8 +419,8 @@ void Main::uiDraw(const za::Vec2f mousePos)
                 .size      = pMax - pMin,
             });
 
-            const int xSteps = zb::clamp(static_cast<int>((pMax.x - pMin.x) / 28.f), 3, 24);
-            const int ySteps = zb::clamp(static_cast<int>((pMax.y - pMin.y) / 28.f), 3, 24);
+            const int xSteps = za::clamp(static_cast<int>((pMax.x - pMin.x) / 28.f), 3, 24);
+            const int ySteps = za::clamp(static_cast<int>((pMax.y - pMin.y) / 28.f), 3, 24);
 
             drawCloudFrame({
                 .time              = shaderTime,
@@ -482,7 +482,7 @@ void Main::uiDpsMeter()
 
     uiSetFontScale(0.75f);
 
-    static thread_local zb::Vector<float> sampleBuffer(60);
+    static thread_local za::Vector<float> sampleBuffer(60);
     samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
 
     const auto average = static_cast<MoneyType>(samplerMoneyPerSecond.getAverageAs<double>());
@@ -496,7 +496,7 @@ void Main::uiDpsMeter()
                      0,
                      avgBuffer,
                      0.f,
-                     ZB_FLOAT_MAX,
+                     ZA_FLOAT_MAX,
                      ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
 
     const auto windowDrawPos  = za::Vec2f(ImGui::GetWindowPos());
@@ -567,7 +567,7 @@ void Main::uiSpeedrunning()
         }
         else
         {
-            const auto [hours, mins, secs, millis] = formatSpeedrunTime(za::microseconds(static_cast<zb::I64>(split)));
+            const auto [hours, mins, secs, millis] = formatSpeedrunTime(za::microseconds(static_cast<za::I64>(split)));
             ImGui::TextColored(textColorUnlocked, "%s: %02llu:%02llu:%02llu:%03llu", title, hours, mins, secs, millis);
         }
     };

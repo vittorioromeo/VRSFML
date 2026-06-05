@@ -9,9 +9,9 @@
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -28,7 +28,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct DrawTextureSettings
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
     Rect2f textureRect{};       //!< Sub-rectangle of the source texture to display (`{}` means the full texture)

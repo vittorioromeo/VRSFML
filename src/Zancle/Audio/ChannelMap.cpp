@@ -9,9 +9,9 @@
 
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/InitializerList.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/InitializerList.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 namespace za
 {
@@ -26,7 +26,7 @@ ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::SizeT ChannelMap::getSize() const
+[[nodiscard]] za::SizeT ChannelMap::getSize() const
 {
     return m_channels.size();
 }
@@ -68,7 +68,7 @@ ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] const SoundChannel& ChannelMap::operator[](zb::SizeT index) const
+[[nodiscard]] const SoundChannel& ChannelMap::operator[](za::SizeT index) const
 {
     return m_channels[index];
 }
@@ -84,8 +84,8 @@ void ChannelMap::append(SoundChannel channel)
 ////////////////////////////////////////////////////////////
 bool ChannelMap::isPermutationOf(const ChannelMap& rhs) const
 {
-    const zb::SizeT lhsSize = m_channels.size();
-    const zb::SizeT rhsSize = rhs.m_channels.size();
+    const za::SizeT lhsSize = m_channels.size();
+    const za::SizeT rhsSize = rhs.m_channels.size();
 
     if (lhsSize != rhsSize)
         return false;
@@ -93,14 +93,14 @@ bool ChannelMap::isPermutationOf(const ChannelMap& rhs) const
     if (lhsSize == 0u)
         return true;
 
-    ZB_ASSERT(lhsSize <= SoundChannelCount);
+    ZA_ASSERT(lhsSize <= SoundChannelCount);
     bool rhsMatched[SoundChannelCount] = {};
 
-    for (zb::SizeT i = 0u; i < lhsSize; ++i)
+    for (za::SizeT i = 0u; i < lhsSize; ++i)
     {
         bool foundMatchForIInLhs = false;
 
-        for (zb::SizeT j = 0u; j < rhsSize; ++j)
+        for (za::SizeT j = 0u; j < rhsSize; ++j)
         {
             // Check if rhs[j] is not already used AND if it matches lhs[i]
             if (!rhsMatched[j] && m_channels[i] == rhs.m_channels[j])

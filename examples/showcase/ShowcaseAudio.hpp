@@ -8,10 +8,10 @@
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -26,11 +26,11 @@ private:
     za::MusicReader m_msBGMWizard = za::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
 
     ////////////////////////////////////////////////////////////
-    zb::InPlaceVector<za::PlaybackDevice, 8> m_playbackDevices;
+    za::InPlaceVector<za::PlaybackDevice, 8> m_playbackDevices;
 
     ////////////////////////////////////////////////////////////
-    zb::InPlaceVector<za::Sound, 32> m_activeSounds;
-    zb::Optional<za::Music>          m_activeMusic;
+    za::InPlaceVector<za::Sound, 32> m_activeSounds;
+    za::Optional<za::Music>          m_activeMusic;
 
     ////////////////////////////////////////////////////////////
     void refreshPlaybackDevices();

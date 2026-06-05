@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -157,7 +157,7 @@ protected:
     /// \return `true` to continue the capture, or `false` to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) = 0;
+    [[nodiscard]] virtual bool onProcessSamples(const za::I16* samples, za::SizeT sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Hook called once when the capture stops
@@ -248,7 +248,7 @@ private:
 ///         return true;
 ///     }
 ///
-///     [[nodiscard]] bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) override
+///     [[nodiscard]] bool onProcessSamples(const za::I16* samples, za::SizeT sampleCount) override
 ///     {
 ///         // Do something with the new chunk of samples (store them, send them, etc.)
 ///         return true; // return false to stop the capture

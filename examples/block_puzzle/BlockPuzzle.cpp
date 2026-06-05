@@ -43,30 +43,30 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Algorithm/Sort.hpp"
-#include "ZancleBase/Algorithm/Unique.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Ceil.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Fmod.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Variant.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
+#include "Zancle/Algorithm/Unique.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Fmod.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 // TODO P2:
 // - keys should have different colors compared to blocks
@@ -89,12 +89,12 @@ constexpr za::Vec2f logicalResolution = baseResolution * zoomFactor;
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr float bounce(const float value) noexcept
 {
     // return 4.f * value * (1.f - value);
-    return 1.f - zb::fabs(value - 0.5f) * 2.f;
+    return 1.f - za::fabs(value - 0.5f) * 2.f;
 }
 
 
 ////////////////////////////////////////////////////////////
-enum class BlockKind : zb::U8
+enum class BlockKind : za::U8
 {
     A,
     B,
@@ -111,7 +111,7 @@ enum class BlockKind : zb::U8
     if (kind == BlockKind::B)
         return za::Color::Green;
 
-    ZB_ASSERT(kind == BlockKind::C);
+    ZA_ASSERT(kind == BlockKind::C);
     return za::Color::Blue;
 }
 
@@ -143,11 +143,11 @@ struct BPadlock
 
 
 ////////////////////////////////////////////////////////////
-using BlockType = zb::Variant<BWall, BColored, BKey, BPadlock>;
+using BlockType = za::Variant<BWall, BColored, BKey, BPadlock>;
 
 
 ////////////////////////////////////////////////////////////
-enum class GravityType : zb::U8
+enum class GravityType : za::U8
 {
     None,
     Down,
@@ -164,12 +164,12 @@ struct Block
     BlockType               type;
     za::Vec2i               gravityDir = {0, 0};
     bool                    fixed      = false;
-    zb::Optional<BlockKind> locked     = {};
+    za::Optional<BlockKind> locked     = {};
 };
 
 
 ////////////////////////////////////////////////////////////
-using ObjectId = zb::SizeT;
+using ObjectId = za::SizeT;
 
 
 ////////////////////////////////////////////////////////////
@@ -186,7 +186,7 @@ struct TLava
 
 
 ////////////////////////////////////////////////////////////
-using TileType = zb::Variant<TGravityRotator, TLava>;
+using TileType = za::Variant<TGravityRotator, TLava>;
 
 
 ////////////////////////////////////////////////////////////
@@ -198,20 +198,20 @@ struct Tile
 
 
 ////////////////////////////////////////////////////////////
-using Object = zb::Variant<Block, Tile>;
+using Object = za::Variant<Block, Tile>;
 
 
 ////////////////////////////////////////////////////////////
 struct World
 {
 private:
-    zb::Vector<zb::Optional<Object>> m_objects;
+    za::Vector<za::Optional<Object>> m_objects;
 
 public:
     ////////////////////////////////////////////////////////////
     Object& addWall(const za::Vec2i position)
     {
-        return *m_objects.emplaceBack(zb::inPlace,
+        return *m_objects.emplaceBack(za::inPlace,
                                       Block{
                                           .position = position,
                                           .type     = BlockType{BWall{}},
@@ -221,7 +221,7 @@ public:
     ////////////////////////////////////////////////////////////
     Object& addColored(const za::Vec2i position, const BlockKind kind, const za::Vec2i gravityDir = {0, 0})
     {
-        return *m_objects.emplaceBack(zb::inPlace,
+        return *m_objects.emplaceBack(za::inPlace,
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BColored{.kind = kind}},
@@ -232,7 +232,7 @@ public:
     ////////////////////////////////////////////////////////////
     Object& addKey(const za::Vec2i position, const BlockKind kind, const za::Vec2i gravityDir = {0, 0})
     {
-        return *m_objects.emplaceBack(zb::inPlace,
+        return *m_objects.emplaceBack(za::inPlace,
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BKey{.kind = kind}},
@@ -243,7 +243,7 @@ public:
     ////////////////////////////////////////////////////////////
     Object& addPadlock(const za::Vec2i position, const za::Vec2i gravityDir = {0, 0})
     {
-        return *m_objects.emplaceBack(zb::inPlace,
+        return *m_objects.emplaceBack(za::inPlace,
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BPadlock{}},
@@ -254,7 +254,7 @@ public:
     ////////////////////////////////////////////////////////////
     Object& addGravityRotator(const za::Vec2i position, const bool clockwise)
     {
-        return *m_objects.emplaceBack(zb::inPlace,
+        return *m_objects.emplaceBack(za::inPlace,
                                       Tile{
                                           .position = position,
                                           .type     = TileType{TGravityRotator{.clockwise = clockwise}},
@@ -264,7 +264,7 @@ public:
     ////////////////////////////////////////////////////////////
     Object& addLava(const za::Vec2i position)
     {
-        return *m_objects.emplaceBack(zb::inPlace,
+        return *m_objects.emplaceBack(za::inPlace,
                                       Tile{
                                           .position = position,
                                           .type     = TileType{TLava{}},
@@ -292,9 +292,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Block& getBlockById(const ObjectId objectId)
     {
-        ZB_ASSERT(objectId < m_objects.size());
-        ZB_ASSERT(m_objects[objectId].hasValue());
-        ZB_ASSERT(m_objects[objectId]->is<Block>());
+        ZA_ASSERT(objectId < m_objects.size());
+        ZA_ASSERT(m_objects[objectId].hasValue());
+        ZA_ASSERT(m_objects[objectId]->is<Block>());
 
         return m_objects[objectId]->as<Block>();
     }
@@ -302,9 +302,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Tile& getTileById(const ObjectId objectId)
     {
-        ZB_ASSERT(objectId < m_objects.size());
-        ZB_ASSERT(m_objects[objectId].hasValue());
-        ZB_ASSERT(m_objects[objectId]->is<Tile>());
+        ZA_ASSERT(objectId < m_objects.size());
+        ZA_ASSERT(m_objects[objectId].hasValue());
+        ZA_ASSERT(m_objects[objectId]->is<Tile>());
 
         return m_objects[objectId]->as<Tile>();
     }
@@ -318,7 +318,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isLava(const za::Vec2i position) const
     {
-        for (const zb::Optional<Object>& object : m_objects)
+        for (const za::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Tile>() || !object->as<Tile>().type.is<TLava>())
                 continue;
@@ -333,7 +333,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isWall(const za::Vec2i position) const
     {
-        for (const zb::Optional<Object>& object : m_objects)
+        for (const za::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Block>() || !object->as<Block>().type.is<BWall>())
                 continue;
@@ -351,7 +351,7 @@ public:
         if (isOOB(position))
             return true;
 
-        for (const zb::Optional<Object>& object : m_objects)
+        for (const za::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Block>())
                 continue;
@@ -366,7 +366,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TGravityRotator* tryGetGravityRotator(const za::Vec2i position)
     {
-        for (zb::Optional<Object>& object : m_objects)
+        for (za::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Tile>())
                 continue;
@@ -379,37 +379,37 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<ObjectId> getBlockByPosition(const za::Vec2i position) const
+    [[nodiscard]] za::Optional<ObjectId> getBlockByPosition(const za::Vec2i position) const
     {
         for (ObjectId i = 0u; i < m_objects.size(); ++i)
         {
             const auto& object = m_objects[i];
 
             if (object.hasValue() && object->is<Block>() && object->as<Block>().position == position)
-                return zb::makeOptional<ObjectId>(i);
+                return za::makeOptional<ObjectId>(i);
         }
 
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<ObjectId> getTileByPosition(const za::Vec2i position) const
+    [[nodiscard]] za::Optional<ObjectId> getTileByPosition(const za::Vec2i position) const
     {
         for (ObjectId i = 0u; i < m_objects.size(); ++i)
         {
             const auto& object = m_objects[i];
 
             if (object.hasValue() && object->is<Tile>() && object->as<Tile>().position == position)
-                return zb::makeOptional<ObjectId>(i);
+                return za::makeOptional<ObjectId>(i);
         }
 
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     ////////////////////////////////////////////////////////////
     void forOrthogonalNeighbors(const ObjectId objectId, auto&& f) const
     {
-        const zb::Optional<Object>& object = m_objects[objectId];
+        const za::Optional<Object>& object = m_objects[objectId];
 
         if (!object.hasValue() || !object->is<Block>())
             return;
@@ -434,8 +434,8 @@ public:
     ////////////////////////////////////////////////////////////
     void killObject(const ObjectId objectId)
     {
-        ZB_ASSERT(objectId < m_objects.size());
-        ZB_ASSERT(m_objects[objectId].hasValue());
+        ZA_ASSERT(objectId < m_objects.size());
+        ZA_ASSERT(m_objects[objectId].hasValue());
         m_objects[objectId].reset();
     }
 };
@@ -504,7 +504,7 @@ struct TEBurn
 
 
 ////////////////////////////////////////////////////////////
-using TurnEvent = zb::Variant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
+using TurnEvent = za::Variant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
 
 
 ////////////////////////////////////////////////////////////
@@ -531,7 +531,7 @@ struct [[nodiscard]] ParticleData
                                                                      const za::Rect2f&   textureRect,
                                                                      const za::Color     color)
 {
-    const auto opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
+    const auto opacityAsAlpha = static_cast<za::U8>(particle.opacity * 255.f);
 
     return {
         .position    = particle.position,
@@ -549,7 +549,7 @@ class Game
 {
 private:
     //////////////////////////////////////////////////////////////
-    const unsigned int m_aaLevel = zb::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel());
+    const unsigned int m_aaLevel = za::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel());
 
     ////////////////////////////////////////////////////////////
     za::RenderWindow m_window = makeDPIScaledRenderWindow(
@@ -620,14 +620,14 @@ private:
     za::Clock m_fpsClock;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<World>       m_prevWorlds;
+    za::Vector<World>       m_prevWorlds;
     World                   m_world;
-    zb::Optional<zb::SizeT> m_grabbedObjectId;
-    zb::Vector<TurnEvent>   m_turnEvents;
+    za::Optional<za::SizeT> m_grabbedObjectId;
+    za::Vector<TurnEvent>   m_turnEvents;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<ParticleData> m_lavaParticlesTop;
-    zb::Vector<ParticleData> m_lavaParticles;
+    za::Vector<ParticleData> m_lavaParticlesTop;
+    za::Vector<ParticleData> m_lavaParticles;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rngFast; // very fast, low-quality, but good enough for VFXs
@@ -726,7 +726,7 @@ private:
     ////////////////////////////////////////////////////////////
     void checkForKill()
     {
-        zb::Vector<ObjectId> blocksToKill;
+        za::Vector<ObjectId> blocksToKill;
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
@@ -758,8 +758,8 @@ private:
             return ControlFlow::Continue;
         });
 
-        zb::quickSort(blocksToKill.begin(), blocksToKill.end());
-        blocksToKill.erase(zb::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
+        za::quickSort(blocksToKill.begin(), blocksToKill.end());
+        blocksToKill.erase(za::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
         for (const ObjectId objectId : blocksToKill)
             m_turnEvents.pushBack(TEKill{.objectId = objectId});
@@ -768,7 +768,7 @@ private:
     ////////////////////////////////////////////////////////////
     void checkForBurn()
     {
-        zb::Vector<ObjectId> blocksToBurn;
+        za::Vector<ObjectId> blocksToBurn;
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
@@ -788,8 +788,8 @@ private:
             return ControlFlow::Continue;
         });
 
-        zb::quickSort(blocksToBurn.begin(), blocksToBurn.end());
-        blocksToBurn.erase(zb::unique(blocksToBurn.begin(), blocksToBurn.end()), blocksToBurn.end());
+        za::quickSort(blocksToBurn.begin(), blocksToBurn.end());
+        blocksToBurn.erase(za::unique(blocksToBurn.begin(), blocksToBurn.end()), blocksToBurn.end());
 
         for (const ObjectId objectId : blocksToBurn)
             m_turnEvents.pushBack(TEBurn{.objectId = objectId});
@@ -798,7 +798,7 @@ private:
     ////////////////////////////////////////////////////////////
     void checkForUnlock()
     {
-        zb::Vector<ObjectId> blocksToKill;
+        za::Vector<ObjectId> blocksToKill;
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
@@ -831,8 +831,8 @@ private:
             return ControlFlow::Continue;
         });
 
-        zb::quickSort(blocksToKill.begin(), blocksToKill.end());
-        blocksToKill.erase(zb::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
+        za::quickSort(blocksToKill.begin(), blocksToKill.end());
+        blocksToKill.erase(za::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
         for (const ObjectId objectId : blocksToKill)
             m_turnEvents.pushBack(TEKill{.objectId = objectId});
@@ -1007,11 +1007,11 @@ private:
             return;
 
         if (!m_txUndo.update(m_rtGame.getTexture()))
-            zb::abort();
+            za::abort();
 
         m_undoCountdown = 1.f;
 
-        m_world = ZB_MOVE(m_prevWorlds.back());
+        m_world = ZA_MOVE(m_prevWorlds.back());
         m_prevWorlds.popBack();
 
         m_turnEvents.clear();
@@ -1094,10 +1094,10 @@ private:
                 const auto blockPos       = m_world.getBlockById(burn->objectId).position.toVec2f();
                 const auto blockRenderPos = za::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + za::Vec2f{64.f, 64.f};
 
-                const float     offset = zb::max(4.f, 64.f * (1.f - burn->progress));
+                const float     offset = za::max(4.f, 64.f * (1.f - burn->progress));
                 const za::Vec2f offsetVec{offset, offset};
 
-                const auto nParticles = static_cast<int>(zb::ceil((1.f - burn->progress) * 5.f));
+                const auto nParticles = static_cast<int>(za::ceil((1.f - burn->progress) * 5.f));
 
                 for (int i = 0; i < nParticles; ++i)
                 {
@@ -1223,9 +1223,9 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] za::Color getHueColor(const float hue, const zb::U8 alpha = 255u) const noexcept
+    [[nodiscard, gnu::always_inline]] za::Color getHueColor(const float hue, const za::U8 alpha = 255u) const noexcept
     {
-        return hueColor(zb::fmod(m_time * 0.06f + hue, 360.f), alpha);
+        return hueColor(za::fmod(m_time * 0.06f + hue, 360.f), alpha);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1245,7 +1245,7 @@ private:
                          .accelerationY = 0.f,
                          .opacity       = 0.35f,
                          .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
-                         .rotation      = m_rngFast.getF(0.f, zb::tau),
+                         .rotation      = m_rngFast.getF(0.f, za::tau),
                          .torque        = m_rngFast.getF(-0.001f, 0.001f)});
     }
 
@@ -1260,7 +1260,7 @@ private:
                          .accelerationY = 0.f,
                          .opacity       = 0.35f,
                          .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
-                         .rotation      = m_rngFast.getF(0.f, zb::tau),
+                         .rotation      = m_rngFast.getF(0.f, za::tau),
                          .torque        = m_rngFast.getF(-0.001f, 0.001f)});
     }
 
@@ -1276,7 +1276,7 @@ public:
             // Event handling
             ////////////////////////////////////////////////////////////
             // ---
-            while (zb::Optional event = m_window.pollEvent())
+            while (za::Optional event = m_window.pollEvent())
             {
                 m_imGuiContext.processEvent(m_window, *event);
 
@@ -1454,18 +1454,18 @@ public:
 
                         p.rotation += p.torque * deltaTimeMs;
 
-                        p.opacity = zb::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-                        p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
+                        p.opacity = za::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+                        p.scale   = za::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
                     }
 
-                    zb::vectorEraseIf(particleLikeVec,
+                    za::vectorEraseIf(particleLikeVec,
                                       [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
                 };
 
                 updateParticleLike(m_lavaParticles);
                 updateParticleLike(m_lavaParticlesTop);
 
-                m_undoCountdown = zb::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
+                m_undoCountdown = za::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
             }
             // ---
             ////////////////////////////////////////////////////////////
@@ -1493,13 +1493,13 @@ public:
             };
 
             ImGui::SetNextItemWidth(160.f);
-            ImGui::Combo("Object", &m_editorSelectedObjectIdx, objectNames, zb::getArraySize(objectNames));
+            ImGui::Combo("Object", &m_editorSelectedObjectIdx, objectNames, za::getArraySize(objectNames));
 
             ImGui::SetNextItemWidth(160.f);
-            ImGui::Combo("Color", &m_editorSelectedColorIdx, colorNames, zb::getArraySize(colorNames));
+            ImGui::Combo("Color", &m_editorSelectedColorIdx, colorNames, za::getArraySize(colorNames));
 
             ImGui::SetNextItemWidth(160.f);
-            ImGui::Combo("Lock Color", &m_editorSelectedLockedColorIdx, colorNames, zb::getArraySize(colorNames));
+            ImGui::Combo("Lock Color", &m_editorSelectedLockedColorIdx, colorNames, za::getArraySize(colorNames));
 
             ImGui::InputInt("Gravity X", &m_editorGravity.x, 1);
             ImGui::InputInt("Gravity Y", &m_editorGravity.y, 1);
@@ -1621,8 +1621,8 @@ public:
                                 if (squishBlock->objectId != objectId)
                                     return false;
 
-                                const auto absDir = za::Vec2f{zb::fabs(static_cast<float>(squishBlock->dir.x)),
-                                                              zb::fabs(static_cast<float>(squishBlock->dir.y))};
+                                const auto absDir = za::Vec2f{za::fabs(static_cast<float>(squishBlock->dir.x)),
+                                                              za::fabs(static_cast<float>(squishBlock->dir.y))};
 
                                 const float progress = easeInOutBack(bounce(squishBlock->progress));
 
@@ -1640,7 +1640,7 @@ public:
                                     return false;
 
                                 scaleMultiplier *= 1.f - easeInOutBack(kill->progress);
-                                rotationRadians = easeInOutSine(kill->progress) * zb::tau;
+                                rotationRadians = easeInOutSine(kill->progress) * za::tau;
 
                                 return false;
                             }
@@ -1651,7 +1651,7 @@ public:
                                     return false;
 
                                 const float mult     = rotateGravityDir->clockwise ? 1.f : -1.f;
-                                arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * zb::halfPi * mult;
+                                arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * za::halfPi * mult;
 
                                 scaleMultiplier.x += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
                                 scaleMultiplier.y += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
@@ -1664,7 +1664,7 @@ public:
                                 if (unlock->objectId != objectId)
                                     return false;
 
-                                lockRotationRadians = easeInOutSine(unlock->progress) * zb::tau;
+                                lockRotationRadians = easeInOutSine(unlock->progress) * za::tau;
 
                                 scaleMultiplier.x += 0.35f * easeInOutSine(bounce(unlock->progress));
                                 scaleMultiplier.y += 0.35f * easeInOutSine(bounce(unlock->progress));
@@ -1678,7 +1678,7 @@ public:
                                     return false;
 
                                 scaleMultiplier *= 1.f - easeInOutSine(burn->progress);
-                                rotationRadians = easeInOutSine(burn->progress) * -zb::tau * 2.f;
+                                rotationRadians = easeInOutSine(burn->progress) * -za::tau * 2.f;
                             }
 
                             return false;
@@ -1872,18 +1872,18 @@ public:
                 {
                     SFEX_PROFILE_SCOPE("particles");
 
-                    for (zb::SizeT i = 0; i < m_lavaParticles.size(); ++i)
+                    for (za::SizeT i = 0; i < m_lavaParticles.size(); ++i)
                         m_dbLavaParticles.add(particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1],
                                                                m_txrLavaParticle,
                                                                getLavaColor()));
 
-                    for (zb::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
+                    for (za::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
                         m_dbLavaParticlesTop.add(particleToSprite(m_lavaParticlesTop[m_lavaParticlesTop.size() - i - 1],
                                                                   m_txrLavaParticle,
                                                                   getLavaColor()));
                 }
 
-                const auto updateShadowTexture = [&](const float blurRadius, const zb::U8 alpha, auto&&... toDraw)
+                const auto updateShadowTexture = [&](const float blurRadius, const za::U8 alpha, auto&&... toDraw)
                 {
                     const float invScale = 1.f / shadowTextureResMult;
 
@@ -2008,7 +2008,7 @@ public:
                 if (m_undoCountdown > 0.f)
                     m_window.draw(m_txUndo,
                                   {
-                                      .color = za::Color::whiteWithAlpha(static_cast<zb::U8>(
+                                      .color = za::Color::whiteWithAlpha(static_cast<za::U8>(
                                           remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
                                   },
                                   {.view = m_windowView, .shader = &m_shader});

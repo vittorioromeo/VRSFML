@@ -26,26 +26,26 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Strlen.hpp"
-#include "ZancleBase/EnumArray.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Strlen.hpp"
+#include "Zancle/Container/EnumArray.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -86,7 +86,7 @@ bool touchIndexPool[32]{}; // Keeps track of which finger indices are in use
 ////////////////////////////////////////////////////////////
 [[nodiscard]] int findFirstNormalizedTouchIndex()
 {
-    for (zb::SizeT i = 0u; i < 32u; ++i)
+    for (za::SizeT i = 0u; i < 32u; ++i)
         if (!touchIndexPool[i])
             return static_cast<int>(i);
 
@@ -122,22 +122,22 @@ bool setWindowNonExclusiveFullscreenIfNeeded([[maybe_unused]] const bool      ha
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::String windowSettingsToString(const za::WindowSettings& settings)
+[[nodiscard]] za::String windowSettingsToString(const za::WindowSettings& settings)
 {
-    return "size={" + zb::toString(settings.size.x) + ", " + zb::toString(settings.size.y) + "}, " +                //
-           "bitsPerPixel=" + zb::toString(settings.bitsPerPixel) + ", " +                                           //
+    return "size={" + za::toString(settings.size.x) + ", " + za::toString(settings.size.y) + "}, " +                //
+           "bitsPerPixel=" + za::toString(settings.bitsPerPixel) + ", " +                                           //
            "title=\"" + settings.title.asBytes() + "\", " +                                                         //
-           "fullscreen=" + zb::toString(settings.fullscreen) + ", " +                                               //
-           "resizable=" + zb::toString(settings.resizable) + ", " +                                                 //
-           "closable=" + zb::toString(settings.closable) + ", " +                                                   //
-           "hasTitlebar=" + zb::toString(settings.hasTitlebar) + ", " +                                             //
-           "vsync=" + zb::toString(settings.vsync) + ", " +                                                         //
-           "frametimeLimit=" + zb::toString(settings.frametimeLimit) + ", " +                                       //
-           "contextSettings={depthBits=" + zb::toString(settings.contextSettings.depthBits) +                       //
-           ", stencilBits=" + zb::toString(settings.contextSettings.stencilBits) +                                  //
-           ", majorVersion=" + zb::toString(settings.contextSettings.majorVersion) +                                //
-           ", minorVersion=" + zb::toString(settings.contextSettings.minorVersion) +                                //
-           ", attributeFlags=" + zb::toString(static_cast<unsigned int>(settings.contextSettings.attributeFlags)) + //
+           "fullscreen=" + za::toString(settings.fullscreen) + ", " +                                               //
+           "resizable=" + za::toString(settings.resizable) + ", " +                                                 //
+           "closable=" + za::toString(settings.closable) + ", " +                                                   //
+           "hasTitlebar=" + za::toString(settings.hasTitlebar) + ", " +                                             //
+           "vsync=" + za::toString(settings.vsync) + ", " +                                                         //
+           "frametimeLimit=" + za::toString(settings.frametimeLimit) + ", " +                                       //
+           "contextSettings={depthBits=" + za::toString(settings.contextSettings.depthBits) +                       //
+           ", stencilBits=" + za::toString(settings.contextSettings.stencilBits) +                                  //
+           ", majorVersion=" + za::toString(settings.contextSettings.majorVersion) +                                //
+           ", minorVersion=" + za::toString(settings.contextSettings.minorVersion) +                                //
+           ", attributeFlags=" + za::toString(static_cast<unsigned int>(settings.contextSettings.attributeFlags)) + //
            "}";
 }
 
@@ -162,20 +162,20 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SDLWindowImpl::Impl
 {
-    zb::Vector<Event> events; //!< Queue of available events (FIFO; popped from the front)
+    za::Vector<Event> events; //!< Queue of available events (FIFO; popped from the front)
 
     JoystickState joystickStates[Joystick::MaxCount]{};    //!< Previous state of the joysticks
     bool          joystickConnected[Joystick::MaxCount]{}; //!< Previous connection state of the joysticks
 
-    zb::EnumArray<Sensor::Type, Vec3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
+    za::EnumArray<Sensor::Type, Vec3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
 
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
 
-    zb::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
+    za::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
         previousAxes[Joystick::MaxCount]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
 
-    zb::Optional<Vec2u> minimumSize; //!< Minimum window size
-    zb::Optional<Vec2u> maximumSize; //!< Maximum window size
+    za::Optional<Vec2u> minimumSize; //!< Minimum window size
+    za::Optional<Vec2u> maximumSize; //!< Maximum window size
 
     SDL_Window* sdlWindow; //!< SDL window handle
 
@@ -309,7 +309,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         {
             char32_t    unicode   = 0;
             const char* keyBuffer = e.text.text;
-            const auto  length    = ZB_STRLEN(keyBuffer);
+            const auto  length    = ZA_STRLEN(keyBuffer);
             const auto* iter      = keyBuffer;
 
             while (iter < keyBuffer + length)
@@ -363,7 +363,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add touch device?
             const auto touchPos = Vec2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVec2f()).toVec2i();
 
-            ZB_ASSERT(!SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            ZA_ASSERT(!SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
 
             const int normalizedIndex = SDLWindowImplImpl::findFirstNormalizedTouchIndex();
             if (normalizedIndex == -1)
@@ -383,7 +383,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
             const auto touchPos = Vec2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVec2f()).toVec2i();
 
-            ZB_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            ZA_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
             const auto [fingerIdx, pos, handle] = SDLWindowImplImpl::touchMap[fingerEvent.fingerID];
 
             SDLWindowImplImpl::touchIndexPool[fingerIdx] = false;
@@ -398,7 +398,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
             const auto touchPos = Vec2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVec2f()).toVec2i();
 
-            ZB_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            ZA_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
             const auto [fingerIdx, pos, handle] = SDLWindowImplImpl::touchMap[fingerEvent.fingerID];
 
             pushEvent(za::Event::TouchMoved{fingerIdx, touchPos, fingerEvent.pressure});
@@ -520,7 +520,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
+za::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
     if (!WindowContext::getSDLLayer().applyGLContextSettings(windowSettings.contextSettings))
         errMsg("Failed to apply SDL GL context settings for SDL window");
@@ -538,7 +538,7 @@ zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings
         {
             // TODO P0: get refresh rate from user
 
-            ZB_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
+            ZA_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
             const auto bestFullscreenMode = VideoModeUtils::getFullscreenModes()[0];
 
             VideoMode videoMode{.size         = windowSettings.size,
@@ -629,12 +629,12 @@ zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings
     windowImplPtr->setKeyRepeatEnabled(windowSettings.keyRepeatEnabled);
     windowImplPtr->setJoystickThreshold(windowSettings.joystickThreshold);
 
-    return zb::UniquePtr<SDLWindowImpl>{windowImplPtr};
+    return za::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
+za::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
     const SDL_PropertiesID props = makeSDLWindowPropertiesFromHandle(WindowContext::getSDLLayer().getCurrentVideoDriver(),
                                                                      handle);
@@ -660,7 +660,7 @@ zb::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
         return nullptr;
     }
 
-    return zb::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
+    return za::UniquePtr<SDLWindowImpl>{new SDLWindowImpl{"handle",
                                                           static_cast<void*>(sdlWindowPtr),
                                                           /* isExternal */ true}};
 }
@@ -674,20 +674,20 @@ SDLWindowImpl::~SDLWindowImpl()
 
     // Unregister the window from the global map
     const auto windowId = m_impl->getWindowID();
-    ZB_ASSERT(SDLWindowImplImpl::windowImplMap.contains(windowId));
+    ZA_ASSERT(SDLWindowImplImpl::windowImplMap.contains(windowId));
     SDLWindowImplImpl::windowImplMap.erase(windowId);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Vec2u> SDLWindowImpl::getMinimumSize() const
+za::Optional<Vec2u> SDLWindowImpl::getMinimumSize() const
 {
     return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Vec2u> SDLWindowImpl::getMaximumSize() const
+za::Optional<Vec2u> SDLWindowImpl::getMaximumSize() const
 {
     return m_impl->maximumSize;
 }
@@ -701,21 +701,21 @@ void SDLWindowImpl::setJoystickThreshold(const float threshold)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setMinimumSize(const zb::Optional<Vec2u>& minimumSize)
+void SDLWindowImpl::setMinimumSize(const za::Optional<Vec2u>& minimumSize)
 {
     m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setMaximumSize(const zb::Optional<Vec2u>& maximumSize)
+void SDLWindowImpl::setMaximumSize(const za::Optional<Vec2u>& maximumSize)
 {
     m_impl->maximumSize = maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
+za::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
 {
     za::Clock clock;
 
@@ -742,7 +742,7 @@ zb::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> SDLWindowImpl::pollEvent()
+za::Optional<Event> SDLWindowImpl::pollEvent()
 {
     // If the event queue is empty, let's first check if new events are available from the OS
     if (m_impl->events.empty())
@@ -753,9 +753,9 @@ zb::Optional<Event> SDLWindowImpl::pollEvent()
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> SDLWindowImpl::popEvent()
+za::Optional<Event> SDLWindowImpl::popEvent()
 {
-    zb::Optional<Event> event; // Use a single local variable for NRVO
+    za::Optional<Event> event; // Use a single local variable for NRVO
 
     if (!m_impl->events.empty())
     {
@@ -789,7 +789,7 @@ SDLWindowImpl::SDLWindowImpl(const char* const context, void* const sdlWindow, c
 
     // Register the window in the global map
     const auto windowId = m_impl->getWindowID();
-    ZB_ASSERT(!SDLWindowImplImpl::windowImplMap.contains(windowId));
+    ZA_ASSERT(!SDLWindowImplImpl::windowImplMap.contains(windowId));
     SDLWindowImplImpl::windowImplMap.emplace(windowId, this); // Needs address stability
 }
 
@@ -846,7 +846,7 @@ void SDLWindowImpl::processJoystickEvents()
 
             const float prevPos = m_impl->previousAxes[i][axis];
             const float currPos = m_impl->joystickStates[i].axes[axis];
-            if (zb::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
+            if (za::fabs(currPos - prevPos) >= m_impl->joystickThreshold)
             {
                 pushEvent(Event::JoystickMoved{i, axis, currPos});
                 m_impl->previousAxes[i][axis] = currPos;
@@ -943,7 +943,7 @@ void SDLWindowImpl::setPosition(const Vec2i position)
 ////////////////////////////////////////////////////////////
 Vec2u SDLWindowImpl::getSize() const
 {
-    ZB_ASSERT(m_impl->sdlWindow);
+    ZA_ASSERT(m_impl->sdlWindow);
     return WindowContext::getSDLLayer().getWindowSize(*m_impl->sdlWindow);
 }
 
@@ -951,7 +951,7 @@ Vec2u SDLWindowImpl::getSize() const
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::setSize(const Vec2u size)
 {
-    ZB_ASSERT(m_impl->sdlWindow);
+    ZA_ASSERT(m_impl->sdlWindow);
     WindowContext::getSDLLayer().setWindowSize(*m_impl->sdlWindow, size);
 
     if (!isFullscreen())
@@ -968,7 +968,7 @@ void SDLWindowImpl::setTitle(const Utf8String& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setIcon(const zb::U8* pixels, const Vec2u size)
+void SDLWindowImpl::setIcon(const za::U8* pixels, const Vec2u size)
 {
     auto surface = WindowContext::getSDLLayer().createSurfaceFromPixels(pixels, size);
     if (surface == nullptr)

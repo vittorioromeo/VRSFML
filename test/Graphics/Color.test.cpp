@@ -4,35 +4,35 @@
 
 #include "Zancle/Graphics/Color.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 TEST_CASE("[Graphics] za::Color")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Color));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Color));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Color));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Color));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Color)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Color));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::Color));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Color));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Color));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Color, za::Color));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Color)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Color));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Color));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Color, za::Color));
     }
 
     SECTION("Construction")
@@ -64,7 +64,7 @@ TEST_CASE("[Graphics] za::Color")
             STATIC_CHECK(color.a == 4);
         }
 
-        SECTION("zb::I32 constructor")
+        SECTION("za::I32 constructor")
         {
             STATIC_CHECK(za::Color::fromRGBA(0x00'00'00'00) == za::Color(0, 0, 0, 0));
             STATIC_CHECK(za::Color::fromRGBA(0x01'02'03'04) == za::Color(1, 2, 3, 4));
@@ -169,17 +169,17 @@ TEST_CASE("[Graphics] za::Color")
         STATIC_CHECK(za::Color::Transparent == za::Color(0, 0, 0, 0));
     }
 
-    SECTION("Reinterpret as zb::U8*")
+    SECTION("Reinterpret as za::U8*")
     {
         STATIC_CHECK(sizeof(za::Color) == 4);
         STATIC_CHECK(alignof(za::Color) == 1);
 
-        zb::Vector<za::Color> pixels(3);
+        za::Vector<za::Color> pixels(3);
         pixels[0] = {10, 11, 12, 13};
         pixels[1] = {14, 15, 16, 17};
         pixels[2] = {18, 19, 20, 21};
 
-        const auto* begin = reinterpret_cast<const zb::U8*>(pixels.data());
+        const auto* begin = reinterpret_cast<const za::U8*>(pixels.data());
         CHECK(begin[0] == pixels[0].r);
         CHECK(begin[1] == pixels[0].g);
         CHECK(begin[2] == pixels[0].b);

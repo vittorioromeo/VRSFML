@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ struct Vec3;
 
 namespace za::priv
 {
-template <zb::SizeT Columns, zb::SizeT Rows>
+template <za::SizeT Columns, za::SizeT Rows>
 struct [[nodiscard]] Matrix;
 
 template <typename T>

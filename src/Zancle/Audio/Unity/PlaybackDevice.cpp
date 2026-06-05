@@ -12,11 +12,11 @@
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/Clamp.hpp"
+#include "Zancle/Math/Clamp.hpp"
 
 #include <miniaudio.h>
 
@@ -132,7 +132,7 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-// TODO P1: change to a factory returning `zb::Optional<PlaybackDevice>` so a
+// TODO P1: change to a factory returning `za::Optional<PlaybackDevice>` so a
 //          failed device can never be observed by the caller.
 PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
@@ -170,8 +170,8 @@ PlaybackDevice::~PlaybackDevice() = default;
 
     ma_engine_listener_set_cone(engine,
                                 0,
-                                zb::clamp(listener.cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
-                                zb::clamp(listener.cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
+                                za::clamp(listener.cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
+                                za::clamp(listener.cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
                                 listener.cone.outerGain);
 
     ma_engine_listener_set_world_up(engine, 0, listener.upVec.x, listener.upVec.y, listener.upVec.z);

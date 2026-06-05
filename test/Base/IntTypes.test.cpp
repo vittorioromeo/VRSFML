@@ -1,21 +1,21 @@
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
-static_assert(sizeof(zb::I8) == 1);
-static_assert(sizeof(zb::U8) == 1);
+static_assert(sizeof(za::I8) == 1);
+static_assert(sizeof(za::U8) == 1);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(sizeof(zb::I16) == 2);
-static_assert(sizeof(zb::U16) == 2);
+static_assert(sizeof(za::I16) == 2);
+static_assert(sizeof(za::U16) == 2);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(sizeof(zb::I32) == 4);
-static_assert(sizeof(zb::U32) == 4);
+static_assert(sizeof(za::I32) == 4);
+static_assert(sizeof(za::U32) == 4);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(sizeof(zb::I64) == 8);
-static_assert(sizeof(zb::U64) == 8);
+static_assert(sizeof(za::I64) == 8);
+static_assert(sizeof(za::U64) == 8);

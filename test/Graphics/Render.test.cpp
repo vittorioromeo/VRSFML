@@ -29,9 +29,9 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Thread.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
 
 
 // Mirrors the trick in test/Window/Context.test.cpp: forces visibility of

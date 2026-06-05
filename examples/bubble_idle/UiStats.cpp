@@ -20,10 +20,10 @@
 
 #include "Zancle/Graphics/Color.hpp"
 
-#include "ZancleBase/Algorithm/Count.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Algorithm/Count.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 void Main::uiTabBarStats()
 {
@@ -381,11 +381,11 @@ void Main::uiTabBarStats()
 
         case 3:
         {
-            const zb::SizeT nAchievementsUnlocked = zb::countTruthy(profile.unlockedAchievements,
+            const za::SizeT nAchievementsUnlocked = za::countTruthy(profile.unlockedAchievements,
                                                                     profile.unlockedAchievements + nAchievements);
 
             uiSetFontScale(uiNormalFontScale);
-            ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, zb::getArraySize(achievementData));
+            ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, za::getArraySize(achievementData));
 
             static bool showCompleted = true;
             uiSetFontScale(0.75f);
@@ -396,7 +396,7 @@ void Main::uiTabBarStats()
 
             ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
-            zb::U64 id = 0u;
+            za::U64 id = 0u;
             for (const auto& [name, description, secret] : achievementData)
             {
                 const bool unlocked = profile.unlockedAchievements[id];

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 #ifdef ZA_RUN_DISPLAY_TESTS
@@ -21,5 +21,5 @@ namespace za
 struct VideoMode;
 
 // Found by ADL when a `VideoMode` operand needs rendering for a failed assertion.
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const VideoMode& videoMode) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const VideoMode& videoMode) noexcept;
 } // namespace za

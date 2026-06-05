@@ -18,31 +18,31 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Fmt/FmtPath.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathStreamOp.hpp" // IWYU pragma: keep
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Err/FmtPath.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathStreamOp.hpp" // IWYU pragma: keep
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/OverloadSet.hpp"
-#include "ZancleBase/ScopeGuard.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsEnum.hpp"
-#include "ZancleBase/Trait/IsFloatingPoint.hpp"
-#include "ZancleBase/Trait/IsIntegral.hpp"
-#include "ZancleBase/Trait/IsSame.hpp"
-#include "ZancleBase/Trait/RemoveCVRef.hpp"
-#include "ZancleBase/Trait/UnderlyingType.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/OverloadSet.hpp"
+#include "Zancle/Vocabulary/ScopeGuard.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsEnum.hpp"
+#include "Zancle/Trait/IsFloatingPoint.hpp"
+#include "Zancle/Trait/IsIntegral.hpp"
+#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Trait/RemoveCVRef.hpp"
+#include "Zancle/Trait/UnderlyingType.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
@@ -168,7 +168,7 @@ inline cJSON* toJsonValue(bool v)
 }
 
 template <typename T>
-    requires((ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_POINT(T)) && !ZB_IS_SAME(T, bool))
+    requires((ZA_IS_INTEGRAL(T) || ZA_IS_FLOATING_POINT(T)) && !ZA_IS_SAME(T, bool))
 cJSON* toJsonValue(const T& v)
 {
     return cJSON_CreateNumber(static_cast<double>(v));
@@ -183,7 +183,7 @@ inline void fromJsonValue(const cJSON* j, bool& out)
 }
 
 template <typename T>
-    requires((ZB_IS_INTEGRAL(T) || ZB_IS_FLOATING_POINT(T)) && !ZB_IS_SAME(T, bool))
+    requires((ZA_IS_INTEGRAL(T) || ZA_IS_FLOATING_POINT(T)) && !ZA_IS_SAME(T, bool))
 void fromJsonValue(const cJSON* j, T& out)
 {
     if (cJSON_IsNumber(j))
@@ -195,18 +195,18 @@ void fromJsonValue(const cJSON* j, T& out)
 // Enum dispatch via compiler builtins (no `<type_traits>` include).
 ////////////////////////////////////////////////////////////
 template <typename T>
-    requires(ZB_IS_ENUM(T))
+    requires(ZA_IS_ENUM(T))
 cJSON* toJsonValue(const T& v)
 {
-    return cJSON_CreateNumber(static_cast<double>(static_cast<ZB_UNDERLYING_TYPE(T)>(v)));
+    return cJSON_CreateNumber(static_cast<double>(static_cast<ZA_UNDERLYING_TYPE(T)>(v)));
 }
 
 template <typename T>
-    requires(ZB_IS_ENUM(T))
+    requires(ZA_IS_ENUM(T))
 void fromJsonValue(const cJSON* j, T& out)
 {
     if (cJSON_IsNumber(j))
-        out = static_cast<T>(static_cast<ZB_UNDERLYING_TYPE(T)>(cJSON_GetNumberValue(j)));
+        out = static_cast<T>(static_cast<ZA_UNDERLYING_TYPE(T)>(cJSON_GetNumberValue(j)));
 }
 
 
@@ -243,15 +243,15 @@ inline cJSON* toJsonValue(const za::Time& t)
 inline void fromJsonValue(const cJSON* j, za::Time& t)
 {
     if (cJSON_IsNumber(j))
-        t = za::microseconds(static_cast<zb::I64>(cJSON_GetNumberValue(j)));
+        t = za::microseconds(static_cast<za::I64>(cJSON_GetNumberValue(j)));
 }
 
 
 ////////////////////////////////////////////////////////////
-// `zb::Optional<T>` round-trips as `null` or its contents.
+// `za::Optional<T>` round-trips as `null` or its contents.
 ////////////////////////////////////////////////////////////
 template <typename T>
-cJSON* toJsonValue(const zb::Optional<T>& o)
+cJSON* toJsonValue(const za::Optional<T>& o)
 {
     if (!o.hasValue())
         return cJSON_CreateNull();
@@ -259,7 +259,7 @@ cJSON* toJsonValue(const zb::Optional<T>& o)
 }
 
 template <typename T>
-void fromJsonValue(const cJSON* j, zb::Optional<T>& o)
+void fromJsonValue(const cJSON* j, za::Optional<T>& o)
 {
     if (cJSON_IsNull(j))
     {
@@ -273,10 +273,10 @@ void fromJsonValue(const cJSON* j, zb::Optional<T>& o)
 
 
 ////////////////////////////////////////////////////////////
-// `zb::Vector<T>` as a JSON array.
+// `za::Vector<T>` as a JSON array.
 ////////////////////////////////////////////////////////////
 template <typename T>
-cJSON* toJsonValue(const zb::Vector<T>& v)
+cJSON* toJsonValue(const za::Vector<T>& v)
 {
     cJSON* arr = cJSON_CreateArray();
     for (const auto& item : v)
@@ -285,45 +285,45 @@ cJSON* toJsonValue(const zb::Vector<T>& v)
 }
 
 template <typename T>
-void fromJsonValue(const cJSON* j, zb::Vector<T>& v)
+void fromJsonValue(const cJSON* j, za::Vector<T>& v)
 {
     v.clear();
     if (!cJSON_IsArray(j))
         return;
 
-    v.reserve(static_cast<zb::SizeT>(cJSON_GetArraySize(j)));
+    v.reserve(static_cast<za::SizeT>(cJSON_GetArraySize(j)));
 
     const cJSON* child{};
     cJSON_ArrayForEach(child, j)
     {
         T item{};
         fromJsonValue(child, item);
-        v.emplaceBack(ZB_MOVE(item));
+        v.emplaceBack(ZA_MOVE(item));
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-// `zb::Array<T, N>` as a JSON array.
+// `za::Array<T, N>` as a JSON array.
 ////////////////////////////////////////////////////////////
-template <typename T, zb::SizeT N>
-cJSON* toJsonValue(const zb::Array<T, N>& a)
+template <typename T, za::SizeT N>
+cJSON* toJsonValue(const za::Array<T, N>& a)
 {
     cJSON* arr = cJSON_CreateArray();
-    for (zb::SizeT i = 0u; i < N; ++i)
+    for (za::SizeT i = 0u; i < N; ++i)
         cJSON_AddItemToArray(arr, toJsonValue(a.elements[i]));
     return arr;
 }
 
-template <typename T, zb::SizeT N>
-void fromJsonValue(const cJSON* j, zb::Array<T, N>& a)
+template <typename T, za::SizeT N>
+void fromJsonValue(const cJSON* j, za::Array<T, N>& a)
 {
     if (!cJSON_IsArray(j))
         return;
 
-    const auto n     = static_cast<zb::SizeT>(cJSON_GetArraySize(j));
+    const auto n     = static_cast<za::SizeT>(cJSON_GetArraySize(j));
     const auto count = N < n ? N : n;
-    for (zb::SizeT i = 0u; i < count; ++i)
+    for (za::SizeT i = 0u; i < count; ++i)
         fromJsonValue(cJSON_GetArrayItem(j, static_cast<int>(i)), a.elements[i]);
 }
 
@@ -331,24 +331,24 @@ void fromJsonValue(const cJSON* j, zb::Array<T, N>& a)
 ////////////////////////////////////////////////////////////
 // Native C-arrays `T[N]` as JSON arrays (recurses for `T[N][M]`).
 ////////////////////////////////////////////////////////////
-template <typename T, zb::SizeT N>
+template <typename T, za::SizeT N>
 cJSON* toJsonValue(const T (&arr)[N])
 {
     cJSON* a = cJSON_CreateArray();
-    for (zb::SizeT i = 0u; i < N; ++i)
+    for (za::SizeT i = 0u; i < N; ++i)
         cJSON_AddItemToArray(a, toJsonValue(arr[i]));
     return a;
 }
 
-template <typename T, zb::SizeT N>
+template <typename T, za::SizeT N>
 void fromJsonValue(const cJSON* j, T (&arr)[N])
 {
     if (!cJSON_IsArray(j))
         return;
 
-    const auto n     = static_cast<zb::SizeT>(cJSON_GetArraySize(j));
+    const auto n     = static_cast<za::SizeT>(cJSON_GetArraySize(j));
     const auto count = N < n ? N : n;
-    for (zb::SizeT i = 0u; i < count; ++i)
+    for (za::SizeT i = 0u; i < count; ++i)
         fromJsonValue(cJSON_GetArrayItem(j, static_cast<int>(i)), arr[i]);
 }
 
@@ -400,7 +400,7 @@ DEFINE_SINGLE_FIELD_SERIALIZER(PurchasableScalingValue, nPurchases);
 inline cJSON* toJsonValue(const GameEvent& p)
 {
     cJSON* obj = cJSON_CreateObject();
-    p.linearVisit(zb::OverloadSet{
+    p.linearVisit(za::OverloadSet{
         [&](const auto& e)
     {
         cJSON_AddStringToObject(obj, "kind", eventKindTag(e));
@@ -424,7 +424,7 @@ inline void fromJsonValue(const cJSON* j, GameEvent& p)
     if (kind == nullptr)
         return;
 
-    const zb::StringView kindView{kind};
+    const za::StringView kindView{kind};
     if (kindView == "bubblefall")
     {
         EBubblefall e{};
@@ -465,7 +465,7 @@ void readField(const cJSON* obj, const char* name, T& field)
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename U>
-concept isSameDecayed = zb::isSame<ZB_REMOVE_CVREF(T), ZB_REMOVE_CVREF(U)>;
+concept isSameDecayed = za::isSame<ZA_REMOVE_CVREF(T), ZA_REMOVE_CVREF(U)>;
 
 
 ////////////////////////////////////////////////////////////
@@ -1179,17 +1179,17 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] zb::String serializeToJsonString(const T& value, bool pretty)
+[[nodiscard]] za::String serializeToJsonString(const T& value, bool pretty)
 {
     cJSON* const root = toJsonValue(value);
-    ZB_SCOPE_GUARD({ cJSON_Delete(root); });
+    ZA_SCOPE_GUARD({ cJSON_Delete(root); });
 
     char* const buf = pretty ? cJSON_Print(root) : cJSON_PrintUnformatted(root);
     if (buf == nullptr)
         return {};
-    ZB_SCOPE_GUARD({ cJSON_free(buf); });
+    ZA_SCOPE_GUARD({ cJSON_free(buf); });
 
-    return zb::String{buf};
+    return za::String{buf};
 }
 
 
@@ -1200,7 +1200,7 @@ bool forceCopyFile(const za::Path& from, const za::Path& to)
 
     if (!from.copyFileTo(to))
     {
-        zb::printLn("Failed to copy file from '{}' to '{}'", from, to);
+        za::printLn("Failed to copy file from '{}' to '{}'", from, to);
         return false;
     }
 
@@ -1209,7 +1209,7 @@ bool forceCopyFile(const za::Path& from, const za::Path& to)
 
 
 ////////////////////////////////////////////////////////////
-void doRotatingBackup(const zb::String& filename)
+void doRotatingBackup(const za::String& filename)
 {
     (void)forceCopyFile(filename + ".bak2", filename + ".bak3");
     (void)forceCopyFile(filename + ".bak1", filename + ".bak2");
@@ -1224,15 +1224,15 @@ bool saveProfileToFile(const Profile& profile, const char* filename)
 {
     if (!za::Path{"userdata"}.createDirectoryTree())
     {
-        zb::printLn("Failed to save profile to file '{}' (createDirectoryTree failed)", filename);
+        za::printLn("Failed to save profile to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
     doRotatingBackup(filename);
 
-    if (!za::writeToFile(zb::StringView{filename}, serializeToJsonString(profile, /* pretty */ false)))
+    if (!za::writeToFile(za::StringView{filename}, serializeToJsonString(profile, /* pretty */ false)))
     {
-        zb::printLn("Failed to save profile to file '{}' (writeToFile failed)", filename);
+        za::printLn("Failed to save profile to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1245,13 +1245,13 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
 {
     const auto fail = [&](const char* reason)
     {
-        zb::printLn("Failed to load profile from file '{}' ({})", filename, reason);
+        za::printLn("Failed to load profile from file '{}' ({})", filename, reason);
         return false;
     };
 
-    zb::String contents;
+    za::String contents;
 
-    if (!za::readFromFile(zb::StringView{filename}, contents))
+    if (!za::readFromFile(za::StringView{filename}, contents))
         return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
@@ -1259,12 +1259,12 @@ bool loadProfileFromFile(Profile& profile, const char* filename)
     if (parsed == nullptr)
         return fail("cJSON_Parse failed");
 
-    ZB_SCOPE_GUARD({ cJSON_Delete(parsed); });
+    ZA_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        zb::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.", filename);
+        za::printLn("Profile '{}' is in the legacy array format and cannot be loaded. Resetting to defaults.", filename);
 
         profile = Profile{};
         return true;
@@ -1281,15 +1281,15 @@ bool saveGameConstantsToFile(const GameConstants& gameConstants, const char* fil
 
     if (path.hasParent() && !path.getParent().createDirectoryTree())
     {
-        zb::printLn("Failed to save game constants to file '{}' (createDirectoryTree failed)", filename);
+        za::printLn("Failed to save game constants to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
     doRotatingBackup(filename);
 
-    if (!za::writeToFile(zb::StringView{filename}, serializeToJsonString(gameConstants, /* pretty */ true)))
+    if (!za::writeToFile(za::StringView{filename}, serializeToJsonString(gameConstants, /* pretty */ true)))
     {
-        zb::printLn("Failed to save game constants to file '{}' (writeToFile failed)", filename);
+        za::printLn("Failed to save game constants to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1302,13 +1302,13 @@ bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filenam
 {
     const auto fail = [&](const char* reason)
     {
-        zb::printLn("Failed to load game constants from file '{}' ({})", filename, reason);
+        za::printLn("Failed to load game constants from file '{}' ({})", filename, reason);
         return false;
     };
 
-    zb::String contents;
+    za::String contents;
 
-    if (!za::readFromFile(zb::StringView{filename}, contents))
+    if (!za::readFromFile(za::StringView{filename}, contents))
         return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
@@ -1316,7 +1316,7 @@ bool loadGameConstantsFromFile(GameConstants& gameConstants, const char* filenam
     if (parsed == nullptr)
         return fail("cJSON_Parse failed");
 
-    ZB_SCOPE_GUARD({ cJSON_Delete(parsed); });
+    ZA_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     fromJsonValue(parsed, gameConstants);
     return true;
@@ -1328,15 +1328,15 @@ bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 {
     if (!za::Path{"userdata"}.createDirectoryTree())
     {
-        zb::printLn("Failed to save playthrough to file '{}' (createDirectoryTree failed)", filename);
+        za::printLn("Failed to save playthrough to file '{}' (createDirectoryTree failed)", filename);
         return false;
     }
 
     doRotatingBackup(filename);
 
-    if (!za::writeToFile(zb::StringView{filename}, serializeToJsonString(playthrough, /* pretty */ false)))
+    if (!za::writeToFile(za::StringView{filename}, serializeToJsonString(playthrough, /* pretty */ false)))
     {
-        zb::printLn("Failed to save playthrough to file '{}' (writeToFile failed)", filename);
+        za::printLn("Failed to save playthrough to file '{}' (writeToFile failed)", filename);
         return false;
     }
 
@@ -1345,12 +1345,12 @@ bool savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 
 
 ////////////////////////////////////////////////////////////
-zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Playthrough& playthrough)
+za::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Playthrough& playthrough)
 {
     if (parsedVersion == currentVersion)
         return "";
 
-    zb::printLn("Loaded playthrough version {}.{}.{} does not match current version {}.{}.{}",
+    za::printLn("Loaded playthrough version {}.{}.{} does not match current version {}.{}.{}",
                 parsedVersion.major,
                 parsedVersion.minor,
                 parsedVersion.patch,
@@ -1365,7 +1365,7 @@ zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Pl
 
         if (loadedPrestigeLevel > 0u)
         {
-            zb::printLn("Adding missing prestige points...");
+            za::printLn("Adding missing prestige points...");
 
             const auto oldAccumulatedPPs = Playthrough::calculatePrestigePointReward(0u,
                                                                                      loadedPrestigeLevel,
@@ -1374,7 +1374,7 @@ zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Pl
                                                                                      loadedPrestigeLevel,
                                                                                      /* levelBias */ 1u);
 
-            zb::printLn("Old accumulated pps: {}{}New accumulated pps: {}{}Adding {} prestige points",
+            za::printLn("Old accumulated pps: {}{}New accumulated pps: {}{}Adding {} prestige points",
                         oldAccumulatedPPs,
                         '\n',
                         newAccumulatedPPs,
@@ -1392,17 +1392,17 @@ zb::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Pl
 
 
 ////////////////////////////////////////////////////////////
-zb::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
+za::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
 {
     const auto fail = [&](const char* reason)
     {
-        zb::printLn("Failed to load playthrough from file '{}' ({})", filename, reason);
+        za::printLn("Failed to load playthrough from file '{}' ({})", filename, reason);
         return "";
     };
 
-    zb::String contents;
+    za::String contents;
 
-    if (!za::readFromFile(zb::StringView{filename}, contents))
+    if (!za::readFromFile(za::StringView{filename}, contents))
         return fail("readFromFile failed");
 
     cJSON* const parsed = cJSON_Parse(contents.cStr());
@@ -1410,12 +1410,12 @@ zb::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* fil
     if (parsed == nullptr)
         return fail("cJSON_Parse failed");
 
-    ZB_SCOPE_GUARD({ cJSON_Delete(parsed); });
+    ZA_SCOPE_GUARD({ cJSON_Delete(parsed); });
 
     // Old saves used a JSON array at the root; new saves are objects.
     if (!cJSON_IsObject(parsed))
     {
-        zb::printLn("Playthrough '{}' is in the legacy array format and cannot be loaded.", filename);
+        za::printLn("Playthrough '{}' is in the legacy array format and cannot be loaded.", filename);
         playthrough = Playthrough{};
         return "Your save is from an older version with an incompatible\n"
                "format and could not be loaded. A fresh playthrough has been started.";

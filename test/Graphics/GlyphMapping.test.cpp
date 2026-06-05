@@ -9,10 +9,10 @@
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 TEST_CASE("[Graphics] za::GlyphMapping" * tst::skip(skipDisplayTests))
@@ -22,7 +22,7 @@ TEST_CASE("[Graphics] za::GlyphMapping" * tst::skip(skipDisplayTests))
     auto atlas           = za::TextureAtlas(za::Texture::create({1024u, 1024u}, {.smooth = true}).value());
 
     static constexpr char32_t  testCodePoints[]    = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
-    static constexpr zb::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;
+    static constexpr za::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;
 
     SECTION("loadGlyphs basic")
     {

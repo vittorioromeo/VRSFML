@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 namespace za
@@ -46,9 +46,9 @@ struct ZA_WINDOW_API Touch
     ////////////////////////////////////////////////////////////
     struct Device // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        zb::U64        id;   //!< OS-assigned identifier of the touch device
+        za::U64        id;   //!< OS-assigned identifier of the touch device
         DeviceType     type; //!< Kind of touch device (direct / indirect)
-        zb::StringView name; //!< Human-readable name of the touch device
+        za::StringView name; //!< Human-readable name of the touch device
     };
 
     ////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ struct ZA_WINDOW_API Touch
     /// \return Span over the currently connected touch devices
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Span<Device> getDevices();
+    [[nodiscard]] static za::Span<Device> getDevices();
 };
 
 } // namespace za

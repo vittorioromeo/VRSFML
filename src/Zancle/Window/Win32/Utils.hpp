@@ -6,10 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace zb
+namespace za
 {
 class String;
-} // namespace zb
+} // namespace za
 
 using DWORD = unsigned long;
 
@@ -17,7 +17,7 @@ using DWORD = unsigned long;
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-zb::String getErrorString(DWORD error);
+za::String getErrorString(DWORD error);
 
 ////////////////////////////////////////////////////////////
 void setWindowBorderless(void* hwnd, unsigned int width, unsigned int height);

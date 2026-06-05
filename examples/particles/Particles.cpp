@@ -22,27 +22,27 @@
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Algorithm/SwapAndPop.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/InterferenceSize.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/ThreadPool.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Algorithm/SwapAndPop.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/InterferenceSize.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <latch>
 
@@ -228,7 +228,7 @@ int main()
         }
     };
 
-    zb::Vector<zb::UniquePtr<Entity>> entities;
+    za::Vector<za::UniquePtr<Entity>> entities;
 
     //
     //
@@ -249,7 +249,7 @@ int main()
         float torque;
     };
 
-    zb::Vector<ParticleAoS> particlesAoS;
+    za::Vector<ParticleAoS> particlesAoS;
 
     //
     //
@@ -272,8 +272,8 @@ int main()
     //
     //
     // Get hardware constants
-    const auto     nMaxWorkers   = static_cast<zb::U64>(zb::ThreadPool::getHardwareWorkerCount());
-    constexpr auto cacheLineSize = static_cast<zb::SizeT>(zb::hardwareDestructiveInterferenceSize);
+    const auto     nMaxWorkers   = static_cast<za::U64>(za::ThreadPool::getHardwareWorkerCount());
+    constexpr auto cacheLineSize = static_cast<za::SizeT>(za::hardwareDestructiveInterferenceSize);
 
     //
     //
@@ -295,7 +295,7 @@ int main()
 
     auto    batchType                = BatchType::Disabled;
     auto    autobatchType            = defaultBatchType;
-    zb::U64 autoBatchVertexThreshold = 32'768u;
+    za::U64 autoBatchVertexThreshold = 32'768u;
     bool    multithreadedUpdate      = false;
     bool    multithreadedDraw        = false;
     bool    useOOP                   = false;
@@ -303,7 +303,7 @@ int main()
     bool    unifiedSoAProcessing     = false;
     bool    destroyParticles         = true;
     bool    destroyBySwapping        = true;
-    zb::U64 nWorkers                 = nMaxWorkers;
+    za::U64 nWorkers                 = nMaxWorkers;
     int     numEntities              = 50'000;
     bool    drawStep                 = true;
 
@@ -320,26 +320,26 @@ int main()
         using za::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    zb::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<zb::SizeT>(nMaxWorkers));
-    zb::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<zb::SizeT>(nMaxWorkers));
+    za::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<za::SizeT>(nMaxWorkers));
+    za::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<za::SizeT>(nMaxWorkers));
 
     //
     //
     // Set up thread pool
-    zb::ThreadPool pool(nMaxWorkers);
+    za::ThreadPool pool(nMaxWorkers);
 
-    const auto doInBatches = [&](const zb::SizeT nParticlesTotal, auto&& f)
+    const auto doInBatches = [&](const za::SizeT nParticlesTotal, auto&& f)
     {
-        const zb::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
+        const za::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
 
-        std::latch latch{static_cast<zb::PtrDiffT>(nWorkers)};
+        std::latch latch{static_cast<za::PtrDiffT>(nWorkers)};
 
-        for (zb::SizeT i = 0u; i < nWorkers; ++i)
+        for (za::SizeT i = 0u; i < nWorkers; ++i)
         {
             pool.post([&, i]
             {
-                const zb::SizeT batchStartIdx = i * particlesPerBatch;
-                const zb::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+                const za::SizeT batchStartIdx = i * particlesPerBatch;
+                const za::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -373,12 +373,12 @@ int main()
                rng.getF(-0.002f, 0.002f),                  // scaleGrowth
                rng.getF(0.75f, 1.f),                       // opacity
                rng.getF(-0.0015f, -0.0005f),               // opacityGrowth
-               rng.getF(0.f, zb::tau),                     // rotation
+               rng.getF(0.f, za::tau),                     // rotation
                rng.getF(-0.005f, 0.005f)                   // torque
         );
     };
 
-    const auto populateParticlesOOP = [&](const zb::SizeT n)
+    const auto populateParticlesOOP = [&](const za::SizeT n)
     {
         if (n < entities.size())
         {
@@ -388,12 +388,12 @@ int main()
 
         entities.reserve(n);
 
-        for (zb::SizeT i = entities.size(); i < n; ++i)
+        for (za::SizeT i = entities.size(); i < n; ++i)
             pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args)
-            { entities.emplaceBack(zb::makeUnique<ParticleOOP>(args...)); });
+            { entities.emplaceBack(za::makeUnique<ParticleOOP>(args...)); });
     };
 
-    const auto populateParticlesAoS = [&](const zb::SizeT n)
+    const auto populateParticlesAoS = [&](const za::SizeT n)
     {
         if (n < particlesAoS.size())
         {
@@ -403,11 +403,11 @@ int main()
 
         particlesAoS.reserve(n);
 
-        for (zb::SizeT i = particlesAoS.size(); i < n; ++i)
+        for (za::SizeT i = particlesAoS.size(); i < n; ++i)
             pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args) { particlesAoS.emplaceBack(args...); });
     };
 
-    const auto populateParticlesSoA = [&](const zb::SizeT n)
+    const auto populateParticlesSoA = [&](const za::SizeT n)
     {
         if (n < particlesSoA.getSize())
         {
@@ -417,11 +417,11 @@ int main()
 
         particlesSoA.reserve(n);
 
-        for (zb::SizeT i = particlesSoA.getSize(); i < n; ++i)
+        for (za::SizeT i = particlesSoA.getSize(); i < n; ++i)
             pushParticle([&] [[gnu::always_inline, gnu::flatten]] (auto&&... args) { particlesSoA.pushBack(args...); });
     };
 
-    const auto populateParticles = [&](const zb::SizeT n)
+    const auto populateParticles = [&](const za::SizeT n)
     {
         if (useOOP)
             populateParticlesOOP(n);
@@ -431,7 +431,7 @@ int main()
             populateParticlesAoS(n);
     };
 
-    populateParticles(static_cast<zb::SizeT>(numEntities));
+    populateParticles(static_cast<za::SizeT>(numEntities));
 
     //
     //
@@ -446,7 +446,7 @@ int main()
         // ---
         clock.restart();
         {
-            while (zb::Optional event = window.pollEvent())
+            while (za::Optional event = window.pollEvent())
             {
                 imGuiContext.processEvent(window, *event);
 
@@ -470,7 +470,7 @@ int main()
 
                 if (useOOP)
                 {
-                    zb::vectorSwapAndPopIf(entities, [](const auto& e) { return !e->alive; });
+                    za::vectorSwapAndPopIf(entities, [](const auto& e) { return !e->alive; });
                 }
                 else if (useSoA)
                 {
@@ -483,8 +483,8 @@ int main()
                 {
                     if (destroyBySwapping)
                     {
-                        zb::SizeT n = particlesAoS.size();
-                        zb::SizeT i = 0;
+                        za::SizeT n = particlesAoS.size();
+                        za::SizeT i = 0;
 
                         while (i < n)
                         {
@@ -501,14 +501,14 @@ int main()
                     }
                     else
                     {
-                        zb::vectorEraseIf(particlesAoS, [] [[gnu::always_inline, gnu::flatten]] (const ParticleAoS& p) {
+                        za::vectorEraseIf(particlesAoS, [] [[gnu::always_inline, gnu::flatten]] (const ParticleAoS& p) {
                             return p.opacity <= 0.f;
                         });
                     }
                 }
             }
 
-            populateParticles(static_cast<zb::SizeT>(numEntities));
+            populateParticles(static_cast<za::SizeT>(numEntities));
 
             if (!multithreadedUpdate)
             {
@@ -569,18 +569,18 @@ int main()
                 {
                     if (unifiedSoAProcessing)
                     {
-                        doInBatches(static_cast<zb::SizeT>(numEntities),
-                                    [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT /* iBatch */,
-                                                                              const zb::SizeT batchStartIdx,
-                                                                              const zb::SizeT batchEndIdx)
+                        doInBatches(static_cast<za::SizeT>(numEntities),
+                                    [&] [[gnu::always_inline, gnu::flatten]] (const za::SizeT /* iBatch */,
+                                                                              const za::SizeT batchStartIdx,
+                                                                              const za::SizeT batchEndIdx)
                         { particlesSoA.withAllSubRange(batchStartIdx, batchEndIdx, updateParticle); });
                     }
                     else
                     {
-                        doInBatches(static_cast<zb::SizeT>(numEntities),
-                                    [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT /* iBatch */,
-                                                                              const zb::SizeT batchStartIdx,
-                                                                              const zb::SizeT batchEndIdx)
+                        doInBatches(static_cast<za::SizeT>(numEntities),
+                                    [&] [[gnu::always_inline, gnu::flatten]] (const za::SizeT /* iBatch */,
+                                                                              const za::SizeT batchStartIdx,
+                                                                              const za::SizeT batchEndIdx)
                         {
                             particlesSoA.withSubRange<1, 2>(batchStartIdx,
                                                             batchEndIdx,
@@ -621,12 +621,12 @@ int main()
                 }
                 else
                 {
-                    doInBatches(static_cast<zb::SizeT>(numEntities),
-                                [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT /* iBatch */,
-                                                                          const zb::SizeT batchStartIdx,
-                                                                          const zb::SizeT batchEndIdx)
+                    doInBatches(static_cast<za::SizeT>(numEntities),
+                                [&] [[gnu::always_inline, gnu::flatten]] (const za::SizeT /* iBatch */,
+                                                                          const za::SizeT batchStartIdx,
+                                                                          const za::SizeT batchEndIdx)
                     {
-                        for (zb::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                        for (za::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         {
                             ParticleAoS& p = particlesAoS[i];
 
@@ -673,25 +673,25 @@ int main()
 #endif
             };
 
-            if (ImGui::Combo("Batch type", reinterpret_cast<int*>(&batchType), batchTypeItems, zb::getArraySize(batchTypeItems)))
+            if (ImGui::Combo("Batch type", reinterpret_cast<int*>(&batchType), batchTypeItems, za::getArraySize(batchTypeItems)))
                 clearSamples();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
             if (ImGui::Combo("Autobatch type",
                              reinterpret_cast<int*>(&autobatchType),
                              batchTypeItems,
-                             zb::getArraySize(batchTypeItems)))
+                             za::getArraySize(batchTypeItems)))
             {
                 clearSamples();
                 window.setAutoBatchMode(static_cast<za::RenderTarget::AutoBatchMode>(autobatchType));
             }
 
             {
-                const zb::U64 step = 1u;
+                const za::U64 step = 1u;
                 ImGui::SetNextItemWidth(172.f);
                 if (ImGui::InputScalar("Autobatch Vertex Threshold", ImGuiDataType_U64, &autoBatchVertexThreshold, &step))
                     window.setAutoBatchVertexThreshold(
-                        static_cast<zb::SizeT>(zb::max(autoBatchVertexThreshold, zb::U64{1024u})));
+                        static_cast<za::SizeT>(za::max(autoBatchVertexThreshold, za::U64{1024u})));
             }
             ImGui::EndDisabled();
 
@@ -702,11 +702,11 @@ int main()
             ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Use OOP", &useOOP))
-                populateParticles(static_cast<zb::SizeT>(numEntities));
+                populateParticles(static_cast<za::SizeT>(numEntities));
 
 
             if (ImGui::Checkbox("Use SoA", &useSoA))
-                populateParticles(static_cast<zb::SizeT>(numEntities));
+                populateParticles(static_cast<za::SizeT>(numEntities));
 
             ImGui::Checkbox("Unified SoA processing", &unifiedSoAProcessing);
             ImGui::Checkbox("Destroy/recreate particles", &destroyParticles);
@@ -714,17 +714,17 @@ int main()
             ImGui::Checkbox("Draw step", &drawStep);
 
             {
-                const zb::U64 step = 1u;
+                const za::U64 step = 1u;
                 ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
             }
-            nWorkers = zb::clamp(nWorkers, zb::U64{2u}, nMaxWorkers);
+            nWorkers = za::clamp(nWorkers, za::U64{2u}, nMaxWorkers);
 
             ImGui::NewLine();
 
             ImGui::Text("Number of entities:");
 
             if (ImGui::InputInt("##InputInt", &numEntities))
-                populateParticles(static_cast<zb::SizeT>(numEntities));
+                populateParticles(static_cast<za::SizeT>(numEntities));
 
             ImGui::NewLine();
 
@@ -734,7 +734,7 @@ int main()
                                  samples.data(),
                                  static_cast<int>(samples.capacity()),
                                  static_cast<int>(samples.insertionIndex()),
-                                 (zb::toString(samples.getAverageAs<double>()) + unit).cStr(),
+                                 (za::toString(samples.getAverageAs<double>()) + unit).cStr(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});
@@ -761,7 +761,7 @@ int main()
             const za::Rect2f& textureRect = spriteTextureRects[0];
             const auto        origin      = textureRect.size / 2.f;
 
-            const auto nParticles = static_cast<zb::SizeT>(numEntities);
+            const auto nParticles = static_cast<za::SizeT>(numEntities);
 
             const auto makeParticleSprite =
                 [&] [[gnu::always_inline, gnu::flatten]] (const za::Vec2f position, const float scale, const float rotation)
@@ -778,12 +778,12 @@ int main()
 
             // Iterates over non-OOP particles, hoisting the SoA/AoS branch outside the inner loop
             const auto forEachNonOOPParticle =
-                [&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT startIdx, const zb::SizeT endIdx, auto&& fn)
+                [&] [[gnu::always_inline, gnu::flatten]] (const za::SizeT startIdx, const za::SizeT endIdx, auto&& fn)
 
             {
                 if (useSoA)
                 {
-                    for (zb::SizeT i = startIdx; i < endIdx; ++i)
+                    for (za::SizeT i = startIdx; i < endIdx; ++i)
                         particlesSoA.withNth<0, 3, 7>(i,
                                                       [&] [[gnu::always_inline, gnu::flatten]] (const auto& position,
                                                                                                 const auto& scale,
@@ -793,7 +793,7 @@ int main()
                 }
                 else
                 {
-                    for (zb::SizeT i = startIdx; i < endIdx; ++i)
+                    for (za::SizeT i = startIdx; i < endIdx; ++i)
                     {
                         const ParticleAoS& p = particlesAoS[i];
                         fn(makeParticleSprite(p.position, p.scale, p.rotation));
@@ -804,7 +804,7 @@ int main()
             if (useOOP)
             {
                 // OOP particles always draw directly to window (no batching/locked states)
-                for (zb::SizeT i = 0u; i < nParticles; ++i)
+                for (za::SizeT i = 0u; i < nParticles; ++i)
                     entities[i]->draw(textureAtlas.getTexture(), window);
             }
             else if (batchType == BatchType::Disabled)
@@ -842,7 +842,7 @@ int main()
                         batch.clear();
 
                     doInBatches(nParticles,
-                                [&](const zb::SizeT iBatch, const zb::SizeT batchStartIdx, const zb::SizeT batchEndIdx)
+                                [&](const za::SizeT iBatch, const za::SizeT batchStartIdx, const za::SizeT batchEndIdx)
                     {
                         forEachNonOOPParticle(batchStartIdx,
                                               batchEndIdx,
@@ -861,7 +861,7 @@ int main()
                 else if (batchType == BatchType::GPUStorage)
                 {
                     // Must reserve in advance as reserving is not thread-safe
-                    for (zb::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
+                    for (za::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
                         gpuDrawableBatches[iBatch].reserveQuads(nParticles / nWorkers * 2u);
 
                     doMultithreadedDraw(gpuDrawableBatches);

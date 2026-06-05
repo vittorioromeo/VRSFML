@@ -10,10 +10,10 @@
 
 #include "Zancle/Audio/ChannelMap.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -66,10 +66,10 @@ public:
     /// \param channelCount Number of channels in the sound
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
-    /// \return Output sound file on success, `zb::nullOpt` otherwise
+    /// \return Output sound file on success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<OutputSoundFile> openFromFile(
+    [[nodiscard]] static za::Optional<OutputSoundFile> openFromFile(
         const Path&       filename,
         unsigned int      sampleRate,
         unsigned int      channelCount,
@@ -86,7 +86,7 @@ public:
     /// \param count       Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const zb::I16* samples, zb::U64 count);
+    void write(const za::I16* samples, za::U64 count);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -94,13 +94,13 @@ public:
     /// \brief Constructor from writer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit OutputSoundFile(zb::PassKey<OutputSoundFile>&&, zb::UniquePtr<SoundFileWriter>&& writer);
+    [[nodiscard]] explicit OutputSoundFile(za::PassKey<OutputSoundFile>&&, za::UniquePtr<SoundFileWriter>&& writer);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
+    za::UniquePtr<SoundFileWriter> m_writer; //!< Writer that handles I/O on the file's format
 };
 
 } // namespace za
@@ -128,7 +128,7 @@ private:
 /// while (...)
 /// {
 ///     // Read or generate audio samples from your custom source
-///     std::vector<zb::I16> samples = ...;
+///     std::vector<za::I16> samples = ...;
 ///
 ///     // Write them to the file
 ///     file.write(samples.data(), samples.size());

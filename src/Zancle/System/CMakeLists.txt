@@ -1,40 +1,52 @@
-set(BASE_INCROOT ${PROJECT_SOURCE_DIR}/include/ZancleBase)
-set(BASE_SRCROOT ${PROJECT_SOURCE_DIR}/src/ZancleBase)
+set(UTILITY_MODULES
+    Base
+    Trait
+    Math
+    Diagnostic
+    Vocabulary
+    Container
+    Algorithm
+    String
+    Geometry
+    Chrono
+    Concurrency
+    Fmt
+    IO
+    Scn
+    Err
+    Lifetime
+    Mixin
+)
 
-file(GLOB_RECURSE SRC_BASE CONFIGURE_DEPENDS "${BASE_INCROOT}/*.hpp"  "${BASE_SRCROOT}/*.hpp" "${BASE_SRCROOT}/*.cpp")
+set(SRC "")
+foreach(mod ${UTILITY_MODULES})
+    set(MOD_INCROOT ${PROJECT_SOURCE_DIR}/include/Zancle/${mod})
+    set(MOD_SRCROOT ${PROJECT_SOURCE_DIR}/src/Zancle/${mod})
 
-set(INCROOT ${PROJECT_SOURCE_DIR}/include/Zancle/System)
-set(SRCROOT ${PROJECT_SOURCE_DIR}/src/Zancle/System)
+    file(GLOB_RECURSE MOD_SRC CONFIGURE_DEPENDS
+        "${MOD_INCROOT}/*.hpp"
+        "${MOD_INCROOT}/*.inl"
+        "${MOD_SRCROOT}/*.hpp"
+        "${MOD_SRCROOT}/*.inl"
+        "${MOD_SRCROOT}/*.cpp"
+    )
 
-file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
+    # Files under any `Unity/` subdirectory are unity-build bundles included
+    # by sibling `*Unity.cpp` host translation units, not compiled standalone.
+    list(FILTER MOD_SRC EXCLUDE REGEX "/Unity/")
 
-list(APPEND SRC ${SRC_BASE})
-# list(APPEND SRC ${PROJECT_SOURCE_DIR}/tracy/public/tracy/Tracy.hpp)
-# include_directories(${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
-# add_definitions(-include Tracy.hpp)
-# add_definitions(-DTRACY_ENABLE)
+    list(APPEND SRC ${MOD_SRC})
+endforeach()
 
 if(ZA_ENABLE_PCH)
     list(APPEND SRC ${PROJECT_SOURCE_DIR}/src/Zancle/PCH/PCH.cpp)
 endif()
 
-# add platform specific sources
-if(ZA_OS_WINDOWS)
-    file(GLOB PLATFORM_SRC CONFIGURE_DEPENDS "${SRCROOT}/Win32/*.cpp" "${SRCROOT}/Win32/*.hpp" "${SRCROOT}/Win32/*.inl")
-else()
-    file(GLOB PLATFORM_SRC CONFIGURE_DEPENDS "${SRCROOT}/Unix/*.cpp" "${SRCROOT}/Unix/*.hpp" "${SRCROOT}/Unix/*.inl")
-
-    if(ZA_OS_ANDROID)
-        file(GLOB ANDROID_SRC CONFIGURE_DEPENDS "${SRCROOT}/Android/*.cpp" "${SRCROOT}/Android/*.hpp" "${SRCROOT}/Android/*.inl")
-        list(APPEND PLATFORM_SRC ANDROID_SRC)
-    endif()
-endif()
-
 find_package(Threads REQUIRED)
 
-# define the zancle-system target
+# define the zancle-system target (aggregates all utility modules)
 zancle_add_library(System
-                 SOURCES ${SRC} ${PLATFORM_SRC}
+                 SOURCES ${SRC}
                  DEPENDENCIES "Dependencies.cmake.in")
 
 # moodycamel concurrent queue sources

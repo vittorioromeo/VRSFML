@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct MainBombStorage
 {
-    ankerl::unordered_dense::map<zb::SizeT, zb::SizeT> bombIdxToCatIdx;
+    ankerl::unordered_dense::map<za::SizeT, za::SizeT> bombIdxToCatIdx;
 };

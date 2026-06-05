@@ -13,11 +13,11 @@
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za
@@ -79,7 +79,7 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     ~GLVAOGroup()
     {
-        ZB_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         const unsigned int glContextId = WindowContext::getActiveThreadLocalGlContextId();
 
         auto* it = perContextVAOIds.find(glContextId);
@@ -115,7 +115,7 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void bind() const
     {
-        ZB_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         const unsigned int glContextId = WindowContext::getActiveThreadLocalGlContextId();
 
         const auto* it = perContextVAOIds.find(glContextId);
@@ -132,7 +132,7 @@ struct GLVAOGroup
             if (id == 0u)
             {
                 priv::errMsg("Failed to create a vertex array object");
-                zb::abort();
+                za::abort();
             }
 
             auto res = perContextVAOIds.try_emplace(glContextId, id);
@@ -162,7 +162,7 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] unsigned int getId() const
     {
-        ZB_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         const unsigned int glContextId = WindowContext::getActiveThreadLocalGlContextId();
 
         const auto* it = perContextVAOIds.find(glContextId);

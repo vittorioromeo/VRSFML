@@ -9,16 +9,16 @@
 
 #include "Zancle/Audio/ChannelMap.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathUtils.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathUtils.hpp"
 
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <vorbis/vorbisenc.h>
 
@@ -32,8 +32,8 @@ namespace za::priv
 struct SoundFileWriterOgg::Impl
 {
     unsigned int          channelCount{};  //!< Channel count of the sound being written
-    zb::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
-    zb::Optional<OutFile> file;            //!< Output file (empty before `open()`)
+    za::SizeT             remapTable[8]{}; //!< Table we use to remap source to target channel order
+    za::Optional<OutFile> file;            //!< Output file (empty before `open()`)
     ogg_stream_state      ogg{};           //!< OGG stream
     vorbis_info           vorbis{};        //!< Vorbis handle
     vorbis_dsp_state      state{};         //!< Current encoding state
@@ -129,8 +129,8 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
 
     // Build the remap table
     for (auto i = 0u; i < channelCount; ++i)
-        m_impl->remapTable[i] = static_cast<zb::SizeT>(
-            zb::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
+        m_impl->remapTable[i] = static_cast<za::SizeT>(
+            za::find(channelMap.begin(), channelMap.end(), targetChannelMap[i]) - channelMap.begin());
 
     // Save the channel count
     m_impl->channelCount = channelCount;
@@ -202,8 +202,8 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     ogg_page page;
     while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
     {
-        if (!m_impl->file->write(reinterpret_cast<const char*>(page.header), static_cast<zb::SizeT>(page.header_len)) ||
-            !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<zb::SizeT>(page.body_len)))
+        if (!m_impl->file->write(reinterpret_cast<const char*>(page.header), static_cast<za::SizeT>(page.header_len)) ||
+            !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<za::SizeT>(page.body_len)))
         {
             priv::errMsg("ogg/vorbis: header page write failed\n{}", priv::PathDebugFormatter{filename});
             close();
@@ -216,7 +216,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileWriterOgg::write(const zb::I16* samples, zb::U64 count)
+void SoundFileWriterOgg::write(const za::I16* samples, za::U64 count)
 {
     // Vorbis has issues with buffers that are too large, so we ask for 64K
     constexpr int bufferSize = 65'536;
@@ -228,10 +228,10 @@ void SoundFileWriterOgg::write(const zb::I16* samples, zb::U64 count)
     {
         // Prepare a buffer to hold our samples
         float** buffer = vorbis_analysis_buffer(&m_impl->state, bufferSize);
-        ZB_ASSERT(buffer != nullptr && "Vorbis buffer failed to allocate");
+        ZA_ASSERT(buffer != nullptr && "Vorbis buffer failed to allocate");
 
         // Write the samples to the buffer, converted to float and remapped to target channels
-        for (int i = 0; i < zb::min(frameCount, bufferSize); ++i)
+        for (int i = 0; i < za::min(frameCount, bufferSize); ++i)
         {
             for (unsigned int j = 0; j < m_impl->channelCount; ++j)
                 buffer[j][i] = samples[m_impl->remapTable[j]] / 32'767.f;
@@ -240,7 +240,7 @@ void SoundFileWriterOgg::write(const zb::I16* samples, zb::U64 count)
         }
 
         // Tell the library how many samples we've written
-        vorbis_analysis_wrote(&m_impl->state, zb::min(frameCount, bufferSize));
+        vorbis_analysis_wrote(&m_impl->state, za::min(frameCount, bufferSize));
 
         frameCount -= bufferSize;
 
@@ -276,8 +276,8 @@ void SoundFileWriterOgg::flushBlocks()
             ogg_page page;
             while (ogg_stream_flush(&m_impl->ogg, &page) > 0)
             {
-                if (!m_impl->file->write(reinterpret_cast<const char*>(page.header), static_cast<zb::SizeT>(page.header_len)) ||
-                    !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<zb::SizeT>(page.body_len)))
+                if (!m_impl->file->write(reinterpret_cast<const char*>(page.header), static_cast<za::SizeT>(page.header_len)) ||
+                    !m_impl->file->write(reinterpret_cast<const char*>(page.body), static_cast<za::SizeT>(page.body_len)))
                 {
                     priv::errMsg("ogg/vorbis: page write failed; output truncated");
                     vorbis_block_clear(&block);

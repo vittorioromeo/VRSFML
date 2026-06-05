@@ -1,37 +1,37 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/RectUtils.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/RectUtils.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 TEMPLATE_TEST_CASE("[System] za::Rect2", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Rect2<TestType>));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Rect2<TestType>)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Rect2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Rect2<TestType>, za::Rect2<TestType>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Rect2<TestType>)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Rect2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Rect2<TestType>, za::Rect2<TestType>));
     }
 
     SECTION("Construction")
@@ -84,7 +84,7 @@ TEMPLATE_TEST_CASE("[System] za::Rect2", "", int, float)
 
         const auto intersectionResult = za::findIntersection(rectangle, intersectingRectangle);
         REQUIRE(intersectionResult.hasValue());
-        ZB_ASSERT(*intersectionResult == za::Rect2<TestType>({5, 5}, {5, 5}));
+        ZA_ASSERT(*intersectionResult == za::Rect2<TestType>({5, 5}, {5, 5}));
 
         constexpr za::Rect2<TestType> nonIntersectingRectangle({-5, -5}, {5, 5});
         CHECK_FALSE(za::findIntersection(rectangle, nonIntersectingRectangle).hasValue());

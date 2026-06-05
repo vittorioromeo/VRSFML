@@ -12,16 +12,16 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
-#include "ZancleBase/Scn/ScnString.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
+#include "Zancle/Scn/ScnString.hpp"
+#include "Zancle/String/String.hpp"
 
 
-constexpr zb::U8 clientAudioData   = 1;
-constexpr zb::U8 clientEndOfStream = 2;
+constexpr za::U8 clientAudioData   = 1;
+constexpr za::U8 clientEndOfStream = 2;
 
 
 ////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
     ~NetworkRecorder() override
     {
         if (!stop())
-            zb::printErrLn("Failed to stop network recorder on destruction");
+            za::printErrLn("Failed to stop network recorder on destruction");
     }
 
 private:
@@ -67,7 +67,7 @@ private:
 
         if (m_socket->connect(m_host, m_port) == za::Socket::Status::Done)
         {
-            zb::printLn("Connected to server {}", za::IpAddressUtils::toString(m_host));
+            za::printLn("Connected to server {}", za::IpAddressUtils::toString(m_host));
             return true;
         }
 
@@ -79,12 +79,12 @@ private:
     /// \see SoundRecorder::onProcessSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) override
+    [[nodiscard]] bool onProcessSamples(const za::I16* samples, za::SizeT sampleCount) override
     {
         // Pack the audio samples into a network packet
         za::Packet packet;
         packet << clientAudioData;
-        packet.append(samples, sampleCount * sizeof(zb::I16));
+        packet.append(samples, sampleCount * sizeof(za::I16));
 
         // Send the audio packet to the server
         return m_socket->send(packet) == za::Socket::Status::Done;
@@ -102,7 +102,7 @@ private:
 
         if (m_socket->send(packet) != za::Socket::Status::Done)
         {
-            zb::printErrLn("Failed to send end-of-stream packet");
+            za::printErrLn("Failed to send end-of-stream packet");
             return false;
         }
 
@@ -118,7 +118,7 @@ private:
     ////////////////////////////////////////////////////////////
     za::IpAddress               m_host;   ///< Address of the remote host
     unsigned short              m_port;   ///< Remote port
-    zb::Optional<za::TcpSocket> m_socket; ///< Socket used to communicate with the server (created in onStart)
+    za::Optional<za::TcpSocket> m_socket; ///< Socket used to communicate with the server (created in onStart)
 };
 
 
@@ -130,13 +130,13 @@ private:
 void doClient(za::CaptureDevice& captureDevice, unsigned short port)
 {
     // Ask for server address
-    zb::Optional<za::IpAddress> server;
+    za::Optional<za::IpAddress> server;
     do
     {
-        zb::print("Type address or name of the server to connect to: ");
+        za::print("Type address or name of the server to connect to: ");
 
-        zb::String addressStr;
-        (void)zb::scnStdinInto(addressStr);
+        za::String addressStr;
+        (void)za::scnStdinInto(addressStr);
         server = za::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
@@ -144,20 +144,20 @@ void doClient(za::CaptureDevice& captureDevice, unsigned short port)
     NetworkRecorder recorder(server.value(), port);
 
     // Wait for user input...
-    zb::scnStdinIgnoreLine();
-    zb::print("Press enter to start recording audio");
-    zb::scnStdinIgnoreLine();
+    za::scnStdinIgnoreLine();
+    za::print("Press enter to start recording audio");
+    za::scnStdinIgnoreLine();
 
     // Start capturing audio data
     if (!recorder.start(captureDevice, 44'100))
     {
-        zb::printErrLn("Failed to start recorder");
+        za::printErrLn("Failed to start recorder");
         return;
     }
 
-    zb::print("Recording... press enter to stop");
-    zb::scnStdinIgnoreLine();
+    za::print("Recording... press enter to stop");
+    za::scnStdinIgnoreLine();
 
     if (!recorder.stop())
-        zb::printErrLn("Failed to stop network recorder");
+        za::printErrLn("Failed to stop network recorder");
 }

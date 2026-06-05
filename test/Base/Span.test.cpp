@@ -1,44 +1,44 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 TEST_CASE("[Base] Base/Span.hpp")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Span<int>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Span<int>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Span<int>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Span<int>));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Span<int>)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Span<int>));
-        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Span<int>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Span<int>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Span<int>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Span<int>, zb::Span<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Span<int>)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Span<int>));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Span<int>, za::Span<int>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Span<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Span<int>));
     }
 
     SECTION("Structured bindings")
     {
-        zb::Span<int> span{nullptr, 0u};
+        za::Span<int> span{nullptr, 0u};
 
         auto [data, size] = span;
 
@@ -46,14 +46,14 @@ TEST_CASE("[Base] Base/Span.hpp")
         CHECK(size == 0u);
     }
 
-    SECTION("Range constructor from zb::Vector")
+    SECTION("Range constructor from za::Vector")
     {
-        zb::Vector<int> vec;
+        za::Vector<int> vec;
         vec.pushBack(10);
         vec.pushBack(20);
         vec.pushBack(30);
 
-        zb::Span<int> span{vec};
+        za::Span<int> span{vec};
 
         CHECK(span.data() == vec.data());
         CHECK(span.size() == 3u);
@@ -64,30 +64,30 @@ TEST_CASE("[Base] Base/Span.hpp")
 
     SECTION("Range constructor const-correctness")
     {
-        zb::Vector<int> vec;
+        za::Vector<int> vec;
         vec.pushBack(1);
         vec.pushBack(2);
 
-        const zb::Vector<int>& cvec = vec;
+        const za::Vector<int>& cvec = vec;
 
-        zb::Span<const int> cspan{cvec};
+        za::Span<const int> cspan{cvec};
         CHECK(cspan.data() == cvec.data());
         CHECK(cspan.size() == 2u);
 
-        zb::Span<const int> cspan2{vec};
+        za::Span<const int> cspan2{vec};
         CHECK(cspan2.size() == 2u);
 
         // Constructing a non-const Span from a non-const range is allowed.
-        STATIC_CHECK(ZB_IS_CONSTRUCTIBLE(zb::Span<int>, zb::Vector<int>&));
+        STATIC_CHECK(ZA_IS_CONSTRUCTIBLE(za::Span<int>, za::Vector<int>&));
 
         // Constructing a non-const Span from a const range must be rejected.
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(zb::Span<int>, const zb::Vector<int>&));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Span<int>, const za::Vector<int>&));
 
         // Constructing a const Span from either is allowed.
-        STATIC_CHECK(ZB_IS_CONSTRUCTIBLE(zb::Span<const int>, zb::Vector<int>&));
-        STATIC_CHECK(ZB_IS_CONSTRUCTIBLE(zb::Span<const int>, const zb::Vector<int>&));
+        STATIC_CHECK(ZA_IS_CONSTRUCTIBLE(za::Span<const int>, za::Vector<int>&));
+        STATIC_CHECK(ZA_IS_CONSTRUCTIBLE(za::Span<const int>, const za::Vector<int>&));
 
         // Types lacking .data()/.size() must not match the range constructor.
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(zb::Span<int>, int));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Span<int>, int));
     }
 }

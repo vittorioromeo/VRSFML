@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "ParticleType.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/GetArraySize.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -206,7 +206,7 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatEyeLid2,
     };
 
-    static constexpr auto nEyeLidRects = zb::getArraySize(&MainAtlasRects::eyeLidRects);
+    static constexpr auto nEyeLidRects = za::getArraySize(&MainAtlasRects::eyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (white)
@@ -221,7 +221,7 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatWhiteEyeLid2,
     };
 
-    static constexpr auto nWhiteEyeLidRects = zb::getArraySize(&MainAtlasRects::whiteEyeLidRects);
+    static constexpr auto nWhiteEyeLidRects = za::getArraySize(&MainAtlasRects::whiteEyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (dark)
@@ -236,7 +236,7 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatDarkEyeLid2,
     };
 
-    static constexpr auto nDarkEyeLidRects = zb::getArraySize(&MainAtlasRects::darkEyeLidRects);
+    static constexpr auto nDarkEyeLidRects = za::getArraySize(&MainAtlasRects::darkEyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking (gray)
@@ -251,7 +251,7 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatGrayEyeLid2,
     };
 
-    static constexpr auto nGrayEyeLidRects = zb::getArraySize(&MainAtlasRects::grayEyeLidRects);
+    static constexpr auto nGrayEyeLidRects = za::getArraySize(&MainAtlasRects::grayEyeLidRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: ear flapping
@@ -266,7 +266,7 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatEars0,
     };
 
-    static constexpr auto nEarRects = zb::getArraySize(&MainAtlasRects::earRects);
+    static constexpr auto nEarRects = za::getArraySize(&MainAtlasRects::earRects);
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: yawning
@@ -287,7 +287,7 @@ struct [[nodiscard]] MainAtlasRects
         &txrCatYawn0,
     };
 
-    static constexpr auto nYawnRects = zb::getArraySize(&MainAtlasRects::catYawnRects);
+    static constexpr auto nYawnRects = za::getArraySize(&MainAtlasRects::catYawnRects);
 
     ///////////////////////////////////////////////////////////
     const za::Rect2f particleRects[nParticleTypes] = {

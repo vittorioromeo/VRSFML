@@ -26,20 +26,20 @@
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Window.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -238,7 +238,7 @@ namespace
 [[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(const unsigned int glTextureHandle)
 {
     ImTextureID textureID{};
-    ZB_MEMCPY(&textureID, &glTextureHandle, sizeof(unsigned int));
+    ZA_MEMCPY(&textureID, &glTextureHandle, sizeof(unsigned int));
     return textureID;
 }
 
@@ -298,7 +298,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     TriggerInfo  lTriggerInfo;
     TriggerInfo  rTriggerInfo;
 
-    zb::Array<zb::Optional<Cursor>, ImGuiMouseCursor_COUNT> mouseCursors;
+    za::Array<za::Optional<Cursor>, ImGuiMouseCursor_COUNT> mouseCursors;
 
     bool wantTextInput{false};
 
@@ -343,7 +343,7 @@ struct [[nodiscard]] ImGuiContext::Impl
         {
             // Owned mode: optionally seed the freshly-allocated atlas with the default font.
             priv::errMsg("Failed to load default ImGui font");
-            zb::abort();
+            za::abort();
         }
 
         // tell ImGui which features we support
@@ -413,7 +413,7 @@ struct [[nodiscard]] ImGuiContext::Impl
         const bool passedThreshold            = (pos > threshold) == (maxThreshold > threshold);
         const bool passedThresholdAndHasFocus = passedThreshold && windowHasFocus;
 
-        io.AddKeyAnalogEvent(key, passedThresholdAndHasFocus, passedThresholdAndHasFocus ? zb::fabs(pos / 100.f) : 0.f);
+        io.AddKeyAnalogEvent(key, passedThresholdAndHasFocus, passedThresholdAndHasFocus ? za::fabs(pos / 100.f) : 0.f);
     }
 
     ////////////////////////////////////////////////////////////
@@ -479,7 +479,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     ////////////////////////////////////////////////////////////
     void loadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor::Type zancleCursorType)
     {
-        mouseCursors[static_cast<zb::SizeT>(imguiCursorType)] = Cursor::loadFromSystem(zancleCursorType);
+        mouseCursors[static_cast<za::SizeT>(imguiCursorType)] = Cursor::loadFromSystem(zancleCursorType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -636,7 +636,7 @@ struct [[nodiscard]] ImGuiContext::Impl
             return;
         }
 
-        const auto& cursorDesired = mouseCursors[static_cast<zb::SizeT>(cursor)];
+        const auto& cursorDesired = mouseCursors[static_cast<za::SizeT>(cursor)];
 
         theWindow.setMouseCursorVisible(true);
         theWindow.setMouseCursor(cursorDesired.hasValue() ? *cursorDesired : *cursorArrow);
@@ -710,7 +710,7 @@ private:
         priv::ImGui_ImplOpenGL3_NewFrame();
         ::ImGui::NewFrame();
 
-        ZB_ASSERT(io.Fonts->Fonts.Size > 0);
+        ZA_ASSERT(io.Fonts->Fonts.Size > 0);
     }
 };
 
@@ -742,50 +742,50 @@ const void* ImGuiContext::getNativeImGuiContext() const
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setActiveJoystickId(unsigned int newJoystickId)
 {
-    ZB_ASSERT(newJoystickId < Joystick::MaxCount);
+    ZA_ASSERT(newJoystickId < Joystick::MaxCount);
     m_impl->joystickId = newJoystickId;
 }
 
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setJoystickDPadThreshold(float threshold)
 {
-    ZB_ASSERT(threshold >= 0.f && threshold <= 100.f);
+    ZA_ASSERT(threshold >= 0.f && threshold <= 100.f);
     m_impl->dPadInfo.threshold = threshold;
 }
 
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setJoystickLStickThreshold(float threshold)
 {
-    ZB_ASSERT(threshold >= 0.f && threshold <= 100.f);
+    ZA_ASSERT(threshold >= 0.f && threshold <= 100.f);
     m_impl->lStickInfo.threshold = threshold;
 }
 
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setJoystickRStickThreshold(float threshold)
 {
-    ZB_ASSERT(threshold >= 0.f && threshold <= 100.f);
+    ZA_ASSERT(threshold >= 0.f && threshold <= 100.f);
     m_impl->rStickInfo.threshold = threshold;
 }
 
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setJoystickLTriggerThreshold(float threshold)
 {
-    ZB_ASSERT(threshold >= -100.f && threshold <= 100.f);
+    ZA_ASSERT(threshold >= -100.f && threshold <= 100.f);
     m_impl->lTriggerInfo.threshold = threshold;
 }
 
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setJoystickRTriggerThreshold(float threshold)
 {
-    ZB_ASSERT(threshold >= -100.f && threshold <= 100.f);
+    ZA_ASSERT(threshold >= -100.f && threshold <= 100.f);
     m_impl->rTriggerInfo.threshold = threshold;
 }
 
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setJoystickMapping(int key, unsigned int joystickButton)
 {
-    ZB_ASSERT(joystickButton < Joystick::ButtonCount);
-    ZB_ASSERT(key >= ImGuiKey_NamedKey_BEGIN && key < ImGuiKey_NamedKey_END);
+    ZA_ASSERT(joystickButton < Joystick::ButtonCount);
+    ZA_ASSERT(key >= ImGuiKey_NamedKey_BEGIN && key < ImGuiKey_NamedKey_END);
 
     m_impl->joystickMapping[joystickButton] = static_cast<ImGuiKey>(key);
 }
@@ -930,7 +930,7 @@ const char* getClipboardTextFn(void* /* userData */)
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
-    m_impl{zb::makeUnique<Impl>(loadDefaultFont,
+    m_impl{za::makeUnique<Impl>(loadDefaultFont,
                                 /* sharedFontAtlas */ nullptr,
                                 /* claimSharedAtlasOwnership */ false,
                                 &setClipboardTextFn,
@@ -942,7 +942,7 @@ ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(ImFontAtlas& sharedFontAtlas, const bool claimOwnership) :
-    m_impl{zb::makeUnique<Impl>(/* loadDefaultFont */ false, &sharedFontAtlas, claimOwnership, &setClipboardTextFn, &getClipboardTextFn)}
+    m_impl{za::makeUnique<Impl>(/* loadDefaultFont */ false, &sharedFontAtlas, claimOwnership, &setClipboardTextFn, &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
 }
@@ -951,7 +951,7 @@ ImGuiContext::ImGuiContext(ImFontAtlas& sharedFontAtlas, const bool claimOwnersh
 ////////////////////////////////////////////////////////////
 ImGuiContext ImGuiContext::createOwningAtlas(ImFontAtlas& atlas)
 {
-    ZB_ASSERT(atlas.OwnerContext == nullptr &&
+    ZA_ASSERT(atlas.OwnerContext == nullptr &&
               "ImGuiContext::createOwningAtlas: another context already drives this atlas. "
               "Use ImGuiContext::createSharingAtlas for additional contexts on the same atlas.");
 
@@ -962,7 +962,7 @@ ImGuiContext ImGuiContext::createOwningAtlas(ImFontAtlas& atlas)
 ////////////////////////////////////////////////////////////
 ImGuiContext ImGuiContext::createSharingAtlas(ImFontAtlas& atlas)
 {
-    ZB_ASSERT(atlas.OwnerContext != nullptr &&
+    ZA_ASSERT(atlas.OwnerContext != nullptr &&
               "ImGuiContext::createSharingAtlas: this atlas has no driver yet. "
               "Construct one via ImGuiContext::createOwningAtlas first.");
 
@@ -1129,7 +1129,7 @@ void ImGuiContext::drawLine(Vec2f a, Vec2f b, Color color, float thickness)
 {
     ::ImGui::SetCurrentContext(m_impl->imContext);
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
-    ZB_ASSERT(drawList != nullptr);
+    ZA_ASSERT(drawList != nullptr);
 
     const ImVec2 pos = ::ImGui::GetCursorScreenPos();
 
@@ -1145,7 +1145,7 @@ void ImGuiContext::drawRect(const Rect2f& rect, Color color, float rounding, int
 {
     ::ImGui::SetCurrentContext(m_impl->imContext);
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
-    ZB_ASSERT(drawList != nullptr);
+    ZA_ASSERT(drawList != nullptr);
 
     drawList->AddRect(getTopLeftAbsolute(rect),
                       getDownRightAbsolute(rect),
@@ -1161,7 +1161,7 @@ void ImGuiContext::drawRectFilled(const Rect2f& rect, Color color, float roundin
 {
     ::ImGui::SetCurrentContext(m_impl->imContext);
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
-    ZB_ASSERT(drawList != nullptr);
+    ZA_ASSERT(drawList != nullptr);
 
     drawList->AddRectFilled(getTopLeftAbsolute(rect),
                             getDownRightAbsolute(rect),

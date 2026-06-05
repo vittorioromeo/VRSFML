@@ -1,17 +1,17 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
@@ -102,58 +102,58 @@ TEST_CASE("[Base] Base/Optional.hpp")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIAL(Trivial));
-        STATIC_CHECK(!ZB_IS_TRIVIAL(NonTrivial));
+        STATIC_CHECK(ZA_IS_TRIVIAL(Trivial));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(NonTrivial));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Optional<NonTrivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Optional<NonTrivial>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Optional<Trivial>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::Optional<NonTrivial>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Optional<NonTrivialButRelocatable>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Optional<Trivial>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_RELOCATABLE(za::Optional<NonTrivial>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Optional<NonTrivialButRelocatable>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(MoveOnly));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(MoveOnly));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(MoveOnly));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(MoveOnly));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(MoveOnly));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(MoveOnly));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(MoveOnly));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(MoveOnly));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(MoveOnly));
 
 // Clang bug, see https://stackoverflow.com/questions/78885178
 #ifndef __clang__
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Optional<MoveOnly>));
 #endif
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(zb::Optional<MoveOnly>));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(zb::Optional<MoveOnly>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Optional<MoveOnly>));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Optional<MoveOnly>));
     }
 }
 

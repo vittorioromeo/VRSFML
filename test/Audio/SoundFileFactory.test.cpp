@@ -9,16 +9,16 @@
 #include "Zancle/Audio/SoundFileReader.hpp"
 #include "Zancle/Audio/SoundFileWriter.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/InputStream.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/InputStream.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 
 namespace
@@ -31,16 +31,16 @@ struct NoopSoundFileReader : za::SoundFileReader
         return false;
     }
 
-    zb::Optional<Info> open(za::InputStream&) override
+    za::Optional<Info> open(za::InputStream&) override
     {
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    void seek(zb::U64) override
+    void seek(za::U64) override
     {
     }
 
-    zb::U64 read(zb::I16*, zb::U64) override
+    za::U64 read(za::I16*, za::U64) override
     {
         return 0;
     }
@@ -58,7 +58,7 @@ struct NoopSoundFileWriter : za::SoundFileWriter
         return false;
     }
 
-    void write(const zb::I16*, zb::U64) override
+    void write(const za::I16*, za::U64) override
     {
     }
 };
@@ -69,10 +69,10 @@ TEST_CASE("[Audio] za::SoundFileFactory")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::SoundFileFactory));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::SoundFileFactory));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::SoundFileFactory));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::SoundFileFactory));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::SoundFileFactory));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::SoundFileFactory));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::SoundFileFactory));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::SoundFileFactory));
     }
 
     SECTION("isReaderRegistered()")
@@ -115,7 +115,7 @@ TEST_CASE("[Audio] za::SoundFileFactory")
 
     SECTION("createReaderFromStream()")
     {
-        zb::Optional<za::FileInputStream> stream;
+        za::Optional<za::FileInputStream> stream;
 
         SECTION("flac")
         {

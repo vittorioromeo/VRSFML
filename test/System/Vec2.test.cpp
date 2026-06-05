@@ -1,23 +1,23 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Math/Sqrt.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsSame.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Math/Sqrt.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 using namespace za::Literals;
 
@@ -25,17 +25,17 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vec2<TestType>));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Vec2<TestType>)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Vec2<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Vec2<TestType>, za::Vec2<TestType>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Vec2<TestType>)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Vec2<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Vec2<TestType>, za::Vec2<TestType>));
     }
 
     SECTION("Construction")
@@ -69,9 +69,9 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
             CHECK(za::Vec2f::fromAngle(0, -360_deg) == za::Vec2f{0, 0});
 
             CHECK(za::Vec2f::fromAngle(1, 0_deg) == za::Vec2f{1, 0});
-            CHECK(za::Vec2f::fromAngle(1, 45_deg) == Approx(za::Vec2f(zb::sqrt(2.f) / 2.f, zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(1, 45_deg) == Approx(za::Vec2f(za::sqrt(2.f) / 2.f, za::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(1, 90_deg) == Approx(za::Vec2f{0, 1}));
-            CHECK(za::Vec2f::fromAngle(1, 135_deg) == Approx(za::Vec2f(-zb::sqrt(2.f) / 2.f, zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(1, 135_deg) == Approx(za::Vec2f(-za::sqrt(2.f) / 2.f, za::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(1, 180_deg) == Approx(za::Vec2f(-1, 0)));
             CHECK(za::Vec2f::fromAngle(1, 270_deg) == Approx(za::Vec2f(0, -1)));
             CHECK(za::Vec2f::fromAngle(1, 360_deg) == Approx(za::Vec2f{1, 0}));
@@ -81,9 +81,9 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
             CHECK(za::Vec2f::fromAngle(1, -360_deg) == Approx(za::Vec2f{1, 0}));
 
             CHECK(za::Vec2f::fromAngle(-1, 0_deg) == za::Vec2f(-1, 0));
-            CHECK(za::Vec2f::fromAngle(-1, 45_deg) == Approx(za::Vec2f(-zb::sqrt(2.f) / 2.f, -zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(-1, 45_deg) == Approx(za::Vec2f(-za::sqrt(2.f) / 2.f, -za::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(-1, 90_deg) == Approx(za::Vec2f(0, -1)));
-            CHECK(za::Vec2f::fromAngle(-1, 135_deg) == Approx(za::Vec2f(zb::sqrt(2.f) / 2.f, -zb::sqrt(2.f) / 2.f)));
+            CHECK(za::Vec2f::fromAngle(-1, 135_deg) == Approx(za::Vec2f(za::sqrt(2.f) / 2.f, -za::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(-1, 180_deg) == Approx(za::Vec2f{1, 0}));
             CHECK(za::Vec2f::fromAngle(-1, 270_deg) == Approx(za::Vec2f{0, 1}));
             CHECK(za::Vec2f::fromAngle(-1, 360_deg) == Approx(za::Vec2f(-1, 0)));
@@ -94,10 +94,10 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
 
             CHECK(za::Vec2f::fromAngle(4.2f, 0_deg) == za::Vec2f(4.2f, 0));
             CHECK(za::Vec2f::fromAngle(4.2f, 45_deg) ==
-                  Approx(za::Vec2f(4.2f * zb::sqrt(2.f) / 2.f, 4.2f * zb::sqrt(2.f) / 2.f)));
+                  Approx(za::Vec2f(4.2f * za::sqrt(2.f) / 2.f, 4.2f * za::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(4.2f, 90_deg) == Approx(za::Vec2f(0, 4.2f)));
             CHECK(za::Vec2f::fromAngle(4.2f, 135_deg) ==
-                  Approx(za::Vec2f(-4.2f * zb::sqrt(2.f) / 2.f, 4.2f * zb::sqrt(2.f) / 2.f)));
+                  Approx(za::Vec2f(-4.2f * za::sqrt(2.f) / 2.f, 4.2f * za::sqrt(2.f) / 2.f)));
             CHECK(za::Vec2f::fromAngle(4.2f, 180_deg) == Approx(za::Vec2f(-4.2f, 0)));
             CHECK(za::Vec2f::fromAngle(4.2f, 270_deg) == Approx(za::Vec2f(0, -4.2f)));
             CHECK(za::Vec2f::fromAngle(4.2f, 360_deg) == Approx(za::Vec2f(4.2f, 0)));
@@ -234,7 +234,7 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
             CHECK(x == 1);
             CHECK(y == 2);
 
-            STATIC_CHECK(ZB_IS_SAME(decltype(x), decltype(vec.x)));
+            STATIC_CHECK(ZA_IS_SAME(decltype(x), decltype(vec.x)));
 
             x = 3;
 
@@ -249,7 +249,7 @@ TEMPLATE_TEST_CASE("[System] za::Vec2", "", int, float)
             CHECK(x == 1);
             CHECK(y == 2);
 
-            STATIC_CHECK(ZB_IS_SAME(decltype(x), decltype(vec.x)));
+            STATIC_CHECK(ZA_IS_SAME(decltype(x), decltype(vec.x)));
 
             x = 3;
 

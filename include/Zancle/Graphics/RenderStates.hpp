@@ -13,7 +13,7 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ZA_GRAPHICS_API RenderStates
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     BlendMode   blendMode{};   //!< Blending mode
     StencilMode stencilMode{}; //!< Stencil mode

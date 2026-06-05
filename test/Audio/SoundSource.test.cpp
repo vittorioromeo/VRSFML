@@ -8,18 +8,18 @@
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/FloatMax.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Math/FloatMax.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 
 
 #define ZA_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                     \
@@ -37,7 +37,7 @@
     CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);    \
     CHECK(!(xSoundSource).isRelativeToListener());                     \
     CHECK((xSoundSource).getMinDistance() == 1.f);                     \
-    CHECK((xSoundSource).getMaxDistance() == ZB_FLOAT_MAX);            \
+    CHECK((xSoundSource).getMaxDistance() == ZA_FLOAT_MAX);            \
     CHECK((xSoundSource).getMinGain() == 0);                           \
     CHECK((xSoundSource).getMaxGain() == 1.f);                         \
     CHECK((xSoundSource).getAttenuation() == 1.f);                     \
@@ -54,13 +54,13 @@ TEST_CASE("[Audio] za::priv::MiniaudioSoundSource" * tst::skip(skipAudioDeviceTe
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::priv::MiniaudioSoundSource));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::priv::MiniaudioSoundSource));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::priv::MiniaudioSoundSource));
-        STATIC_CHECK(!ZB_IS_MOVE_CONSTRUCTIBLE(za::priv::MiniaudioSoundSource));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(za::priv::MiniaudioSoundSource));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::priv::MiniaudioSoundSource));
-        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(!ZA_IS_MOVE_CONSTRUCTIBLE(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::priv::MiniaudioSoundSource));
+        STATIC_CHECK(ZA_HAS_VIRTUAL_DESTRUCTOR(za::priv::MiniaudioSoundSource));
     }
 
     SECTION("Construction")

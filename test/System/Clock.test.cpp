@@ -1,15 +1,15 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Clock.hpp"
+#include "Zancle/Chrono/Clock.hpp"
 
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[System] za::Clock")
@@ -17,10 +17,10 @@ TEST_CASE("[System] za::Clock")
     SECTION("Type traits")
     {
         // cannot be trivially copiable/movable due to pimpl
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Clock));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Clock));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Clock));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Clock));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Clock));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Clock));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Clock));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Clock));
     }
 
     SECTION("Construction")

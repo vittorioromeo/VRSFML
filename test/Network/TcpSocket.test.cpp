@@ -6,27 +6,27 @@
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Network] za::TcpSocket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::TcpSocket));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::TcpSocket));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::TcpSocket));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::TcpSocket));
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::TcpSocket));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::TcpSocket));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::TcpSocket));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::TcpSocket));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::TcpSocket));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::TcpSocket));
     }
 
     SECTION("Factory construction")

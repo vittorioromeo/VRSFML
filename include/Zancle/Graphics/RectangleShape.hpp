@@ -12,9 +12,9 @@
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/Shape.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -69,7 +69,7 @@ public:
     ///         shapes, this number is always 4.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr zb::SizeT getPointCount() const
+    [[nodiscard, gnu::always_inline]] constexpr za::SizeT getPointCount() const
     {
         return 4u;
     }
@@ -87,7 +87,7 @@ public:
     /// \return `index`-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2f getPoint(zb::SizeT index) const;
+    [[nodiscard]] Vec2f getPoint(za::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the rectangle

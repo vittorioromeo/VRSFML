@@ -13,9 +13,9 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 namespace za
@@ -39,14 +39,14 @@ public:
     /// Creates a new top-level window described by
     /// `windowSettings` and attaches an OpenGL context to it.
     /// On failure (invalid settings, OS error, ...) returns
-    /// `zb::nullOpt`.
+    /// `za::nullOpt`.
     ///
     /// \param windowSettings Window creation parameters
     ///
-    /// \return The newly created window on success, `zb::nullOpt` on failure
+    /// \return The newly created window on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Window> create(const Settings& windowSettings);
+    [[nodiscard]] static za::Optional<Window> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a window wrapping an existing native control
@@ -63,10 +63,10 @@ public:
     /// \param handle          Platform-specific handle of the control to attach to
     /// \param contextSettings Additional settings for the underlying OpenGL context
     ///
-    /// \return The newly wrapped window on success, `zb::nullOpt` on failure
+    /// \return The newly wrapped window on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Window> create(WindowHandle handle, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static za::Optional<Window> create(WindowHandle handle, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -189,7 +189,7 @@ public:
     ///        impl
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(zb::PassKey<Window>&&,
+    [[nodiscard]] explicit Window(za::PassKey<Window>&&,
                                   WindowBase&&    windowBase,
                                   const Settings& windowSettings,
                                   unsigned int    bitsPerPixel);
@@ -202,7 +202,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace za
@@ -257,7 +257,7 @@ private:
 /// while (true)
 /// {
 ///     // Event processing
-///     while (const zb::Optional event = window.pollEvent())
+///     while (const za::Optional event = window.pollEvent())
 ///     {
 ///         // Request for closing the window
 ///         if (event->is<za::Event::Closed>())

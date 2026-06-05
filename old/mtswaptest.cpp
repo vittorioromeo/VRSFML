@@ -3,25 +3,25 @@
 //
 //
 // Get hardware constants
-inline const auto     nMaxWorkers   = static_cast<zb::U64>(zb::ThreadPool::getHardwareWorkerCount());
-inline constexpr auto cacheLineSize = static_cast<zb::SizeT>(zb::hardwareDestructiveInterferenceSize);
+inline const auto     nMaxWorkers   = static_cast<za::U64>(za::ThreadPool::getHardwareWorkerCount());
+inline constexpr auto cacheLineSize = static_cast<za::SizeT>(za::hardwareDestructiveInterferenceSize);
 
-zb::U64 nWorkers = nMaxWorkers;
+za::U64 nWorkers = nMaxWorkers;
 
-zb::ThreadPool pool(nMaxWorkers);
+za::ThreadPool pool(nMaxWorkers);
 
-void doInBatches(const zb::SizeT nParticlesTotal, auto&& f)
+void doInBatches(const za::SizeT nParticlesTotal, auto&& f)
 {
-    const zb::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
+    const za::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
 
-    std::latch latch{static_cast<zb::PtrDiffT>(nWorkers)};
+    std::latch latch{static_cast<za::PtrDiffT>(nWorkers)};
 
-    for (zb::SizeT i = 0u; i < nWorkers; ++i)
+    for (za::SizeT i = 0u; i < nWorkers; ++i)
     {
         pool.post([&, i]
         {
-            const zb::SizeT batchStartIdx = i * particlesPerBatch;
-            const zb::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+            const za::SizeT batchStartIdx = i * particlesPerBatch;
+            const za::SizeT batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
 
             f(i, batchStartIdx, batchEndIdx);
 
@@ -33,7 +33,7 @@ void doInBatches(const zb::SizeT nParticlesTotal, auto&& f)
 };
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT... Js>
+    template <za::SizeT... Js>
     void eraseIfBySwappingTestMT(auto& latch, auto& pool, auto&& f)
     {
         const auto  s    = getSize();
@@ -41,8 +41,8 @@ void doInBatches(const zb::SizeT nParticlesTotal, auto&& f)
 
         auto g = [this, s, f, &latch, &pred](auto& base)
         {
-            zb::SizeT n = s;
-            zb::SizeT i = 0u;
+            za::SizeT n = s;
+            za::SizeT i = 0u;
 
             // Process elements, swapping out removed ones.
             while (i < n)
@@ -58,8 +58,8 @@ void doInBatches(const zb::SizeT nParticlesTotal, auto&& f)
                 {
                     --n;
                 } while (n > i && f(pred[n]));
-                // (..., zb::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n]));
-                (base.data[i] = ZB_MOVE(base.data[n]));
+                // (..., za::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n]));
+                (base.data[i] = ZA_MOVE(base.data[n]));
 
                 // Do not increment `i`; check the new element at `i`.
                 ++i;

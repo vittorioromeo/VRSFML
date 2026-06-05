@@ -8,9 +8,9 @@
 #include "Zancle/Audio/CaptureDevice.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -23,8 +23,8 @@ int main()
     const unsigned short port = 2435;
 
     // Client or server ?
-    zb::print("Do you want to be a server ('s') or a client ('c')? ");
-    const char who = zb::scnStdin<char>().valueOr('c');
+    za::print("Do you want to be a server ('s') or a client ('c')? ");
+    const char who = za::scnStdin<char>().valueOr('c');
 
     if (who == 's')
     {
@@ -46,6 +46,6 @@ int main()
     }
 
     // Wait until the user presses 'enter' key
-    zb::printLn("Press enter to exit...");
-    zb::scnStdinIgnoreLine();
+    za::printLn("Press enter to exit...");
+    za::scnStdinIgnoreLine();
 }

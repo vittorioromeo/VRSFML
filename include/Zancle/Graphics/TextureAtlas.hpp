@@ -10,12 +10,12 @@
 
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/RectPacker.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/RectPacker.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -73,10 +73,10 @@ public:
     /// \param size    Width and height of the source pixel block
     /// \param padding Padding to leave around the image (each side)
     ///
-    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if the atlas is full
+    /// \return Texture rectangle of the inserted image, or `za::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Rect2f> add(const zb::U8* pixels, Vec2u size, Vec2u padding = {});
+    [[nodiscard]] za::Optional<Rect2f> add(const za::U8* pixels, Vec2u size, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Add an `za::Image` to the atlas
@@ -84,10 +84,10 @@ public:
     /// \param image   Source image (RGBA)
     /// \param padding Padding to leave around the image (each side)
     ///
-    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if the atlas is full
+    /// \return Texture rectangle of the inserted image, or `za::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Rect2f> add(const Image& image, Vec2u padding = {});
+    [[nodiscard]] za::Optional<Rect2f> add(const Image& image, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Add the contents of another `za::Texture` to the atlas
@@ -99,10 +99,10 @@ public:
     /// \param texture Source texture (will be downloaded first)
     /// \param padding Padding to leave around the image (each side)
     ///
-    /// \return Texture rectangle of the inserted image, or `zb::nullOpt` if the atlas is full
+    /// \return Texture rectangle of the inserted image, or `za::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Rect2f> add(const Texture& texture, Vec2u padding = {});
+    [[nodiscard]] za::Optional<Rect2f> add(const Texture& texture, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Access the underlying atlas texture (mutable)

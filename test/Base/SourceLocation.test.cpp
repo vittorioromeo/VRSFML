@@ -1,16 +1,16 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/SourceLocation.hpp"
+#include "Zancle/Base/SourceLocation.hpp"
 
-#include "ZancleBase/Builtin/Strcmp.hpp"
-#include "ZancleBase/Builtin/Strstr.hpp"
+#include "Zancle/Base/Strcmp.hpp"
+#include "Zancle/Base/Strstr.hpp"
 
 
 TEST_CASE("[Base] Base/SourceLocation.hpp")
 {
     SECTION("current() returns valid location")
     {
-        constexpr auto loc = zb::SourceLocation::current();
+        constexpr auto loc = za::SourceLocation::current();
 
         CHECK(loc.line() > 0);
         CHECK(loc.column() > 0);
@@ -21,29 +21,29 @@ TEST_CASE("[Base] Base/SourceLocation.hpp")
     SECTION("line() matches actual source line")
     {
         const auto lineBeforeCall = __LINE__;
-        const auto loc            = zb::SourceLocation::current();
+        const auto loc            = za::SourceLocation::current();
 
         CHECK(loc.line() == static_cast<unsigned int>(lineBeforeCall + 1));
     }
 
     SECTION("fileName() contains this test file name")
     {
-        constexpr auto loc = zb::SourceLocation::current();
+        constexpr auto loc = za::SourceLocation::current();
 
-        CHECK(ZB_STRSTR(loc.fileName(), "SourceLocation.test.cpp") != nullptr);
+        CHECK(ZA_STRSTR(loc.fileName(), "SourceLocation.test.cpp") != nullptr);
     }
 
     SECTION("functionName() is non-empty")
     {
-        constexpr auto loc = zb::SourceLocation::current();
+        constexpr auto loc = za::SourceLocation::current();
 
-        CHECK(ZB_STRCMP(loc.functionName(), "") != 0);
+        CHECK(ZA_STRCMP(loc.functionName(), "") != 0);
     }
 
     SECTION("consteval evaluation")
     {
         // Verify the builtin struct layout matches at compile time
-        static constexpr auto loc = zb::SourceLocation::current();
+        static constexpr auto loc = za::SourceLocation::current();
 
         STATIC_CHECK(loc.line() > 0);
         STATIC_CHECK(loc.fileName() != nullptr);
@@ -52,7 +52,7 @@ TEST_CASE("[Base] Base/SourceLocation.hpp")
 
     SECTION("propagation through function parameter default")
     {
-        const auto check = [](zb::SourceLocation loc = zb::SourceLocation::current()) { return loc; };
+        const auto check = [](za::SourceLocation loc = za::SourceLocation::current()) { return loc; };
 
         const auto callerLine = __LINE__;
         const auto loc        = check();

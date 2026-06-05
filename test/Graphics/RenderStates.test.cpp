@@ -6,32 +6,32 @@
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 TEST_CASE("[Graphics] za::RenderStates")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::RenderStates));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::RenderStates));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::RenderStates));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::RenderStates));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::RenderStates)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::RenderStates));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::RenderStates));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::RenderStates));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::RenderStates));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::RenderStates, za::RenderStates));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::RenderStates)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::RenderStates));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::RenderStates));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::RenderStates, za::RenderStates));
 
         STATIC_CHECK(sizeof(za::RenderStates) <= 128); // TODO P0: this is big...
     }

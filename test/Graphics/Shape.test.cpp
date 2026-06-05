@@ -8,16 +8,16 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 
 
 class TriangleShape : public za::Shape
@@ -41,13 +41,13 @@ TEST_CASE("[Graphics] za::Shape" * tst::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Shape));
-        STATIC_CHECK(ZB_IS_CONSTRUCTIBLE(za::Shape, za::Shape::Data));
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Shape));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Shape));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Shape));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Shape));
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::Shape));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Shape));
+        STATIC_CHECK(ZA_IS_CONSTRUCTIBLE(za::Shape, za::Shape::Data));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Shape));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Shape));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Shape));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Shape));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::Shape));
     }
 
     SECTION("Default constructor")

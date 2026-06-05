@@ -7,12 +7,12 @@
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/InputImpl.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
 #include "ZancleBase/Algorithm.hpp"
 #include "ZancleBase/Builtins/Memcpy.hpp"
-#include "ZancleBase/EnumArray.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Container/EnumArray.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #include <fcntl.h>
 #include <linux/input.h>
@@ -33,8 +33,8 @@ namespace
 {
 struct TouchSlot
 {
-    zb::Optional<unsigned int> oldId;
-    zb::Optional<unsigned int> id;
+    za::Optional<unsigned int> oldId;
+    za::Optional<unsigned int> id;
     za::Vector2i                 pos;
 };
 
@@ -42,8 +42,8 @@ std::recursive_mutex inputMutex; // threadsafe? maybe...
 za::Vector2i         mousePos;   // current mouse position
 
 std::vector<int> fileDescriptors; // list of open file descriptors for /dev/input
-zb::EnumArray<za::Mouse::Button, bool, za::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
-zb::EnumArray<za::Keyboard::Key, bool, za::Keyboard::KeyCount> keyMap{};   // track whether keys are down
+za::EnumArray<za::Mouse::Button, bool, za::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
+za::EnumArray<za::Keyboard::Key, bool, za::Keyboard::KeyCount> keyMap{};   // track whether keys are down
 
 int                    touchFd = -1;    // file descriptor we have seen MT events on; assumes only 1
 std::vector<TouchSlot> touchSlots;      // track the state of each touch "slot"
@@ -150,7 +150,7 @@ void initFileDescriptors()
     std::atexit(uninitFileDescriptors);
 }
 
-zb::Optional<za::Mouse::Button> toMouseButton(int code)
+za::Optional<za::Mouse::Button> toMouseButton(int code)
 {
     switch (code)
     {
@@ -166,7 +166,7 @@ zb::Optional<za::Mouse::Button> toMouseButton(int code)
             return za::Mouse::Button::Extra2;
 
         default:
-            return zb::nullOpt;
+            return za::nullOpt;
     }
 }
 
@@ -300,8 +300,8 @@ void pushEvent(const za::Event& event)
 TouchSlot& atSlot(int idx)
 {
     if (idx >= static_cast<int>(touchSlots.size()))
-        touchSlots.resize(static_cast<zb::SizeT>(idx + 1));
-    return touchSlots.at(static_cast<zb::SizeT>(idx));
+        touchSlots.resize(static_cast<za::SizeT>(idx + 1));
+    return touchSlots.at(static_cast<za::SizeT>(idx));
 }
 
 void processSlots()
@@ -324,7 +324,7 @@ void processSlots()
     }
 }
 
-zb::Optional<za::Event> eventProcess()
+za::Optional<za::Event> eventProcess()
 {
     const std::lock_guard lock(inputMutex);
 
@@ -354,7 +354,7 @@ zb::Optional<za::Event> eventProcess()
         {
             if (inputEvent.type == EV_KEY)
             {
-                if (const zb::Optional<za::Mouse::Button> mb = toMouseButton(inputEvent.code))
+                if (const za::Optional<za::Mouse::Button> mb = toMouseButton(inputEvent.code))
                 {
                     mouseMap[*mb] = inputEvent.value;
 
@@ -440,7 +440,7 @@ zb::Optional<za::Event> eventProcess()
                         touchFd     = fileDescriptor;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        atSlot(currentSlot).id = inputEvent.value >= 0 ? zb::Optional(inputEvent.value) : zb::nullOpt;
+                        atSlot(currentSlot).id = inputEvent.value >= 0 ? za::Optional(inputEvent.value) : za::nullOpt;
                         touchFd = fileDescriptor;
                         break;
                     case ABS_MT_POSITION_X:
@@ -515,13 +515,13 @@ zb::Optional<za::Event> eventProcess()
     }
 
     // No events available
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 // assumes inputMutex is locked
 void update()
 {
-    while (const zb::Optional event = eventProcess())
+    while (const za::Optional event = eventProcess())
         pushEvent(*event);
 }
 } // namespace
@@ -629,7 +629,7 @@ void setMousePosition(Vector2i position, const WindowBase& /*relativeTo*/)
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int finger)
 {
-    return zb::anyOf(touchSlots.cbegin(),
+    return za::anyOf(touchSlots.cbegin(),
                        touchSlots.cend(),
                        [finger](const TouchSlot& slot) { return slot.id == finger; });
 }
@@ -656,19 +656,19 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& /*relativeTo*/)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Event> checkEvent()
+za::Optional<Event> checkEvent()
 {
     const std::lock_guard lock(inputMutex);
 
     if (!eventQueue.empty())
     {
-        auto event = zb::makeOptional(eventQueue.front());
+        auto event = za::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    if (const zb::Optional event = eventProcess())
+    if (const za::Optional event = eventProcess())
     {
         return event;
     }
@@ -678,13 +678,13 @@ zb::Optional<Event> checkEvent()
     // sure of a good way to handle generating multiple events at once.)
     if (!eventQueue.empty())
     {
-        auto event = zb::makeOptional(eventQueue.front());
+        auto event = za::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 

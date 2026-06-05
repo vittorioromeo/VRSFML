@@ -42,29 +42,29 @@
 #include "Zancle/Audio/Listener.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Algorithm/AnyOf.hpp"
-#include "ZancleBase/Algorithm/Count.hpp"
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Ceil.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/AnyOf.hpp"
+#include "Zancle/Algorithm/Count.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <climits>
 #include <cstdio>
@@ -73,7 +73,7 @@
 void Main::gameLoopUpdateCombo(const float                   deltaTimeMs,
                                const bool                    anyBubblePoppedByClicking,
                                const za::Vec2f               mousePos,
-                               const zb::Optional<za::Vec2f> clickPosition)
+                               const za::Optional<za::Vec2f> clickPosition)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
@@ -111,7 +111,7 @@ void Main::gameLoopUpdateCombo(const float                   deltaTimeMs,
     {
         if (playerLastCombo > 2)
         {
-            comboState.comboAccReward = static_cast<int>(zb::pow(static_cast<float>(comboState.comboNOthers), 1.25f));
+            comboState.comboAccReward = static_cast<int>(za::pow(static_cast<float>(comboState.comboNOthers), 1.25f));
             comboState.comboAccStarReward = comboState.comboNStars;
         }
         else
@@ -165,7 +165,7 @@ void Main::gameLoopUpdateCombo(const float                   deltaTimeMs,
                                        .accelerationY = -0.002f,
                                        .opacity       = 1.f,
                                        .opacityDecay  = rngFast.getF(0.00025f, 0.002f),
-                                       .rotation      = rngFast.getF(0.f, zb::tau),
+                                       .rotation      = rngFast.getF(0.f, za::tau),
                                        .torque        = rngFast.getF(-0.002f, 0.002f)},
                           0.f,
                           ParticleType::Star);
@@ -185,7 +185,7 @@ void Main::gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
         handleBubbleCollision(deltaTimeMs, pt->bubbles[bubbleIdxI], pt->bubbles[bubbleIdxJ]);
     };
 
-    const zb::SizeT nWorkers = threadPool.getWorkerCount();
+    const za::SizeT nWorkers = threadPool.getWorkerCount();
     sweepAndPrune->forEachUniqueIndexPair(nWorkers, threadPool, func);
 }
 
@@ -334,17 +334,17 @@ void Main::gameLoopUpdateScreenShake(const float deltaTimeMs)
     if (screenShakeTimer > 0.f)
     {
         screenShakeTimer -= deltaTimeMs;
-        screenShakeTimer = zb::max(0.f, screenShakeTimer);
+        screenShakeTimer = za::max(0.f, screenShakeTimer);
     }
 
-    const bool anyShrineDying = zb::anyOf(pt->shrines.begin(), pt->shrines.end(), [](const Shrine& shrine) {
+    const bool anyShrineDying = za::anyOf(pt->shrines.begin(), pt->shrines.end(), [](const Shrine& shrine) {
         return shrine.tcDeath.hasValue();
     });
 
     if (!anyShrineDying && screenShakeTimer <= 0.f && screenShakeAmount > 0.f)
     {
         screenShakeAmount -= deltaTimeMs * 0.05f;
-        screenShakeAmount = zb::max(0.f, screenShakeAmount);
+        screenShakeAmount = za::max(0.f, screenShakeAmount);
     }
 }
 
@@ -365,11 +365,11 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
 
             p.rotation += p.torque * deltaTimeMs;
 
-            p.opacity = zb::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-            p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
+            p.opacity = za::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+            p.scale   = za::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
         }
 
-        zb::vectorEraseIf(particleLikeVec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
+        za::vectorEraseIf(particleLikeVec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
     };
 
     updateParticleLike(particles);
@@ -378,7 +378,7 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     updateParticleLike(hudBottomParticles);
     updateParticleLike(textParticles);
 
-    zb::vectorEraseIf(spentCoinParticles,
+    za::vectorEraseIf(spentCoinParticles,
                       [&](const auto& p)
     {
         return p.type == ParticleType::Coin &&
@@ -388,7 +388,7 @@ void Main::gameLoopUpdateParticlesAndTextParticles(const float deltaTimeMs)
     for (auto& earnedCoinParticle : earnedCoinParticles)
         (void)earnedCoinParticle.progress.advance(deltaTimeMs * 0.0015f);
 
-    zb::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
+    za::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
 }
 
 
@@ -400,7 +400,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const za::Vec2f mousePo
 #ifndef BUBBLEBYTE_NO_AUDIO
     const float volumeMult = profile.playAudioInBackground || window.hasFocus() ? 1.f : 0.f;
 
-    listener.position = {zb::clamp(mousePos.x, 0.f, pt->getMapLimit()), zb::clamp(mousePos.y, 0.f, boundaries.y), 0.f};
+    listener.position = {za::clamp(mousePos.x, 0.f, pt->getMapLimit()), za::clamp(mousePos.y, 0.f, boundaries.y), 0.f};
 
     listener.volume = profile.masterVolume / 100.f * volumeMult;
 
@@ -411,9 +411,9 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const za::Vec2f mousePo
 
     if (!bgmTransition.isDone())
     {
-        ZB_ASSERT(optNextMusic.hasValue());
+        ZA_ASSERT(optNextMusic.hasValue());
 
-        const auto processMusic = [&](zb::Optional<BGMBuffer>& optMusic, const float transitionMult)
+        const auto processMusic = [&](za::Optional<BGMBuffer>& optMusic, const float transitionMult)
         {
             if (!optMusic.hasValue())
                 return;
@@ -436,7 +436,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const za::Vec2f mousePo
     }
     else
     {
-        const auto processMusic = [&](zb::Optional<BGMBuffer>& optMusic)
+        const auto processMusic = [&](za::Optional<BGMBuffer>& optMusic)
         {
             if (!optMusic.hasValue())
                 return;
@@ -459,7 +459,7 @@ void Main::gameLoopUpdateSounds(const float deltaTimeMs, const za::Vec2f mousePo
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateTimePlayed(const zb::I64 elapsedUs)
+void Main::gameLoopUpdateTimePlayed(const za::I64 elapsedUs)
 {
     playedUsAccumulator += elapsedUs;
 
@@ -472,7 +472,7 @@ void Main::gameLoopUpdateTimePlayed(const zb::I64 elapsedUs)
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateAutosave(const zb::I64 elapsedUs)
+void Main::gameLoopUpdateAutosave(const za::I64 elapsedUs)
 {
     if (inSpeedrunPlaythrough())
         return;
@@ -482,14 +482,14 @@ void Main::gameLoopUpdateAutosave(const zb::I64 elapsedUs)
     if (autosaveUsAccumulator >= 180'000'000) // 3 min
     {
         autosaveUsAccumulator = 0;
-        zb::printLn("Autosaving...");
+        za::printLn("Autosaving...");
         saveMainPlaythroughToFile();
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, const zb::I64 elapsedUs)
+void Main::gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, const za::I64 elapsedUs)
 {
     fixedBgSlideAccumulator += elapsedUs;
 
@@ -515,7 +515,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const za::Vi
 
     rtBackground.clear(outlineHueColor);
 
-    const auto getAlpha = [&](const float mult) { return static_cast<zb::U8>(profile.backgroundOpacity / 100.f * mult); };
+    const auto getAlpha = [&](const float mult) { return static_cast<za::U8>(profile.backgroundOpacity / 100.f * mult); };
 
     ////////////////////////////////////////////////////////////
     const za::Texture* const chunkTx[] = {
@@ -530,7 +530,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const za::Vi
         &txBackgroundChunk,            // Victory
     };
 
-    static_assert(zb::getArraySize(chunkTx) == nShrineTypes + 1u);
+    static_assert(za::getArraySize(chunkTx) == nShrineTypes + 1u);
 
     ////////////////////////////////////////////////////////////
     const za::Texture* const detailTx[] = {
@@ -545,7 +545,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const za::Vi
         &txClouds,          // Victory
     };
 
-    static_assert(zb::getArraySize(detailTx) == nShrineTypes + 1u);
+    static_assert(za::getArraySize(detailTx) == nShrineTypes + 1u);
 
     ////////////////////////////////////////////////////////////
     const auto      idx = profile.selectedBackground;
@@ -615,7 +615,7 @@ void Main::gameLoopUpdateAndDrawBackground(const float deltaTimeMs, const za::Vi
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMinimap)
 {
-    moneyText.setString("$" + zb::String(toStringWithSeparators(pt->money + spentMoney)));
+    moneyText.setString("$" + za::String(toStringWithSeparators(pt->money + spentMoney)));
 
     moneyText.setOutlineColor(outlineHueColor);
     moneyText.scale  = {0.5f, 0.5f};
@@ -648,14 +648,14 @@ void Main::gameLoopUpdateSpentMoneyEffect(const float deltaTimeMs)
              .accelerationY = 0.f,
              .opacity       = 0.f,
              .opacityDecay  = -0.015f,
-             .rotation      = rngFast.getF(0.f, zb::tau),
+             .rotation      = rngFast.getF(0.f, za::tau),
              .torque        = 0.f});
     }
 
     if (spentMoney > 5u)
     {
         const auto spentMoneyAsFloat = static_cast<float>(spentMoney);
-        spentMoney -= static_cast<MoneyType>(zb::max(1.f, zb::ceil(spentMoneyAsFloat / 10.f)));
+        spentMoney -= static_cast<MoneyType>(za::max(1.f, za::ceil(spentMoneyAsFloat / 10.f)));
     }
     else
     {
@@ -676,7 +676,7 @@ za::TextData Main::gameLoopUpdateComboText(const float deltaTimeMs, const float 
 
     td = {
         .position         = {comboState.baseTextPosition.x, yBelowMinimap + 45.f},
-        .string           = "x" + zb::toString(comboState.combo + 1),
+        .string           = "x" + za::toString(comboState.combo + 1),
         .characterSize    = 48u,
         .fillColor        = za::Color::White,
         .outlineColor     = outlineHueColor,
@@ -713,17 +713,17 @@ za::TextData Main::gameLoopUpdateBuffText(const za::Rect2f& comboBounds)
         "N/A",                                         // Duck
     };
 
-    static_assert(zb::getArraySize(buffNames) == nCatTypes);
+    static_assert(za::getArraySize(buffNames) == nCatTypes);
 
     char  buffStrBuffer[1024]{};
     SizeT writeIdx = 0u;
 
-    const auto countPendingDolls = [](const zb::Vector<HexSession>& sessions)
+    const auto countPendingDolls = [](const za::Vector<HexSession>& sessions)
     {
         SizeT count = 0u;
 
         for (const HexSession& session : sessions)
-            count += zb::countIf(session.dolls.begin(), session.dolls.end(), [](const Doll& doll) {
+            count += za::countIf(session.dolls.begin(), session.dolls.end(), [](const Doll& doll) {
                 return !doll.tcDeath.hasValue();
             });
 
@@ -850,7 +850,7 @@ void Main::gameLoopReminderSpendPPs()
 
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateDpsSampler(const zb::I64 elapsedUs)
+void Main::gameLoopUpdateDpsSampler(const za::I64 elapsedUs)
 {
     moneyGainedUsAccumulator += elapsedUs;
     while (moneyGainedUsAccumulator >= 1'000'000)
@@ -860,6 +860,6 @@ void Main::gameLoopUpdateDpsSampler(const zb::I64 elapsedUs)
         samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
         moneyGainedLastSecond = 0u;
 
-        statHighestDPS(static_cast<zb::U64>(samplerMoneyPerSecond.getAverageAs<double>()));
+        statHighestDPS(static_cast<za::U64>(samplerMoneyPerSecond.getAverageAs<double>()));
     }
 }

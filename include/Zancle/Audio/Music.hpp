@@ -10,7 +10,7 @@
 
 #include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -217,7 +217,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 2176> m_impl; //!< Holds the templated `SoundStream<MusicState>` (hidden from this header)
+    za::InPlacePImpl<Impl, 2176> m_impl; //!< Holds the templated `SoundStream<MusicState>` (hidden from this header)
 };
 
 } // namespace za

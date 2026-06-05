@@ -10,9 +10,9 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Clock.hpp"
+#include "Zancle/Chrono/Clock.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 int main()
@@ -41,13 +41,13 @@ int main()
         .vsync = true,
     });
 
-    zb::Optional<za::ImGuiContext> childImGuiContext{za::ImGuiContext::createSharingAtlas(sharedFontAtlas)};
+    za::Optional<za::ImGuiContext> childImGuiContext{za::ImGuiContext::createSharingAtlas(sharedFontAtlas)};
 
     za::Clock deltaClock;
     while (true)
     {
         // Main window event processing
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
 
@@ -76,7 +76,7 @@ int main()
 
         const auto processChildWindow = [&](za::RenderWindow& childWindowRef)
         {
-            while (const zb::Optional event = childWindowRef.pollEvent())
+            while (const za::Optional event = childWindowRef.pollEvent())
             {
                 childImGuiContext->processEvent(childWindowRef, *event);
 

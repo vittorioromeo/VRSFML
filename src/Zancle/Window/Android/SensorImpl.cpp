@@ -7,10 +7,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/SensorImpl.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/EnumArray.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Container/EnumArray.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #include <android/looper.h>
 
@@ -28,7 +28,7 @@ namespace
 ALooper*                                                      looper;
 ASensorManager*                                               sensorManager;
 ASensorEventQueue*                                            sensorEventQueue;
-zb::EnumArray<za::Sensor::Type, za::Vec3f, za::Sensor::Count> sensorData;
+za::EnumArray<za::Sensor::Type, za::Vec3f, za::Sensor::Count> sensorData;
 } // namespace
 
 
@@ -121,7 +121,7 @@ void SensorImpl::setEnabled(bool enabled)
 const ASensor* SensorImpl::getDefaultSensor(Sensor::Type sensor)
 {
     // Find the Android sensor type
-    static constexpr zb::EnumArray<Sensor::Type, int, Sensor::Count> types =
+    static constexpr za::EnumArray<Sensor::Type, int, Sensor::Count> types =
         {ASENSOR_TYPE_ACCELEROMETER,
          ASENSOR_TYPE_GYROSCOPE,
          ASENSOR_TYPE_MAGNETIC_FIELD,
@@ -143,7 +143,7 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
 
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
-        zb::Optional<Sensor::Type> type;
+        za::Optional<Sensor::Type> type;
         Vec3f                      data;
 
         switch (event.type)

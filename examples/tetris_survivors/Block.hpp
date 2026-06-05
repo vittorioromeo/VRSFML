@@ -10,15 +10,15 @@
 
 #include "Zancle/Graphics/Color.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-inline constexpr zb::Array<za::Color, tetraminoShapeCount> blockPalette{
+inline constexpr za::Array<za::Color, tetraminoShapeCount> blockPalette{
     za::Color{13u, 194u, 255u}, // I - Cyan
     za::Color{255u, 225u, 56u}, // O - Yellow
     za::Color{245u, 56u, 255u}, // T - Purple
@@ -30,7 +30,7 @@ inline constexpr zb::Array<za::Color, tetraminoShapeCount> blockPalette{
 
 
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] BlockPowerup : zb::U8
+enum class [[nodiscard]] BlockPowerup : za::U8
 {
     None          = 0u,
     XPBonus       = 1u,
@@ -40,14 +40,14 @@ enum class [[nodiscard]] BlockPowerup : zb::U8
 
 
 ////////////////////////////////////////////////////////////
-TSURV_DEFINE_STRONG_TYPEDEF(BlockId, zb::U16);
-TSURV_DEFINE_STRONG_TYPEDEF(TetraminoId, zb::U16);
-TSURV_DEFINE_STRONG_TYPEDEF(Health, zb::U8);
-TSURV_DEFINE_STRONG_TYPEDEF(PaletteIdx, zb::U8);
+TSURV_DEFINE_STRONG_TYPEDEF(BlockId, za::U16);
+TSURV_DEFINE_STRONG_TYPEDEF(TetraminoId, za::U16);
+TSURV_DEFINE_STRONG_TYPEDEF(Health, za::U8);
+TSURV_DEFINE_STRONG_TYPEDEF(PaletteIdx, za::U8);
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr auto nullTickTimerTarget = static_cast<zb::U32>(-1);
+inline constexpr auto nullTickTimerTarget = static_cast<za::U32>(-1);
 
 
 ////////////////////////////////////////////////////////////
@@ -68,8 +68,8 @@ struct [[nodiscard]] Block
     BlockPowerup powerup;
 
     ////////////////////////////////////////////////////////////
-    zb::U32 tickTimer;
-    zb::U32 tickTimerTarget;
+    za::U32 tickTimer;
+    za::U32 tickTimerTarget;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isTransformingToArmored() const
@@ -92,7 +92,7 @@ struct [[nodiscard]] Block
     ////////////////////////////////////////////////////////////
     void applyDamage()
     {
-        ZB_ASSERT(isDamageable());
+        ZA_ASSERT(isDamageable());
 
         if (isTransformingToArmored())
             tickTimerTarget = nullTickTimerTarget;

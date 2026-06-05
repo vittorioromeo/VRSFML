@@ -9,9 +9,9 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)
 
@@ -19,7 +19,7 @@
 
 #else
 
-    #include "ZancleBase/SizeT.hpp"
+    #include "Zancle/Base/SizeT.hpp"
 
     #include <sys/socket.h>
     #include <sys/types.h>
@@ -78,8 +78,8 @@ using AddrLength    = socklen_t;
 using NetworkSSizeT = ssize_t;
 #endif
 
-using NetworkLong  = zb::U32;
-using NetworkShort = zb::U16;
+using NetworkLong  = za::U32;
+using NetworkShort = za::U16;
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
@@ -99,7 +99,7 @@ public:
 
     [[nodiscard]] AddrLength size() const;
 
-    zb::InPlacePImpl<sockaddr_in, 64> m_impl;
+    za::InPlacePImpl<sockaddr_in, 64> m_impl;
 };
 
 ////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ public:
 
 private:
     struct Impl;
-    zb::InPlacePImpl<Impl, 768> m_impl;
+    za::InPlacePImpl<Impl, 768> m_impl;
 };
 
 ////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ public:
 #if defined(ZA_SYSTEM_WINDOWS)
     using Size = int;
 #else
-    using Size = zb::SizeT;
+    using Size = za::SizeT;
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -149,19 +149,19 @@ public:
     /// \return sockaddr_in ready to be used by socket functions
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SockAddrIn createAddress(zb::U32 address, unsigned short port);
+    [[nodiscard]] static SockAddrIn createAddress(za::U32 address, unsigned short port);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::U32 inaddrAny();
+    [[nodiscard]] static za::U32 inaddrAny();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::U32 inaddrLoopback();
+    [[nodiscard]] static za::U32 inaddrLoopback();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -255,7 +255,7 @@ public:
     /// \return Address in network byte order on success, `nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<zb::U32> parseIpv4(const char* data);
+    [[nodiscard]] static za::Optional<za::U32> parseIpv4(const char* data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Format an IPv4 address as a dotted-quad string
@@ -268,7 +268,7 @@ public:
     /// \return NUL-terminated dotted-quad representation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Ipv4StringBuffer addrToString(zb::U32 netLong);
+    [[nodiscard]] static Ipv4StringBuffer addrToString(za::U32 netLong);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -342,7 +342,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<NetworkLong> convertToHostname(const char* address);
+    [[nodiscard]] static za::Optional<NetworkLong> convertToHostname(const char* address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close and destroy a socket

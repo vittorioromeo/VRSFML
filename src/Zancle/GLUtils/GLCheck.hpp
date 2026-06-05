@@ -10,7 +10,7 @@
 
 #include "Zancle/GLUtils/Glad.hpp" // not expensive, included everwhere `GLCheck.hpp` is included
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -73,7 +73,7 @@ struct GlScopedChecker
         printUncheckedPriorGlError();
         glCheckError(openGlError, file, line, expression);
 
-        ZB_ASSERT(false);
+        ZA_ASSERT(false);
     }
 
     ////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ struct GlScopedCheckerIgnoreWithFunc
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] explicit GlScopedCheckerIgnoreWithFunc(TFunc theFunc) : func{theFunc}
     {
-        ZB_ASSERT(func() == GL_NO_ERROR);
+        ZA_ASSERT(func() == GL_NO_ERROR);
     }
 
     ////////////////////////////////////////////////////////////

@@ -14,27 +14,27 @@
 
     #ifdef ZA_SYSTEM_WINDOWS
 
-        #include "Zancle/System/WindowsHeader.hpp"
+        #include "Zancle/Base/WindowsHeader.hpp"
 
         #include <dinput.h>
         #include <mmsystem.h>
 
     #endif // ZA_SYSTEM_WINDOWS
 
-    #include "Zancle/System/Err.hpp"
-    #include "Zancle/System/Path.hpp"
-    #include "Zancle/System/Rect2.hpp"
-    #include "Zancle/System/Time.hpp"
-    #include "Zancle/System/Utf8String.hpp"
-    #include "Zancle/System/Vec2.hpp"
+    #include "Zancle/Err/Err.hpp"
+    #include "Zancle/IO/Path.hpp"
+    #include "Zancle/Geometry/Rect2.hpp"
+    #include "Zancle/Chrono/Time.hpp"
+    #include "Zancle/String/Utf8String.hpp"
+    #include "Zancle/Geometry/Vec2.hpp"
 
-    #include "ZancleBase/Assert.hpp"
-    #include "ZancleBase/Builtin/Memcpy.hpp"
-    #include "ZancleBase/InPlacePImpl.hpp"
-    #include "ZancleBase/IntTypes.hpp"
-    #include "ZancleBase/Macros.hpp"
-    #include "ZancleBase/Optional.hpp"
-    #include "ZancleBase/UniquePtr.hpp"
+    #include "Zancle/Diagnostic/Assert.hpp"
+    #include "Zancle/Base/Memcpy.hpp"
+    #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+    #include "Zancle/Base/IntTypes.hpp"
+    #include "Zancle/Base/Macros.hpp"
+    #include "Zancle/Vocabulary/Optional.hpp"
+    #include "Zancle/Vocabulary/UniquePtr.hpp"
 
     #ifdef ZA_BUILD_AUDIO
     // #include <miniaudio.h> // TODO P2: restore, needs CMake to be fixed

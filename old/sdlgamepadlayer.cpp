@@ -1,7 +1,7 @@
 
 
 ////////////////////////////////////////////////////////////
-struct ZB_TRIVIAL_ABI UniquePtrSDLGamepadClose
+struct ZA_TRIVIAL_ABI UniquePtrSDLGamepadClose
 {
     [[gnu::always_inline]] void operator()(SDL_Gamepad* const ptr) const noexcept
     {
@@ -14,7 +14,7 @@ struct ZB_TRIVIAL_ABI UniquePtrSDLGamepadClose
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SDLGamepadUPtr = zb::UniquePtr<T, UniquePtrSDLGamepadClose>;
+using SDLGamepadUPtr = za::UniquePtr<T, UniquePtrSDLGamepadClose>;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SDLAllocatedArray<SDL_JoystickID> getGamepadIDs()
@@ -28,5 +28,5 @@ using SDLGamepadUPtr = zb::UniquePtr<T, UniquePtrSDLGamepadClose>;
             return nullptr;
         }
 
-        return SDLAllocatedArray<SDL_JoystickID>{SDLUPtr<SDL_JoystickID>{gamepads}, static_cast<zb::SizeT>(gamepadCount)};
+        return SDLAllocatedArray<SDL_JoystickID>{SDLUPtr<SDL_JoystickID>{gamepads}, static_cast<za::SizeT>(gamepadCount)};
     }

@@ -1,13 +1,13 @@
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/AtomicMutex.hpp"
+#include "Zancle/Concurrency/AtomicMutex.hpp"
 
-#include "Zancle/System/LockGuard.hpp"
-#include "Zancle/System/Thread.hpp"
+#include "Zancle/Concurrency/LockGuard.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
 
-#include "ZancleBase/Trait/IsAssignable.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Trait/IsAssignable.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -18,14 +18,14 @@ namespace
 ////////////////////////////////////////////////////////////
 // Compile-time properties
 ////////////////////////////////////////////////////////////
-static_assert(!ZB_IS_CONSTRUCTIBLE(za::AtomicMutex, const za::AtomicMutex&));
-static_assert(!ZB_IS_ASSIGNABLE(za::AtomicMutex, const za::AtomicMutex&));
-static_assert(!ZB_IS_CONSTRUCTIBLE(za::AtomicMutex, za::AtomicMutex&&));
+static_assert(!ZA_IS_CONSTRUCTIBLE(za::AtomicMutex, const za::AtomicMutex&));
+static_assert(!ZA_IS_ASSIGNABLE(za::AtomicMutex, const za::AtomicMutex&));
+static_assert(!ZA_IS_CONSTRUCTIBLE(za::AtomicMutex, za::AtomicMutex&&));
 
 static_assert(sizeof(za::AtomicMutex) == sizeof(unsigned int));
 
-static_assert(!ZB_IS_CONSTRUCTIBLE(za::LockGuard, const za::LockGuard&));
-static_assert(!ZB_IS_ASSIGNABLE(za::LockGuard, const za::LockGuard&));
+static_assert(!ZA_IS_CONSTRUCTIBLE(za::LockGuard, const za::LockGuard&));
+static_assert(!ZA_IS_ASSIGNABLE(za::LockGuard, const za::LockGuard&));
 
 
 ////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ TEST_CASE("[System] za::AtomicMutex - concurrent counter (mutual exclusion stres
     za::AtomicMutex m;
     long long       counter = 0;
 
-    zb::Vector<za::Thread> threads;
+    za::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int i = 0; i < threadCount; ++i)
@@ -139,7 +139,7 @@ TEST_CASE("[System] za::AtomicMutex - producers wake on unlock (wait/notify path
 
     m.lock(); // hold the lock so workers must park
 
-    zb::Vector<za::Thread> threads;
+    za::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int i = 0; i < threadCount; ++i)
@@ -246,7 +246,7 @@ TEST_CASE("[System] za::AtomicMutex - lock/unlock balance with mixed lock + tryL
     // each thread writes only its own slot.
     long long perThreadAcquired[threadCount] = {};
 
-    zb::Vector<za::Thread> threads;
+    za::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int i = 0; i < threadCount; ++i)

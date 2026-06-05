@@ -1,13 +1,13 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
-TEST_CASE("[Base] zb::ankerl::map::replace_key")
+TEST_CASE("[Base] za::ankerl::map::replace_key")
 {
-    using Map = ankerl::unordered_dense::map<zb::U64, zb::U64>;
+    using Map = ankerl::unordered_dense::map<za::U64, za::U64>;
 
     SECTION("Successful replacement returns {it, true}")
     {
@@ -65,11 +65,11 @@ TEST_CASE("[Base] zb::ankerl::map::replace_key")
     SECTION("Replace many keys preserves all values")
     {
         Map m;
-        for (zb::U64 i = 0; i < 100u; ++i)
+        for (za::U64 i = 0; i < 100u; ++i)
             m.try_emplace(i, i * 10u);
 
         // Shift every key by +1000.
-        for (zb::U64 i = 0; i < 100u; ++i)
+        for (za::U64 i = 0; i < 100u; ++i)
         {
             auto* const it = m.find(i);
             REQUIRE(it != m.end());
@@ -81,7 +81,7 @@ TEST_CASE("[Base] zb::ankerl::map::replace_key")
         CHECK(m.size() == 100u);
 
         // Verify all new keys present with correct values.
-        for (zb::U64 i = 0; i < 100u; ++i)
+        for (za::U64 i = 0; i < 100u; ++i)
         {
             auto* const it = m.find(i + 1000u);
             REQUIRE(it != m.end());
@@ -89,7 +89,7 @@ TEST_CASE("[Base] zb::ankerl::map::replace_key")
         }
 
         // None of the old keys remain.
-        for (zb::U64 i = 0; i < 100u; ++i)
+        for (za::U64 i = 0; i < 100u; ++i)
             CHECK(m.find(i) == m.end());
     }
 
@@ -112,16 +112,16 @@ TEST_CASE("[Base] zb::ankerl::map::replace_key")
 }
 
 
-TEST_CASE("[Base] zb::ankerl::segmented_vector::resize")
+TEST_CASE("[Base] za::ankerl::segmented_vector::resize")
 {
-    using Vec = ankerl::unordered_dense::v4_8_1::segmented_vector<zb::U64>;
+    using Vec = ankerl::unordered_dense::v4_8_1::segmented_vector<za::U64>;
 
     SECTION("Grow with default value-init")
     {
         Vec v;
         v.resize(5u);
         CHECK(v.size() == 5u);
-        for (zb::SizeT i = 0; i < 5u; ++i)
+        for (za::SizeT i = 0; i < 5u; ++i)
             CHECK(v[i] == 0u);
     }
 
@@ -130,7 +130,7 @@ TEST_CASE("[Base] zb::ankerl::segmented_vector::resize")
         Vec v;
         v.resize(4u, 42u);
         CHECK(v.size() == 4u);
-        for (zb::SizeT i = 0; i < 4u; ++i)
+        for (za::SizeT i = 0; i < 4u; ++i)
             CHECK(v[i] == 42u);
     }
 
@@ -174,12 +174,12 @@ TEST_CASE("[Base] zb::ankerl::segmented_vector::resize")
 }
 
 
-TEST_CASE("[Base] zb::ankerl::segmented_vector iterator is random-access")
+TEST_CASE("[Base] za::ankerl::segmented_vector iterator is random-access")
 {
-    using Vec = ankerl::unordered_dense::v4_8_1::segmented_vector<zb::U64>;
+    using Vec = ankerl::unordered_dense::v4_8_1::segmented_vector<za::U64>;
 
     Vec v;
-    for (zb::U64 i = 0; i < 10u; ++i)
+    for (za::U64 i = 0; i < 10u; ++i)
         v.emplace_back(i);
 
     auto it = v.begin();

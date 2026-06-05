@@ -11,9 +11,9 @@
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -39,7 +39,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ZA_GRAPHICS_API TextData
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
 

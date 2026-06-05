@@ -2,18 +2,18 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct PurchaseUnlockedEffect
 {
-    zb::String widgetLabel;
+    za::String widgetLabel;
     Countdown  countdown;
     Countdown  arrowCountdown;
     float      hue;
@@ -40,14 +40,14 @@ struct UIState
     za::Vec2f    uiMenuLastDrawPos{};
     za::Vec2f    uiMenuLastDrawSize{425.f, 0.f};
 
-    ankerl::unordered_dense::map<zb::String, float> uiLabelToY;
+    ankerl::unordered_dense::map<za::String, float> uiLabelToY;
 
     za::Rect2f minimapRect;
     za::Rect2f minimapZoomButtonsRect;
     Countdown  scrollArrowCountdown;
 
-    zb::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
-    ankerl::unordered_dense::map<zb::String, bool> btnWasDisabled;
+    za::Vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
+    ankerl::unordered_dense::map<za::String, bool> btnWasDisabled;
     bool                                           debugHideUI        = false;
     bool                                           debugWindowVisible = true;
 

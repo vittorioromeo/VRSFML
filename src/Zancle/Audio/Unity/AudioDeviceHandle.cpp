@@ -9,8 +9,8 @@
 
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 
-#include "ZancleBase/Builtin/Memcmp.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 #include <miniaudio.h>
 
@@ -39,21 +39,21 @@ const void* AudioDeviceHandle::getMADeviceInfo() const
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(zb::PassKey<AudioContext>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(za::PassKey<AudioContext>&&, const void* maDeviceInfo) :
     AudioDeviceHandle{maDeviceInfo}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(zb::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(za::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
     AudioDeviceHandle{maDeviceInfo}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(zb::PassKey<CaptureDevice>&&, const void* maDeviceInfo) :
+AudioDeviceHandle::AudioDeviceHandle(za::PassKey<CaptureDevice>&&, const void* maDeviceInfo) :
     AudioDeviceHandle{maDeviceInfo}
 {
 }
@@ -88,7 +88,7 @@ bool operator==(const AudioDeviceHandle& lhs, const AudioDeviceHandle& rhs)
     // https://github.com/mackron/miniaudio/issues/866
 
     // NOLINTNEXTLINE(bugprone-suspicious-memory-comparison)
-    return ZB_MEMCMP(&lhs.m_impl->maDeviceInfo.id, &rhs.m_impl->maDeviceInfo.id, sizeof(ma_device_id)) == 0;
+    return ZA_MEMCMP(&lhs.m_impl->maDeviceInfo.id, &rhs.m_impl->maDeviceInfo.id, sizeof(ma_device_id)) == 0;
 }
 
 

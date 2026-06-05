@@ -9,27 +9,27 @@
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
-#include "ZancleBase/Scn/ScnString.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
+#include "Zancle/Scn/ScnString.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr zb::StringView commonName = "Zancle TLS Example"; // Part of certificate
+constexpr za::StringView commonName = "Zancle TLS Example"; // Part of certificate
 
 
 ////////////////////////////////////////////////////////////
 // Generated with: openssl ecparam -out key.pem -name secp384r1 -genkey
-constexpr zb::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
+constexpr za::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
 BgUrgQQAIg==
 -----END EC PARAMETERS-----
 -----BEGIN EC PRIVATE KEY-----
@@ -49,7 +49,7 @@ ztTSrGCF1rJynnEoGJrIh3trvRAKD0E=
 // Organizational Unit Name (eg, section) []:.
 // Common Name (e.g. server FQDN or YOUR name) []:Zancle TLS Example
 // Email Address []:.
-constexpr zb::StringView certificate = R"(-----BEGIN CERTIFICATE-----
+constexpr za::StringView certificate = R"(-----BEGIN CERTIFICATE-----
 MIIByTCCAVCgAwIBAgIUKT3iSj7kJlvzxEGvfK1/yAYzRPcwCgYIKoZIzj0EAwMw
 GzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTAgFw0yNTA4MjMxMjI4MDJaGA8y
 MTI1MDczMDEyMjgwMlowGzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTB2MBAG
@@ -77,7 +77,7 @@ void runTcpServer(unsigned short port, const bool tls)
     if (!listenerOpt.hasValue())
         return;
 
-    zb::printLn("Server is listening to port {}, waiting for connections... ", port);
+    za::printLn("Server is listening to port {}, waiting for connections... ", port);
 
     // Wait for a connection
     auto acceptResult = listenerOpt->accept();
@@ -85,35 +85,35 @@ void runTcpServer(unsigned short port, const bool tls)
         return;
 
     auto& socket = *acceptResult.socket;
-    zb::printLn("Client connected: {}", za::IpAddressUtils::toString(socket.getRemoteAddress().value()));
+    za::printLn("Client connected: {}", za::IpAddressUtils::toString(socket.getRemoteAddress().value()));
 
     if (tls)
     {
         // Setup TLS
         if (socket.setupTlsServer(certificate, privateKey) != za::TcpSocket::TlsStatus::HandshakeComplete)
         {
-            zb::printLn("TLS handshake could not be completed");
+            za::printLn("TLS handshake could not be completed");
             return;
         }
 
-        zb::printLn("TLS set up");
+        za::printLn("TLS set up");
 
         if (auto ciphersuite = socket.getCurrentCiphersuiteName(); ciphersuite)
-            zb::printLn("Ciphersuite in use: {}", *ciphersuite);
+            za::printLn("Ciphersuite in use: {}", *ciphersuite);
     }
 
     // Send a message to the connected client
     const char out[] = "Hi, I'm the server";
     if (socket.send(out, sizeof(out)) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message sent to the client: \"{}{}", out, '"');
+    za::printLn("Message sent to the client: \"{}{}", out, '"');
 
     // Receive a message back from the client
     char      in[128];
-    zb::SizeT received = 0;
+    za::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != za::Socket::Status::Done)
         return;
-    zb::printLn("Answer received from the client: \"{}{}", in, '"');
+    za::printLn("Answer received from the client: \"{}{}", in, '"');
 }
 
 
@@ -125,13 +125,13 @@ void runTcpServer(unsigned short port, const bool tls)
 void runTcpClient(unsigned short port, const bool tls)
 {
     // Ask for the server address
-    zb::Optional<za::IpAddress> server;
+    za::Optional<za::IpAddress> server;
     do
     {
-        zb::print("Type the address or name of the server to connect to: ");
+        za::print("Type the address or name of the server to connect to: ");
 
-        zb::String addressStr;
-        (void)zb::scnStdinInto(addressStr);
+        za::String addressStr;
+        (void)za::scnStdinInto(addressStr);
         server = za::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
@@ -145,29 +145,29 @@ void runTcpClient(unsigned short port, const bool tls)
     // Connect to the server
     if (socket.connect(server.value(), port) != za::Socket::Status::Done)
         return;
-    zb::printLn("Connected to server {}", za::IpAddressUtils::toString(server.value()));
+    za::printLn("Connected to server {}", za::IpAddressUtils::toString(server.value()));
 
     if (tls)
     {
         // Setup TLS
-        if (socket.setupTlsClient(commonName.to<zb::String>(), certificate) != za::TcpSocket::TlsStatus::HandshakeComplete)
+        if (socket.setupTlsClient(commonName.to<za::String>(), certificate) != za::TcpSocket::TlsStatus::HandshakeComplete)
             return;
-        zb::printLn("TLS set up");
+        za::printLn("TLS set up");
 
         if (auto ciphersuite = socket.getCurrentCiphersuiteName(); ciphersuite)
-            zb::printLn("Ciphersuite in use: {}", *ciphersuite);
+            za::printLn("Ciphersuite in use: {}", *ciphersuite);
     }
 
     // Receive a message from the server
     char      in[128];
-    zb::SizeT received = 0;
+    za::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message received from the server: \"{}{}", in, '"');
+    za::printLn("Message received from the server: \"{}{}", in, '"');
 
     // Send an answer to the server
     const char out[] = "Hi, I'm a client";
     if (socket.send(out, sizeof(out)) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message sent to the server: \"{}{}", out, '"');
+    za::printLn("Message sent to the server: \"{}{}", out, '"');
 }

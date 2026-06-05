@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Angle.hpp"         // IWYU pragma: keep
-#include "Zancle/System/AutoWrapAngle.hpp" // IWYU pragma: keep
-#include "Zancle/System/Priv/Vec2Base.hpp" // IWYU pragma: keep
+#include "Zancle/Geometry/Angle.hpp"         // IWYU pragma: keep
+#include "Zancle/Geometry/AutoWrapAngle.hpp" // IWYU pragma: keep
+#include "Zancle/Geometry/Priv/Vec2Base.hpp" // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////

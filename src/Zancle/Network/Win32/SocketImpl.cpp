@@ -7,11 +7,11 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/SocketImpl.hpp"
 
-#include "Zancle/System/WindowsHeader.hpp"
+#include "Zancle/Base/WindowsHeader.hpp"
 
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -121,7 +121,7 @@ const void* FDSet::asPtr() const
 
 
 ////////////////////////////////////////////////////////////
-SockAddrIn SocketImpl::createAddress(zb::U32 address, unsigned short port)
+SockAddrIn SocketImpl::createAddress(za::U32 address, unsigned short port)
 {
     auto addr            = sockaddr_in();
     addr.sin_addr.s_addr = ::htonl(address);
@@ -133,14 +133,14 @@ SockAddrIn SocketImpl::createAddress(zb::U32 address, unsigned short port)
 
 
 ////////////////////////////////////////////////////////////
-zb::U32 SocketImpl::inaddrAny()
+za::U32 SocketImpl::inaddrAny()
 {
     return INADDR_ANY;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::U32 SocketImpl::inaddrLoopback()
+za::U32 SocketImpl::inaddrLoopback()
 {
     return INADDR_LOOPBACK;
 }
@@ -242,18 +242,18 @@ int SocketImpl::select(SocketHandle handle, long long timeoutUs)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<zb::U32> SocketImpl::parseIpv4(const char* data)
+za::Optional<za::U32> SocketImpl::parseIpv4(const char* data)
 {
     in_addr address{};
     if (::inet_pton(AF_INET, data, &address) != 1)
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<zb::U32>(address.s_addr);
+    return za::makeOptional<za::U32>(address.s_addr);
 }
 
 
 ////////////////////////////////////////////////////////////
-SocketImpl::Ipv4StringBuffer SocketImpl::addrToString(zb::U32 netLong)
+SocketImpl::Ipv4StringBuffer SocketImpl::addrToString(za::U32 netLong)
 {
     in_addr address{};
     address.s_addr = netLong;
@@ -335,7 +335,7 @@ NetworkSSizeT SocketImpl::recvFrom(SocketHandle handle, char* buf, SocketImpl::S
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
+za::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
 {
     addrinfo hints{}; // Zero-initialize
     hints.ai_family = AF_INET;
@@ -344,15 +344,15 @@ zb::Optional<NetworkLong> SocketImpl::convertToHostname(const char* address)
     if (getaddrinfo(address, nullptr, &hints, &result) == 0 && result != nullptr)
     {
         sockaddr_in sin{};
-        ZB_MEMCPY(&sin, result->ai_addr, sizeof(*result->ai_addr));
+        ZA_MEMCPY(&sin, result->ai_addr, sizeof(*result->ai_addr));
 
-        const zb::U32 ip = sin.sin_addr.s_addr;
+        const za::U32 ip = sin.sin_addr.s_addr;
         freeaddrinfo(result);
 
-        return zb::makeOptional<NetworkLong>(ip);
+        return za::makeOptional<NetworkLong>(ip);
     }
 
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 
@@ -410,7 +410,7 @@ int SocketImpl::select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptf
 ////////////////////////////////////////////////////////////
 void SocketImpl::close(SocketHandle sock)
 {
-    ZB_ASSERT(sock != invalidSocket());
+    ZA_ASSERT(sock != invalidSocket());
     closesocket(sock);
 }
 

@@ -58,29 +58,29 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/OverloadSet.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/OverloadSet.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <cctype>
 #include <cstdio>
@@ -88,7 +88,7 @@
 ////////////////////////////////////////////////////////////
 za::Sprite Main::particleToSprite(const Particle& particle) const
 {
-    const auto  opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
+    const auto  opacityAsAlpha = static_cast<za::U8>(particle.opacity * 255.f);
     const auto& textureRect    = atlasRects.particleRects[asIdx(particle.type)];
 
     return {
@@ -133,9 +133,9 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 
             const float noiseSeed = tX * 173.13f + tY * 317.71f;
 
-            const float noise0 = zb::sin(noiseSeed * 3.17f + 1.2f) * 0.5f + 0.5f;
-            const float noise1 = zb::sin(noiseSeed * 5.83f + 4.7f) * 0.5f + 0.5f;
-            const float noise2 = zb::cos(noiseSeed * 4.11f + 2.3f) * 0.5f + 0.5f;
+            const float noise0 = za::sin(noiseSeed * 3.17f + 1.2f) * 0.5f + 0.5f;
+            const float noise1 = za::sin(noiseSeed * 5.83f + 4.7f) * 0.5f + 0.5f;
+            const float noise2 = za::cos(noiseSeed * 4.11f + 2.3f) * 0.5f + 0.5f;
 
             const float restOutward = (noise0 * noise1) * 12.f - 2.f;
             const float restTangent = (noise2 - 0.5f) * 5.f;
@@ -143,13 +143,13 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
             const float phase0 = time * (0.45f + noise0 * 0.35f) + noiseSeed * 0.35f;
             const float phase1 = time * (0.90f + noise1 * 0.55f) - noiseSeed * 0.21f;
 
-            const float outwardOffset = (restOutward + zb::sin(phase0) * (1.5f + noise0 * 2.5f) +
-                                         zb::sin(phase1) * (0.5f + noise1 * 1.25f)) *
+            const float outwardOffset = (restOutward + za::sin(phase0) * (1.5f + noise0 * 2.5f) +
+                                         za::sin(phase1) * (0.5f + noise1 * 1.25f)) *
                                         outwardOffsetMult;
 
             const float tangentOffset = restTangent +
-                                        zb::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) * (0.5f + noise2 * 2.f) +
-                                        zb::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
+                                        za::cos(time * (0.6f + noise2 * 0.7f) + noiseSeed * 0.47f) * (0.5f + noise2 * 2.f) +
+                                        za::sin(phase0 * 1.37f + noise1 * 3.f) * 0.75f;
 
             const za::Vec2f animatedP{p0.x + outwardX * outwardOffset + tangentX * tangentOffset,
                                       p0.y + outwardY * outwardOffset + tangentY * tangentOffset};
@@ -183,7 +183,7 @@ void Main::drawCloudFrame(const CloudFrameDrawSettings& settings)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView, const za::Vec2f resolution, const zb::U8 shouldDrawUIAlpha)
+void Main::drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView, const za::Vec2f resolution, const za::U8 shouldDrawUIAlpha)
 {
     constexpr za::Vec2f minimapPos = {10.f, 10.f};
 
@@ -220,17 +220,17 @@ void Main::drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView,
         });
 
 
-    const float visibleLeft  = zb::max(0.f, gameView.center.x - gameView.size.x / 2.f);
-    const float visibleRight = zb::min(mapLimit, gameView.center.x + gameView.size.x / 2.f);
+    const float visibleLeft  = za::max(0.f, gameView.center.x - gameView.size.x / 2.f);
+    const float visibleRight = za::min(mapLimit, gameView.center.x + gameView.size.x / 2.f);
 
     const za::RectangleShapeData
         minimapIndicator{.position         = minimapPos.addX(visibleLeft / minimapScale),
                          .fillColor        = za::Color::Transparent,
                          .outlineColor     = za::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
                          .outlineThickness = 3.f,
-                         .size = za::Vec2f{zb::max(0.f, visibleRight - visibleLeft), gameView.size.y} / minimapScale};
+                         .size = za::Vec2f{za::max(0.f, visibleRight - visibleLeft), gameView.size.y} / minimapScale};
 
-    const float progressRatio = zb::clamp(mapLimit / boundaries.x, 0.f, 1.f);
+    const float progressRatio = za::clamp(mapLimit / boundaries.x, 0.f, 1.f);
 
     auto minimapScaledPosition = minimapPos.componentWiseDiv(resolution / hudScale);
 
@@ -258,13 +258,13 @@ void Main::drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView,
         rt.draw(txBackgroundChunk,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = hueColor(hueMod, zb::min(shouldDrawUIAlpha, static_cast<zb::U8>(128u)))},
+                 .color       = hueColor(hueMod, za::min(shouldDrawUIAlpha, static_cast<za::U8>(128u)))},
                 {.view = minimapView, .shader = &shaders.shader});
 
         rt.draw(txDrawings,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = za::Color::whiteWithAlpha(zb::min(shouldDrawUIAlpha, static_cast<zb::U8>(215u)))},
+                 .color       = za::Color::whiteWithAlpha(za::min(shouldDrawUIAlpha, static_cast<za::U8>(215u)))},
                 {.view = minimapView, .shader = &shaders.shader});
 
         if (shouldDrawUIAlpha > 200u)
@@ -330,10 +330,10 @@ void Main::gameLoopDrawBubbles()
         {
             // Slowly rotating gold-ish hue.
             constexpr float goldBaseHue = 50.f;
-            return goldBaseHue + zb::sin(bubble.hueMod * 0.001f) * 8.f;
+            return goldBaseHue + za::sin(bubble.hueMod * 0.001f) * 8.f;
         }
 
-        ZB_ASSERT(bubble.type == BubbleType::Normal);
+        ZA_ASSERT(bubble.type == BubbleType::Normal);
 
         constexpr float hueRange = 75.f;
 
@@ -341,7 +341,7 @@ void Main::gameLoopDrawBubbles()
 
         const float magnetHueMod = (beingRepelledOrAttracted ? 180.f : 0.f);
 
-        return zb::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
+        return za::remainder(static_cast<float>(bubble.hueSeed) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
     };
 
     const za::Rect2f bubbleRects[]{atlasRects.txrBubble,
@@ -349,7 +349,7 @@ void Main::gameLoopDrawBubbles()
                                    atlasRects.txrBomb,
                                    atlasRects.txrBubbleNova,
                                    atlasRects.txrBubbleGlass};
-    static_assert(zb::getArraySize(bubbleRects) == nBubbleTypes);
+    static_assert(za::getArraySize(bubbleRects) == nBubbleTypes);
 
     za::CPUDrawableBatch* const batchToUseByType[]{&bubbleDrawableBatch,
                                                    &starBubbleDrawableBatch,
@@ -357,7 +357,7 @@ void Main::gameLoopDrawBubbles()
                                                    &starBubbleDrawableBatch,
                                                    &starBubbleDrawableBatch};
 
-    static_assert(zb::getArraySize(batchToUseByType) == nBubbleTypes);
+    static_assert(za::getArraySize(batchToUseByType) == nBubbleTypes);
 
     for (const auto& bubble : pt->bubbles)
     {
@@ -374,7 +374,7 @@ void Main::gameLoopDrawBubbles()
         if (bubble.pendingTransformMs > 0.f)
         {
             constexpr float freezeMs = 450.f;
-            const float     phase    = zb::clamp(1.f - bubble.pendingTransformMs / freezeMs, 0.f, 1.f);
+            const float     phase    = za::clamp(1.f - bubble.pendingTransformMs / freezeMs, 0.f, 1.f);
 
             const float bulge     = phase < 0.5f ? easeOutBack(phase * 2.f) : 1.f - easeInBack((phase - 0.5f) * 2.f);
             pendingTransformScale = 1.f + bulge * 0.35f;
@@ -389,7 +389,7 @@ void Main::gameLoopDrawBubbles()
         if (bubble.type == BubbleType::Combo && bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
         {
             const float maxMs   = gameConstants.events.invincibleBubble.comboTimerMaxMs;
-            const float frac    = zb::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
+            const float frac    = za::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
             const float urgency = 1.f - frac;
             const float amp     = urgency * urgency * 8.f; // quadratic ramp, peaks ~8px right before pop
             shakeOffset         = {rngFast.getF(-amp, amp), rngFast.getF(-amp, amp)};
@@ -413,7 +413,7 @@ void Main::gameLoopDrawBubbles()
             if (bubble.comboClickCount > 0u && bubble.comboTimerMs > 0.f)
             {
                 const float maxMs = gameConstants.events.invincibleBubble.comboTimerMaxMs;
-                const float frac  = zb::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
+                const float frac  = za::clamp(bubble.comboTimerMs / (maxMs <= 0.f ? 1.f : maxMs), 0.f, 1.f);
 
                 constexpr float thickness = 3.f;
                 const float     outerR    = bubble.radius;
@@ -426,7 +426,7 @@ void Main::gameLoopDrawBubbles()
                     .outerRadius = outerR,
                     .innerRadius = outerR - thickness,
                     .startAngle  = za::degrees(-90.f),
-                    .sweepAngle  = za::radians(zb::tau * frac),
+                    .sweepAngle  = za::radians(za::tau * frac),
                     .pointCount  = 32u,
                 });
             }
@@ -508,7 +508,7 @@ void Main::gameLoopDrawMinimapIcons()
         &atlasRects.txrMMDuck,
     };
 
-    static_assert(zb::getArraySize(mmCatTxrs) == nCatTypes);
+    static_assert(za::getArraySize(mmCatTxrs) == nCatTypes);
 
     for (const Shrine& shrine : pt->shrines)
     {
@@ -536,7 +536,7 @@ void Main::gameLoopDrawMinimapIcons()
                        .color       = hueColor(cat.hue, 255u)});
     }
 
-    const auto addDollsToMinimap = [&](const zb::Vector<HexSession>& sessions, const float hueMod)
+    const auto addDollsToMinimap = [&](const za::Vector<HexSession>& sessions, const float hueMod)
     {
         for (const HexSession& session : sessions)
             for (const Doll& doll : session.dolls)
@@ -649,7 +649,7 @@ void Main::gameLoopDrawCats(const za::Vec2f mousePos, const float deltaTimeMs)
         &atlasRects.txrDuckCat,     // Duck
     };
 
-    static_assert(zb::getArraySize(catTxrsByType) == nCatTypes);
+    static_assert(za::getArraySize(catTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
     const za::Rect2f* const catPawTxrsByType[] = {
@@ -669,7 +669,7 @@ void Main::gameLoopDrawCats(const za::Vec2f mousePos, const float deltaTimeMs)
         &atlasRects.txrWhiteDot,       // Duck
     };
 
-    static_assert(zb::getArraySize(catPawTxrsByType) == nCatTypes);
+    static_assert(za::getArraySize(catPawTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
     const za::Rect2f* const catTailTxrsByType[] = {
@@ -689,7 +689,7 @@ void Main::gameLoopDrawCats(const za::Vec2f mousePos, const float deltaTimeMs)
         &atlasRects.txrWhiteDot,        // Duck
     };
 
-    static_assert(zb::getArraySize(catTailTxrsByType) == nCatTypes);
+    static_assert(za::getArraySize(catTailTxrsByType) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
     for (Cat& cat : pt->cats)
@@ -742,7 +742,7 @@ struct CatDrawContext
     za::Vec2f                mousePos;
     bool                     drawHexedWithShader;
     bool                     beingDragged;
-    zb::Optional<za::Rect2f> dragRect;
+    za::Optional<za::Rect2f> dragRect;
     bool                     insideDragRect;
     bool                     hovered;
     bool                     shouldDisplayRangeCircle;
@@ -802,21 +802,21 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
             if (wobblePhase > 0.f)
                 wobblePhase -= ctx.deltaTimeMs * 0.005f;
 
-            wobblePhase = zb::max(wobblePhase, 0.f);
+            wobblePhase = za::max(wobblePhase, 0.f);
         }
         else
         {
-            const float frequency = remap(zb::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
+            const float frequency = remap(za::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.1f, 0.05f);
 
             wobblePhase += frequency * ctx.deltaTimeMs * 0.05f;
-            wobblePhase = zb::remainder(wobblePhase, zb::tau);
+            wobblePhase = za::remainder(wobblePhase, za::tau);
         }
     }
 
     if (ctx.main.isCatPerformingRitual(witch, ctx.cat))
     {
-        const float amplitude = remap(zb::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
-        ctx.catRotation       = zb::sin(wobblePhase) * amplitude;
+        const float amplitude = remap(za::min(witch.cooldown.time, 10'000.f), 0.f, 10'000.f, 0.5f, 0.f);
+        ctx.catRotation       = za::sin(wobblePhase) * amplitude;
     }
 }
 
@@ -889,7 +889,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     if (cat.type == CatType::Astro)
     {
         if (cat.astroState.hasValue() && cat.isCloseToStartX())
-            ctx.catRotation = remap(zb::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 0.f, 0.523599f);
+            ctx.catRotation = remap(za::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 0.f, 0.523599f);
         else if (ctx.cooldownDiff < 1000.f)
             ctx.catRotation = remap(ctx.cooldownDiff, 0.f, 1000.f, 0.523599f, 0.f);
         else if (cat.astroState.hasValue())
@@ -897,7 +897,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     }
 
     const float mult = remap(cat.dragTime, 0.f, 1000.f, 0.f, 1.f);
-    ctx.catRotation += (-0.22f + zb::sin(cat.wobbleRadians) * 0.12f) * mult;
+    ctx.catRotation += (-0.22f + za::sin(cat.wobbleRadians) * 0.12f) * mult;
 
     if (ctx.witchCat != nullptr)
         applyWitchAnimation(ctx, main.witchcatWobblePhase, *ctx.witchCat);
@@ -920,7 +920,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
     ctx.bodyRotationExtra = 0.f;
 
     if (cat.type == CatType::Warden)
-        ctx.bodyRotationExtra += zb::sin(cat.wobbleRadians) * main.gameConstants.wardenCatBodyWobbleRadians;
+        ctx.bodyRotationExtra += za::sin(cat.wobbleRadians) * main.gameConstants.wardenCatBodyWobbleRadians;
 
     if (cat.bonkImpactMs > 0.f)
     {
@@ -931,7 +931,7 @@ void applyWitchAnimation(CatDrawContext& ctx, float& wobblePhase, Cat& witch)
         const float elapsedS = (bonkImpactDurationMs - cat.bonkImpactMs) * 0.001f;
         const float decay    = cat.bonkImpactMs / bonkImpactDurationMs;
 
-        ctx.bodyRotationExtra += zb::sin(elapsedS * bonkImpactFreqHz * zb::tau) * bonkImpactAmplitude * decay;
+        ctx.bodyRotationExtra += za::sin(elapsedS * bonkImpactFreqHz * za::tau) * bonkImpactAmplitude * decay;
     }
 
     ctx.alpha       = ctx.insideDragRect ? static_cast<U8>(128u) : static_cast<U8>(255u);
@@ -976,8 +976,8 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
 {
     const auto& [cloudPositionOffset, cloudXExtentMult] = ctx.main.gameConstants.cloudModifiers[asIdx(ctx.cat.type)];
 
-    const int   cloudCircleCount = zb::max(ctx.main.gameConstants.catCloudCircleCount, 3);
-    const float cloudScaleBase   = zb::max(ctx.catScaleMult, 0.35f) * ctx.main.gameConstants.catCloudScale;
+    const int   cloudCircleCount = za::max(ctx.main.gameConstants.catCloudCircleCount, 3);
+    const float cloudScaleBase   = za::max(ctx.catScaleMult, 0.35f) * ctx.main.gameConstants.catCloudScale;
 
     float cloudMult = easeInOutBack(remap(ctx.cat.dragTime, 0.f, 1000.f, 1.f, 0.f));
 
@@ -986,7 +986,7 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
         if (ctx.cat.astroState.hasValue() && ctx.cat.isCloseToStartX())
         {
             cloudMult *= easeInOutBack(
-                remap(zb::fabs(ctx.cat.position.x - ctx.cat.astroState->startX), 0.f, 400.f, 1.f, 0.f));
+                remap(za::fabs(ctx.cat.position.x - ctx.cat.astroState->startX), 0.f, 400.f, 1.f, 0.f));
         }
         else if (ctx.cooldownDiff < 1000.f)
         {
@@ -1010,19 +1010,19 @@ void drawCatClouds(const CatDrawContext& ctx, const float cloudTime)
     {
         const float normalizedIndex = static_cast<float>(cloudCircleIndex) / static_cast<float>(cloudCircleCount - 1);
         const float centeredIndex   = normalizedIndex * 2.f - 1.f;
-        const float lobeWeight      = 1.f - zb::fabs(centeredIndex);
+        const float lobeWeight      = 1.f - za::fabs(centeredIndex);
         const float phase           = cloudTimeSeconds * (1.35f + normalizedIndex * 0.2f) + catCloudPhase +
                                       static_cast<float>(cloudCircleIndex) * 0.85f;
 
         const float xOffset = centeredIndex * ctx.main.gameConstants.catCloudXExtent * cloudScale * cloudXExtentMult +
-                              zb::sin(phase) * (ctx.main.gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
+                              za::sin(phase) * (ctx.main.gameConstants.catCloudWobbleX + lobeWeight * 1.5f) * cloudScale;
 
         const float yOffset = -lobeWeight * ctx.main.gameConstants.catCloudLobeLift * cloudScale +
-                              zb::cos(phase * 1.4f) * (ctx.main.gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
+                              za::cos(phase * 1.4f) * (ctx.main.gameConstants.catCloudWobbleY + lobeWeight) * cloudScale;
 
         const float radius = (ctx.main.gameConstants.catCloudRadiusBase +
                               lobeWeight * ctx.main.gameConstants.catCloudRadiusLobe +
-                              zb::sin(phase * 1.15f) * ctx.main.gameConstants.catCloudRadiusWobble) *
+                              za::sin(phase * 1.15f) * ctx.main.gameConstants.catCloudRadiusWobble) *
                              cloudScale;
 
         ctx.cloudBatchToUse.add(za::Sprite{
@@ -1044,12 +1044,12 @@ void drawCatVisuals(const CatDrawContext& ctx)
     const auto tailWiggleRotation = za::radians(
         ctx.catRotation + ctx.bodyRotationExtra +
         ((ctx.beingDragged ? -0.2f : 0.f) +
-         zb::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+         za::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     const auto tailWiggleRotationInvertedDragged = za::radians(
         ctx.catRotation + ctx.bodyRotationExtra +
         ((ctx.beingDragged ? 0.2f : 0.f) +
-         zb::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+         za::sin(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
     if (ctx.cat.type == CatType::Devil)
     {
@@ -1077,7 +1077,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
     {
         const auto wingRotation = za::radians(
             ctx.catRotation + (ctx.beingDragged ? -0.2f : 0.f) +
-            zb::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
+            za::cos(ctx.cat.wobbleRadians) * (ctx.beingDragged ? 0.125f : 0.075f) * 0.75f);
 
         addCatSprite(za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.uniWingsOffset),
                                 .scale       = ctx.catScale * 1.25f,
@@ -1097,7 +1097,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                        .rotation    = ctx.bodyRotation(),
                        .textureRect = ctx.main.isDevilcatHellsingedActive() ? ctx.main.atlasRects.txrDevilCat2Book
                                                                             : ctx.main.atlasRects.txrDevilCat3Book,
-                       .color = hueColor(zb::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
+                       .color = hueColor(za::remainder(ctx.cat.hue * 2.f - 15.f + static_cast<float>(ctx.cat.nameIdx) * 25.f,
                                                        60.f) -
                                              30.f,
                                          255u)});
@@ -1437,7 +1437,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
                                                                       : ctx.main.gameConstants.wardenCatBatonReturnMs;
 
             const float t = phaseDuration > 0.f
-                                ? easeInOutCubic(zb::clamp(1.f - (bonk.phaseMs / phaseDuration), 0.f, 1.f))
+                                ? easeInOutCubic(za::clamp(1.f - (bonk.phaseMs / phaseDuration), 0.f, 1.f))
                                 : 1.f;
 
             const za::Vec2f     windupEndPos = ctx.cat.getDrawPosition(ctx.main.profile.enableCatBobbing) +
@@ -1540,13 +1540,13 @@ void drawCatText(const CatDrawContext& ctx)
     if (!ctx.main.profile.showCatText)
         return;
 
-    static thread_local zb::String catNameBuffer;
+    static thread_local za::String catNameBuffer;
     catNameBuffer.clear();
 
     if (ctx.main.pt->perm.smartCatsPurchased && ctx.cat.type == CatType::Normal && ctx.cat.nameIdx % 2u == 0u)
         catNameBuffer += "Dr. ";
 
-    const zb::StringView catNameSv = ctx.main.shuffledCatNamesPerType[asIdx(ctx.cat.type)][ctx.cat.nameIdx];
+    const za::StringView catNameSv = ctx.main.shuffledCatNamesPerType[asIdx(ctx.cat.type)][ctx.cat.nameIdx];
     catNameBuffer.append(catNameSv.data(), catNameSv.size());
 
     if (ctx.main.pt->perm.smartCatsPurchased && ctx.cat.type == CatType::Normal && ctx.cat.nameIdx % 2u != 0u)
@@ -1571,17 +1571,17 @@ void drawCatText(const CatDrawContext& ctx)
         if (ctx.cat.type == CatType::Devil && ctx.main.isDevilcatHellsingedActive())
             actionName = "Portals";
 
-        static thread_local zb::String actionString;
+        static thread_local za::String actionString;
         actionString.clear();
 
-        actionString += zb::toString(ctx.cat.hits);
+        actionString += za::toString(ctx.cat.hits);
         actionString += " ";
         actionString += actionName;
 
         if (ctx.cat.type == CatType::Mouse || ctx.isCopyCatWithType(CatType::Mouse))
         {
             actionString += " (x";
-            actionString += zb::toString(ctx.main.pt->mouseCatCombo + 1);
+            actionString += za::toString(ctx.main.pt->mouseCatCombo + 1);
             actionString += ")";
         }
 
@@ -1738,7 +1738,7 @@ void Main::gameLoopDrawShrines(const za::Vec2f mousePos)
         if (shrine.isActive())
         {
             // TODO P2: move to member data
-            static thread_local zb::String shrineStatus;
+            static thread_local za::String shrineStatus;
 
             shrineStatus = "$";
             shrineStatus += toStringWithSeparators(shrine.collectedReward);
@@ -1803,10 +1803,10 @@ void Main::gameLoopDrawDolls(const za::Vec2f mousePos)
         &atlasRects.txrDollNormal,   // Duck (missing, cannot be hexed)
     };
 
-    static_assert(zb::getArraySize(dollTxrs) == nCatTypes);
+    static_assert(za::getArraySize(dollTxrs) == nCatTypes);
 
     ////////////////////////////////////////////////////////////
-    const auto processDolls = [&](const zb::Vector<HexSession>& sessions, const float hueMod)
+    const auto processDolls = [&](const za::Vector<HexSession>& sessions, const float hueMod)
     {
         for (const HexSession& session : sessions)
             for (const Doll& doll : session.dolls)
@@ -1826,7 +1826,7 @@ void Main::gameLoopDrawDolls(const za::Vec2f mousePos)
                     za::Sprite{.position    = doll.getDrawPosition(),
                                .scale       = za::Vec2f{0.22f, 0.22f} * progress,
                                .origin      = dollTxr.size / 2.f,
-                               .rotation    = za::radians(-0.15f + 0.3f * zb::sin(doll.wobbleRadians / 2.f)),
+                               .rotation    = za::radians(-0.15f + 0.3f * za::sin(doll.wobbleRadians / 2.f)),
                                .textureRect = dollTxr,
                                .color       = hueColor(doll.hue + hueMod, dollAlpha)});
             }
@@ -1852,16 +1852,16 @@ void Main::gameLoopDrawEvents()
     const auto computeIntensity = [&](const float remainingMs)
     {
         const float duration    = bfCfg.durationMs <= 0.f ? 1.f : bfCfg.durationMs;
-        const float elapsedNorm = zb::clamp(1.f - (remainingMs / duration), 0.f, 1.f);
+        const float elapsedNorm = za::clamp(1.f - (remainingMs / duration), 0.f, 1.f);
 
-        const float attack  = zb::clamp(bfCfg.attackRatio, 0.f, 0.5f);
-        const float release = zb::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
+        const float attack  = za::clamp(bfCfg.attackRatio, 0.f, 0.5f);
+        const float release = za::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
 
         if (attack > 0.f && elapsedNorm < attack)
-            return easeInOutCubic(zb::clamp(elapsedNorm / attack, 0.f, 1.f));
+            return easeInOutCubic(za::clamp(elapsedNorm / attack, 0.f, 1.f));
 
         if (release > 0.f && elapsedNorm > 1.f - release)
-            return easeInOutCubic(zb::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
+            return easeInOutCubic(za::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
 
         return 1.f;
     };
@@ -1869,7 +1869,7 @@ void Main::gameLoopDrawEvents()
     constexpr float thinLineWidth = 4.f;
     constexpr float topWidthRatio = 0.4f; // top edge is 40% of the bottom
 
-    const auto drawRay = zb::OverloadSet{
+    const auto drawRay = za::OverloadSet{
         // No light-ray for the global invincible-bubble event.
         [](const EInvincibleBubble&) {},
 
@@ -1881,7 +1881,7 @@ void Main::gameLoopDrawEvents()
 
         const float bottomWidth = thinLineWidth + (e.regionWidth - thinLineWidth) * intensity;
         const float topWidth    = thinLineWidth + (e.regionWidth * topWidthRatio - thinLineWidth) * intensity;
-        const auto  alpha       = static_cast<U8>(zb::clamp(intensity * 90.f, 0.f, 255.f));
+        const auto  alpha       = static_cast<U8>(za::clamp(intensity * 90.f, 0.f, 255.f));
         const float height      = boundaries.y;
 
         const auto makeLightRay = [&](U8 xAlpha, float xSizeMult)
@@ -2005,14 +2005,14 @@ void Main::gameLoopDrawEarnedCoinParticles()
         const auto newPos  = bezier(particle.startPosition, targetPosition, easeInOutSine(particle.progress.value));
         const auto newPos2 = bezier(particle.startPosition, targetPosition, easeInOutBack(particle.progress.value));
 
-        const float opacityScale = zb::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
+        const float opacityScale = za::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
         const float alpha        = (128.f + particle.progress.remapEased(easeInQuint, 128.f, 0.f)) * opacityScale;
 
         hudDrawableBatch.add(za::Sprite{
             .position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
             .scale       = za::Vec2f{0.25f, 0.25f} * opacityScale,
             .origin      = atlasRects.txrCoin.size / 2.f,
-            .rotation    = za::radians(particle.progress.remap(0.f, zb::tau)),
+            .rotation    = za::radians(particle.progress.remap(0.f, za::tau)),
             .textureRect = atlasRects.txrCoin,
             .color       = za::Color::whiteWithAlpha(static_cast<U8>(alpha)),
         });
@@ -2066,7 +2066,7 @@ void Main::gameLoopDrawTextParticles()
         textStatusBuffer.rotation = za::radians(tp.rotation);
         textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
 
-        const auto opacityAsAlpha = static_cast<zb::U8>(tp.opacity * 255.f);
+        const auto opacityAsAlpha = static_cast<za::U8>(tp.opacity * 255.f);
         textStatusBuffer.setFillColor(za::Color::whiteWithAlpha(opacityAsAlpha));
         textStatusBuffer.setOutlineColor(outlineHueColor.withAlpha(opacityAsAlpha));
 
@@ -2084,7 +2084,7 @@ void Main::gameLoopDrawTextParticles()
 
     const za::Rect2f gameViewBounds{getViewportPixelBounds(gameView, resolution)};
 
-    const float menuOverlapScreenX = zb::max(uiGetWindowPos().x, gameViewBounds.position.x);
+    const float menuOverlapScreenX = za::max(uiGetWindowPos().x, gameViewBounds.position.x);
 
     const float menuOverlapWorldX = gameView
                                         .screenToWorld({menuOverlapScreenX,
@@ -2092,7 +2092,7 @@ void Main::gameLoopDrawTextParticles()
                                                        resolution)
                                         .x;
 
-    return zb::min(rightEdgeX, menuOverlapWorldX);
+    return za::min(rightEdgeX, menuOverlapWorldX);
 }
 
 
@@ -2103,12 +2103,12 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
         return;
 
     if (playerInputState.scroll == 0.f)
-        (void)uiState.scrollArrowCountdown.tickLooping(deltaTimeMs, zb::tau * 350.f);
+        (void)uiState.scrollArrowCountdown.tickLooping(deltaTimeMs, za::tau * 350.f);
     else
         (void)uiState.scrollArrowCountdown.tick(deltaTimeMs);
 
     const float blinkOpacity = easeInOutSine(
-                                   zb::fabs(zb::sin(zb::remainder(uiState.scrollArrowCountdown.time / 350.f, zb::tau)))) *
+                                   za::fabs(za::sin(za::remainder(uiState.scrollArrowCountdown.time / 350.f, za::tau)))) *
                                255.f;
 
     const float arrowX = getLeftMostUsefulX();
@@ -2131,7 +2131,7 @@ void Main::gameLoopDrawScrollArrowHint(const float deltaTimeMs)
 void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 {
     const float imguiWidth      = uiWindowWidth * profile.uiScale;
-    const auto  blinkFn         = [](const float value) { return (1 - zb::cos(2.f * zb::pi * value)) / 2.f; };
+    const auto  blinkFn         = [](const float value) { return (1 - za::cos(2.f * za::pi * value)) / 2.f; };
     const float uiMenuCueX      = uiState.uiMenuLastDrawSize.x > 1.f ? uiState.uiMenuLastDrawPos.x : uiGetWindowPos().x;
     const bool  uiMenuFullyOpen = uiState.uiMenuRevealT >= 0.999f;
 
@@ -2145,7 +2145,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
 
             const auto pos = za::Vec2f{uiMenuCueX + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
-            for (zb::SizeT i = 0u; i < 2u; ++i)
+            for (za::SizeT i = 0u; i < 2u; ++i)
                 spawnHUDTopParticle({.position      = pos,
                                      .velocity      = rngFast.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
                                      .scale         = rngFast.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
@@ -2153,7 +2153,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
                                      .accelerationY = 0.f,
                                      .opacity       = 1.f,
                                      .opacityDecay  = rngFast.getF(0.00065f, 0.0055f),
-                                     .rotation      = rngFast.getF(0.f, zb::tau),
+                                     .rotation      = rngFast.getF(0.f, za::tau),
                                      .torque        = rngFast.getF(-0.002f, 0.002f)},
                                     /* hue */ wrapHue(165.f + hue + currentBackgroundHue.asDegrees()),
                                     ParticleType::Star);
@@ -2166,7 +2166,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
         {
             const float blinkProgress = blinkFn(arrowCountdown.asProgress(2000.f).getBounce());
 
-            const auto arrowAlpha = static_cast<zb::U8>(easeInOutCubic(blinkProgress) * 255.f);
+            const auto arrowAlpha = static_cast<za::U8>(easeInOutCubic(blinkProgress) * 255.f);
 
             const auto& tx = type == 0 ? txUnlock : txPurchasable;
 
@@ -2179,7 +2179,7 @@ void Main::gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
         }
     }
 
-    zb::vectorEraseIf(uiState.purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
+    za::vectorEraseIf(uiState.purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
 }
 
 
@@ -2215,7 +2215,7 @@ void Main::gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
                                            : txCursor,
                 {.position = za::Mouse::getPosition(window).toVec2f(),
                  .scale    = za::Vec2f{profile.cursorScale, profile.cursorScale} *
-                             ((1.f + easeInOutBack(cursorGrow) * zb::pow(static_cast<float>(comboState.combo), 0.09f)) *
+                             ((1.f + easeInOutBack(cursorGrow) * za::pow(static_cast<float>(comboState.combo), 0.09f)) *
                               dpiScalingFactor),
                  .origin   = {5.f, 5.f},
                  .color    = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
@@ -2236,7 +2236,7 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
     else if (comboState.cursorComboAlpha > 0.f)
         comboState.cursorComboAlpha -= deltaTimeMs * 0.5f;
 
-    const auto alphaU8 = static_cast<U8>(zb::clamp(comboState.cursorComboAlpha, 0.f, 255.f));
+    const auto alphaU8 = static_cast<U8>(za::clamp(comboState.cursorComboAlpha, 0.f, 255.f));
 
     if (comboState.combo > 0)
         comboState.cursorComboLastShown = comboState.combo + 1;
@@ -2247,8 +2247,8 @@ void Main::gameLoopDrawCursorComboText(const float deltaTimeMs, const float curs
     za::TextData td{
         .position = za::Mouse::getPosition(window).toVec2f() + za::Vec2f{30.f, 48.f} * scaleMult,
         .origin   = {0.f, 0.f},
-        .string = comboState.cursorComboLastShown > 0 ? zb::String{"x" + zb::toString(comboState.cursorComboLastShown)}
-                                                      : zb::String{""},
+        .string = comboState.cursorComboLastShown > 0 ? za::String{"x" + za::toString(comboState.cursorComboLastShown)}
+                                                      : za::String{""},
         .characterSize    = 48u,
         .fillColor        = za::Color::blackWithAlpha(alphaU8),
         .outlineColor     = comboState.cursorComboOutlineColor,
@@ -2337,7 +2337,7 @@ void Main::gameLoopDrawCursorComboBar()
     if (edge == 2)
         return {bounds.position.x + rngFast.getF(0.f, thickness), bounds.position.y + rngFast.getF(0.f, bounds.size.y)};
 
-    ZB_ASSERT(edge == 3);
+    ZA_ASSERT(edge == 3);
 
     // Right edge
     return {bounds.position.x + bounds.size.x - rngFast.getF(0.f, thickness),
@@ -2363,7 +2363,7 @@ void Main::gameLoopDrawDollParticleBorder(const float hueMod)
                                 .accelerationY = 0.f,
                                 .opacity       = 1.f,
                                 .opacityDecay  = rngFast.getF(0.0015f, 0.0025f) * 0.65f,
-                                .rotation      = rngFast.getF(0.f, zb::tau),
+                                .rotation      = rngFast.getF(0.f, za::tau),
                                 .torque        = rngFast.getF(-0.002f, 0.002f)},
                                /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + hueMod),
                                ParticleType::Hex);
@@ -2415,7 +2415,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                                    .color = za::Color::whiteWithAlpha(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
 
 
-    ZB_ASSERT(profile.hudScale > 0.f);
+    ZA_ASSERT(profile.hudScale > 0.f);
 
     tipBackgroundSprite.setGlobalBottomCenter(
         {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
@@ -2470,7 +2470,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
     za::Sprite tipByteSprite{.position    = {},
                              .scale       = za::Vec2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
                              .origin      = txTipByte.getSize().toVec2f() / 2.f,
-                             .rotation    = za::radians(zb::tau * easeInOutBack(byteProgress)),
+                             .rotation    = za::radians(za::tau * easeInOutBack(byteProgress)),
                              .textureRect = txTipByte.getRect(),
                              .color       = za::Color::whiteWithAlpha(static_cast<U8>(tipByteAlpha))};
 
@@ -2487,7 +2487,7 @@ void Main::gameLoopTips(const float deltaTimeMs)
                                  .accelerationY = 0.0015f,
                                  .opacity       = 1.f,
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f) * 0.5f,
-                                 .rotation      = rngFast.getF(0.f, zb::tau),
+                                 .rotation      = rngFast.getF(0.f, za::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
                                 /* hue */ 0.f,
                                 ParticleType::Star);
@@ -2537,10 +2537,10 @@ void Main::gameLoopTips(const float deltaTimeMs)
                      {
                          .position         = {},
                          .scale            = za::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
-                         .string           = tipString.substrByPosLen(0u, tipCharIdx).to<zb::String>(),
+                         .string           = tipString.substrByPosLen(0u, tipCharIdx).to<za::String>(),
                          .characterSize    = 60u,
-                         .fillColor        = za::Color::whiteWithAlpha(static_cast<zb::U8>(tipByteAlpha)),
-                         .outlineColor     = outlineHueColor.withAlpha(static_cast<zb::U8>(tipByteAlpha)),
+                         .fillColor        = za::Color::whiteWithAlpha(static_cast<za::U8>(tipByteAlpha)),
+                         .outlineColor     = outlineHueColor.withAlpha(static_cast<za::U8>(tipByteAlpha)),
                          .outlineThickness = 4.f,
                      }};
 
@@ -2698,11 +2698,11 @@ void Main::drawActivatedShrineBackgroundEffects(za::RenderTarget& rt,
         // count climbs toward the auto-pop cap.
         const auto& cfg            = gameConstants.events.invincibleBubble;
         const float maxClicks      = cfg.maxClicks == 0u ? 1.f : static_cast<float>(cfg.maxClicks);
-        const float clicksFrac     = zb::clamp(static_cast<float>(bubble.comboClickCount) / maxClicks, 0.f, 1.f);
-        const float effectStrength = zb::clamp(0.45f + 0.55f * clicksFrac, 0.f, 1.f);
+        const float clicksFrac     = za::clamp(static_cast<float>(bubble.comboClickCount) / maxClicks, 0.f, 1.f);
+        const float effectStrength = za::clamp(0.45f + 0.55f * clicksFrac, 0.f, 1.f);
 
         // The halo extends a bit past the bubble's outer edge.
-        const float range = zb::max(bubble.radius * 3.5f, 96.f);
+        const float range = za::max(bubble.radius * 3.5f, 96.f);
 
         const za::Color tint = za::Color::fromHSLA({.hue = 255.f, .saturation = 1.f, .lightness = 0.55f});
         const za::Vec2f backgroundSpaceCenter = bubble.position - activeViewDelta;
@@ -2712,9 +2712,9 @@ void Main::drawActivatedShrineBackgroundEffects(za::RenderTarget& rt,
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] za::RenderTexture& Main::getHexedCatRenderTexture(const zb::SizeT index)
+[[nodiscard]] za::RenderTexture& Main::getHexedCatRenderTexture(const za::SizeT index)
 {
-    ZB_ASSERT(index < hexedCatRenderTextures.size());
+    ZA_ASSERT(index < hexedCatRenderTextures.size());
     return hexedCatRenderTextures[index];
 }
 
@@ -2726,7 +2726,7 @@ void Main::enqueueHexedCatDrawCommand(const za::CPUDrawableBatch& batch,
                                       const float                 phaseSeed,
                                       const float                 effectStrength)
 {
-    ZB_ASSERT(hexedCatDrawCommands.size() < maxHexedCatRenderTextures);
+    ZA_ASSERT(hexedCatDrawCommands.size() < maxHexedCatRenderTextures);
 
     auto&           rtHexedCat = hexedCatRenderTextures[hexedCatDrawCommands.size()];
     const za::Vec2f rtCenter   = rtHexedCat.getSize().toVec2f() * 0.5f;
@@ -2833,7 +2833,7 @@ void Main::gameLoopDisplayCloudBatch(const za::CPUDrawableBatch& batch, const za
                    .closable       = !takesAllScreen,
                    .hasTitlebar    = !takesAllScreen,
                    .vsync          = profile.vsync,
-                   .frametimeLimit = zb::clamp(profile.frametimeLimit, 60u, 144u),
+                   .frametimeLimit = za::clamp(profile.frametimeLimit, 60u, 144u),
                })
         .value();
 }
@@ -2889,7 +2889,7 @@ void Main::resizeWindow()
     if (cursorGrow >= 0.f)
     {
         cursorGrow -= deltaTimeMs * 0.0015f;
-        cursorGrow = zb::max(cursorGrow, 0.f);
+        cursorGrow = za::max(cursorGrow, 0.f);
     }
 
     return cursorGrow;

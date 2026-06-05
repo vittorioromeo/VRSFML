@@ -1,0 +1,31 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
+
+
+#if __has_builtin(__is_union)
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_IS_UNION(...) __is_union(__VA_ARGS__)
+
+#else
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+    #include <type_traits>
+
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_IS_UNION(...) ::std::is_union_v<__VA_ARGS__>
+
+#endif
+
+
+namespace za
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isUnion = ZA_IS_UNION(T);
+
+} // namespace za

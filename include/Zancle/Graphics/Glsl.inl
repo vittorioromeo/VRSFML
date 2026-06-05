@@ -10,8 +10,8 @@
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -36,9 +36,9 @@ ZA_GRAPHICS_API void copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 /// \brief Copy array-based matrix with given number of elements
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] ZA_GRAPHICS_API inline void copyMatrix(const float* source, zb::SizeT elements, float* dest)
+[[gnu::always_inline]] ZA_GRAPHICS_API inline void copyMatrix(const float* source, za::SizeT elements, float* dest)
 {
-    ZB_MEMCPY(dest, source, elements * sizeof(float));
+    ZA_MEMCPY(dest, source, elements * sizeof(float));
 }
 
 
@@ -46,7 +46,7 @@ ZA_GRAPHICS_API void copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 /// \brief Matrix type, used to set uniforms in GLSL
 ///
 ////////////////////////////////////////////////////////////
-template <zb::SizeT Columns, zb::SizeT Rows>
+template <za::SizeT Columns, za::SizeT Rows>
 struct [[nodiscard]] Matrix
 {
     ////////////////////////////////////////////////////////////

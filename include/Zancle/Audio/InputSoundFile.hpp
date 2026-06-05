@@ -10,11 +10,11 @@
 
 #include "Zancle/Audio/ChannelMap.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -69,10 +69,10 @@ public:
     ///
     /// \param filename Path of the sound file to load
     ///
-    /// \return Input sound file in success, `zb::nullOpt` otherwise
+    /// \return Input sound file in success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<InputSoundFile> openFromFile(const Path& filename);
+    [[nodiscard]] static za::Optional<InputSoundFile> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file in memory for reading
@@ -87,10 +87,10 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return Input sound file in success, `zb::nullOpt` otherwise
+    /// \return Input sound file in success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<InputSoundFile> openFromMemory(const void* data, zb::SizeT sizeInBytes);
+    [[nodiscard]] static za::Optional<InputSoundFile> openFromMemory(const void* data, za::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a sound file from a custom stream for reading
@@ -104,10 +104,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Input sound file in success, `zb::nullOpt` otherwise
+    /// \return Input sound file in success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<InputSoundFile> openFromStream(InputStream& stream);
+    [[nodiscard]] static za::Optional<InputSoundFile> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total number of audio samples in the file
@@ -115,7 +115,7 @@ public:
     /// \return Number of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U64 getSampleCount() const;
+    [[nodiscard]] za::U64 getSampleCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of channels used by the sound
@@ -165,7 +165,7 @@ public:
     /// \return Time position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getTimeOffset(zb::U64 sampleOffset) const;
+    [[nodiscard]] Time getTimeOffset(za::U64 sampleOffset) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -186,7 +186,7 @@ public:
     /// \return New sample offset after seeking
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U64 seek(zb::U64 sampleOffset);
+    [[nodiscard]] za::U64 seek(za::U64 sampleOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given time offset
@@ -202,7 +202,7 @@ public:
     /// \return New sample offset after seeking
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U64 seek(Time timeOffset);
+    [[nodiscard]] za::U64 seek(Time timeOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -217,7 +217,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U64 read(zb::I16* samples, zb::U64 maxCount);
+    [[nodiscard]] za::U64 read(za::I16* samples, za::U64 maxCount);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -229,7 +229,7 @@ private:
         StreamDeleter(bool theOwned);
 
         // To accept ownership transfer from default deleter
-        StreamDeleter(const zb::UniquePtrDefaultDeleter&);
+        StreamDeleter(const za::UniquePtrDefaultDeleter&);
 
         void operator()(InputStream* ptr) const;
 
@@ -243,10 +243,10 @@ public:
     /// \brief Constructor from reader, stream, and attributes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] InputSoundFile(zb::PassKey<InputSoundFile>&&,
-                                 zb::UniquePtr<SoundFileReader>&&            reader,
-                                 zb::UniquePtr<InputStream, StreamDeleter>&& stream,
-                                 zb::U64                                     sampleCount,
+    [[nodiscard]] InputSoundFile(za::PassKey<InputSoundFile>&&,
+                                 za::UniquePtr<SoundFileReader>&&            reader,
+                                 za::UniquePtr<InputStream, StreamDeleter>&& stream,
+                                 za::U64                                     sampleCount,
                                  unsigned int                                sampleRate,
                                  ChannelMap&&                                channelMap);
 
@@ -254,9 +254,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::UniquePtr<SoundFileReader>            m_reader; //!< Reader that handles I/O on the file's format
-    zb::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    /* logically const */ zb::U64             m_sampleCount{};          //!< Total number of samples in the file
+    za::UniquePtr<SoundFileReader>            m_reader; //!< Reader that handles I/O on the file's format
+    za::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
+    /* logically const */ za::U64             m_sampleCount{};          //!< Total number of samples in the file
     /* logically const */ unsigned int        m_sampleRate{};           //!< Number of samples per second
     /* logically const */ ChannelMap          m_channelMap; //!< The map of position in sample frame to sound channel
 };
@@ -287,8 +287,8 @@ private:
 ///           << "sample count: " << file.getSampleCount() << '\n';
 ///
 /// // Read and process batches of samples until the end of file is reached
-/// zb::I16 samples[1024];
-/// zb::U64 count;
+/// za::I16 samples[1024];
+/// za::U64 count;
 /// do
 /// {
 ///     count = file.read(samples, 1024);

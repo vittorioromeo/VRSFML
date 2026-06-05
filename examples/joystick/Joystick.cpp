@@ -21,16 +21,16 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -38,7 +38,7 @@ namespace
 ////////////////////////////////////////////////////////////
 // Axis labels as C strings
 ////////////////////////////////////////////////////////////
-constexpr zb::Array<const char*, za::Joystick::AxisCount> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
+constexpr za::Array<const char*, za::Joystick::AxisCount> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
 
 ////////////////////////////////////////////////////////////
@@ -121,13 +121,13 @@ public:
     JoystickDisplay(const za::Font&            font,
                     za::Joystick::Axis         xAxis,
                     za::Joystick::Axis         yAxis,
-                    zb::Optional<unsigned int> button = zb::nullOpt) :
+                    za::Optional<unsigned int> button = za::nullOpt) :
         m_xAxis(xAxis),
         m_yAxis(yAxis),
         m_button(button),
         m_label(font,
                 {
-                    .string        = zb::String(axisLabels[static_cast<unsigned int>(xAxis)]) + "/" +
+                    .string        = za::String(axisLabels[static_cast<unsigned int>(xAxis)]) + "/" +
                                      axisLabels[static_cast<unsigned int>(yAxis)],
                     .characterSize = 20u,
                 })
@@ -161,7 +161,7 @@ public:
         m_pressed = pressed;
     }
 
-    [[nodiscard]] zb::Optional<unsigned int> getButton() const
+    [[nodiscard]] za::Optional<unsigned int> getButton() const
     {
         return m_button;
     }
@@ -198,7 +198,7 @@ private:
 
     za::Joystick::Axis         m_xAxis;
     za::Joystick::Axis         m_yAxis;
-    zb::Optional<unsigned int> m_button;
+    za::Optional<unsigned int> m_button;
     za::Text                   m_label;
     float                      m_xValue{};
     float                      m_yValue{};
@@ -215,7 +215,7 @@ public:
     ButtonDisplay(const za::Font& font, unsigned int button) :
         m_label(font,
                 {
-                    .string        = zb::toString(button),
+                    .string        = za::toString(button),
                     .characterSize = static_cast<unsigned int>(2.f * radius),
                 }),
         m_button(button)
@@ -266,18 +266,18 @@ private:
 class GamepadDisplay : public za::Transformable
 {
 public:
-    GamepadDisplay(const za::Font& font, unsigned int id, const zb::String& name) :
+    GamepadDisplay(const za::Font& font, unsigned int id, const za::String& name) :
         m_label(font,
                 {
-                    .string        = zb::toString(id) + ": " + name,
+                    .string        = za::toString(id) + ": " + name,
                     .characterSize = 20u,
                 })
     {
         // Sticks
-        m_joysticks.emplaceBack(font, za::Joystick::Axis::X, za::Joystick::Axis::Y, zb::makeOptional<unsigned int>(10u))
+        m_joysticks.emplaceBack(font, za::Joystick::Axis::X, za::Joystick::Axis::Y, za::makeOptional<unsigned int>(10u))
             .position = {displaySize.x / 2.f - 100.f, displaySize.y - 50.f};
 
-        m_joysticks.emplaceBack(font, za::Joystick::Axis::Z, za::Joystick::Axis::R, zb::makeOptional<unsigned int>(11u))
+        m_joysticks.emplaceBack(font, za::Joystick::Axis::Z, za::Joystick::Axis::R, za::makeOptional<unsigned int>(11u))
             .position = {displaySize.x / 2.f + 100.f, displaySize.y - 50.f};
 
         // Face buttons (north/south/east/west diamond)
@@ -382,9 +382,9 @@ private:
             }
     }
 
-    zb::Vector<JoystickDisplay> m_joysticks;
-    zb::Vector<AxisDisplay>     m_triggers;
-    zb::Vector<ButtonDisplay>   m_buttons;
+    za::Vector<JoystickDisplay> m_joysticks;
+    za::Vector<AxisDisplay>     m_triggers;
+    za::Vector<ButtonDisplay>   m_buttons;
     za::Text                    m_label;
 };
 
@@ -396,10 +396,10 @@ private:
 class GenericDisplay : public za::Transformable
 {
 public:
-    GenericDisplay(const za::Font& font, unsigned int id, const zb::String& name) :
+    GenericDisplay(const za::Font& font, unsigned int id, const za::String& name) :
         m_label(font,
                 {
-                    .string        = zb::toString(id) + ": " + name,
+                    .string        = za::toString(id) + ": " + name,
                     .characterSize = 20u,
                 })
     {
@@ -467,18 +467,18 @@ public:
 
 private:
     za::Text                  m_label;
-    zb::Vector<AxisDisplay>   m_axisDisplays;
-    zb::Vector<ButtonDisplay> m_buttonDisplays;
+    za::Vector<AxisDisplay>   m_axisDisplays;
+    za::Vector<ButtonDisplay> m_buttonDisplays;
 };
 
 
 ////////////////////////////////////////////////////////////
 // Get the joystick name, or an empty string if not connected
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::String getJoystickName(unsigned int id)
+[[nodiscard]] za::String getJoystickName(unsigned int id)
 {
     if (const auto query = za::Joystick::query(id))
-        return zb::String{query->getName().asBytes()};
+        return za::String{query->getName().asBytes()};
 
     return {};
 }
@@ -515,7 +515,7 @@ int main()
     // Index indicators along the top: red if disconnected, green if connected
     constexpr float spacer = displaySize.x / static_cast<float>(za::Joystick::MaxCount + 1u);
 
-    zb::Vector<za::Text> indexIndicators;
+    za::Vector<za::Text> indexIndicators;
     indexIndicators.reserve(za::Joystick::MaxCount);
 
     for (unsigned int i = 0u; i < za::Joystick::MaxCount; ++i)
@@ -523,14 +523,14 @@ int main()
         za::Text indicator(font,
                            {
                                .position      = {spacer + static_cast<float>(i) * spacer, 60.f},
-                               .string        = zb::toString(i),
+                               .string        = za::toString(i),
                                .characterSize = 20u,
                            });
 
         const za::Rect2f bounds = indicator.getLocalBounds();
         indicator.origin        = bounds.position + bounds.size / 2.f;
 
-        indexIndicators.pushBack(ZB_MOVE(indicator));
+        indexIndicators.pushBack(ZA_MOVE(indicator));
     }
 
     unsigned int joystickIndex = 0u;
@@ -570,8 +570,8 @@ int main()
 
     // The actual displays - toggle between generic and gamepad with Tab
     bool                         showingGamepad = true;
-    zb::Optional<GamepadDisplay> gamepadDisplay;
-    zb::Optional<GenericDisplay> genericDisplay;
+    za::Optional<GamepadDisplay> gamepadDisplay;
+    za::Optional<GenericDisplay> genericDisplay;
 
     constexpr float displayOffset = 150.f;
 
@@ -590,7 +590,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

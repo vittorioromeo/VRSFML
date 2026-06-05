@@ -9,9 +9,9 @@
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -35,11 +35,11 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     VAOHandle&             vaoHandle;     //!< VAO holding per-instance attribute streams
-    zb::Span<const Vertex> vertexSpan;    //!< Range of vertices defining a single instance
-    zb::SizeT              instanceCount; //!< Number of instances to draw
+    za::Span<const Vertex> vertexSpan;    //!< Range of vertices defining a single instance
+    za::SizeT              instanceCount; //!< Number of instances to draw
     PrimitiveType          primitiveType; //!< How to interpret the vertices of a single instance
 };
 

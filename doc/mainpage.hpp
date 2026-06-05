@@ -22,7 +22,7 @@
 /// #include <Zancle/Window/Event.hpp>
 /// #include <Zancle/Window/VideoMode.hpp>
 ///
-/// #include <ZancleBase/Optional.hpp>
+/// #include <Zancle/Vocabulary/Optional.hpp>
 ///
 /// int main()
 /// {
@@ -47,7 +47,7 @@
 ///     while (true)
 ///     {
 ///         // Process events
-///         while (const zb::Optional event = window.pollEvent())
+///         while (const za::Optional event = window.pollEvent())
 ///         {
 ///             // Close window: exit
 ///             if (event->is<za::Event::Closed>())

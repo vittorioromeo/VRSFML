@@ -11,14 +11,14 @@
 #include "Zancle/Window/WindowImplSDL.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 #include "Zancle/System/String.hpp"
-#include "Zancle/System/Utf.hpp"
+#include "Zancle/String/Utf.hpp"
 #include "Zancle/System/Vector2.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 #include "ZancleBase/Builtins/Strlen.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
@@ -483,7 +483,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr za::Mouse::Button getButtonFromSDLButton(const zb::U8 sdlButton)
+[[nodiscard, gnu::const]] constexpr za::Mouse::Button getButtonFromSDLButton(const za::U8 sdlButton)
 {
     switch (sdlButton)
     {
@@ -499,7 +499,7 @@ namespace
             return za::Mouse::Button::Extra2;
     }
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return za::Mouse::Button::Left;
 }
 
@@ -520,7 +520,7 @@ bool touchIndexPool[32]{}; // Keeps track of which finger indices are in use
 ////////////////////////////////////////////////////////////
 [[nodiscard]] int findFirstNormalizedTouchIndex()
 {
-    for (zb::SizeT i = 0u; i < 32u; ++i)
+    for (za::SizeT i = 0u; i < 32u; ++i)
         if (!touchIndexPool[i])
             return static_cast<int>(i);
 
@@ -675,7 +675,7 @@ void WindowImplSDL::processEvents()
             {
                 char32_t     unicode   = 0;
                 const char*  keyBuffer = e.text.text;
-                const size_t length    = ZB_STRLEN(keyBuffer);
+                const size_t length    = ZA_STRLEN(keyBuffer);
                 const auto*  iter      = keyBuffer;
                 while (iter < keyBuffer + length)
                 {
@@ -729,7 +729,7 @@ void WindowImplSDL::processEvents()
                 const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
                                            static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
 
-                ZB_ASSERT(!touchMap.contains(fingerEvent.fingerID));
+                ZA_ASSERT(!touchMap.contains(fingerEvent.fingerID));
 
                 const int normalizedIndex = findFirstNormalizedTouchIndex();
                 if (normalizedIndex == -1)
@@ -749,7 +749,7 @@ void WindowImplSDL::processEvents()
                 const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
                                            static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
 
-                ZB_ASSERT(touchMap.contains(fingerEvent.fingerID));
+                ZA_ASSERT(touchMap.contains(fingerEvent.fingerID));
 
                 const auto [fingerIdx, pos, handle] = touchMap[fingerEvent.fingerID];
 
@@ -766,7 +766,7 @@ void WindowImplSDL::processEvents()
                 const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
                                            static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
 
-                ZB_ASSERT(touchMap.contains(fingerEvent.fingerID));
+                ZA_ASSERT(touchMap.contains(fingerEvent.fingerID));
                 const auto [fingerIdx, pos, handle] = touchMap[fingerEvent.fingerID];
 
                 pushEvent(za::Event::TouchMoved{fingerIdx, touchPos});
@@ -932,7 +932,7 @@ void WindowImplSDL::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplSDL::setIcon(Vector2u size, const zb::U8* pixels)
+void WindowImplSDL::setIcon(Vector2u size, const za::U8* pixels)
 {
     SDL_Surface* iconSurface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
                                                      static_cast<int>(size.y),

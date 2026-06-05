@@ -12,8 +12,8 @@
 #include "Zancle/Window/iOS/SFView.hpp"
 #include "Zancle/Window/iOS/SFViewController.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
 #include <UIKit/UIKit.h>
 
@@ -124,14 +124,14 @@ void WindowImplUIKit::setSize(Vec2u /* size */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMinimumSize(const zb::Optional<Vec2u>& /* minimumSize */)
+void WindowImplUIKit::setMinimumSize(const za::Optional<Vec2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMaximumSize(const zb::Optional<Vec2u>& /* maximumSize */)
+void WindowImplUIKit::setMaximumSize(const za::Optional<Vec2u>& /* maximumSize */)
 {
     // Not applicable
 }
@@ -145,7 +145,7 @@ void WindowImplUIKit::setTitle(const Utf8String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setIcon(const zb::U8* /* pixels */, Vec2u /* size */)
+void WindowImplUIKit::setIcon(const za::U8* /* pixels */, Vec2u /* size */)
 {
     // Not applicable
 }

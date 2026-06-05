@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Priv/ShaderBase.hpp" // IWYU pragma: export
 
-#include "Zancle/System/Path.hpp" // IWYU pragma: export
+#include "Zancle/IO/Path.hpp" // IWYU pragma: export
 
-#include "ZancleBase/Optional.hpp"   // IWYU pragma: export
-#include "ZancleBase/StringView.hpp" // IWYU pragma: export
+#include "Zancle/Vocabulary/Optional.hpp"   // IWYU pragma: export
+#include "Zancle/String/StringView.hpp" // IWYU pragma: export
 
 
 namespace za
@@ -27,9 +27,9 @@ struct Shader::LoadFromFileSettings
 ////////////////////////////////////////////////////////////
 struct Shader::LoadFromMemorySettings
 {
-    zb::StringView vertexCode{}; //!< Source code of the vertex shader (empty to skip)   // NOLINT(readability-redundant-member-init)
-    zb::StringView fragmentCode{}; //!< Source code of the fragment shader (empty to skip) // NOLINT(readability-redundant-member-init)
-    zb::StringView geometryCode{}; //!< Source code of the geometry shader (empty to skip) // NOLINT(readability-redundant-member-init)
+    za::StringView vertexCode{}; //!< Source code of the vertex shader (empty to skip)   // NOLINT(readability-redundant-member-init)
+    za::StringView fragmentCode{}; //!< Source code of the fragment shader (empty to skip) // NOLINT(readability-redundant-member-init)
+    za::StringView geometryCode{}; //!< Source code of the geometry shader (empty to skip) // NOLINT(readability-redundant-member-init)
 };
 
 } // namespace za

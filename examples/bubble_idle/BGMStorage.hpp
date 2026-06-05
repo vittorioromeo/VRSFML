@@ -3,9 +3,9 @@
 #include "Zancle/Audio/Music.hpp"
 #include "Zancle/Audio/MusicReader.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za
@@ -21,7 +21,7 @@ struct BGMBuffer
     za::Music       music;
 
     explicit BGMBuffer(za::PlaybackDevice& playbackDevice, za::MusicReader&& theMusicSource) :
-        musicReader{ZB_MOVE(theMusicSource)},
+        musicReader{ZA_MOVE(theMusicSource)},
         music{playbackDevice, musicReader}
     {
     }
@@ -31,5 +31,5 @@ struct BGMBuffer
 ////////////////////////////////////////////////////////////
 struct MainBGMStorage
 {
-    zb::Array<zb::Optional<BGMBuffer>, 2u> bgmBuffers{zb::nullOpt, zb::nullOpt};
+    za::Array<za::Optional<BGMBuffer>, 2u> bgmBuffers{za::nullOpt, za::nullOpt};
 };

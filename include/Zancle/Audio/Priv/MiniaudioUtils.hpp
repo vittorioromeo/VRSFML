@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -28,10 +28,10 @@ class Time;
 namespace za::priv::MiniaudioUtils
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::U8                soundChannelToMiniaudioChannel(SoundChannel soundChannel);
-[[nodiscard]] SoundChannel          miniaudioChannelToSoundChannel(zb::U8 soundChannel);
-[[nodiscard]] zb::Optional<Time>    getPlayingOffset(ma_sound& sound);
-[[nodiscard]] zb::Optional<zb::U64> getFrameIndex(ma_sound& sound, Time timeOffset);
+[[nodiscard]] za::U8                soundChannelToMiniaudioChannel(SoundChannel soundChannel);
+[[nodiscard]] SoundChannel          miniaudioChannelToSoundChannel(za::U8 soundChannel);
+[[nodiscard]] za::Optional<Time>    getPlayingOffset(ma_sound& sound);
+[[nodiscard]] za::Optional<za::U64> getFrameIndex(ma_sound& sound, Time timeOffset);
 [[gnu::cold]] bool                  fail(const char* what, int maResult);
 
 } // namespace za::priv::MiniaudioUtils

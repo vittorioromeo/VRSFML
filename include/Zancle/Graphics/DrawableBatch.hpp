@@ -16,12 +16,12 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 /// \brief Internal storage strategy for `DrawableBatchImpl` using CPU-side memory
 ///
-/// `CPUStorage` manages vertex and index data in standard `zb::Vector`
+/// `CPUStorage` manages vertex and index data in standard `za::Vector`
 /// containers residing in CPU memory. This storage is suitable when
 /// batch data is frequently updated or when GPU resources are constrained.
 /// Data is typically uploaded to the GPU on each draw call.
@@ -96,7 +96,7 @@ struct CPUStorage
     /// \return Pointer to the beginning of the reserved (but uncommitted) vertex region
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(const zb::SizeT count)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(const za::SizeT count)
     {
         return vertices.reserveMore(count);
     }
@@ -105,7 +105,7 @@ struct CPUStorage
     /// \brief Ensure the vertex storage can accommodate `count` vertices without changing the committed size
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reserveVertexCapacity(const zb::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void reserveVertexCapacity(const za::SizeT count)
     {
         vertices.reserve(count);
     }
@@ -120,7 +120,7 @@ struct CPUStorage
     /// \return Pointer to the beginning of the reserved (but uncommitted) index region
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(const zb::SizeT count)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(const za::SizeT count)
     {
         return indices.reserveMore(count);
     }
@@ -129,7 +129,7 @@ struct CPUStorage
     /// \brief Ensure the index storage can accommodate `count` indices without changing the committed size
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reserveIndexCapacity(const zb::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void reserveIndexCapacity(const za::SizeT count)
     {
         indices.reserve(count);
     }
@@ -145,7 +145,7 @@ struct CPUStorage
     /// \param count Number of vertices to commit
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(const zb::SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(const za::SizeT count) noexcept
     {
         vertices.unsafeSetSize(vertices.size() + count);
     }
@@ -161,7 +161,7 @@ struct CPUStorage
     /// \param count Number of indices to commit
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(const zb::SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(const za::SizeT count) noexcept
     {
         indices.unsafeSetSize(indices.size() + count);
     }
@@ -191,8 +191,8 @@ struct CPUStorage
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::Vector<Vertex>    vertices; //!< CPU buffer for vertices
-    zb::Vector<IndexType> indices;  //!< CPU buffer for indices
+    za::Vector<Vertex>    vertices; //!< CPU buffer for vertices
+    za::Vector<IndexType> indices;  //!< CPU buffer for indices
 };
 
 ////////////////////////////////////////////////////////////
@@ -272,13 +272,13 @@ struct PersistentGPUStorage
     /// \return Pointer to the beginning of the CPU-writable vertex region on the GPU buffer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vertex* reserveMoreVertices(zb::SizeT count);
+    [[nodiscard]] Vertex* reserveMoreVertices(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Ensure the vertex buffer can accommodate `count` more vertices without changing the active count
     ///
     ////////////////////////////////////////////////////////////
-    void reserveVertexCapacity(zb::SizeT count);
+    void reserveVertexCapacity(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Reserves capacity for more indices and returns a pointer to the mapped region
@@ -291,13 +291,13 @@ struct PersistentGPUStorage
     /// \return Pointer to the beginning of the CPU-writable index region on the GPU buffer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IndexType* reserveMoreIndices(zb::SizeT count);
+    [[nodiscard]] IndexType* reserveMoreIndices(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Ensure the index buffer can accommodate `count` more indices without changing the active count
     ///
     ////////////////////////////////////////////////////////////
-    void reserveIndexCapacity(zb::SizeT count);
+    void reserveIndexCapacity(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Commits a number of previously reserved vertices
@@ -309,7 +309,7 @@ struct PersistentGPUStorage
     /// \param count Number of vertices to commit
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreVertices(const zb::SizeT count) noexcept
+    [[gnu::always_inline]] void commitMoreVertices(const za::SizeT count) noexcept
     {
         nVertices += static_cast<IndexType>(count);
     }
@@ -324,7 +324,7 @@ struct PersistentGPUStorage
     /// \param count Number of indices to commit
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreIndices(const zb::SizeT count) noexcept
+    [[gnu::always_inline]] void commitMoreIndices(const za::SizeT count) noexcept
     {
         nIndices += static_cast<IndexType>(count);
     }
@@ -375,7 +375,7 @@ struct PersistentGPUStorage
     /// \param offset Offset (in number of vertices) from the beginning of the buffer
     ///
     ////////////////////////////////////////////////////////////
-    void flushVertexWritesToGPU(zb::SizeT count, zb::SizeT offset) const;
+    void flushVertexWritesToGPU(za::SizeT count, za::SizeT offset) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Flushes a range of index writes to the GPU
@@ -389,7 +389,7 @@ struct PersistentGPUStorage
     /// \param offset Offset (in number of indices) from the beginning of the buffer
     ///
     ////////////////////////////////////////////////////////////
-    void flushIndexWritesToGPU(zb::SizeT count, zb::SizeT offset) const;
+    void flushIndexWritesToGPU(za::SizeT count, za::SizeT offset) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Commit all writes since the last submission, creating a GPU fence
@@ -406,7 +406,7 @@ struct PersistentGPUStorage
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer
@@ -449,7 +449,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... TStorageArgs>
-    explicit DrawableBatchImpl(TStorageArgs&&... storageArgs) : m_storage(ZB_FORWARD(storageArgs)...)
+    explicit DrawableBatchImpl(TStorageArgs&&... storageArgs) : m_storage(ZA_FORWARD(storageArgs)...)
     {
     }
 
@@ -463,7 +463,7 @@ public:
     /// \param triangleCount Number of triangles to reserve space for
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reserveTriangles(const zb::SizeT triangleCount)
+    [[gnu::always_inline, gnu::flatten]] void reserveTriangles(const za::SizeT triangleCount)
     {
         m_storage.reserveIndexCapacity(3u * triangleCount);
         m_storage.reserveVertexCapacity(3u * triangleCount);
@@ -480,7 +480,7 @@ public:
     /// \param quadCount Number of quads to reserve space for
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reserveQuads(const zb::SizeT quadCount)
+    [[gnu::always_inline, gnu::flatten]] void reserveQuads(const za::SizeT quadCount)
     {
         m_storage.reserveIndexCapacity(6u * quadCount);
         m_storage.reserveVertexCapacity(4u * quadCount);
@@ -872,7 +872,7 @@ private:
     /// \warning The returned span is invalidated after the next call to `add` or batch flush.
     ///
     ////////////////////////////////////////////////////////////
-    BatchedGeometry drawTriangleFanShapeFromPoints(zb::SizeT    nPoints,
+    BatchedGeometry drawTriangleFanShapeFromPoints(za::SizeT    nPoints,
                                                    const auto&  descriptor,
                                                    auto&&       pointFn,
                                                    const Vec2f* localApex = nullptr);
@@ -887,7 +887,7 @@ private:
     /// \param size Number of fill vertices
     ///
     ////////////////////////////////////////////////////////////
-    void addShapeFill(const Transform& transform, const Vertex* data, zb::SizeT size);
+    void addShapeFill(const Transform& transform, const Vertex* data, za::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds vertices for a shape's outline to the batch
@@ -899,7 +899,7 @@ private:
     /// \param size Number of outline vertices
     ///
     ////////////////////////////////////////////////////////////
-    void addShapeOutline(const Transform& transform, const Vertex* data, zb::SizeT size);
+    void addShapeOutline(const Transform& transform, const Vertex* data, za::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Internal implementation that appends `text` (or `glyphMappedText`) vertices to the batch
@@ -1018,7 +1018,7 @@ public:
     /// \see za::priv::PersistentGPUStorage::flushVertexWritesToGPU
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushVertexWritesToGPU(const zb::SizeT count, const zb::SizeT offset) const
+    [[gnu::always_inline]] void flushVertexWritesToGPU(const za::SizeT count, const za::SizeT offset) const
     {
         m_storage.flushVertexWritesToGPU(count, offset);
     }
@@ -1040,7 +1040,7 @@ public:
     /// \see za::priv::PersistentGPUStorage::flushIndexWritesToGPU
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushIndexWritesToGPU(const zb::SizeT count, const zb::SizeT offset) const
+    [[gnu::always_inline]] void flushIndexWritesToGPU(const za::SizeT count, const za::SizeT offset) const
     {
         m_storage.flushIndexWritesToGPU(count, offset);
     }

@@ -10,7 +10,7 @@
 
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp" // not expensive, included everwhere `EGLCheck.hpp` is included
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -53,7 +53,7 @@ struct EglScopedChecker
         expression{theExpression},
         line{theLine}
     {
-        ZB_ASSERT(eglGetError() == EGL_SUCCESS);
+        ZA_ASSERT(eglGetError() == EGL_SUCCESS);
     }
 
     ////////////////////////////////////////////////////////////

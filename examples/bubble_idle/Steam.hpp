@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 namespace hg::Steam
@@ -17,7 +17,7 @@ class SteamManager
 private:
     class SteamManagerImpl;
 
-    zb::UniquePtr<SteamManagerImpl> m_impl;
+    za::UniquePtr<SteamManagerImpl> m_impl;
 
     [[nodiscard]] const SteamManagerImpl& impl() const noexcept;
     [[nodiscard]] SteamManagerImpl&       impl() noexcept;
@@ -39,14 +39,14 @@ public:
     bool runCallbacks();
 
     bool storeStats();
-    bool unlockAchievement(zb::SizeT idx);
-    bool isAchievementUnlocked(zb::SizeT idx);
+    bool unlockAchievement(za::SizeT idx);
+    bool isAchievementUnlocked(za::SizeT idx);
 
-    bool setRichPresenceInGame(zb::StringView levelNameFormat);
+    bool setRichPresenceInGame(za::StringView levelNameFormat);
 
-    bool               setAndStoreStat(zb::StringView name, int data);
-    [[nodiscard]] bool getAchievement(bool* out, zb::StringView name);
-    [[nodiscard]] bool getStat(int* out, zb::StringView name);
+    bool               setAndStoreStat(za::StringView name, int data);
+    [[nodiscard]] bool getAchievement(bool* out, za::StringView name);
+    [[nodiscard]] bool getStat(int* out, za::StringView name);
 
     bool updateHardcodedAchievements();
 

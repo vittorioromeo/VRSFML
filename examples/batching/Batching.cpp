@@ -22,24 +22,24 @@
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/InterferenceSize.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/ThreadPool.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/InterferenceSize.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <latch>
 
@@ -62,7 +62,7 @@ int main()
     const auto getRndUInt = [&](const unsigned int min, const unsigned int max)
     { return rng.getI<unsigned int>(min, max); };
 
-    const auto getRndU8 = [&](const zb::U8 min, const zb::U8 max) { return rng.getI<zb::U8>(min, max); };
+    const auto getRndU8 = [&](const za::U8 min, const za::U8 max) { return rng.getI<za::U8>(min, max); };
 
     //
     //
@@ -131,13 +131,13 @@ int main()
         float           torque;
     };
 
-    zb::Vector<Entity> entities;
+    za::Vector<Entity> entities;
 
-    const auto populateEntities = [&](const zb::SizeT n)
+    const auto populateEntities = [&](const za::SizeT n)
     {
         if (n < entities.size())
         {
-            entities.erase(entities.begin() + static_cast<zb::PtrDiffT>(n), entities.end());
+            entities.erase(entities.begin() + static_cast<za::PtrDiffT>(n), entities.end());
             return;
         }
 
@@ -146,9 +146,9 @@ int main()
         char                  labelBuffer[64]{};
         constexpr const char* names[]{"Elephant", "Giraffe", "Monkey", "Pig", "Rabbit", "Snake"};
 
-        for (zb::SizeT i = entities.size(); i < n; ++i)
+        for (za::SizeT i = entities.size(); i < n; ++i)
         {
-            const zb::SizeT   type        = i % 6u;
+            const za::SizeT   type        = i % 6u;
             const za::Rect2f& textureRect = spriteTextureRects[type];
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
@@ -173,7 +173,7 @@ int main()
                 getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
-            sprite.rotation = za::radians(getRndFloat(0.f, zb::tau));
+            sprite.rotation = za::radians(getRndFloat(0.f, za::tau));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
             sprite.scale            = {scaleFactor, scaleFactor};
@@ -189,8 +189,8 @@ int main()
     //
     //
     // Get hardware constants
-    const auto     nMaxWorkers   = zb::ThreadPool::getHardwareWorkerCount();
-    constexpr auto cacheLineSize = static_cast<zb::SizeT>(zb::hardwareDestructiveInterferenceSize);
+    const auto     nMaxWorkers   = za::ThreadPool::getHardwareWorkerCount();
+    constexpr auto cacheLineSize = static_cast<za::SizeT>(za::hardwareDestructiveInterferenceSize);
 
     //
     //
@@ -212,16 +212,16 @@ int main()
 
     auto         batchType                = BatchType::Disabled;
     auto         autobatchType            = defaultBatchType;
-    zb::U64      autoBatchVertexThreshold = 32'768u;
+    za::U64      autoBatchVertexThreshold = 32'768u;
     bool         drawSprites              = true;
     bool         drawText                 = true;
     bool         drawShapes               = true;
     bool         multithreadedUpdate      = false;
     bool         multithreadedDraw        = false;
     bool         useWithRenderStatesAPI   = true;
-    auto         nWorkers                 = static_cast<zb::U64>(nMaxWorkers);
+    auto         nWorkers                 = static_cast<za::U64>(nMaxWorkers);
     int          numEntities              = 500;
-    zb::SizeT    drawnVertices            = 0u;
+    za::SizeT    drawnVertices            = 0u;
     unsigned int nDrawCalls               = 0u;
 
     //
@@ -237,29 +237,29 @@ int main()
         using za::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    zb::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
+    za::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
 
 #ifndef ZA_OPENGL_ES
-    zb::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
+    za::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
 #endif
 
     //
     //
     // Set up thread pool
-    zb::ThreadPool pool(nMaxWorkers);
+    za::ThreadPool pool(nMaxWorkers);
 
     const auto doInBatches = [&](auto&& f)
     {
-        const zb::SizeT entitiesPerBatch = entities.size() / nWorkers;
+        const za::SizeT entitiesPerBatch = entities.size() / nWorkers;
 
-        std::latch latch{static_cast<zb::PtrDiffT>(nWorkers)};
+        std::latch latch{static_cast<za::PtrDiffT>(nWorkers)};
 
-        for (zb::SizeT i = 0u; i < nWorkers; ++i)
+        for (za::SizeT i = 0u; i < nWorkers; ++i)
         {
             pool.post([&, i]
             {
-                const zb::SizeT batchStartIdx = i * entitiesPerBatch;
-                const zb::SizeT batchEndIdx   = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
+                const za::SizeT batchStartIdx = i * entitiesPerBatch;
+                const za::SizeT batchEndIdx   = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -284,7 +284,7 @@ int main()
     //
     //
     // Set up initial simulation state
-    populateEntities(static_cast<zb::SizeT>(numEntities));
+    populateEntities(static_cast<za::SizeT>(numEntities));
 
     //
     //
@@ -299,7 +299,7 @@ int main()
         // ---
         clock.restart();
         {
-            while (zb::Optional event = window.pollEvent())
+            while (za::Optional event = window.pollEvent())
             {
                 imGuiContext.processEvent(window, *event);
 
@@ -342,9 +342,9 @@ int main()
             }
             else
             {
-                doInBatches([&](const zb::SizeT /* iBatch */, const zb::SizeT batchStartIdx, const zb::SizeT batchEndIdx)
+                doInBatches([&](const za::SizeT /* iBatch */, const za::SizeT batchStartIdx, const za::SizeT batchEndIdx)
                 {
-                    for (zb::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                    for (za::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         updateEntity(entities[i]);
                 });
             }
@@ -380,24 +380,24 @@ int main()
 #endif
             };
 
-            if (ImGui::Combo("Batch type", reinterpret_cast<int*>(&batchType), batchTypeItems, zb::getArraySize(batchTypeItems)))
+            if (ImGui::Combo("Batch type", reinterpret_cast<int*>(&batchType), batchTypeItems, za::getArraySize(batchTypeItems)))
                 clearSamples();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
             if (ImGui::Combo("Autobatch type",
                              reinterpret_cast<int*>(&autobatchType),
                              batchTypeItems,
-                             zb::getArraySize(batchTypeItems)))
+                             za::getArraySize(batchTypeItems)))
             {
                 clearSamples();
                 window.setAutoBatchMode(static_cast<za::RenderTarget::AutoBatchMode>(autobatchType));
             }
 
-            const zb::U64 step = 1u;
+            const za::U64 step = 1u;
             ImGui::SetNextItemWidth(172.f);
             if (ImGui::InputScalar("Autobatch Vertex Threshold", ImGuiDataType_U64, &autoBatchVertexThreshold, &step))
                 window.setAutoBatchVertexThreshold(
-                    static_cast<zb::SizeT>(zb::max(autoBatchVertexThreshold, zb::U64{1024u})));
+                    static_cast<za::SizeT>(za::max(autoBatchVertexThreshold, za::U64{1024u})));
             ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Sprites", &drawSprites))
@@ -423,7 +423,7 @@ int main()
 
             ImGui::SetNextItemWidth(172.f);
             ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
-            nWorkers = zb::clamp(nWorkers, zb::U64{2u}, static_cast<zb::U64>(nMaxWorkers));
+            nWorkers = za::clamp(nWorkers, za::U64{2u}, static_cast<za::U64>(nMaxWorkers));
 
             ImGui::NewLine();
 
@@ -433,7 +433,7 @@ int main()
 
             if (ImGui::Button("Repopulate") && numEntities > 0)
             {
-                populateEntities(static_cast<zb::SizeT>(numEntities));
+                populateEntities(static_cast<za::SizeT>(numEntities));
                 clearSamples();
             }
 
@@ -445,7 +445,7 @@ int main()
                                  samples.data(),
                                  static_cast<int>(samples.capacity()),
                                  static_cast<int>(samples.insertionIndex()),
-                                 (zb::toString(samples.getAverageAs<double>()) + unit).cStr(),
+                                 (za::toString(samples.getAverageAs<double>()) + unit).cStr(),
                                  0.f,
                                  upperBound,
                                  ImVec2{256.f, 32.f});
@@ -473,7 +473,7 @@ int main()
 
             const auto baseStates = za::RenderStates{.texture = &textureAtlas.getTexture()};
 
-            const auto drawEntity = [&](const Entity& entity, zb::SizeT& drawnVertexCounter, auto&& drawFn)
+            const auto drawEntity = [&](const Entity& entity, za::SizeT& drawnVertexCounter, auto&& drawFn)
             {
                 if (drawSprites)
                 {
@@ -520,14 +520,14 @@ int main()
                         batch.clear();
 
                     // Initialize per-worker drawn vertex counts
-                    zb::Vector<zb::SizeT> totalChunkDrawnVertices(nMaxWorkers);
+                    za::Vector<za::SizeT> totalChunkDrawnVertices(nMaxWorkers);
 
                     const auto populateBatches =
-                        [&](const zb::SizeT iBatch, const zb::SizeT batchStartIdx, const zb::SizeT batchEndIdx)
+                        [&](const za::SizeT iBatch, const za::SizeT batchStartIdx, const za::SizeT batchEndIdx)
                     {
-                        zb::SizeT chunkDrawnVertices = 0u; // avoid false sharing
+                        za::SizeT chunkDrawnVertices = 0u; // avoid false sharing
 
-                        for (zb::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
+                        for (za::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                             drawEntity(entities[i], chunkDrawnVertices, [&](const auto& drawable) {
                                 batchesArray[iBatch].add(drawable);
                             });
@@ -543,7 +543,7 @@ int main()
                     // Tally vertices and submit batches to GPU
                     drawnVertices = 0u;
 
-                    for (zb::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
+                    for (za::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
                     {
                         drawnVertices += totalChunkDrawnVertices[i];
                         window.draw(batchesArray[i], baseStates);
@@ -554,11 +554,11 @@ int main()
                 // If GPU storage, preallocate memory to avoid race conditions
                 if (batchType == BatchType::GPUStorage)
                 {
-                    const zb::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
-                    constexpr zb::SizeT maxQuadsPerEntityEstimate = 96u;
-                    const zb::SizeT     reservationSize           = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
+                    const za::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
+                    constexpr za::SizeT maxQuadsPerEntityEstimate = 96u;
+                    const za::SizeT     reservationSize           = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
 
-                    for (zb::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
+                    for (za::SizeT i = 0u; i < (multithreadedDraw ? nWorkers : 1u); ++i)
                         gpuDrawableBatches[i].reserveQuads(reservationSize);
                 }
 

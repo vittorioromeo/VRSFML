@@ -9,12 +9,12 @@
 
 #include "Zancle/Audio/CaptureDevice.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 
@@ -28,7 +28,7 @@ SoundRecorder::SoundRecorder() = default;
 ////////////////////////////////////////////////////////////
 SoundRecorder::~SoundRecorder()
 {
-    ZB_ASSERT(m_lastCaptureDevice == nullptr &&
+    ZA_ASSERT(m_lastCaptureDevice == nullptr &&
               "The sound recorder must be stopped before destroying the capture device");
 }
 
@@ -60,7 +60,7 @@ bool SoundRecorder::start(CaptureDevice& captureDevice, unsigned int sampleRate)
 
     // Register callback before starting the device to prevent a race where
     // the audio thread invokes the callback before it has been set.
-    captureDevice.setProcessSamplesFunc(this, [](void* userData, const zb::I16* samples, zb::SizeT sampleCount) {
+    captureDevice.setProcessSamplesFunc(this, [](void* userData, const za::I16* samples, za::SizeT sampleCount) {
         return static_cast<SoundRecorder*>(userData)->onProcessSamples(samples, sampleCount);
     });
 

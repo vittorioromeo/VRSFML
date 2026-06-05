@@ -5,11 +5,11 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -39,41 +39,41 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool isKeyDown(const za::Keyboard::Key key) const
     {
-        return m_currentInputState.keys[static_cast<zb::SizeT>(key)];
+        return m_currentInputState.keys[static_cast<za::SizeT>(key)];
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool wasKeyJustPressed(const za::Keyboard::Key key) const
     {
-        return m_currentInputState.keys[static_cast<zb::SizeT>(key)] &&
-               !m_previousInputState.keys[static_cast<zb::SizeT>(key)];
+        return m_currentInputState.keys[static_cast<za::SizeT>(key)] &&
+               !m_previousInputState.keys[static_cast<za::SizeT>(key)];
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool wasKeyJustReleased(const za::Keyboard::Key key) const
     {
-        return !m_currentInputState.keys[static_cast<zb::SizeT>(key)] &&
-               m_previousInputState.keys[static_cast<zb::SizeT>(key)];
+        return !m_currentInputState.keys[static_cast<za::SizeT>(key)] &&
+               m_previousInputState.keys[static_cast<za::SizeT>(key)];
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool isMouseButtonDown(const za::Mouse::Button button) const
     {
-        return m_currentInputState.buttons[static_cast<zb::SizeT>(button)];
+        return m_currentInputState.buttons[static_cast<za::SizeT>(button)];
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool wasMouseButtonJustPressed(const za::Mouse::Button button) const
     {
-        return m_currentInputState.buttons[static_cast<zb::SizeT>(button)] &&
-               !m_previousInputState.buttons[static_cast<zb::SizeT>(button)];
+        return m_currentInputState.buttons[static_cast<za::SizeT>(button)] &&
+               !m_previousInputState.buttons[static_cast<za::SizeT>(button)];
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] bool wasMouseButtonJustReleased(const za::Mouse::Button button) const
     {
-        return !m_currentInputState.buttons[static_cast<zb::SizeT>(button)] &&
-               m_previousInputState.buttons[static_cast<zb::SizeT>(button)];
+        return !m_currentInputState.buttons[static_cast<za::SizeT>(button)] &&
+               m_previousInputState.buttons[static_cast<za::SizeT>(button)];
     }
 
     ////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] za::Vec2i getFingerPosition(const unsigned int finger) const
     {
-        ZB_ASSERT(m_currentInputState.fingerPositions[finger].hasValue());
+        ZA_ASSERT(m_currentInputState.fingerPositions[finger].hasValue());
         return *m_currentInputState.fingerPositions[finger];
     }
 
@@ -140,14 +140,14 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] zb::Optional<unsigned int> getFirstNewlyPressedFinger() const
+    [[nodiscard, gnu::pure]] za::Optional<unsigned int> getFirstNewlyPressedFinger() const
     {
         for (unsigned int i = 0; i < m_currentInputState.fingerPositions.size(); ++i)
         {
             if (wasFingerJustPressed(i))
-                return zb::makeOptional<unsigned int>(i);
+                return za::makeOptional<unsigned int>(i);
         }
 
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 };

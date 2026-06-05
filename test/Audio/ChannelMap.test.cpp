@@ -5,22 +5,22 @@
 
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Audio] za::ChannelMap" * tst::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::ChannelMap));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::ChannelMap));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::ChannelMap));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::ChannelMap));
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::ChannelMap));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::ChannelMap));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::ChannelMap));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::ChannelMap));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::ChannelMap));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::ChannelMap));
     }
 
     SECTION("Permutation check")

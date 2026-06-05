@@ -12,16 +12,16 @@
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsSame.hpp"
-#include "ZancleBase/TrivialAbi.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Base/TrivialAbi.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
@@ -76,21 +76,21 @@ namespace za::priv
 [[nodiscard, gnu::pure]] SDL_WindowFlags makeSDLWindowFlagsFromWindowSettings(const WindowSettings& windowSettings) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(zb::U8 sdlButton) noexcept;
+[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(za::U8 sdlButton) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] zb::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
+[[nodiscard, gnu::const]] za::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToSFML(SDL_DisplayOrientation displayOrientation);
 
 ////////////////////////////////////////////////////////////
-struct ZB_TRIVIAL_ABI UniquePtrSDLDeleter
+struct ZA_TRIVIAL_ABI UniquePtrSDLDeleter
 {
     template <typename T>
     [[gnu::always_inline]] void operator()(T* const ptr) const noexcept
     {
-        static_assert(!ZB_IS_SAME(T, void), "can't delete pointer to incomplete type");
+        static_assert(!ZA_IS_SAME(T, void), "can't delete pointer to incomplete type");
 
         // NOLINTNEXTLINE(bugprone-sizeof-expression)
         static_assert(sizeof(T) > 0u, "can't delete pointer to incomplete type");
@@ -101,10 +101,10 @@ struct ZB_TRIVIAL_ABI UniquePtrSDLDeleter
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SDLUPtr = zb::UniquePtr<T, UniquePtrSDLDeleter>;
+using SDLUPtr = za::UniquePtr<T, UniquePtrSDLDeleter>;
 
 ////////////////////////////////////////////////////////////
-struct ZB_TRIVIAL_ABI UniquePtrSDLSurfaceDeleter
+struct ZA_TRIVIAL_ABI UniquePtrSDLSurfaceDeleter
 {
     [[gnu::always_inline]] void operator()(SDL_Surface* const ptr) const noexcept
     {
@@ -113,7 +113,7 @@ struct ZB_TRIVIAL_ABI UniquePtrSDLSurfaceDeleter
 };
 
 ////////////////////////////////////////////////////////////
-using SDLSurfaceUPtr = zb::UniquePtr<SDL_Surface, UniquePtrSDLSurfaceDeleter>;
+using SDLSurfaceUPtr = za::UniquePtr<SDL_Surface, UniquePtrSDLSurfaceDeleter>;
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -121,11 +121,11 @@ struct SDLAllocatedArray
 {
     ////////////////////////////////////////////////////////////
     SDLUPtr<T> ptr;
-    zb::SizeT  count;
+    za::SizeT  count;
 
 
     ////////////////////////////////////////////////////////////
-    explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const zb::SizeT theCount) : ptr{ZB_MOVE(thePtr)}, count{theCount}
+    explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const za::SizeT theCount) : ptr{ZA_MOVE(thePtr)}, count{theCount}
     {
     }
 
@@ -151,20 +151,20 @@ struct SDLAllocatedArray
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] T& operator[](const zb::SizeT index) noexcept
+    [[nodiscard]] T& operator[](const za::SizeT index) noexcept
     {
-        ZB_ASSERT(ptr != nullptr);
-        ZB_ASSERT(index < count);
+        ZA_ASSERT(ptr != nullptr);
+        ZA_ASSERT(index < count);
 
         return ptr.get()[index];
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const T& operator[](const zb::SizeT index) const noexcept
+    [[nodiscard]] const T& operator[](const za::SizeT index) const noexcept
     {
-        ZB_ASSERT(ptr != nullptr);
-        ZB_ASSERT(index < count);
+        ZA_ASSERT(ptr != nullptr);
+        ZA_ASSERT(index < count);
 
         return ptr.get()[index];
     }
@@ -178,7 +178,7 @@ struct SDLAllocatedArray
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT size() const noexcept
+    [[nodiscard]] za::SizeT size() const noexcept
     {
         return count;
     }
@@ -309,7 +309,7 @@ public:
     [[nodiscard]] float getDisplayScale(SDL_Window& window) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(const zb::U8* pixels, Vec2u size) const;
+    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(const za::U8* pixels, Vec2u size) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getJoystickButtonCount(SDL_Joystick& handle);

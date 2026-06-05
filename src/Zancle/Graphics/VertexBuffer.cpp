@@ -16,11 +16,11 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Swap.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Swap.hpp"
 
 
 namespace
@@ -90,8 +90,8 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-        ZB_ASSERT(GraphicsContext::isInstalled());
+        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(GraphicsContext::isInstalled());
 
         glCheck(glDeleteBuffers(1, &m_buffer));
     }
@@ -99,10 +99,10 @@ VertexBuffer::~VertexBuffer()
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::create(zb::SizeT vertexCount)
+bool VertexBuffer::create(za::SizeT vertexCount)
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(GraphicsContext::isInstalled());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::isInstalled());
 
     if (!m_buffer)
         glCheck(glGenBuffers(1, &m_buffer));
@@ -127,7 +127,7 @@ bool VertexBuffer::create(zb::SizeT vertexCount)
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT VertexBuffer::getVertexCount() const
+za::SizeT VertexBuffer::getVertexCount() const
 {
     return m_size;
 }
@@ -141,7 +141,7 @@ bool VertexBuffer::update(const Vertex* vertices)
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::update(const Vertex* vertices, zb::SizeT vertexCount, unsigned int offset)
+bool VertexBuffer::update(const Vertex* vertices, za::SizeT vertexCount, unsigned int offset)
 {
     // Sanity checks
     if (!m_buffer)
@@ -153,8 +153,8 @@ bool VertexBuffer::update(const Vertex* vertices, zb::SizeT vertexCount, unsigne
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(GraphicsContext::isInstalled());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::isInstalled());
 
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
 
@@ -186,8 +186,8 @@ bool VertexBuffer::update(const VertexBuffer& vertexBuffer) const
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(GraphicsContext::isInstalled());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::isInstalled());
 
     glCheck(glBindBuffer(GL_COPY_READ_BUFFER, vertexBuffer.m_buffer));
     glCheck(glBindBuffer(GL_COPY_WRITE_BUFFER, m_buffer));
@@ -219,10 +219,10 @@ VertexBuffer& VertexBuffer::operator=(const VertexBuffer& rhs)
 ////////////////////////////////////////////////////////////
 void VertexBuffer::swap(VertexBuffer& rhs) noexcept
 {
-    zb::genericSwap(m_size, rhs.m_size);
-    zb::genericSwap(m_buffer, rhs.m_buffer);
-    zb::genericSwap(m_primitiveType, rhs.m_primitiveType);
-    zb::genericSwap(m_usage, rhs.m_usage);
+    za::genericSwap(m_size, rhs.m_size);
+    za::genericSwap(m_buffer, rhs.m_buffer);
+    za::genericSwap(m_primitiveType, rhs.m_primitiveType);
+    za::genericSwap(m_usage, rhs.m_usage);
 }
 
 
@@ -236,8 +236,8 @@ unsigned int VertexBuffer::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void VertexBuffer::bind() const
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(GraphicsContext::isInstalled());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::isInstalled());
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
 }
 
@@ -245,8 +245,8 @@ void VertexBuffer::bind() const
 ////////////////////////////////////////////////////////////
 void VertexBuffer::unbind()
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(GraphicsContext::isInstalled());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::isInstalled());
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0u));
 }
 

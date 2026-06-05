@@ -1,10 +1,10 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/Macros.hpp"
+#include "Zancle/Base/Macros.hpp"
 
 #if defined(ZA_ENABLE_LIFETIME_TRACKING)
 
@@ -160,7 +160,7 @@ TEST_CASE("[System] Lifetime tracking")
         DummyDependee dep;
         {
             DummyDependant a(dep);
-            DummyDependant b(ZB_MOVE(a));
+            DummyDependant b(ZA_MOVE(a));
             (void)b;
         }
     }
@@ -171,7 +171,7 @@ TEST_CASE("[System] Lifetime tracking")
         {
             DummyDependant a(dep);
             DummyDependant b(dep);
-            a = ZB_MOVE(b);
+            a = ZA_MOVE(b);
         }
     }
 
@@ -182,7 +182,7 @@ TEST_CASE("[System] Lifetime tracking")
         {
             DummyDependant a(dep1);
             DummyDependant b(dep2);
-            a = ZB_MOVE(b);
+            a = ZA_MOVE(b);
             CHECK(a.dependee == &dep2);
         }
     }
@@ -259,7 +259,7 @@ TEST_CASE("[System] Lifetime tracking")
             DummyDependant a(dep1);
             DummyDependant b(dep2);
 
-            a = ZB_MOVE(b);
+            a = ZA_MOVE(b);
         }
         CHECK(!guard.fatalErrorTriggered("DummyDependee"));
     }

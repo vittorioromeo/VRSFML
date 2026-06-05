@@ -7,12 +7,12 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Win32/Utils.hpp"
 
-#include "Zancle/System/Utf.hpp"
-#include "Zancle/System/WindowsHeader.hpp"
+#include "Zancle/String/Utf.hpp"
+#include "Zancle/Base/WindowsHeader.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/BackInserter.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Container/BackInserter.hpp"
+#include "Zancle/String/String.hpp"
 
 #include <cwchar>
 
@@ -20,7 +20,7 @@
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-zb::String getErrorString(DWORD error)
+za::String getErrorString(DWORD error)
 {
     PTCHAR buffer = nullptr;
     if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
@@ -36,10 +36,10 @@ zb::String getErrorString(DWORD error)
 
     const auto srcLen = std::wcslen(buffer);
 
-    zb::String message;
+    za::String message;
     message.reserve(srcLen * 3u);
 
-    Utf<16>::toUtf8(buffer, buffer + srcLen, zb::BackInserter{message});
+    Utf<16>::toUtf8(buffer, buffer + srcLen, za::BackInserter{message});
 
     LocalFree(buffer);
     return message;
@@ -49,7 +49,7 @@ zb::String getErrorString(DWORD error)
 ////////////////////////////////////////////////////////////
 void setWindowBorderless(void* const hwnd, const unsigned int width, const unsigned int height)
 {
-    ZB_ASSERT(hwnd != nullptr);
+    ZA_ASSERT(hwnd != nullptr);
 
     auto* hwndPtr = reinterpret_cast<HWND>(hwnd);
 

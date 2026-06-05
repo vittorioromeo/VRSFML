@@ -6,30 +6,30 @@
 
 #include "Zancle/Network/IpAddressUtils.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 
-using namespace zb::literals;
+using namespace za::literals;
 
 
 TEST_CASE("[Network] za::IpAddress")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::IpAddress));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::IpAddress));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::IpAddress));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::IpAddress));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::IpAddress));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::IpAddress));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::IpAddress));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::IpAddress));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::IpAddress));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::IpAddress));
     }
 
     SECTION("Construction")
@@ -73,7 +73,7 @@ TEST_CASE("[Network] za::IpAddress")
             CHECK(ipAddress.toInteger() == 0xC6'33'64'EA);
         }
 
-        SECTION("zb::U32 constructor")
+        SECTION("za::U32 constructor")
         {
             const za::IpAddress ipAddress(0xCB'00'71'9A);
             CHECK(za::IpAddressUtils::toString(ipAddress) == "203.0.113.154"_s);
@@ -89,7 +89,7 @@ TEST_CASE("[Network] za::IpAddress")
         // tests offline as well.
         (void)([]
         {
-            const zb::Optional<za::IpAddress> ipAddress = za::IpAddress::getLocalAddress();
+            const za::Optional<za::IpAddress> ipAddress = za::IpAddress::getLocalAddress();
             REQUIRE(ipAddress.hasValue());
             CHECK(za::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
             CHECK(ipAddress->toInteger() != 0);
@@ -97,7 +97,7 @@ TEST_CASE("[Network] za::IpAddress")
 
         (void)([]
         {
-            const zb::Optional<za::IpAddress> ipAddress = za::IpAddress::getPublicAddress(za::milliseconds(250));
+            const za::Optional<za::IpAddress> ipAddress = za::IpAddress::getPublicAddress(za::milliseconds(250));
             if (ipAddress.hasValue())
             {
                 CHECK(za::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");

@@ -1,19 +1,19 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -24,28 +24,28 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIAL(int));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(int));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(int));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(int));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(int));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(int));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(int));
+        STATIC_CHECK(ZA_IS_TRIVIAL(int));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(int));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(int));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(int));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(int));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(int));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(int));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Vector<int>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Vector<int>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Vector<int>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Vector<int>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Vector<int>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Vector<int>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(za::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vector<int>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vector<int>));
 
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(zb::Vector<int>));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(zb::Vector<int>));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::Vector<int>));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::Vector<int>));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Vector<int>));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Vector<int>));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Vector<int>));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::Vector<int>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Vector<int>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Vector<int>));
     }
 
     SECTION("Empty")
@@ -62,7 +62,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
     CHECK((tv).size() == 0u);                \
     CHECK((tv).empty());
 
-        zb::Vector<int> tv;
+        za::Vector<int> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -70,29 +70,29 @@ TEST_CASE("[Base] Base/Vector.hpp")
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
-        zb::Vector<int> tv2 = tv;
+        za::Vector<int> tv2 = tv;
         DO_EMPTY_CHECKS(tv2);
         CHECK(tv2.capacity() == 0u);
 
-        zb::Vector<int> tv3 = ZB_MOVE(tv);
+        za::Vector<int> tv3 = ZA_MOVE(tv);
         DO_EMPTY_CHECKS(tv3);
         CHECK(tv3.capacity() == 0u);
 
-        zb::Vector<int> tv4;
+        za::Vector<int> tv4;
         tv4 = tv;
         DO_EMPTY_CHECKS(tv4);
         CHECK(tv4.capacity() == 0u);
 
-        zb::Vector<int> tv5;
-        tv5 = ZB_MOVE(tv4);
+        za::Vector<int> tv5;
+        tv5 = ZA_MOVE(tv4);
         DO_EMPTY_CHECKS(tv5);
         CHECK(tv5.capacity() == 0u);
     }
 
     SECTION("Copy construct empty vector")
     {
-        const zb::Vector<int> source;
-        const zb::Vector<int> copy = source; // NOLINT(performance-unnecessary-copy-initialization)
+        const za::Vector<int> source;
+        const za::Vector<int> copy = source; // NOLINT(performance-unnecessary-copy-initialization)
 
         CHECK(copy.data() == nullptr);
         CHECK(copy.begin() == nullptr);
@@ -104,7 +104,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Non-empty")
     {
-        zb::Vector<int> tv;
+        za::Vector<int> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -141,7 +141,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         CHECK(tv.capacity() >= 100u);
         CHECK(tv[0] == 42);
 
-        for (zb::SizeT i = 1; i < 100; ++i)
+        for (za::SizeT i = 1; i < 100; ++i)
             CHECK(tv[i] == 0);
     }
 
@@ -156,7 +156,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
             int value;
         };
 
-        zb::Vector<S> tv;
+        za::Vector<S> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -185,7 +185,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         CHECK(tv[0].value == 42);
 
         tv.reserve(100);
-        for (zb::SizeT i = 1; i < 100; ++i)
+        for (za::SizeT i = 1; i < 100; ++i)
             tv.unsafeEmplaceBack(0);
 
         CHECK(tv.data() != nullptr);
@@ -195,13 +195,13 @@ TEST_CASE("[Base] Base/Vector.hpp")
         CHECK(tv.capacity() >= 100u);
         CHECK(tv[0].value == 42);
 
-        for (zb::SizeT i = 1; i < 100; ++i)
+        for (za::SizeT i = 1; i < 100; ++i)
             CHECK(tv[i].value == 0);
     }
 
     SECTION("Shrink to fit")
     {
-        zb::Vector<int> tv;
+        za::Vector<int> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 

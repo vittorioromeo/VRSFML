@@ -13,10 +13,10 @@
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

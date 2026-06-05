@@ -3,49 +3,49 @@
 
 #include "Zancle/Graphics/StencilMode.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsConvertible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsConvertible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::StencilMode")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::StencilValue));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::StencilValue));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::StencilValue));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::StencilValue));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::StencilValue));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::StencilValue));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::StencilValue));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::StencilValue));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::StencilValue));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::StencilValue));
-        STATIC_CHECK(!ZB_IS_AGGREGATE(za::StencilValue)); // due to constructor
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::StencilValue));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::StencilValue));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::StencilValue, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::StencilValue));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::StencilValue));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::StencilValue)); // due to constructor
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::StencilValue));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::StencilValue));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::StencilValue, za::StencilValue));
 
         STATIC_CHECK(sizeof(za::StencilValue) <= sizeof(unsigned int));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::StencilMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::StencilMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::StencilMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::StencilMode));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::StencilMode));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::StencilMode));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::StencilMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::StencilMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::StencilMode));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::StencilMode, za::StencilMode));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::StencilMode));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::StencilMode));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::StencilMode));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::StencilMode, za::StencilMode));
 
         STATIC_CHECK(sizeof(za::StencilMode) <= sizeof(unsigned int) * 4);
     }
@@ -62,14 +62,14 @@ TEST_CASE("[Graphics] za::StencilMode")
 
     SECTION("Stencil value type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(bool, za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(char, za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(unsigned char, za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(short, za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(unsigned short, za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(int, za::StencilValue));
-        STATIC_CHECK(!ZB_IS_CONVERTIBLE(unsigned int, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(bool, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(char, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(unsigned char, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(short, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(unsigned short, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(int, za::StencilValue));
+        STATIC_CHECK(!ZA_IS_CONVERTIBLE(unsigned int, za::StencilValue));
     }
 
     SECTION("Stencil value construction")

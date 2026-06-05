@@ -10,10 +10,10 @@
 #include "Zancle/Window/Unix/KeyboardImpl.hpp"
 
 #include "Zancle/System/String.hpp"
-#include "Zancle/System/Utf.hpp"
+#include "Zancle/String/Utf.hpp"
 
 #include "ZancleBase/Builtins/Memcpy.hpp"
-#include "ZancleBase/EnumArray.hpp"
+#include "Zancle/Container/EnumArray.hpp"
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -30,7 +30,7 @@ namespace
 ////////////////////////////////////////////////////////////
 constexpr KeyCode nullKeyCode = 0;
 constexpr int     maxKeyCode  = 256;
-zb::EnumArray<za::Keyboard::Scancode, KeyCode, za::Keyboard::ScancodeCount>
+za::EnumArray<za::Keyboard::Scancode, KeyCode, za::Keyboard::ScancodeCount>
                                                scancodeToKeycode; ///< Mapping of SFML scancode to X11 KeyCode
 std::array<za::Keyboard::Scancode, maxKeyCode> keycodeToScancode; ///< Mapping of X11 KeyCode to SFML scancode
 
@@ -464,7 +464,7 @@ void ensureMapping()
             continue;
         }
 
-        ZB_MEMCPY(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
+        ZA_MEMCPY(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
         name[XkbKeyNameLength] = '\0';
 
         const auto mappedScancode = nameScancodeMap.find(std::string(name));

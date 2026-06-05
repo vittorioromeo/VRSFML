@@ -10,9 +10,9 @@
 
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/InitializerList.hpp" // IWYU pragma: keep
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Base/InitializerList.hpp" // IWYU pragma: keep
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -68,7 +68,7 @@ public:
     /// \return The total number of sound channels in this map
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT getSize() const;
+    [[nodiscard]] za::SizeT getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if the channel map is empty
@@ -126,7 +126,7 @@ public:
     /// \return A const reference to the `za::SoundChannel` at the specified index
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const SoundChannel& operator[](zb::SizeT index) const;
+    [[nodiscard]] const SoundChannel& operator[](za::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Append a sound channel to the map
@@ -163,7 +163,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::InPlaceVector<SoundChannel, SoundChannelCount> m_channels;
+    za::InPlaceVector<SoundChannel, SoundChannelCount> m_channels;
 };
 
 } // namespace za

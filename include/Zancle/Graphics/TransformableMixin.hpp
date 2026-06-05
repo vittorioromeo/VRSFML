@@ -10,10 +10,10 @@
 
 #include "Zancle/Graphics/Transform.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za
@@ -98,10 +98,10 @@ private:
     [[nodiscard, gnu::pure, gnu::flatten]]
     static Transform buildTransform(const Vec2f position, const Vec2f scale, const Vec2f origin, const float radians)
     {
-        const auto [sine, cosine] = zb::sinCosLookup(radians);
+        const auto [sine, cosine] = za::sinCosLookup(radians);
 
-        ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
-        ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+        ZA_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+        ZA_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
         return Transform::fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
     }

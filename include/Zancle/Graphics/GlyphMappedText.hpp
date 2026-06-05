@@ -13,7 +13,7 @@
 #include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/TextBase.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
 
 ////////////////////////////////////////////////////////////

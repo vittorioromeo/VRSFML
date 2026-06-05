@@ -10,22 +10,22 @@
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/RectPacker.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/RectPacker.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::NullOpt fail(const char* what)
+[[nodiscard]] za::NullOpt fail(const char* what)
 {
     za::priv::errMsg("Failed to {}", what);
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 } // namespace
@@ -34,7 +34,7 @@ namespace
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const zb::U8* pixels, Vec2u size)
+za::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const za::U8* pixels, Vec2u size)
 {
     // Reserve the full padded region so neighbouring entries are kept at
     // arm's length on every side, then upload the content offset by `padding`
@@ -48,19 +48,19 @@ zb::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& 
     const Vec2u uploadPos = *packedPosition + padding;
     targetTexture.update(pixels, size, uploadPos);
 
-    return zb::makeOptional<Rect2f>(uploadPos.to<Vec2f>(), size.to<Vec2f>());
+    return za::makeOptional<Rect2f>(uploadPos.to<Vec2f>(), size.to<Vec2f>());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Image& image)
+za::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Image& image)
 {
     return add(targetTexture, rectPacker, padding, image.getPixelsPtr(), image.getSize());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Texture& texture)
+za::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& rectPacker, Vec2u padding, const Texture& texture)
 {
     // See pixel-array overload for the +padding/-padding rationale.
     const auto packedPosition = rectPacker.pack(texture.getSize() + padding * 2u);
@@ -73,7 +73,7 @@ zb::Optional<Rect2f> TextureAtlasUtils::add(Texture& targetTexture, RectPacker& 
     if (!targetTexture.update(texture, uploadPos))
         return fail("update texture for texture atlas");
 
-    return zb::makeOptional<Rect2f>(uploadPos.to<Vec2f>(), texture.getSize().to<Vec2f>());
+    return za::makeOptional<Rect2f>(uploadPos.to<Vec2f>(), texture.getSize().to<Vec2f>());
 }
 
 } // namespace za

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace za
@@ -36,7 +36,7 @@ public:
     void unapply(za::Text& text);
 
 private:
-    zb::Vector<za::Vec2f> m_oldVertexPositions;
+    za::Vector<za::Vec2f> m_oldVertexPositions;
     float                 m_time = 0.f;
     float                 m_frequency;
     float                 m_amplitude;

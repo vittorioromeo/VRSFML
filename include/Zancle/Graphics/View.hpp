@@ -10,16 +10,16 @@
 
 #include "Zancle/Graphics/Transform.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/AutoWrapAngle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/AutoWrapAngle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/ClampMacro.hpp"
-#include "ZancleBase/Math/Lround.hpp"
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/ClampMacro.hpp"
+#include "Zancle/Math/Lround.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za
@@ -30,7 +30,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ZA_GRAPHICS_API View
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ////////////////////////////////////////////////////////////
     /// \brief Normalized scissor rectangle, expressed as a fraction of the render target
@@ -61,14 +61,14 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vec2f thePosition, Vec2f theSize) :
             Rect2f{thePosition, theSize}
         {
-            ZB_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
-            ZB_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
+            ZA_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
+            ZA_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
 
-            ZB_ASSERT(size.x >= 0.f && "size.x must lie within [0, 1]");
-            ZB_ASSERT(size.y >= 0.f && "size.y must lie within [0, 1]");
+            ZA_ASSERT(size.x >= 0.f && "size.x must lie within [0, 1]");
+            ZA_ASSERT(size.y >= 0.f && "size.y must lie within [0, 1]");
 
-            ZB_ASSERT(position.x + size.x <= 1.f && "position.x + size.x must lie within [0, 1]");
-            ZB_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
+            ZA_ASSERT(position.x + size.x <= 1.f && "position.x + size.x must lie within [0, 1]");
+            ZA_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
         }
 
         ////////////////////////////////////////////////////////////
@@ -100,12 +100,12 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
         [[nodiscard]] static constexpr ScissorRect fromRectClamped(za::Rect2f rect)
         {
             // Clamp the position to the range `[0, 1]`
-            rect.position.x = ZB_CLAMP(rect.position.x, 0.f, 1.f);
-            rect.position.y = ZB_CLAMP(rect.position.y, 0.f, 1.f);
+            rect.position.x = ZA_CLAMP(rect.position.x, 0.f, 1.f);
+            rect.position.y = ZA_CLAMP(rect.position.y, 0.f, 1.f);
 
             // Ensure the size is non-negative and so that `position + size` doesn't exceed `1`
-            rect.size.x = ZB_CLAMP(rect.size.x, 0.f, 1.f - rect.position.x);
-            rect.size.y = ZB_CLAMP(rect.size.y, 0.f, 1.f - rect.position.y);
+            rect.size.x = ZA_CLAMP(rect.size.x, 0.f, 1.f - rect.position.x);
+            rect.size.y = ZA_CLAMP(rect.size.y, 0.f, 1.f - rect.position.y);
 
             return ScissorRect{rect};
         }
@@ -155,13 +155,13 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getTransform() const
     {
-        ZB_ASSERT(size.x != 0.f && "size.x must be non-zero");
-        ZB_ASSERT(size.y != 0.f && "size.y must be non-zero");
+        ZA_ASSERT(size.x != 0.f && "size.x must be non-zero");
+        ZA_ASSERT(size.y != 0.f && "size.y must be non-zero");
 
         const float a = 2.f / size.x;
         const float b = -2.f / size.y;
 
-        const auto [sine, cosine] = zb::sinCosLookup(rotation.asRadians());
+        const auto [sine, cosine] = za::sinCosLookup(rotation.asRadians());
 
         // Analytically derived matrix: Scale_proj * Rot_-theta * Trans_-center
         return {a * cosine,
@@ -185,7 +185,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] constexpr Transform getInverseTransform() const
     {
-        const auto [sine, cosine] = zb::sinCosLookup(rotation.asRadians());
+        const auto [sine, cosine] = za::sinCosLookup(rotation.asRadians());
 
         const float hw = size.x * 0.5f;
         const float hh = size.y * 0.5f;
@@ -299,10 +299,10 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i computePixelViewport(const Vec2f targetSize) const
     {
-        return Rect2<long>({ZB_MATH_LROUNDF(targetSize.x * viewport.position.x),
-                            ZB_MATH_LROUNDF(targetSize.y * viewport.position.y)},
-                           {ZB_MATH_LROUNDF(targetSize.x * viewport.size.x),
-                            ZB_MATH_LROUNDF(targetSize.y * viewport.size.y)})
+        return Rect2<long>({ZA_MATH_LROUNDF(targetSize.x * viewport.position.x),
+                            ZA_MATH_LROUNDF(targetSize.y * viewport.position.y)},
+                           {ZA_MATH_LROUNDF(targetSize.x * viewport.size.x),
+                            ZA_MATH_LROUNDF(targetSize.y * viewport.size.y)})
             .toRect2i();
     }
 
@@ -322,9 +322,9 @@ struct [[nodiscard]] ZA_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] Rect2i computePixelScissor(const Vec2f targetSize) const
     {
-        return Rect2<long>({ZB_MATH_LROUNDF(targetSize.x * scissor.position.x),
-                            ZB_MATH_LROUNDF(targetSize.y * scissor.position.y)},
-                           {ZB_MATH_LROUNDF(targetSize.x * scissor.size.x), ZB_MATH_LROUNDF(targetSize.y * scissor.size.y)})
+        return Rect2<long>({ZA_MATH_LROUNDF(targetSize.x * scissor.position.x),
+                            ZA_MATH_LROUNDF(targetSize.y * scissor.position.y)},
+                           {ZA_MATH_LROUNDF(targetSize.x * scissor.size.x), ZA_MATH_LROUNDF(targetSize.y * scissor.size.y)})
             .toRect2i();
     }
 

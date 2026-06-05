@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
 
 
 namespace tsurv
@@ -15,7 +15,7 @@ template <typename TCommand>
 struct [[nodiscard]] AnimationTimeline
 {
     ////////////////////////////////////////////////////////////
-    zb::InPlaceVector<TCommand, 128> commands;
+    za::InPlaceVector<TCommand, 128> commands;
     float                            timeOnCurrentCommand = 0.f;
 
 
@@ -43,7 +43,7 @@ struct [[nodiscard]] AnimationTimeline
     ////////////////////////////////////////////////////////////
     void popFrontCommand()
     {
-        ZB_ASSERT(!commands.empty());
+        ZA_ASSERT(!commands.empty());
 
         commands.erase(commands.begin());
         timeOnCurrentCommand = 0.f;
@@ -89,14 +89,14 @@ struct [[nodiscard]] AnimationTimeline
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getProgress() const
     {
-        ZB_ASSERT(!commands.empty());
+        ZA_ASSERT(!commands.empty());
 
         const float duration = commands.front().duration;
 
         if (duration <= 0.f)
             return 1.f;
 
-        return zb::clamp(timeOnCurrentCommand / duration, 0.f, 1.f);
+        return za::clamp(timeOnCurrentCommand / duration, 0.f, 1.f);
     }
 
 

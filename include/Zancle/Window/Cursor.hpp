@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -152,10 +152,10 @@ public:
     /// \param size     Width and height of the image
     /// \param hotspot  (x,y) location of the hotspot
     /// \return Cursor if the cursor was successfully loaded;
-    ///         `zb::nullOpt` otherwise
+    ///         `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Cursor> loadFromPixels(const zb::U8*      pixels,
+    [[nodiscard]] static za::Optional<Cursor> loadFromPixels(const za::U8*      pixels,
                                                              Vec2<unsigned int> size,
                                                              Vec2<unsigned int> hotspot);
 
@@ -170,10 +170,10 @@ public:
     /// \param type Native system cursor type
     /// \return Cursor if and only if the corresponding cursor is
     ///         natively supported by the operating system;
-    ///         `zb::nullOpt` otherwise
+    ///         `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Cursor> loadFromSystem(Type type);
+    [[nodiscard]] static za::Optional<Cursor> loadFromSystem(Type type);
 
 private:
     friend class WindowBase;
@@ -185,7 +185,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cursor(zb::PassKey<Cursor>&&);
+    [[nodiscard]] Cursor(za::PassKey<Cursor>&&);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ private:
     /// \return `true` on success, `false` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool reloadFromPixels(const zb::U8* pixels, Vec2<unsigned int> size, Vec2<unsigned int> hotspot);
+    [[nodiscard]] bool reloadFromPixels(const za::U8* pixels, Vec2<unsigned int> size, Vec2<unsigned int> hotspot);
 
     ////////////////////////////////////////////////////////////
     /// \brief Re-create the underlying SDL cursor from a system cursor

@@ -8,8 +8,8 @@
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/Sound.hpp"
 
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <cstdio>
 
@@ -48,7 +48,7 @@ void ExampleAudio::imgui()
 
     ImGui::Text("Playback devices:");
 
-    zb::SizeT i = 0u;
+    za::SizeT i = 0u;
     for (auto& playbackDevice : m_playbackDevices)
     {
         ImGui::Text("%s", playbackDevice.getName());
@@ -61,7 +61,7 @@ void ExampleAudio::imgui()
         std::snprintf(buttonLabel, sizeof(buttonLabel), "Play Sound##%zu", i);
         if (ImGui::Button(buttonLabel))
         {
-            auto* const it = zb::findIf( //
+            auto* const it = za::findIf( //
                 m_activeSounds.begin(),
                 m_activeSounds.end(),
                 [](const za::Sound& sound) { return !sound.isPlaying(); });

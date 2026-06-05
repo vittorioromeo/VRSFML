@@ -10,14 +10,14 @@
 
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -113,10 +113,10 @@ public:
     /// \param size     Width and height of the texture
     /// \param settings Texture create settings (sRGB, smoothing, wrap mode)
     ///
-    /// \return Texture on success, `zb::nullOpt` on failure
+    /// \return Texture on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Texture> create(Vec2u size, const TextureCreateSettings& settings = {});
+    [[nodiscard]] static za::Optional<Texture> create(Vec2u size, const TextureCreateSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from an image file on disk
@@ -132,12 +132,12 @@ public:
     /// \param filename Path of the image file to load
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `zb::nullOpt` on failure
+    /// \return Texture on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Texture> loadFromFile(const Path& filename, const TextureLoadSettings& settings = {});
+    [[nodiscard]] static za::Optional<Texture> loadFromFile(const Path& filename, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from an image file held in memory
@@ -150,13 +150,13 @@ public:
     /// \param size     Size of the data, in bytes
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `zb::nullOpt` on failure
+    /// \return Texture on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Texture> loadFromMemory(const void*                data,
-                                                              zb::SizeT                  size,
+    [[nodiscard]] static za::Optional<Texture> loadFromMemory(const void*                data,
+                                                              za::SizeT                  size,
                                                               const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
@@ -169,12 +169,12 @@ public:
     /// \param stream   Source stream to read encoded image data from
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `zb::nullOpt` on failure
+    /// \return Texture on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Texture> loadFromStream(InputStream& stream, const TextureLoadSettings& settings = {});
+    [[nodiscard]] static za::Optional<Texture> loadFromStream(InputStream& stream, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load a texture from an existing `za::Image`
@@ -187,12 +187,12 @@ public:
     /// \param image    Image whose pixels will be uploaded
     /// \param settings Texture load settings (sRGB, smoothing, wrap mode, sub-area)
     ///
-    /// \return Texture on success, `zb::nullOpt` on failure
+    /// \return Texture on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Texture> loadFromImage(const Image& image, const TextureLoadSettings& settings = {});
+    [[nodiscard]] static za::Optional<Texture> loadFromImage(const Image& image, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture
@@ -233,7 +233,7 @@ public:
     /// \param pixels Array of pixels to copy to the texture
     ///
     ////////////////////////////////////////////////////////////
-    void update(const zb::U8* pixels);
+    void update(const za::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an array of pixels
@@ -253,7 +253,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const zb::U8* pixels, Vec2u size, Vec2u dest);
+    void update(const za::U8* pixels, Vec2u size, Vec2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -475,7 +475,7 @@ public:
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture(zb::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb);
+    [[nodiscard]] Texture(za::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -499,7 +499,7 @@ private:
     bool            m_hasMipmap{};     //!< Has the mipmap been generated?
     unsigned int    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 
-    zb::U32 m_destructiveGeneration{0}; //!< Bumped on every non-additive mutation (autobatch invalidation)
+    za::U32 m_destructiveGeneration{0}; //!< Bumped on every non-additive mutation (autobatch invalidation)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
@@ -599,7 +599,7 @@ ZA_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 ///     // ...
 ///
 ///     // Update the texture with a fresh chunk of pixels.
-///     const zb::U8* pixels = /* next frame */;
+///     const za::U8* pixels = /* next frame */;
 ///     texture.update(pixels);
 ///
 ///     // Draw the texture.

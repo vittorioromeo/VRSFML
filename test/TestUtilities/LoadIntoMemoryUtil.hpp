@@ -5,6 +5,6 @@
 
 #pragma once
 
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Vector.hpp"
 
-[[nodiscard]] zb::Vector<char> loadIntoMemory(const char* path);
+[[nodiscard]] za::Vector<char> loadIntoMemory(const char* path);

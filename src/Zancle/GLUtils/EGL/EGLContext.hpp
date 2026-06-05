@@ -18,7 +18,7 @@
 
 #include "Zancle/GLUtils/GlContext.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 
 namespace za::priv
@@ -178,7 +178,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details (display, context, surface, config)
+    za::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details (display, context, surface, config)
 };
 
 } // namespace za::priv

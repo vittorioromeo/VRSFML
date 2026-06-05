@@ -12,41 +12,41 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlasUtils.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/RectPacker.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/RectPacker.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za
 {
 ////////////////////////////////////////////////////////////
 TextureAtlas::TextureAtlas(Texture&& atlasTexture) :
-    m_atlasTexture(ZB_MOVE(atlasTexture)),
+    m_atlasTexture(ZA_MOVE(atlasTexture)),
     m_rectPacker(m_atlasTexture.getSize())
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Rect2f> TextureAtlas::add(const zb::U8* pixels, Vec2u size, Vec2u padding)
+za::Optional<Rect2f> TextureAtlas::add(const za::U8* pixels, Vec2u size, Vec2u padding)
 {
     return TextureAtlasUtils::add(m_atlasTexture, m_rectPacker, padding, pixels, size);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Rect2f> TextureAtlas::add(const Image& image, Vec2u padding)
+za::Optional<Rect2f> TextureAtlas::add(const Image& image, Vec2u padding)
 {
     return TextureAtlasUtils::add(m_atlasTexture, m_rectPacker, padding, image);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Rect2f> TextureAtlas::add(const Texture& texture, Vec2u padding)
+za::Optional<Rect2f> TextureAtlas::add(const Texture& texture, Vec2u padding)
 {
     return TextureAtlasUtils::add(m_atlasTexture, m_rectPacker, padding, texture);
 }

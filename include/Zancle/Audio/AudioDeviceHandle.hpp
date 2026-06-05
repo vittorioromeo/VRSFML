@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ public:
     /// \brief Create a device handle from miniaudio device info (passkey)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(zb::PassKey<AudioContext>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(za::PassKey<AudioContext>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -143,7 +143,7 @@ public:
     /// \brief Create a device handle from miniaudio device info (passkey)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(zb::PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(za::PassKey<PlaybackDevice>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -151,11 +151,11 @@ public:
     /// \brief Create a device handle from miniaudio device info (passkey)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(zb::PassKey<CaptureDevice>&&, const void* maDeviceInfo);
+    [[nodiscard]] explicit AudioDeviceHandle(za::PassKey<CaptureDevice>&&, const void* maDeviceInfo);
 
 private:
     struct Impl;
-    zb::InPlacePImpl<Impl, 1792> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 1792> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////

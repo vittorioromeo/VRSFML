@@ -9,15 +9,15 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
@@ -154,11 +154,11 @@ TEST_CASE("[Graphics] za::Shader" * tst::skip(skipShaderFullTest))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Shader));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Shader));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Shader));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Shader));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Shader));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::Shader));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Shader));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Shader));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Shader));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Shader));
     }
 
     SECTION("Move semantics")
@@ -166,7 +166,7 @@ TEST_CASE("[Graphics] za::Shader" * tst::skip(skipShaderFullTest))
         SECTION("Construction")
         {
             auto       movedShader = za::Shader::loadFromFile({.vertexPath = "shader.vert"}).value();
-            const auto shader      = ZB_MOVE(movedShader);
+            const auto shader      = ZA_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
@@ -174,7 +174,7 @@ TEST_CASE("[Graphics] za::Shader" * tst::skip(skipShaderFullTest))
         {
             auto movedShader = za::Shader::loadFromFile({.vertexPath = "shader.vert"}).value();
             auto shader      = za::Shader::loadFromFile({.fragmentPath = "shader.frag"}).value();
-            shader           = ZB_MOVE(movedShader);
+            shader           = ZA_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
     }

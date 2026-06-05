@@ -2,11 +2,11 @@
 #include "CatType.hpp"
 #include "Playthrough.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
 
-zb::String Main::uiShopBuildNextGoalsText()
+za::String Main::uiShopBuildNextGoalsText()
 {
     const auto nCatNormal = pt->getCatCountByType(CatType::Normal);
     const auto nCatUni    = pt->getCatCountByType(CatType::Uni);
@@ -24,7 +24,7 @@ zb::String Main::uiShopBuildNextGoalsText()
     const bool astroCatUnlocked = nCatNormal >= 10 && nCatUni >= 5 && nCatDevil >= 2 && pt->nShrinesCompleted >= 2;
     const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 9 && nCatAstro >= 5;
 
-    zb::String result;
+    za::String result;
 
     if (!pt->comboPurchased)
     {
@@ -50,7 +50,7 @@ zb::String Main::uiShopBuildNextGoalsText()
         result += s;
     };
 
-    const auto needNCats = [&](const zb::SizeT& count, const zb::SizeT needed)
+    const auto needNCats = [&](const za::SizeT& count, const za::SizeT needed)
     {
         const char* name = "";
 
@@ -62,7 +62,7 @@ zb::String Main::uiShopBuildNextGoalsText()
         // clang-format on
 
         if (count < needed)
-            result += "\n    - buy " + zb::toString(needed - count) + " more " + name + "(s)";
+            result += "\n    - buy " + za::toString(needed - count) + " more " + name + "(s)";
     };
 
     if (!pt->mapPurchased)

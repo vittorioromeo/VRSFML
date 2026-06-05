@@ -13,8 +13,8 @@
 
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/GetArraySize.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@
     {                                                                                                                 \
         constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
                                                                                                                       \
-        ZB_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::zb::getArraySize(glValues));                             \
+        ZA_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::za::getArraySize(glValues));                             \
         return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
 

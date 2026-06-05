@@ -12,13 +12,13 @@
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv
@@ -34,7 +34,7 @@ private:
         za::Vec2f end;
         float     thickness;
         int       depth;
-        zb::U8    alpha;
+        za::U8    alpha;
     };
 
 public:
@@ -57,8 +57,8 @@ public:
         constexpr float branchAlphaDecay     = 0.45f;
 
 
-        zb::Vector<BoltSegment> segmentsToProcess{{start, end, mainBoltThickness, 0, 255u}};
-        zb::Vector<za::Vec2f>   pointChainBuffer;
+        za::Vector<BoltSegment> segmentsToProcess{{start, end, mainBoltThickness, 0, 255u}};
+        za::Vector<za::Vec2f>   pointChainBuffer;
 
         while (!segmentsToProcess.empty())
         {
@@ -74,7 +74,7 @@ public:
             {
                 const za::Vec2f dir = current.end - current.start;
 
-                const auto      startPointIdx = rng.template getI<zb::SizeT>(1u, (pointChainBuffer.size() - 2u) / 2u);
+                const auto      startPointIdx = rng.template getI<za::SizeT>(1u, (pointChainBuffer.size() - 2u) / 2u);
                 const za::Vec2f branchStart   = pointChainBuffer[startPointIdx];
 
                 // Create the new branch and add it to the queue.
@@ -82,7 +82,7 @@ public:
                 const za::Angle angle        = dir.angle() + za::radians(rng.getF(-0.5f, 0.5f));
                 const za::Vec2f branchEnd    = branchStart + za::Vec2f::fromAngle(branchLength, angle);
 
-                const auto decayedAlpha = static_cast<zb::U8>(static_cast<float>(current.alpha) * branchAlphaDecay);
+                const auto decayedAlpha = static_cast<za::U8>(static_cast<float>(current.alpha) * branchAlphaDecay);
 
                 segmentsToProcess.emplaceBack(branchStart,
                                               branchEnd,
@@ -107,11 +107,11 @@ public:
         if (progress > 1.f)
             return;
 
-        for (zb::SizeT i = 0u; i < m_verticesCore.size(); ++i)
-            m_verticesCore[i].color.a = static_cast<zb::U8>(static_cast<float>(m_originalCoreAlphas[i]) * fade);
+        for (za::SizeT i = 0u; i < m_verticesCore.size(); ++i)
+            m_verticesCore[i].color.a = static_cast<za::U8>(static_cast<float>(m_originalCoreAlphas[i]) * fade);
 
-        for (zb::SizeT i = 0u; i < m_verticesGlow.size(); ++i)
-            m_verticesGlow[i].color.a = static_cast<zb::U8>(static_cast<float>(m_originalGlowAlphas[i]) * fade);
+        for (za::SizeT i = 0u; i < m_verticesGlow.size(); ++i)
+            m_verticesGlow[i].color.a = static_cast<za::U8>(static_cast<float>(m_originalGlowAlphas[i]) * fade);
     }
 
     ////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ public:
         if (isFinished())
             return;
 
-        const auto drawVertices = [&](const zb::Vector<za::Vertex>& vertices)
+        const auto drawVertices = [&](const za::Vector<za::Vertex>& vertices)
         {
             target.drawIndexedVertices(
                 za::DrawIndexedVerticesSettings{
@@ -143,7 +143,7 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    void generatePointChain(zb::Vector<za::Vec2f>& out,
+    void generatePointChain(za::Vector<za::Vec2f>& out,
                             auto&&                 rng,
                             const za::Vec2f        start,
                             const za::Vec2f        end,
@@ -161,7 +161,7 @@ private:
         }
 
         // 1. Calculate the final size and perform a single allocation.
-        const zb::SizeT finalPointCount = (1u << depth) + 1u;
+        const za::SizeT finalPointCount = (1u << depth) + 1u;
 
         out.resize(finalPointCount);
 
@@ -172,14 +172,14 @@ private:
         for (int i = 0; i < depth; ++i)
         {
             // Number of points that were valid in the *previous* pass.
-            const zb::SizeT pointsInPrevPass = (1u << i) + 1u;
+            const za::SizeT pointsInPrevPass = (1u << i) + 1u;
 
             // 3. Iterate backwards over the segments of the previous pass.
             //    This is the key to making the in-place update safe.
             //    We use a signed int for the loop to safely terminate at j=-1.
             for (int k = static_cast<int>(pointsInPrevPass) - 2; k >= 0; --k)
             {
-                const auto j = static_cast<zb::SizeT>(k);
+                const auto j = static_cast<za::SizeT>(k);
 
                 const za::Vec2f p1 = out[j];
                 const za::Vec2f p2 = out[j + 1u];
@@ -206,7 +206,7 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    void createVertexArray(const zb::Vector<za::Vec2f>& points, const float thickness, const za::Color color)
+    void createVertexArray(const za::Vector<za::Vec2f>& points, const float thickness, const za::Color color)
     {
         if (points.size() < 2)
             return;
@@ -214,7 +214,7 @@ private:
         const float glowThickness = thickness * 4.f;
 
         // Step 2: Iterate through the segments defined by the points list and build connected quads.
-        for (zb::SizeT i = 0u; i < points.size() - 1u; ++i)
+        for (za::SizeT i = 0u; i < points.size() - 1u; ++i)
         {
             const za::Vec2f p1 = points[i];
             const za::Vec2f p2 = points[i + 1];
@@ -275,13 +275,13 @@ private:
     za::Time m_lifetime;
     za::Time m_duration;
 
-    zb::Vector<za::Vertex> m_verticesCore;
-    zb::Vector<za::Vertex> m_verticesGlow;
+    za::Vector<za::Vertex> m_verticesCore;
+    za::Vector<za::Vertex> m_verticesGlow;
 
-    zb::Vector<zb::U8> m_originalCoreAlphas;
-    zb::Vector<zb::U8> m_originalGlowAlphas;
+    za::Vector<za::U8> m_originalCoreAlphas;
+    za::Vector<za::U8> m_originalGlowAlphas;
 
-    zb::Vector<za::IndexType> m_indices;
+    za::Vector<za::IndexType> m_indices;
 };
 
 } // namespace tsurv

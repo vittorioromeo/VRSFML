@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@ class Sampler
 {
 public:
     ////////////////////////////////////////////////////////////
-    explicit Sampler(const zb::SizeT capacity) : m_data(capacity, T(0)), m_capacity(capacity)
+    explicit Sampler(const za::SizeT capacity) : m_data(capacity, T(0)), m_capacity(capacity)
     {
     }
 
@@ -50,7 +50,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] zb::SizeT size() const
+    [[nodiscard, gnu::always_inline]] za::SizeT size() const
     {
         return m_size;
     }
@@ -64,7 +64,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] zb::SizeT capacity() const
+    [[nodiscard, gnu::always_inline]] za::SizeT capacity() const
     {
         return m_capacity;
     }
@@ -75,7 +75,7 @@ public:
     /// Pass this as `values_offset` to `ImGui::PlotLines` together with `data()` and `capacity()`
     /// to plot in chronological order without copying.
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] zb::SizeT insertionIndex() const
+    [[nodiscard, gnu::always_inline]] za::SizeT insertionIndex() const
     {
         return m_index;
     }
@@ -96,34 +96,34 @@ public:
         if (m_size < m_capacity)
         {
             // Buffer not full: copy the valid samples (indices `0` .. `m_size - 1`)
-            for (zb::SizeT i = 0u; i < m_size; ++i)
+            for (za::SizeT i = 0u; i < m_size; ++i)
                 target[i] = m_data[i];
 
             // Fill the rest with zeros
-            for (zb::SizeT i = m_size; i < m_capacity; ++i)
+            for (za::SizeT i = m_size; i < m_capacity; ++i)
                 target[i] = T{};
         }
         else
         {
             // Buffer is full: samples are stored in circular order
             // The oldest sample is at `m_data[m_index]`
-            zb::SizeT pos = 0u;
+            za::SizeT pos = 0u;
 
             // Copy from `m_index` to the end
-            for (zb::SizeT i = m_index; i < m_capacity; ++i)
+            for (za::SizeT i = m_index; i < m_capacity; ++i)
                 target[pos++] = m_data[i];
 
             // Then copy from the beginning up to `m_index - 1`
-            for (zb::SizeT i = 0u; i < m_index; ++i)
+            for (za::SizeT i = 0u; i < m_index; ++i)
                 target[pos++] = m_data[i];
         }
     }
 
 private:
-    zb::Vector<T>   m_data;
-    const zb::SizeT m_capacity;
+    za::Vector<T>   m_data;
+    const za::SizeT m_capacity;
 
-    zb::SizeT m_size  = 0; // Number of valid samples currently in the buffer
-    zb::SizeT m_index = 0; // Next index for insertion
+    za::SizeT m_size  = 0; // Number of valid samples currently in the buffer
+    za::SizeT m_index = 0; // Next index for insertion
     T         m_sum   = 0; // Running sum for fast averaging
 };

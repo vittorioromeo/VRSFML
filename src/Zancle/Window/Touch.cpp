@@ -10,8 +10,8 @@
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <SDL3/SDL_touch.h>
 
@@ -19,9 +19,9 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::Span<Touch::Device> Touch::getDevices()
+za::Span<Touch::Device> Touch::getDevices()
 {
-    static thread_local zb::Vector<Device> devices;
+    static thread_local za::Vector<Device> devices;
     devices.clear();
 
     {

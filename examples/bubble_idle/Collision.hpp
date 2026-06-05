@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Math/Sqrt.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Math/Sqrt.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ struct [[nodiscard]] CollisionResolution
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::pure]] inline zb::Optional<CollisionResolution> handleCollision(
+[[nodiscard, gnu::pure]] inline za::Optional<CollisionResolution> handleCollision(
     const float     deltaTimeMs,
     const za::Vec2f iPosition,
     const za::Vec2f jPosition,
@@ -45,10 +45,10 @@ struct [[nodiscard]] CollisionResolution
     const float     sumRadii        = iRadius + jRadius;
 
     if (squaredDistance >= sumRadii * sumRadii)
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Calculate the distance between the bubbles' centers
-    const float distance = zb::sqrt(squaredDistance);
+    const float distance = za::sqrt(squaredDistance);
 
     // Calculate the normal between the bubbles
     const za::Vec2f normal = (distance > 0.f) ? (diff / distance) : za::Vec2f{1.f, 0.f};
@@ -85,7 +85,7 @@ struct [[nodiscard]] CollisionResolution
     const float     overlap      = sumRadii - distance; // Amount of overlap
     const za::Vec2f displacement = normal * overlap * softnessFactor;
 
-    return zb::makeOptional<CollisionResolution>( //
+    return za::makeOptional<CollisionResolution>( //
         /* iDisplacement */ -displacement * (m2 * totalMassInv),
         /* jDisplacement */ displacement * (m1 * totalMassInv),
         /* iVelocityChange */ velocityChangeI,

@@ -16,20 +16,20 @@
 
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -104,16 +104,16 @@ int main()
         float      torque;
     };
 
-    zb::Vector<Entity> entities;
+    za::Vector<Entity> entities;
 
-    const auto populateEntities = [&](const zb::SizeT n)
+    const auto populateEntities = [&](const za::SizeT n)
     {
         entities.clear();
         entities.reserve(n);
 
-        for (zb::SizeT i = 0u; i < n; ++i)
+        for (za::SizeT i = 0u; i < n; ++i)
         {
-            const zb::SizeT   type        = i % 6u;
+            const za::SizeT   type        = i % 6u;
             const za::Rect2f& textureRect = spriteTextureRects[type];
 
             auto& [text, sprite, torque] = entities.emplaceBack(za::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
@@ -126,7 +126,7 @@ int main()
                                                                 getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
-            sprite.rotation = za::radians(getRndFloat(0.f, zb::tau));
+            sprite.rotation = za::radians(getRndFloat(0.f, za::tau));
 
             const float scaleFactor = getRndFloat(0.08f, 0.17f);
             sprite.scale            = {scaleFactor, scaleFactor};
@@ -150,22 +150,22 @@ int main()
 //
 // Set up benchmark
 #ifndef ZA_OPENGL_ES
-    zb::printLn("OpenGL ES not detected, using persistent GPU batching");
+    za::printLn("OpenGL ES not detected, using persistent GPU batching");
     za::PersistentGPUDrawableBatch drawableBatch;
 #else
-    zb::printLn("OpenGL ES detected, using CPU storage-backed batching");
+    za::printLn("OpenGL ES detected, using CPU storage-backed batching");
     za::CPUDrawableBatch drawableBatch;
 #endif
-    populateEntities(static_cast<zb::SizeT>(numEntities));
+    populateEntities(static_cast<za::SizeT>(numEntities));
 
     if (useBatch)
     {
         drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
-        drawableBatch.reserveQuads(static_cast<zb::SizeT>(numEntities) * 25u);
+        drawableBatch.reserveQuads(static_cast<za::SizeT>(numEntities) * 25u);
     }
     else
     {
-        window.reserveAutoBatchQuads(static_cast<zb::SizeT>(numEntities) * 25u);
+        window.reserveAutoBatchQuads(static_cast<za::SizeT>(numEntities) * 25u);
     }
 
     const za::Clock clock;
@@ -206,5 +206,5 @@ int main()
 
     const auto finalTime = clock.getElapsedTime() - startTime;
 
-    zb::printLn("FINAL TIME: {} ms", finalTime.asMilliseconds());
+    za::printLn("FINAL TIME: {} ms", finalTime.asMilliseconds());
 }

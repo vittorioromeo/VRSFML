@@ -10,11 +10,11 @@
 #include "Zancle/Graphics/Shape.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -66,9 +66,9 @@ unsigned int CircleShape::getPointCount() const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f CircleShape::getPoint(zb::SizeT index) const
+Vec2f CircleShape::getPoint(za::SizeT index) const
 {
-    ZB_ASSERT(index < m_pointCount && "Index is out of bounds");
+    ZA_ASSERT(index < m_pointCount && "Index is out of bounds");
     return ShapeUtils::computeCirclePoint(index, /* startAngle */ 0.f, m_pointCount, m_radius);
 }
 
@@ -83,9 +83,9 @@ Vec2f CircleShape::getGeometricCenter() const
 ////////////////////////////////////////////////////////////
 void CircleShape::updateCircleGeometry()
 {
-    const float angleStep = zb::tau / static_cast<float>(m_pointCount);
+    const float angleStep = za::tau / static_cast<float>(m_pointCount);
 
-    updateFromFunc([&] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) {
+    updateFromFunc([&] [[gnu::always_inline, gnu::flatten]] (const za::SizeT i) {
         return ShapeUtils::computeCirclePointFromAngleStep(i, /* startAngle */ 0.f, angleStep, m_radius);
     }, m_pointCount);
 }

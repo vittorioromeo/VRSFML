@@ -10,20 +10,20 @@
 
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
 {
@@ -32,15 +32,15 @@ TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Sound, za::SoundBuffer&&));
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Sound, const za::SoundBuffer&&));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Sound));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Sound));
-        STATIC_CHECK(!ZB_IS_MOVE_CONSTRUCTIBLE(za::Sound));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Sound));
-        STATIC_CHECK(!ZB_IS_MOVE_ASSIGNABLE(za::Sound));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Sound));
-        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(za::Sound));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Sound, za::SoundBuffer&&));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Sound, const za::SoundBuffer&&));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Sound));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Sound));
+        STATIC_CHECK(!ZA_IS_MOVE_CONSTRUCTIBLE(za::Sound));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Sound));
+        STATIC_CHECK(!ZA_IS_MOVE_ASSIGNABLE(za::Sound));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Sound));
+        STATIC_CHECK(ZA_HAS_VIRTUAL_DESTRUCTOR(za::Sound));
     }
 
     const auto soundBuffer = za::SoundBuffer::loadFromFile("ding.flac").value();
@@ -85,7 +85,7 @@ TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
         CHECK(sound.getPlayingOffset() == za::Time{});
         CHECK(!sound.isPlaying());
 
-        soundBufferB = ZB_MOVE(soundBufferA);
+        soundBufferB = ZA_MOVE(soundBufferA);
         CHECK(&sound.getBuffer() == &soundBufferA);
     }
 
@@ -117,7 +117,7 @@ TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
 
-        soundBufferB = ZB_MOVE(soundBufferA);
+        soundBufferB = ZA_MOVE(soundBufferA);
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
@@ -159,7 +159,7 @@ TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
             const za::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            zb::Optional<BadStruct> badStruct0;
+            za::Optional<BadStruct> badStruct0;
             badStruct0.emplace(playbackDevice);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 

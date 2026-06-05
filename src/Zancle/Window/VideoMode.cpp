@@ -9,8 +9,8 @@
 
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 namespace za
@@ -18,9 +18,9 @@ namespace za
 ////////////////////////////////////////////////////////////
 bool VideoMode::isValid() const
 {
-    const zb::Span<const VideoMode> modes = VideoModeUtils::getFullscreenModes();
+    const za::Span<const VideoMode> modes = VideoModeUtils::getFullscreenModes();
 
-    return zb::find(modes.begin(), modes.end(), *this) != modes.end();
+    return za::find(modes.begin(), modes.end(), *this) != modes.end();
 }
 
 

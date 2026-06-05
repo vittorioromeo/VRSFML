@@ -18,18 +18,18 @@
 #include "Zancle/Graphics/StarShapeData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
@@ -75,10 +75,10 @@ template <typename PointFn>
 TEST_CASE("[Graphics] za::ShapeData type traits")
 {
 #define ZA_PRIV_CHECK_TRAITS(T)                            \
-    STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::T));         \
-    STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::T));            \
-    STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::T)); \
-    STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::T))
+    STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::T));         \
+    STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::T));            \
+    STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::T)); \
+    STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::T))
 
     ZA_PRIV_CHECK_TRAITS(ArrowShapeData);
     ZA_PRIV_CHECK_TRAITS(ChevronShapeData);
@@ -354,7 +354,7 @@ TEST_CASE("[Graphics] za::PieSliceShapeData")
 
     SECTION("Full circle sweep produces full-disk local bounds")
     {
-        const za::PieSliceShapeData sd{.radius = 10.f, .startAngle = za::degrees(0.f), .sweepAngle = za::radians(zb::tau)};
+        const za::PieSliceShapeData sd{.radius = 10.f, .startAngle = za::degrees(0.f), .sweepAngle = za::radians(za::tau)};
         // With sweep == tau, every cardinal is in range -- bbox fills the enclosing square.
         CHECK(rectsApproxEqual(sd.getLocalBounds(), {{0.f, 0.f}, {20.f, 20.f}}));
     }
@@ -372,7 +372,7 @@ TEST_CASE("[Graphics] za::PieSliceShapeData")
     SECTION("Centroid: full-circle sweep collapses to the hub")
     {
         // With d = (4*R*sin(pi)) / (3*tau) = 0, the centroid sits exactly on the hub.
-        const za::PieSliceShapeData sd{.radius = 10.f, .sweepAngle = za::radians(zb::tau)};
+        const za::PieSliceShapeData sd{.radius = 10.f, .sweepAngle = za::radians(za::tau)};
         CHECK(sd.getCentroid() == Approx(za::Vec2f{10.f, 10.f}));
     }
 
@@ -398,13 +398,13 @@ TEST_CASE("[Graphics] za::PieSliceShapeData")
 
             const float step  = sd.sweepAngle.asRadians() / static_cast<float>(sd.pointCount - 2u);
             const float angle = sd.startAngle.asRadians() + static_cast<float>(i - 1u) * step;
-            const auto  sc    = zb::sinCosLookup(zb::positiveRemainder(angle, zb::tau));
+            const auto  sc    = za::sinCosLookup(za::positiveRemainder(angle, za::tau));
             return za::Vec2f{sd.radius - sd.radius * sc.sin, sd.radius + sd.radius * sc.cos};
         });
 
         // Tolerance reflects the finite tessellation of the reference polygon.
-        CHECK(zb::fabs(sd.getCentroid().x - reference.x) < 0.05f);
-        CHECK(zb::fabs(sd.getCentroid().y - reference.y) < 0.05f);
+        CHECK(za::fabs(sd.getCentroid().x - reference.x) < 0.05f);
+        CHECK(za::fabs(sd.getCentroid().y - reference.y) < 0.05f);
     }
 
     SECTION("Negative sweep is equivalent to positive sweep with shifted start")
@@ -434,7 +434,7 @@ TEST_CASE("[Graphics] za::RingPieSliceShapeData")
         const za::RingPieSliceShapeData sd{.outerRadius = 30.f,
                                            .innerRadius = 15.f,
                                            .startAngle  = za::degrees(0.f),
-                                           .sweepAngle  = za::radians(zb::tau)};
+                                           .sweepAngle  = za::radians(za::tau)};
         CHECK(rectsApproxEqual(sd.getLocalBounds(), {{0.f, 0.f}, {60.f, 60.f}}));
     }
 
@@ -464,7 +464,7 @@ TEST_CASE("[Graphics] za::RingPieSliceShapeData")
 
     SECTION("Centroid: full-circle sweep collapses to the ring center")
     {
-        const za::RingPieSliceShapeData sd{.outerRadius = 30.f, .innerRadius = 15.f, .sweepAngle = za::radians(zb::tau)};
+        const za::RingPieSliceShapeData sd{.outerRadius = 30.f, .innerRadius = 15.f, .sweepAngle = za::radians(za::tau)};
         CHECK(sd.getCentroid() == Approx(za::Vec2f{30.f, 30.f}));
     }
 
@@ -491,12 +491,12 @@ TEST_CASE("[Graphics] za::RingPieSliceShapeData")
             const unsigned int local     = outerSide ? i : (sd.pointCount - 1u - (i - sd.pointCount));
             const float        radius    = outerSide ? sd.outerRadius : sd.innerRadius;
             const float        angle     = sd.startAngle.asRadians() + static_cast<float>(local) * step;
-            const auto         sc        = zb::sinCosLookup(zb::positiveRemainder(angle, zb::tau));
+            const auto         sc        = za::sinCosLookup(za::positiveRemainder(angle, za::tau));
             return za::Vec2f{sd.outerRadius + radius * sc.cos, sd.outerRadius + radius * sc.sin};
         });
 
-        CHECK(zb::fabs(sd.getCentroid().x - reference.x) < 0.1f);
-        CHECK(zb::fabs(sd.getCentroid().y - reference.y) < 0.1f);
+        CHECK(za::fabs(sd.getCentroid().x - reference.x) < 0.1f);
+        CHECK(za::fabs(sd.getCentroid().y - reference.y) < 0.1f);
     }
 
     SECTION("Negative sweep is equivalent to positive sweep with shifted start")

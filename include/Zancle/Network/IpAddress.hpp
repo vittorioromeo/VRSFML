@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
     /// \param byte3 Fourth byte of the address
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] IpAddress(zb::U8 byte0, zb::U8 byte1, zb::U8 byte2, zb::U8 byte3);
+    [[nodiscard]] IpAddress(za::U8 byte0, za::U8 byte1, za::U8 byte2, za::U8 byte3);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the address from a 32-bits integer
@@ -60,7 +60,7 @@ public:
     /// \see `toInteger`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit IpAddress(zb::U32 address);
+    [[nodiscard]] explicit IpAddress(za::U32 address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get an integer representation of the address
@@ -76,7 +76,7 @@ public:
     /// \see `toString`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U32 toInteger() const;
+    [[nodiscard]] za::U32 toInteger() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's local address
@@ -87,12 +87,12 @@ public:
     /// Unlike getPublicAddress, this function is fast and may be
     /// used safely anywhere.
     ///
-    /// \return Local IP address of the computer on success, `zb::nullOpt` otherwise
+    /// \return Local IP address of the computer on success, `za::nullOpt` otherwise
     ///
     /// \see `getPublicAddress`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<IpAddress> getLocalAddress();
+    [[nodiscard]] static za::Optional<IpAddress> getLocalAddress();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the computer's public address
@@ -111,12 +111,12 @@ public:
     ///
     /// \param timeout Maximum time to wait
     ///
-    /// \return Public IP address of the computer on success, `zb::nullOpt` otherwise
+    /// \return Public IP address of the computer on success, `za::nullOpt` otherwise
     ///
     /// \see `getLocalAddress`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<IpAddress> getPublicAddress(Time timeout = {});
+    [[nodiscard]] static za::Optional<IpAddress> getPublicAddress(Time timeout = {});
 
 
     ////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::U32 m_address; //!< Address stored as an unsigned 32 bit integer
+    za::U32 m_address; //!< Address stored as an unsigned 32 bit integer
 };
 
 } // namespace za

@@ -10,14 +10,14 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::FontFace" * tst::skip(skipDisplayTests))
@@ -26,11 +26,11 @@ TEST_CASE("[Graphics] za::FontFace" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::FontFace));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::FontFace));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::FontFace));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::FontFace));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(za::FontFace));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::FontFace));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::FontFace));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::FontFace));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::FontFace));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::FontFace));
     }
 
     SECTION("openFromFile()")

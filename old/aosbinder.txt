@@ -44,11 +44,11 @@
 
                 binder.uploadData(smokeInstanceData.size(), smokeInstanceData.data(), sizeof(SpriteInstanceData));
 
-                binder.setup(3, 2, IAB::Type::Float, false, stride, ZB_OFFSETOF(SpriteInstanceData, position));
-                binder.setup(4, 4, IAB::Type::Float, false, stride, ZB_OFFSETOF(SpriteInstanceData,
-        textureRect)); binder.setup(5, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(SpriteInstanceData,
-        scale)); binder.setup(6, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(SpriteInstanceData, rotation));
-                binder.setup(7, 1, IAB::Type::Float, true, stride, ZB_OFFSETOF(SpriteInstanceData, opacity));
+                binder.setup(3, 2, IAB::Type::Float, false, stride, ZA_OFFSETOF(SpriteInstanceData, position));
+                binder.setup(4, 4, IAB::Type::Float, false, stride, ZA_OFFSETOF(SpriteInstanceData,
+        textureRect)); binder.setup(5, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(SpriteInstanceData,
+        scale)); binder.setup(6, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(SpriteInstanceData, rotation));
+                binder.setup(7, 1, IAB::Type::Float, true, stride, ZA_OFFSETOF(SpriteInstanceData, opacity));
             };
 
             // Draw all smoke particles in one single call

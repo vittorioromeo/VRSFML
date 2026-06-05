@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 namespace za
@@ -201,7 +201,7 @@ public:
     /// \see `wait`, `getReadyToSend`, `ReadyEntry`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Span<const ReadyEntry> getReadyToReceive() const;
+    [[nodiscard]] za::Span<const ReadyEntry> getReadyToReceive() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Sockets that became ready to send on the last `wait`
@@ -219,7 +219,7 @@ public:
     /// \see `wait`, `getReadyToReceive`, `ReadyEntry`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Span<const ReadyEntry> getReadyToSend() const;
+    [[nodiscard]] za::Span<const ReadyEntry> getReadyToSend() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Test whether a specific socket is ready to receive
@@ -276,7 +276,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::InPlacePImpl<Impl, 4096> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 4096> m_impl; //!< Implementation details
 };
 
 } // namespace za
@@ -310,7 +310,7 @@ private:
 /// Usage example (accept + echo):
 /// \code
 /// auto listener = za::TcpListener::create(55001, /* blocking */ true).value();
-/// zb::Vector<za::TcpSocket> clients;
+/// za::Vector<za::TcpSocket> clients;
 ///
 /// za::SocketSelector selector;
 /// (void)selector.add(listener);
@@ -326,7 +326,7 @@ private:
 ///         auto result = listener.accept();
 ///         if (result.status == za::Socket::Status::Done)
 ///         {
-///             auto& client = clients.emplaceBack(ZB_MOVE(result.socket));
+///             auto& client = clients.emplaceBack(ZA_MOVE(result.socket));
 ///             (void)selector.add(client);
 ///         }
 ///     }

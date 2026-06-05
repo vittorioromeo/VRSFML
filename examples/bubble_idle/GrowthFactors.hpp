@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ZancleBase/Math/Pow.hpp"
+#include "Zancle/Math/Pow.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -16,6 +16,6 @@ struct [[nodiscard]] GrowthFactors
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float computeGrowth(const float n) const
     {
-        return ((initial + n * multiplicative) * zb::pow(exponential, n) + linear * n + flat) * finalMult;
+        return ((initial + n * multiplicative) * za::pow(exponential, n) + linear * n + flat) * finalMult;
     }
 };

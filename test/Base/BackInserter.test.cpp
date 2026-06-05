@@ -1,10 +1,10 @@
 
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/BackInserter.hpp"
+#include "Zancle/Container/BackInserter.hpp"
 
-#include "ZancleBase/Algorithm/Copy.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Copy.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 TEST_CASE("[Base] Base/BackInserter.hpp")
@@ -12,9 +12,9 @@ TEST_CASE("[Base] Base/BackInserter.hpp")
     SECTION("Back Inserter")
     {
         const int       values[]{0, 1, 2, 3};
-        zb::Vector<int> target{-1};
+        za::Vector<int> target{-1};
 
-        zb::copy(values, values + 4, zb::BackInserter{target});
+        za::copy(values, values + 4, za::BackInserter{target});
 
         CHECK(target[0] == -1);
         CHECK(target[1] == 0);

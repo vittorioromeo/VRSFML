@@ -13,12 +13,12 @@
 
 #include "Zancle/System/AnchorPointMixin.hpp"
 #include "Zancle/System/String.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 #include "Zancle/System/Vector2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -114,23 +114,23 @@ public:
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
     ///
     /// This function is not blocking: if there's no pending event then
-    /// it will return a `zb::nullOpt`. Note that more than one event
+    /// it will return a `za::nullOpt`. Note that more than one event
     /// may be present in the event queue, thus you should always call
     /// this function in a loop to make sure that you process every
     /// pending event.
     /// \code
-    /// while (const zb::Optional event = window.pollEvent())
+    /// while (const za::Optional event = window.pollEvent())
     /// {
     ///    // process event...
     /// }
     /// \endcode
     ///
-    /// \return The potentially pending event, `zb::nullOpt` otherwise
+    /// \return The potentially pending event, `za::nullOpt` otherwise
     ///
     /// \see `waitEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Event> pollEvent();
+    [[nodiscard]] za::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Wait for an event and return it
@@ -138,12 +138,12 @@ public:
     /// This function is blocking: if there's no pending event then
     /// it will wait until an event is received or until the provided
     /// timeout elapses. Only if an error or a timeout occurs the
-    /// returned event will be `zb::nullOpt`.
+    /// returned event will be `za::nullOpt`.
     /// This function is typically used when you have a thread that is
     /// dedicated to events handling: you want to make this thread sleep
     /// as long as no new event is received.
     /// \code
-    /// while (const zb::Optional event = window.waitEvent())
+    /// while (const za::Optional event = window.waitEvent())
     /// {
     ///    // process event...
     /// }
@@ -151,12 +151,12 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event on success, `zb::nullOpt` on timeout or if window was closed
+    /// \return The event on success, `za::nullOpt` on timeout or if window was closed
     ///
     /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] za::Optional<Event> waitEvent(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -286,24 +286,24 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `zb::nullOpt` to unset the minimum size
+    /// Pass `za::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMinimumSize(const Vector2u& minimumSize);
-    void setMinimumSize(const zb::Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const za::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `zb::nullOpt` to unset the maximum size
+    /// Pass `za::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMaximumSize(const Vector2u& maximumSize);
-    void setMaximumSize(const zb::Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const za::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -331,7 +331,7 @@ public:
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const zb::U8* pixels);
+    void setIcon(Vector2u size, const za::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -486,7 +486,7 @@ private:
     /// \brief Construct a window base from the inner implementation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SDLWindowBase(zb::UniquePtr<Impl>&& impl);
+    [[nodiscard]] explicit SDLWindowBase(za::UniquePtr<Impl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
@@ -500,12 +500,12 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Event> filterEvent(zb::Optional<Event> event);
+    [[nodiscard]] za::Optional<Event> filterEvent(za::Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::UniquePtr<Impl> m_impl; //!< Platform-specific implementation of the window
+    za::UniquePtr<Impl> m_impl; //!< Platform-specific implementation of the window
     Vector2u              m_size; //!< Current size of the window
 };
 
@@ -536,7 +536,7 @@ private:
 /// while (true)
 /// {
 ///    // Event processing
-///    while (const zb::Optional event = window.pollEvent())
+///    while (const za::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<za::Event::Closed>())

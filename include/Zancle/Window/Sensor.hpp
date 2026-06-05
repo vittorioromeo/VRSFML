@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
 
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
 
 namespace za

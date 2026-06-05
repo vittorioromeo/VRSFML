@@ -3,14 +3,14 @@
 
     #define GLAD_GL_IMPLEMENTATION
 
-    #include "ZancleBase/Assert.hpp"
+    #include "Zancle/Diagnostic/Assert.hpp"
 
     #include <SDL3/SDL.h>
     #include <gl.h>
 
     #include <iostream>
 
-    #define assert ZB_ASSERT
+    #define assert ZA_ASSERT
 
 
     #define glCheck(...)                                                           \
@@ -225,7 +225,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = rw.pollEvent())
+        while (za::Optional event = rw.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -257,10 +257,10 @@ int main()
 
     #include "Zancle/Window/EventUtils.hpp"
 
-    #include "Zancle/System/Path.hpp"
+    #include "Zancle/IO/Path.hpp"
     #include "Zancle/System/Vector2.hpp"
 
-    #include "ZancleBase/Optional.hpp"
+    #include "Zancle/Vocabulary/Optional.hpp"
 
     #define IMGUI_DEFINE_MATH_OPERATORS
     #include <imgui.h>
@@ -324,7 +324,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -415,7 +415,7 @@ void main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -461,7 +461,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -521,7 +521,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -603,7 +603,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -666,7 +666,7 @@ int main()
         #include "Zancle/Graphics/RenderTexture.hpp"
         #include "Zancle/Graphics/Text.hpp"
 
-        #include "Zancle/System/Path.hpp"
+        #include "Zancle/IO/Path.hpp"
         #include "Zancle/System/String.hpp"
 
 int main()
@@ -697,7 +697,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
@@ -742,7 +742,7 @@ int main()
         #include "Zancle/Graphics/RenderTexture.hpp"
         #include "Zancle/Graphics/Text.hpp"
 
-        #include "Zancle/System/Path.hpp"
+        #include "Zancle/IO/Path.hpp"
         #include "Zancle/System/String.hpp"
 
         #include <cstdlib>

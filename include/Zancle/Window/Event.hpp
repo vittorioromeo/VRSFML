@@ -11,10 +11,10 @@
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/Sensor.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/Variant.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
 
 
 namespace za
@@ -421,7 +421,7 @@ private:
 #define ZA_PRIV_EVENT_X_EXPAND(x) x
 #define ZA_PRIV_EVENT_X_COMMA()   ,
 
-#define ZA_PRIV_EVENT_VARIANT_TYPE ::zb::Variant<ZA_PRIV_EVENTS_X_MACRO(ZA_PRIV_EVENT_X_EXPAND, ZA_PRIV_EVENT_X_COMMA)>
+#define ZA_PRIV_EVENT_VARIANT_TYPE ::za::Variant<ZA_PRIV_EVENTS_X_MACRO(ZA_PRIV_EVENT_X_EXPAND, ZA_PRIV_EVENT_X_COMMA)>
 
     using VariantType = ZA_PRIV_EVENT_VARIANT_TYPE;
 
@@ -476,7 +476,7 @@ ZA_PRIV_EVENTS_X_MACRO(ZA_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, ZA_PRIV_EVENT_X_SE
 /// to a set of handlers based on the active subtype.
 ///
 /// \code
-/// while (const zb::Optional event = window.pollEvent())
+/// while (const za::Optional event = window.pollEvent())
 /// {
 ///     // Window closed or escape key pressed: exit
 ///     if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))

@@ -3,7 +3,7 @@
 
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "ZancleBase/String.hpp"
+#include "Zancle/String/String.hpp"
 
 void Main::uiTabBarShop()
 {
@@ -14,7 +14,7 @@ void Main::uiTabBarShop()
     uiShopDrawSpecialCats();
     uiShopDrawUniqueCatBonuses();
 
-    const zb::String nextGoalsText = uiShopBuildNextGoalsText();
+    const za::String nextGoalsText = uiShopBuildNextGoalsText();
 
     ImGui::Columns(1);
 

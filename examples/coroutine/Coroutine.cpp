@@ -20,25 +20,25 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Algorithm/SwapAndPop.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Variant.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/SwapAndPop.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -81,7 +81,7 @@ struct Tween
         if (t >= 1.f)
             return false;
 
-        t = zb::min(t + dt / duration, 1.f);
+        t = za::min(t + dt / duration, 1.f);
         return true;
     }
 
@@ -170,27 +170,27 @@ struct World
 
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<Boss>         bosses;
-    zb::Vector<Bullet>       bullets;
-    zb::Vector<PlayerBullet> playerBullets;
-    zb::Vector<zb::String>   log;
+    za::Vector<Boss>         bosses;
+    za::Vector<Bullet>       bullets;
+    za::Vector<PlayerBullet> playerBullets;
+    za::Vector<za::String>   log;
 
 
     ////////////////////////////////////////////////////////////
-    static constexpr zb::SizeT maxLogLines = 22u;
+    static constexpr za::SizeT maxLogLines = 22u;
 
 
     ////////////////////////////////////////////////////////////
-    void addLog(const char* who, const zb::String& what)
+    void addLog(const char* who, const za::String& what)
     {
-        zb::String line = "[t=";
-        zb::appendToString(line, time);
+        za::String line = "[t=";
+        za::appendToString(line, time);
         line += "s] ";
         line += who;
         line += "  ";
         line += what;
 
-        log.emplaceBack(ZB_MOVE(line));
+        log.emplaceBack(ZA_MOVE(line));
 
         if (log.size() > maxLogLines)
             log.erase(log.begin());
@@ -200,7 +200,7 @@ struct World
     ////////////////////////////////////////////////////////////
     void spawnBulletRing(za::Vec2f source, int count, float speed, za::Angle startAngle, za::Color color, float bulletRadius)
     {
-        const auto total = za::radians(zb::tau);
+        const auto total = za::radians(za::tau);
         for (int i = 0; i < count; ++i)
         {
             const za::Angle a = startAngle + total * (static_cast<float>(i) / static_cast<float>(count));
@@ -259,7 +259,7 @@ struct World
                 .hp       = s.maxHp,
             });
 
-        addLog("SYSTEM", "spawned " + zb::toString(bosses.size()) + " bosses");
+        addLog("SYSTEM", "spawned " + za::toString(bosses.size()) + " bosses");
     }
 };
 
@@ -564,7 +564,7 @@ struct DodgeWatcher : BossCoroutine
 
     [[nodiscard]] bool playerIsUnderneath(BossCtx ctx) const
     {
-        const float dx = zb::fabs(ctx.world.player.pos.x - ctx.self.pos.x);
+        const float dx = za::fabs(ctx.world.player.pos.x - ctx.self.pos.x);
         return ctx.world.player.alive && !ctx.self.busyMoving && (dx <= xThreshold);
     }
 
@@ -776,7 +776,7 @@ struct BossFight : BossCoroutine
 struct Snapshot
 {
     World                 world;
-    zb::Vector<BossFight> bossScripts;
+    za::Vector<BossFight> bossScripts;
 };
 
 } // namespace
@@ -804,7 +804,7 @@ int main()
     const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     World                 world;
-    zb::Vector<BossFight> bossScripts; // parallel to `world.bosses`
+    za::Vector<BossFight> bossScripts; // parallel to `world.bosses`
 
     const auto resetScriptsToBosses = [&] { bossScripts.resize(world.bosses.size()); };
 
@@ -812,7 +812,7 @@ int main()
     resetScriptsToBosses();
 
     za::Clock              frameClock;
-    zb::Optional<Snapshot> quickSave;
+    za::Optional<Snapshot> quickSave;
 
     const auto doRestart = [&]
     {
@@ -831,7 +831,7 @@ int main()
         bool requestQuickSave = false;
         bool requestQuickLoad = false;
 
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -877,7 +877,7 @@ int main()
         world.time += dt;
         world.dt = dt;
 
-        zb::SizeT aliveCount = 0;
+        za::SizeT aliveCount = 0;
         for (const Boss& b : world.bosses)
             if (b.alive)
                 ++aliveCount;
@@ -914,10 +914,10 @@ int main()
             world.player.pos += move * (speed * dt);
 
             const float m      = world.player.drawRadius;
-            world.player.pos.x = zb::clamp(world.player.pos.x, m, worldSize.x - m);
-            world.player.pos.y = zb::clamp(world.player.pos.y, m, worldSize.y - m);
+            world.player.pos.x = za::clamp(world.player.pos.x, m, worldSize.x - m);
+            world.player.pos.y = za::clamp(world.player.pos.y, m, worldSize.y - m);
 
-            world.player.shootCooldown = zb::max(world.player.shootCooldown - dt, 0.f);
+            world.player.shootCooldown = za::max(world.player.shootCooldown - dt, 0.f);
 
             if (za::Keyboard::isKeyPressed(K::Z) && world.player.shootCooldown == 0.f)
             {
@@ -938,7 +938,7 @@ int main()
         // ---- Per-boss coroutine driver ----
         if (gameActive)
         {
-            for (zb::SizeT i = 0u; i < world.bosses.size(); ++i)
+            for (za::SizeT i = 0u; i < world.bosses.size(); ++i)
             {
                 Boss& boss = world.bosses[i];
                 if (!boss.alive)
@@ -949,7 +949,7 @@ int main()
 
                 if (boss.restartIn > 0.f)
                 {
-                    boss.restartIn = zb::max(boss.restartIn - dt, 0.f);
+                    boss.restartIn = za::max(boss.restartIn - dt, 0.f);
                     if (boss.restartIn == 0.f)
                     {
                         script          = BossFight{};
@@ -1001,10 +1001,10 @@ int main()
             }
             if (!boss.alive && boss.deathTimer > 0.f)
             {
-                boss.deathTimer = zb::max(boss.deathTimer - dt, 0.f);
+                boss.deathTimer = za::max(boss.deathTimer - dt, 0.f);
                 const float k   = boss.deathTimer / 1.5f;
                 boss.scale      = k;
-                boss.color.a    = static_cast<zb::U8>(255.f * k);
+                boss.color.a    = static_cast<za::U8>(255.f * k);
             }
             if (boss.alive)
                 boss.pos += boss.vel * dt;
@@ -1020,7 +1020,7 @@ int main()
             lastBossCleared = false;
 
         // ---- Enemy bullets vs player ----
-        zb::vectorSwapAndPopIf(world.bullets,
+        za::vectorSwapAndPopIf(world.bullets,
                                [&](Bullet& b)
         {
             b.pos += b.vel * dt;
@@ -1041,7 +1041,7 @@ int main()
         });
 
         // ---- Player bullets vs bosses ----
-        zb::vectorSwapAndPopIf(world.playerBullets,
+        za::vectorSwapAndPopIf(world.playerBullets,
                                [&](PlayerBullet& b)
         {
             b.pos += b.vel * dt;
@@ -1056,7 +1056,7 @@ int main()
                     const auto  dd = (b.pos - boss.pos).lengthSquared();
                     if (dd < r * r)
                     {
-                        boss.hp = zb::max(boss.hp - 1.f, 0.f);
+                        boss.hp = za::max(boss.hp - 1.f, 0.f);
                         b.dead  = true;
                         break;
                     }
@@ -1162,7 +1162,7 @@ int main()
 
         {
             const float y0 = 8.f + static_cast<float>(world.bosses.size()) * 13.f + 10.f;
-            for (zb::SizeT i = 0u; i < world.log.size(); ++i)
+            for (za::SizeT i = 0u; i < world.log.size(); ++i)
                 drawCtx.draw(font,
                              za::TextData{
                                  .position         = {10.f, y0 + static_cast<float>(i) * 16.f},
@@ -1174,7 +1174,7 @@ int main()
                              });
         }
 
-        const auto drawCenteredText = [&](const zb::String& str, float y, za::Color col, unsigned size)
+        const auto drawCenteredText = [&](const za::String& str, float y, za::Color col, unsigned size)
         {
             drawCtx.draw(font,
                          za::TextUtils::anchored(font,

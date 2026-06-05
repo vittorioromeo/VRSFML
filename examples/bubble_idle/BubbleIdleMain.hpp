@@ -31,23 +31,23 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/FixedFunction.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/ThreadPool.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Vocabulary/FixedFunction.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))
@@ -107,7 +107,7 @@ struct Playthrough;
 struct Profile;
 struct UIState;
 
-using MainRenderTextureVector = zb::Vector<za::RenderTexture>;
+using MainRenderTextureVector = za::Vector<za::RenderTexture>;
 
 template <typename T>
 struct MainOwnedDeleter
@@ -116,7 +116,7 @@ struct MainOwnedDeleter
 };
 
 template <typename T>
-using MainOwnedPtr = zb::UniquePtr<T, MainOwnedDeleter<T>>;
+using MainOwnedPtr = za::UniquePtr<T, MainOwnedDeleter<T>>;
 
 
 ////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ struct Main
 
     const char* lastPlayedMusic = bgmPathNormal; // to avoid restarting the same song
 
-    zb::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
+    za::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
     Countdown bgmTransition;            // fade in/out timer
 
     MainOwnedPtr<MainBGMStorage> bgmStorage;
@@ -273,10 +273,10 @@ struct Main
     struct DelayedAction
     {
         Countdown                      delayCountdown;
-        zb::FixedFunction<void(), 128> action;
+        za::FixedFunction<void(), 128> action;
     };
 
-    zb::Vector<DelayedAction> delayedActions;
+    za::Vector<DelayedAction> delayedActions;
 
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
@@ -303,7 +303,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Hexed cat offscreen render textures (one per concurrent hex, for witch and copy-witch combined)
     static inline constexpr za::Vec2u hexedCatRenderTextureSize{640u, 640u};
-    static inline constexpr zb::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
+    static inline constexpr za::SizeT maxHexedCatRenderTextures = maxConcurrentHexes * 2u;
 
     MainOwnedPtr<MainRenderTextureVector> hexedCatRenderTexturesStorage;
     MainRenderTextureVector&              hexedCatRenderTextures;
@@ -431,15 +431,15 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Spatial partitioning
-    zb::UniquePtr<SweepAndPrune> sweepAndPrune;
+    za::UniquePtr<SweepAndPrune> sweepAndPrune;
 
     ////////////////////////////////////////////////////////////
     // Particles
-    zb::Vector<Particle>     particles;          // World space
-    zb::Vector<TextParticle> textParticles;      // World space
-    zb::Vector<Particle>     spentCoinParticles; // HUD space
-    zb::Vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
-    zb::Vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
+    za::Vector<Particle>     particles;          // World space
+    za::Vector<TextParticle> textParticles;      // World space
+    za::Vector<Particle>     spentCoinParticles; // HUD space
+    za::Vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
+    za::Vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
 
     struct EarnedCoinParticle
     {
@@ -447,7 +447,7 @@ struct Main
         Progress  progress{};
     };
 
-    zb::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
+    za::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
 
     ////////////////////////////////////////////////////////////
     // Combo-bubble payout queue. Each entry holds a swarm of coin particles
@@ -465,13 +465,13 @@ struct Main
 
     struct [[nodiscard]] PendingComboBubblePayout
     {
-        zb::Vector<BurstingComboCoin> coins;
+        za::Vector<BurstingComboCoin> coins;
         SizeT                         coinsCollected{0u}; // total collected so far (drives pitch)
         Countdown                     settleCountdown{};  // burst → collect transition
         Countdown                     collectDelay{};
     };
 
-    zb::Vector<PendingComboBubblePayout> pendingComboBubblePayouts;
+    za::Vector<PendingComboBubblePayout> pendingComboBubblePayouts;
 
     ////////////////////////////////////////////////////////////
     // Random number generation
@@ -481,7 +481,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat names
-    zb::Vector<zb::Vector<zb::StringView>> shuffledCatNamesPerType;
+    za::Vector<za::Vector<za::StringView>> shuffledCatNamesPerType;
 
     ////////////////////////////////////////////////////////////
     // Prestige transition
@@ -495,9 +495,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Clock and accumulator for played time
     za::Clock playedClock;
-    zb::I64   playedUsAccumulator{0};
-    zb::I64   autosaveUsAccumulator{0};
-    zb::I64   fixedBgSlideAccumulator{0}; // for menu background slide
+    za::I64   playedUsAccumulator{0};
+    za::I64   autosaveUsAccumulator{0};
+    za::I64   fixedBgSlideAccumulator{0}; // for menu background slide
     float     fixedBgSlideTarget = 0.f;
     float     fixedBgSlide       = 0.f;
 
@@ -532,14 +532,14 @@ struct Main
 
     struct HexedCatDrawCommand // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        zb::SizeT renderTextureIndex;
+        za::SizeT renderTextureIndex;
         za::Vec2f position;
         float     phaseSeed;
         float     effectStrength;
         bool      top;
     };
 
-    zb::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
+    za::Vector<HexedCatDrawCommand> hexedCatDrawCommands;
 
     ////////////////////////////////////////////////////////////
     void drawBatch(const za::CPUDrawableBatch& batch, const za::RenderStates& states);
@@ -580,15 +580,15 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Tip state
-    zb::Optional<TimedCountdown> tipTCByte;
-    zb::Optional<TimedCountdown> tipTCBackground;
-    zb::Optional<TimedCountdown> tipTCBytePreEnd;
-    zb::Optional<TimedCountdown> tipTCByteEnd;
-    zb::Optional<TimedCountdown> tipTCBackgroundEnd;
+    za::Optional<TimedCountdown> tipTCByte;
+    za::Optional<TimedCountdown> tipTCBackground;
+    za::Optional<TimedCountdown> tipTCBytePreEnd;
+    za::Optional<TimedCountdown> tipTCByteEnd;
+    za::Optional<TimedCountdown> tipTCBackgroundEnd;
     Countdown                    tipCountdownChar;
-    zb::String                   tipString;
+    za::String                   tipString;
     TextEffectWiggle             tipStringWiggle{0.00175f, 4.f};
-    zb::SizeT                    tipCharIdx{0u};
+    za::SizeT                    tipCharIdx{0u};
 
     ////////////////////////////////////////////////////////////
     // Text buffers
@@ -603,7 +603,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Thread pool
-    zb::ThreadPool threadPool;
+    za::ThreadPool threadPool;
 
     ////////////////////////////////////////////////////////////
     // Cached views
@@ -620,7 +620,7 @@ struct Main
     // $ps sampler
     MoneyType      moneyGainedLastSecond{0u};
     Sampler<float> samplerMoneyPerSecond{/* capacity */ 60u};
-    zb::I64        moneyGainedUsAccumulator{0};
+    za::I64        moneyGainedUsAccumulator{0};
 
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
@@ -660,7 +660,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Victory state
-    zb::Optional<TimedCountdown> victoryTC;
+    za::Optional<TimedCountdown> victoryTC;
     Countdown                    cdLetterAppear;
     Countdown                    cdLetterText;
 
@@ -679,15 +679,15 @@ struct Main
     // Achievement progress tracking
     struct AchievementProgress
     {
-        zb::SizeT value;
-        zb::SizeT threshold;
+        za::SizeT value;
+        za::SizeT threshold;
     };
 
-    zb::Array<zb::Optional<AchievementProgress>, zb::getArraySize(achievementData)> achievementProgress{};
+    za::Array<za::Optional<AchievementProgress>, za::getArraySize(achievementData)> achievementProgress{};
 
     ////////////////////////////////////////////////////////////
     // PP purchase undo
-    zb::Vector<zb::FixedFunction<void(), 128>> undoPPPurchase;
+    za::Vector<za::FixedFunction<void(), 128>> undoPPPurchase;
     Countdown                                  undoPPPurchaseTimer;
 
     ////////////////////////////////////////////////////////////
@@ -706,7 +706,7 @@ struct Main
     void addMoney(MoneyType reward);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Vector<zb::Vector<zb::StringView>> makeShuffledCatNames(RNGFast& rng);
+    [[nodiscard]] static za::Vector<za::Vector<za::StringView>> makeShuffledCatNames(RNGFast& rng);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getTPWorkerCount();
@@ -763,10 +763,10 @@ struct Main
     void statSecondsPlayed();
 
     ////////////////////////////////////////////////////////////
-    void statHighestStarBubblePopCombo(zb::U64 comboValue);
+    void statHighestStarBubblePopCombo(za::U64 comboValue);
 
     ////////////////////////////////////////////////////////////
-    void statHighestNovaBubblePopCombo(zb::U64 comboValue);
+    void statHighestNovaBubblePopCombo(za::U64 comboValue);
 
     ////////////////////////////////////////////////////////////
     void statAbsorbedStarBubble();
@@ -787,10 +787,10 @@ struct Main
     void statRitual(CatType catType);
 
     ////////////////////////////////////////////////////////////
-    void statHighestSimultaneousMaintenances(zb::U64 value);
+    void statHighestSimultaneousMaintenances(za::U64 value);
 
     ////////////////////////////////////////////////////////////
-    void statHighestDPS(zb::U64 value);
+    void statHighestDPS(za::U64 value);
 
 
     ////////////////////////////////////////////////////////////
@@ -806,7 +806,7 @@ struct Main
     [[nodiscard]] za::Rect2f addImgResourceToUIAtlas(const za::Path& path);
 
     ////////////////////////////////////////////////////////////
-    void playSound(const LoadedSound& ls, zb::SizeT maxOverlap = 255u);
+    void playSound(const LoadedSound& ls, za::SizeT maxOverlap = 255u);
 
     ////////////////////////////////////////////////////////////
     // Definitions in `BubbleIdleMainInline.hpp`
@@ -856,7 +856,7 @@ struct Main
     void resetTipState();
 
     ////////////////////////////////////////////////////////////
-    void doTip(const zb::String& str, SizeT maxPrestigeLevel = 0u);
+    void doTip(const za::String& str, SizeT maxPrestigeLevel = 0u);
 
     ////////////////////////////////////////////////////////////
     // Definitions in `BubbleIdleMainInline.hpp`
@@ -891,7 +891,7 @@ struct Main
     [[nodiscard]] za::Vec2f getHUDMousePos() const;
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT BufferIdx = 0u, typename T>
+    template <za::SizeT BufferIdx = 0u, typename T>
     static const char* toStringWithSeparators(const T value)
     {
         // Thread-local buffer to store the result
@@ -956,7 +956,7 @@ struct Main
     void                uiMakeShrineOrCatTooltip(za::Vec2f mousePos);
 
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] AnimatedButtonOutcome : zb::U8
+    enum class [[nodiscard]] AnimatedButtonOutcome : za::U8
     {
         None,
         Clicked,
@@ -1014,7 +1014,7 @@ struct Main
         const char* currencyFmt);
 
     ////////////////////////////////////////////////////////////
-    void switchToBGM(zb::SizeT index, bool force);
+    void switchToBGM(za::SizeT index, bool force);
 
     ////////////////////////////////////////////////////////////
     static inline constexpr const char* bgmPaths[] = {
@@ -1030,10 +1030,10 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    zb::Optional<BGMBuffer>& getCurrentBGMBuffer();
+    za::Optional<BGMBuffer>& getCurrentBGMBuffer();
 
     ////////////////////////////////////////////////////////////
-    zb::Optional<BGMBuffer>& getNextBGMBuffer();
+    za::Optional<BGMBuffer>& getNextBGMBuffer();
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getHueByCatType(CatType catType);
@@ -1106,8 +1106,8 @@ struct Main
     void                     uiDpsMeter();
     void                     uiSpeedrunning();
     void                     uiTabBar();
-    void                     uiSetUnlockLabelY(zb::SizeT unlockId);
-    [[nodiscard]] bool       checkUiUnlock(zb::SizeT unlockId, bool unlockCondition);
+    void                     uiSetUnlockLabelY(za::SizeT unlockId);
+    [[nodiscard]] bool       checkUiUnlock(za::SizeT unlockId, bool unlockCondition);
     void                     uiImageFromAtlas(const za::Rect2f& txr, const za::DrawTextureSettings& drawParams);
     void                     uiImgsep(const za::Rect2f& txr, const char* sepLabel, bool first = false);
     void                     uiImgsep2(const za::Rect2f& txr, const char* sepLabel);
@@ -1115,7 +1115,7 @@ struct Main
     void                     uiShopDrawCoreUpgrades();
     void                     uiShopDrawSpecialCats();
     void                     uiShopDrawUniqueCatBonuses();
-    [[nodiscard]] zb::String uiShopBuildNextGoalsText();
+    [[nodiscard]] za::String uiShopBuildNextGoalsText();
     void                     uiShopCooldownButton(const char* label, CatType catType, const char* additionalInfo = "");
     void                     uiShopRangeButton(const char* label, CatType catType, const char* additionalInfo = "");
     bool                     uiCheckbox(const char* label, bool* b);
@@ -1136,13 +1136,13 @@ struct Main
     void                     uiSettingsDrawDebugTab();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<za::Rect2f> getAoEDragRect(za::Vec2f mousePos) const;
+    [[nodiscard]] za::Optional<za::Rect2f> getAoEDragRect(za::Vec2f mousePos) const;
 
     ////////////////////////////////////////////////////////////
     void resetAllDraggedCats();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT pickDragPivotCatIndex() const;
+    [[nodiscard]] za::SizeT pickDragPivotCatIndex() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isCatBeingDragged(const Cat& cat) const;
@@ -1202,17 +1202,17 @@ struct Main
     static inline constexpr ManaType spellManaCostByIndex[4] = {5u, 20u, 30u, 40u};
 
     ////////////////////////////////////////////////////////////
-    void castSpellByIndex(zb::SizeT index, Cat* wizardCat, Cat* copyCat);
+    void castSpellByIndex(za::SizeT index, Cat* wizardCat, Cat* copyCat);
 
     ////////////////////////////////////////////////////////////
     struct FormatTimeResult
     {
-        zb::U64 h;
-        zb::U64 m;
-        zb::U64 s;
+        za::U64 h;
+        za::U64 m;
+        za::U64 s;
     };
 
-    [[nodiscard]] static constexpr FormatTimeResult formatTime(const zb::U64 seconds)
+    [[nodiscard]] static constexpr FormatTimeResult formatTime(const za::U64 seconds)
     {
         return {seconds / 3600u, (seconds / 60u) % 60u, seconds % 60u};
     }
@@ -1220,21 +1220,21 @@ struct Main
     ////////////////////////////////////////////////////////////
     struct FormatSpeedrunTimeResult
     {
-        zb::U64 hours;
-        zb::U64 mins;
-        zb::U64 secs;
-        zb::U64 millis;
+        za::U64 hours;
+        za::U64 mins;
+        za::U64 secs;
+        za::U64 millis;
     };
 
     [[nodiscard]] static constexpr FormatSpeedrunTimeResult formatSpeedrunTime(const za::Time time)
     {
-        const zb::I64 elapsedTime       = time.asMicroseconds();
-        const zb::U64 totalMicroseconds = (elapsedTime >= 0) ? static_cast<zb::U64>(elapsedTime) : 0ULL;
+        const za::I64 elapsedTime       = time.asMicroseconds();
+        const za::U64 totalMicroseconds = (elapsedTime >= 0) ? static_cast<za::U64>(elapsedTime) : 0ULL;
 
-        constexpr zb::U64 usPerMs   = 1000ULL;
-        constexpr zb::U64 usPerSec  = 1000ULL * usPerMs; // 1,000,000
-        constexpr zb::U64 usPerMin  = 60ULL * usPerSec;  // 60,000,000
-        constexpr zb::U64 usPerHour = 60ULL * usPerMin;  // 3,600,000,000
+        constexpr za::U64 usPerMs   = 1000ULL;
+        constexpr za::U64 usPerSec  = 1000ULL * usPerMs; // 1,000,000
+        constexpr za::U64 usPerMin  = 60ULL * usPerSec;  // 60,000,000
+        constexpr za::U64 usPerHour = 60ULL * usPerMin;  // 3,600,000,000
 
         return {totalMicroseconds / usPerHour,
                 (totalMicroseconds % usPerHour) / usPerMin,
@@ -1259,13 +1259,13 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] int pickSelectedIndex(const zb::Vector<SelectorEntry>& entries, int selectedIndex);
+    [[nodiscard]] int pickSelectedIndex(const za::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void selectBackground(const zb::Vector<SelectorEntry>& entries, int selectedIndex);
+    void selectBackground(const za::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
-    void selectBGM(const zb::Vector<SelectorEntry>& entries, int selectedIndex);
+    void selectBGM(const za::Vector<SelectorEntry>& entries, int selectedIndex);
 
     ////////////////////////////////////////////////////////////
     void updateSelectedBackgroundSelectorIndex() const;
@@ -1276,7 +1276,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     struct SelectorData
     {
-        zb::Vector<SelectorEntry> entries;
+        za::Vector<SelectorEntry> entries;
         int                       selectedIndex = -1;
     };
 
@@ -1342,16 +1342,16 @@ struct Main
     [[nodiscard]] FrameViewState gameLoopComputeViews();
     void                         gameLoopRenderFrame(float                   deltaTimeMs,
                                                      bool                    shouldDrawUI,
-                                                     zb::U8                  shouldDrawUIAlpha,
+                                                     za::U8                  shouldDrawUIAlpha,
                                                      const FrameInput&       frameInput,
                                                      const FrameUpdateState& frameUpdate,
                                                      const FrameViewState&   frameViews);
     void                         gameLoopPresentFrame(const FrameViewState& frameViews);
-    void                         gameLoopUpdateScrolling(float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers);
+    void                         gameLoopUpdateScrolling(float deltaTimeMs, const za::Vector<za::Vec2f>& downFingers);
     void                         gameLoopUpdateTransitions(float deltaTimeMs);
     void                         gameLoopUpdateBubbles(float deltaTimeMs);
     void                         gameLoopUpdateAttractoBuff(float deltaTimeMs) const;
-    [[nodiscard]] bool           gameLoopUpdateBubbleClick(zb::Optional<za::Vec2f>& clickPosition);
+    [[nodiscard]] bool           gameLoopUpdateBubbleClick(za::Optional<za::Vec2f>& clickPosition);
     void                         gameLoopUpdateCatActionNormal(float /* deltaTimeMs */, Cat& cat);
     void                         gameLoopUpdateCatActionUni(float /* deltaTimeMs */, Cat& cat);
     void                         gameLoopUpdateCatActionDevil(float /* deltaTimeMs */, Cat& cat);
@@ -1368,7 +1368,7 @@ struct Main
     [[nodiscard]] bool canHexMore() const;
     [[nodiscard]] bool canCopyHexMore() const;
     void               hexCat(Cat& cat, SizeT catIdx, bool copy);
-    void gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */, Cat& cat, zb::Vector<HexSession>& sessionsToUse, SizeT nCatsToHex);
+    void gameLoopUpdateCatActionWitchImpl(float /* deltaTimeMs */, Cat& cat, za::Vector<HexSession>& sessionsToUse, SizeT nCatsToHex);
     void               gameLoopUpdateCatActionWitch(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionWizard(float deltaTimeMs, Cat& cat);
     void               gameLoopUpdateCatActionMouse(float /* deltaTimeMs */, Cat& cat);
@@ -1403,7 +1403,7 @@ struct Main
     void addEventBubblefall(float regionCenterX);
     void addEventInvincibleBubble();
 
-    void gameLoopUpdateDollsImpl(float deltaTimeMs, za::Vec2f mousePos, zb::Vector<HexSession>& sessionsToUse, bool copy);
+    void gameLoopUpdateDollsImpl(float deltaTimeMs, za::Vec2f mousePos, za::Vector<HexSession>& sessionsToUse, bool copy);
     void gameLoopUpdateDolls(float deltaTimeMs, za::Vec2f mousePos);
     void gameLoopUpdateCopyDolls(float deltaTimeMs, za::Vec2f mousePos);
     void gameLoopUpdateHellPortals(float deltaTimeMs);
@@ -1458,13 +1458,13 @@ struct Main
     void                gameLoopDrawTextParticles();
     [[nodiscard]] float getLeftMostUsefulX() const;
     void                gameLoopDrawScrollArrowHint(float deltaTimeMs);
-    void                gameLoopDrawImGui(zb::U8 shouldDrawUIAlpha);
+    void                gameLoopDrawImGui(za::U8 shouldDrawUIAlpha);
     void                gameLoopUpdatePurchaseUnlockedEffects(float deltaTimeMs);
     [[nodiscard]] bool  shouldDrawGrabbingCursor() const;
     void                gameLoopDrawCursor(float deltaTimeMs, float cursorGrow);
     void                gameLoopDrawCursorComboText(float deltaTimeMs, float cursorGrow);
     void                gameLoopDrawCursorComboBar();
-    void drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView, za::Vec2f resolution, zb::U8 shouldDrawUIAlpha);
+    void drawMinimap(bool back, za::RenderTarget& rt, const za::View& hudView, za::Vec2f resolution, za::U8 shouldDrawUIAlpha);
     void drawSplashScreen(za::RenderTarget& rt, const za::View& view, za::Vec2f resolution, float hudScale) const;
     [[nodiscard]] za::Rect2f getViewportPixelBounds(const za::View& view, za::Vec2f targetSize) const;
     void                     gameLoopDrawDollParticleBorder(float hueMod);
@@ -1477,7 +1477,7 @@ struct Main
     void drawActivatedShrineBackgroundEffects(za::RenderTarget& rt,
                                               const za::View&   backgroundView,
                                               za::Vec2f         activeGameViewCenter) const;
-    [[nodiscard]] za::RenderTexture& getHexedCatRenderTexture(zb::SizeT index);
+    [[nodiscard]] za::RenderTexture& getHexedCatRenderTexture(za::SizeT index);
     void enqueueHexedCatDrawCommand(const za::CPUDrawableBatch& batch, za::Vec2f position, bool top, float phaseSeed, float effectStrength);
     void                drawHexedCatDrawCommands(const za::View& view, bool top);
     void                gameLoopDisplayCloudBatch(const za::CPUDrawableBatch& batch, const za::View& view);
@@ -1487,7 +1487,7 @@ struct Main
     void                gameLoopUpdateCombo(float                   deltaTimeMs,
                                             bool                    anyBubblePoppedByClicking,
                                             za::Vec2f               mousePos,
-                                            zb::Optional<za::Vec2f> clickPosition);
+                                            za::Optional<za::Vec2f> clickPosition);
     void                gameLoopUpdateCollisionsBubbleBubble(float deltaTimeMs);
     void                gameLoopUpdateCollisionsCatCat(float deltaTimeMs);
     void                gameLoopUpdateCollisionsCatShrine(float deltaTimeMs) const;
@@ -1496,9 +1496,9 @@ struct Main
     void                gameLoopUpdateScreenShake(float deltaTimeMs);
     void                gameLoopUpdateParticlesAndTextParticles(float deltaTimeMs);
     void                gameLoopUpdateSounds(float deltaTimeMs, za::Vec2f mousePos);
-    void                gameLoopUpdateTimePlayed(zb::I64 elapsedUs);
-    void                gameLoopUpdateAutosave(zb::I64 elapsedUs);
-    void                gameLoopUpdateAndDrawFixedMenuBackground(float deltaTimeMs, zb::I64 elapsedUs);
+    void                gameLoopUpdateTimePlayed(za::I64 elapsedUs);
+    void                gameLoopUpdateAutosave(za::I64 elapsedUs);
+    void                gameLoopUpdateAndDrawFixedMenuBackground(float deltaTimeMs, za::I64 elapsedUs);
     void                gameLoopUpdateAndDrawBackground(float deltaTimeMs, const za::View& gameBackgroundView);
     void                gameLoopUpdateMoneyText(float deltaTimeMs, float yBelowMinimap);
     void                gameLoopUpdateSpentMoneyEffect(float deltaTimeMs);
@@ -1507,7 +1507,7 @@ struct Main
     void                gameLoopPrestigeAvailableReminder();
     void                gameLoopReminderBuyCombo();
     void                gameLoopReminderSpendPPs();
-    void                gameLoopUpdateDpsSampler(zb::I64 elapsedUs);
+    void                gameLoopUpdateDpsSampler(za::I64 elapsedUs);
 
     void drawCloudFrame(const CloudFrameDrawSettings& settings);
 

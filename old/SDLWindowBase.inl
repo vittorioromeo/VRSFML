@@ -45,14 +45,14 @@ void SDLWindowBase::pollAndHandleEvents(Handlers&&... handlers)
 {
     static_assert(sizeof...(Handlers) > 0, "Must provide at least one handler");
 
-    auto visitor = zb::OverloadSet{priv::functionPointerToFunctionObject(static_cast<Handlers&&>(handlers))...,
+    auto visitor = za::OverloadSet{priv::functionPointerToFunctionObject(static_cast<Handlers&&>(handlers))...,
                                          [](const priv::DelayOverloadResolution&) { /* ignore */ }};
 
     // Disable misc-const-correctness for this line since clang-tidy
     // complains about it even though the code would become incorrect
 
     // NOLINTNEXTLINE(misc-const-correctness)
-    while (zb::Optional event = (this->*PollEventFn)())
+    while (za::Optional event = (this->*PollEventFn)())
         event->visit(visitor);
 }
 

@@ -12,7 +12,7 @@
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -45,7 +45,7 @@ struct GLBufferObjectFuncs
         // Buffers are shareable across the share group, so creation is valid
         // from any current context. Caller must have one active -- saves the
         // two `makeCurrent` syscalls of a `GLSharedContextGuard`.
-        ZB_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         glCheck(glGenBuffers(1, &id));
     }
 
@@ -54,7 +54,7 @@ struct GLBufferObjectFuncs
     [[gnu::always_inline, gnu::flatten]] static void destroy(unsigned int& id)
     {
         // See `create` -- destruction is also valid from any current context.
-        ZB_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(WindowContext::hasActiveThreadLocalGlContext());
         glCheck(glDeleteBuffers(1, &id));
     }
 

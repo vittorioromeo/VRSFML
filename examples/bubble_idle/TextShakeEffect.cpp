@@ -5,9 +5,9 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 
-#include "Zancle/System/Angle.hpp"
+#include "Zancle/Geometry/Angle.hpp"
 
-#include "ZancleBase/ClampMacro.hpp"
+#include "Zancle/Math/ClampMacro.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -32,8 +32,8 @@ void TextShakeEffect::update(const float deltaTimeMs)
             angle = 0.f;
     }
 
-    grow  = ZB_CLAMP(grow, 0.f, 5.f);
-    angle = ZB_CLAMP(angle, -0.5f, 0.5f);
+    grow  = ZA_CLAMP(grow, 0.f, 5.f);
+    angle = ZA_CLAMP(angle, -0.5f, 0.5f);
 }
 
 ////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
 TEST_CASE("[Graphics] za::TextureAtlas" * tst::skip(skipDisplayTests))

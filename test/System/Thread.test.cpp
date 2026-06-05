@@ -1,43 +1,43 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Thread.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
 
-#include "Zancle/System/Atomic.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // `Thread` is move-only -- copy operations must be deleted.
 ////////////////////////////////////////////////////////////
-static_assert(!ZB_IS_COPY_CONSTRUCTIBLE(za::Thread));
-static_assert(!ZB_IS_COPY_ASSIGNABLE(za::Thread));
+static_assert(!ZA_IS_COPY_CONSTRUCTIBLE(za::Thread));
+static_assert(!ZA_IS_COPY_ASSIGNABLE(za::Thread));
 
-static_assert(ZB_IS_MOVE_CONSTRUCTIBLE(za::Thread));
-static_assert(ZB_IS_MOVE_ASSIGNABLE(za::Thread));
+static_assert(ZA_IS_MOVE_CONSTRUCTIBLE(za::Thread));
+static_assert(ZA_IS_MOVE_ASSIGNABLE(za::Thread));
 
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - default-constructed is not joinable")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - default-constructed is not joinable")
 {
     za::Thread t;
     CHECK(!t.joinable());
     CHECK(t.getId().value() == 0u);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - hardwareConcurrency returns positive value")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - hardwareConcurrency returns positive value")
 {
     const unsigned int n = za::Thread::hardwareConcurrency();
     CHECK(n >= 1u); // every reasonable test target has at least one core
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - spawn + join round-trip")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - spawn + join round-trip")
 {
     za::Atomic<int> ran{0};
 
@@ -49,9 +49,9 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - spawn + join round-trip")
     CHECK(ran.loadAcquire() == 42);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - getId is non-zero for a running thread")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - getId is non-zero for a running thread")
 {
-    za::Atomic<zb::U64> observedId{0u};
+    za::Atomic<za::U64> observedId{0u};
 
     za::Thread t{[&observedId] { observedId.storeRelease(za::ThisThread::getId().value()); }};
 
@@ -63,7 +63,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - getId is non-zero for a running t
     CHECK(observedId.loadAcquire() == outsideId.value());
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - move construction transfers ownership")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - move construction transfers ownership")
 {
     za::Atomic<int> finished{0};
 
@@ -86,7 +86,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - move construction transfers owner
     CHECK(finished.loadAcquire() == 1);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - destructor implicitly joins (std::jthread semantics)")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - destructor implicitly joins (std::jthread semantics)")
 {
     za::Atomic<int> ran{0};
 
@@ -103,7 +103,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - destructor implicitly joins (std:
     CHECK(ran.loadAcquire() == 123);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - move assignment to joinable target implicitly joins")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - move assignment to joinable target implicitly joins")
 {
     za::Atomic<int> firstRan{0};
     za::Atomic<int> secondRan{0};
@@ -128,7 +128,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - move assignment to joinable targe
     CHECK(secondRan.loadAcquire() == 2);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - move assignment to non-joinable target")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - move assignment to non-joinable target")
 {
     za::Atomic<int> ran{0};
 
@@ -144,7 +144,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - move assignment to non-joinable t
     CHECK(ran.loadAcquire() == 7);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - detach releases joinability")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - detach releases joinability")
 {
     za::Atomic<int> done{0};
 
@@ -166,7 +166,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - detach releases joinability")
     CHECK(done.loadAcquire() == 1);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - ThisThread::getId is stable on the calling thread")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - ThisThread::getId is stable on the calling thread")
 {
     const za::ThreadId id1 = za::ThisThread::getId();
     const za::ThreadId id2 = za::ThisThread::getId();
@@ -174,7 +174,7 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - ThisThread::getId is stable on th
     CHECK(id1.value() != 0u);
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - sleep sleeps for at least the given time")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - sleep sleeps for at least the given time")
 {
     // OS schedulers may oversleep, but should never undersleep.
     // Replaces the standalone `Sleep.test.cpp` round-trip.
@@ -193,10 +193,10 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - sleep sleeps for at least the giv
     checkSleeps(za::milliseconds(25));
 }
 
-TEST_CASE("[System] Zancle/System/Thread.hpp - many threads each see distinct ids")
+TEST_CASE("[System] Zancle/Concurrency/Thread.hpp - many threads each see distinct ids")
 {
     constexpr int       threadCount = 8;
-    za::Atomic<zb::U32> distinctSum{0u};
+    za::Atomic<za::U32> distinctSum{0u};
 
     za::Thread threads[threadCount]{};
 
@@ -207,13 +207,13 @@ TEST_CASE("[System] Zancle/System/Thread.hpp - many threads each see distinct id
             // counter values, ids are unique across this short test
             // window; the sum being equal to the sum of the unique
             // ids the threads observed is the test.
-            distinctSum.fetchAddRelaxed(static_cast<zb::U32>(za::ThisThread::getId().value()));
+            distinctSum.fetchAddRelaxed(static_cast<za::U32>(za::ThisThread::getId().value()));
         }};
 
-    zb::U32 expected = 0u;
+    za::U32 expected = 0u;
     for (auto& t : threads)
     {
-        const zb::U32 id = static_cast<zb::U32>(t.getId().value());
+        const za::U32 id = static_cast<za::U32>(t.getId().value());
         CHECK(id != 0u);
         expected += id;
         t.join();

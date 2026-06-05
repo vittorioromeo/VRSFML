@@ -9,10 +9,10 @@
 
 #include "Zancle/Graphics/Glyph.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace
@@ -80,9 +80,9 @@ const Glyph& GlyphMapping::getGlyph(const char32_t                      codePoin
                                     [[maybe_unused]] const bool         theBold,
                                     const float                         theOutlineThickness) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
-    ZB_ASSERT(theBold == bold);
-    ZB_ASSERT(theOutlineThickness == 0.f || theOutlineThickness == outlineThickness);
+    ZA_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theBold == bold);
+    ZA_ASSERT(theOutlineThickness == 0.f || theOutlineThickness == outlineThickness);
 
     const auto& map = (theOutlineThickness != 0.f) ? outlineGlyphs : fillGlyphs;
 
@@ -90,7 +90,7 @@ const Glyph& GlyphMapping::getGlyph(const char32_t                      codePoin
         return it->second;
 
     priv::errMsg("Glyph not found in mapping for code point: {}", static_cast<unsigned int>(codePoint));
-    zb::abort();
+    za::abort();
 }
 
 
@@ -101,16 +101,16 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
     [[maybe_unused]] const bool         theBold,
     [[maybe_unused]] const float        theOutlineThickness) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
-    ZB_ASSERT(theBold == bold);
-    ZB_ASSERT(theOutlineThickness != 0.f && theOutlineThickness == outlineThickness);
+    ZA_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theBold == bold);
+    ZA_ASSERT(theOutlineThickness != 0.f && theOutlineThickness == outlineThickness);
 
     const auto* fillIt = fillGlyphs.find(codePoint);
 
     if (fillIt == fillGlyphs.end()) [[unlikely]]
     {
         priv::errMsg("Fill glyph not found in mapping for code point: {}", static_cast<unsigned int>(codePoint));
-        zb::abort();
+        za::abort();
     }
 
     const auto* outlineIt = outlineGlyphs.find(codePoint);
@@ -118,7 +118,7 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
     if (outlineIt == outlineGlyphs.end()) [[unlikely]]
     {
         priv::errMsg("Outline glyph not found in mapping for code point: {}", static_cast<unsigned int>(codePoint));
-        zb::abort();
+        za::abort();
     }
 
     return {
@@ -131,7 +131,7 @@ GlyphMapping::GlyphPair GlyphMapping::getFillAndOutlineGlyph(
 ////////////////////////////////////////////////////////////
 float GlyphMapping::getLineSpacing([[maybe_unused]] const unsigned int theCharacterSize) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theCharacterSize == characterSize);
     return cachedLineSpacing;
 }
 
@@ -139,7 +139,7 @@ float GlyphMapping::getLineSpacing([[maybe_unused]] const unsigned int theCharac
 ////////////////////////////////////////////////////////////
 float GlyphMapping::getAscent([[maybe_unused]] const unsigned int theCharacterSize) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theCharacterSize == characterSize);
     return cachedAscent;
 }
 
@@ -147,7 +147,7 @@ float GlyphMapping::getAscent([[maybe_unused]] const unsigned int theCharacterSi
 ////////////////////////////////////////////////////////////
 float GlyphMapping::getDescent([[maybe_unused]] const unsigned int theCharacterSize) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theCharacterSize == characterSize);
     return cachedDescent;
 }
 
@@ -155,7 +155,7 @@ float GlyphMapping::getDescent([[maybe_unused]] const unsigned int theCharacterS
 ////////////////////////////////////////////////////////////
 float GlyphMapping::getUnderlinePosition([[maybe_unused]] const unsigned int theCharacterSize) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theCharacterSize == characterSize);
     return cachedUnderlinePosition;
 }
 
@@ -163,7 +163,7 @@ float GlyphMapping::getUnderlinePosition([[maybe_unused]] const unsigned int the
 ////////////////////////////////////////////////////////////
 float GlyphMapping::getUnderlineThickness([[maybe_unused]] const unsigned int theCharacterSize) const
 {
-    ZB_ASSERT(theCharacterSize == characterSize);
+    ZA_ASSERT(theCharacterSize == characterSize);
     return cachedUnderlineThickness;
 }
 

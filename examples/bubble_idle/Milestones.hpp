@@ -3,13 +3,13 @@
 #include "ExactArray.hpp"
 #include "ShrineType.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 #include <climits>
 
 
 ////////////////////////////////////////////////////////////
-using MilestoneTimestamp                  = zb::U64;
+using MilestoneTimestamp                  = za::U64;
 static inline constexpr auto maxMilestone = ULLONG_MAX;
 
 ////////////////////////////////////////////////////////////

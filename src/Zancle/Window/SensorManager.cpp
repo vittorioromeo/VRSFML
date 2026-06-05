@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/SensorManager.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
 
 namespace za::priv

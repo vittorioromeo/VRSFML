@@ -6,13 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/MinMaxMacros.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/MinMaxMacros.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za::priv
@@ -31,7 +31,7 @@ namespace za::priv
     const float radius,
     const float radians) noexcept
 {
-    const auto [sine, cosine] = zb::sinCosLookup(zb::positiveRemainder(radians, zb::tau));
+    const auto [sine, cosine] = za::sinCosLookup(za::positiveRemainder(radians, za::tau));
     return {outerRadius + radius * cosine, outerRadius + radius * sine};
 }
 
@@ -108,10 +108,10 @@ template <typename PointAtAngleFn, typename MapFn>
 
     const auto fold = [&](const Vec2f p)
     {
-        minX = ZB_MIN(minX, p.x);
-        maxX = ZB_MAX(maxX, p.x);
-        minY = ZB_MIN(minY, p.y);
-        maxY = ZB_MAX(maxY, p.y);
+        minX = ZA_MIN(minX, p.x);
+        maxX = ZA_MAX(maxX, p.x);
+        minY = ZA_MIN(minY, p.y);
+        maxY = ZA_MAX(maxY, p.y);
     };
 
     // End-of-arc endpoint.
@@ -125,23 +125,23 @@ template <typename PointAtAngleFn, typename MapFn>
     // on the caller's `pointAt` convention -- the helper doesn't need to know).
     const auto inSweep = [startRad, sweepRad](const float theta) noexcept
     {
-        if (sweepRad >= zb::tau)
+        if (sweepRad >= za::tau)
             return true;
 
-        return zb::positiveRemainder(theta - startRad, zb::tau) <= sweepRad;
+        return za::positiveRemainder(theta - startRad, za::tau) <= sweepRad;
     };
 
     if (inSweep(0.f))
         fold(mapFn(pointAt(0.f)));
 
-    if (inSweep(zb::halfPi))
-        fold(mapFn(pointAt(zb::halfPi)));
+    if (inSweep(za::halfPi))
+        fold(mapFn(pointAt(za::halfPi)));
 
-    if (inSweep(zb::pi))
-        fold(mapFn(pointAt(zb::pi)));
+    if (inSweep(za::pi))
+        fold(mapFn(pointAt(za::pi)));
 
-    if (inSweep(3.f * zb::halfPi))
-        fold(mapFn(pointAt(3.f * zb::halfPi)));
+    if (inSweep(3.f * za::halfPi))
+        fold(mapFn(pointAt(3.f * za::halfPi)));
 
     return {{minX, minY}, {maxX - minX, maxY - minY}};
 }
@@ -175,10 +175,10 @@ template <typename PointAtFn, typename MapFn>
     {
         const Vec2f p = mapFn(pointAt(i));
 
-        minX = ZB_MIN(minX, p.x);
-        maxX = ZB_MAX(maxX, p.x);
-        minY = ZB_MIN(minY, p.y);
-        maxY = ZB_MAX(maxY, p.y);
+        minX = ZA_MIN(minX, p.x);
+        maxX = ZA_MAX(maxX, p.x);
+        minY = ZA_MIN(minY, p.y);
+        maxY = ZA_MAX(maxY, p.y);
     }
 
     return {{minX, minY}, {maxX - minX, maxY - minY}};
@@ -191,10 +191,10 @@ template <typename PointAtFn, typename MapFn>
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Rect2f mergeAabb(const Rect2f a, const Rect2f b) noexcept
 {
-    const float minX = ZB_MIN(a.position.x, b.position.x);
-    const float minY = ZB_MIN(a.position.y, b.position.y);
-    const float maxX = ZB_MAX(a.position.x + a.size.x, b.position.x + b.size.x);
-    const float maxY = ZB_MAX(a.position.y + a.size.y, b.position.y + b.size.y);
+    const float minX = ZA_MIN(a.position.x, b.position.x);
+    const float minY = ZA_MIN(a.position.y, b.position.y);
+    const float maxX = ZA_MAX(a.position.x + a.size.x, b.position.x + b.size.x);
+    const float maxY = ZA_MAX(a.position.y + a.size.y, b.position.y + b.size.y);
 
     return {{minX, minY}, {maxX - minX, maxY - minY}};
 }

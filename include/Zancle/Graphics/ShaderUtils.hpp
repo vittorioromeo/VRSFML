@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -47,18 +47,18 @@ public:
     /// \param lineNumber Line number to emit
     ///
     ////////////////////////////////////////////////////////////
-    static void emitLineDirective(zb::Vector<char>& buffer, unsigned int lineNumber);
+    static void emitLineDirective(za::Vector<char>& buffer, unsigned int lineNumber);
 
     ////////////////////////////////////////////////////////////
     /// \brief Parse a `#include "filename"` directive from a line
     ///
-    /// \return `zb::nullOpt` if the line is a malformed `#include`,
+    /// \return `za::nullOpt` if the line is a malformed `#include`,
     ///         an `Optional` holding an empty `StringView` if the
     ///         line is not an `#include` at all, or an `Optional`
     ///         holding the filename on success.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<zb::StringView> parseIncludeDirective(zb::StringView line);
+    [[nodiscard]] static za::Optional<za::StringView> parseIncludeDirective(za::StringView line);
 
     ////////////////////////////////////////////////////////////
     /// \brief Preprocess `#include` directives in a GLSL shader source
@@ -75,7 +75,7 @@ public:
     /// \return `true` on success, `false` on error
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool preprocessGlslIncludes(zb::StringView source, const Path& shaderPath, zb::Vector<char>& output);
+    [[nodiscard]] static bool preprocessGlslIncludes(za::StringView source, const Path& shaderPath, za::Vector<char>& output);
 };
 
 } // namespace za

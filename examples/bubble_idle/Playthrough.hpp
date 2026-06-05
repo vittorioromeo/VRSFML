@@ -22,14 +22,14 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ struct Playthrough
         bool devilcatHellsingedEnabled  = true;
 
         bool      autocastPurchased = false;
-        zb::SizeT autocastIndex     = 0u;
+        za::SizeT autocastIndex     = 0u;
 
         // Gate for the Power Nap PP upgrade: when true, forced wake-ups
         // (shake or wardencat bonk) grant the waking cat a temporary
@@ -233,23 +233,23 @@ struct Playthrough
 
     //
     // Object state
-    zb::Vector<Bubble>     bubbles;
-    zb::Vector<Cat>        cats;
-    zb::Vector<Shrine>     shrines;
-    zb::Vector<HexSession> hexSessions;
-    zb::Vector<HexSession> copyHexSessions;
-    zb::Vector<HellPortal> hellPortals;
+    za::Vector<Bubble>     bubbles;
+    za::Vector<Cat>        cats;
+    za::Vector<Shrine>     shrines;
+    za::Vector<HexSession> hexSessions;
+    za::Vector<HexSession> copyHexSessions;
+    za::Vector<HellPortal> hellPortals;
 
     //
     // Random events
-    zb::Vector<GameEvent> activeEvents;
-    zb::Optional<float>   nextEventSpawnMs;
+    za::Vector<GameEvent> activeEvents;
+    za::Optional<float>   nextEventSpawnMs;
 
     //
     // Monotonic counter assigned to every newly-spawned bubble. Used only to
     // seed the rendered hue of Normal bubbles so it stays stable when earlier
     // bubbles are removed.
-    zb::U32 nextBubbleHueSeed = 0u;
+    za::U32 nextBubbleHueSeed = 0u;
 
     //
     // Shrines
@@ -287,7 +287,7 @@ struct Playthrough
     //   - `scriptedNapPendingCountdown` holds the in-flight 5s delay.
     //   - The actual nap-cadence countdown is per-cat (`Cat::napScheduleCountdownMs`).
     bool                    scriptedNapDone = false;
-    zb::Optional<Countdown> scriptedNapPendingCountdown;
+    za::Optional<Countdown> scriptedNapPendingCountdown;
 
     // Flips to `true` the first time a cat finishes waking up from a nap;
     // used as the "completed the nap tutorial" gate (e.g. for unlocking
@@ -300,7 +300,7 @@ struct Playthrough
 
     //
     // Speedrunning
-    zb::Optional<za::Time> speedrunStartTime;
+    za::Optional<za::Time> speedrunStartTime;
     SpeedrunningSplits     speedrunSplits;
 
     //
@@ -336,7 +336,7 @@ struct Playthrough
         PrestigePointsType pointsToAdd = 0u;
 
         for (auto i = currentPrestigeLevel; i < targetPrestigeLevel; ++i)
-            pointsToAdd += static_cast<PrestigePointsType>(zb::pow(2.f, static_cast<float>(i + levelBias)));
+            pointsToAdd += static_cast<PrestigePointsType>(za::pow(2.f, static_cast<float>(i + levelBias)));
 
         return pointsToAdd;
     }

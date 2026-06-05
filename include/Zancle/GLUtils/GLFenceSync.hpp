@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Exchange.hpp"
+#include "Zancle/Base/Exchange.hpp"
 
 
 namespace za::priv
@@ -34,8 +34,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     GLFenceSync(GLFenceSync&& rhs) noexcept :
-        m_handle{zb::exchange(rhs.m_handle, nullptr)},
-        m_needsClientFlush{zb::exchange(rhs.m_needsClientFlush, true)}
+        m_handle{za::exchange(rhs.m_handle, nullptr)},
+        m_needsClientFlush{za::exchange(rhs.m_needsClientFlush, true)}
     {
     }
 
@@ -48,8 +48,8 @@ public:
 
         reset();
 
-        m_handle           = zb::exchange(rhs.m_handle, nullptr);
-        m_needsClientFlush = zb::exchange(rhs.m_needsClientFlush, true);
+        m_handle           = za::exchange(rhs.m_handle, nullptr);
+        m_needsClientFlush = za::exchange(rhs.m_needsClientFlush, true);
 
         return *this;
     }

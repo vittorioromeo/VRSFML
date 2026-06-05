@@ -4,17 +4,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Math/Sin.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/Sin.hpp"
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeIdentity(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
     return x;
 }
 
@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInOutCubic(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float t = -2.f * x + 2.f;
     return x < 0.5f ? 4.f * x * x * x : 1.f - (t * t * t) / 2.f;
@@ -32,15 +32,15 @@
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInOutSine(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
-    return -(zb::cos(zb::pi * x) - 1.f) / 2.f;
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    return -(za::cos(za::pi * x) - 1.f) / 2.f;
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInOutQuint(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float t = -2.f * x + 2.f;
     return x < 0.5f ? 16.f * x * x * x * x * x : 1.f - (t * t * t * t * t) / 2.f;
@@ -52,7 +52,7 @@
     const float x,
     const float overshoot) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float c2 = overshoot * 1.525f;
     const float t1 = 2.f * x;
@@ -67,7 +67,7 @@
     const float x,
     const float overshoot) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float c3 = overshoot + 1.f;
 
@@ -80,7 +80,7 @@
     const float x,
     const float overshoot) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float c3 = overshoot + 1.f;
     const float t  = x - 1.f;
@@ -113,21 +113,21 @@
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInOutElastic(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
-    const float c5 = (2.f * zb::pi) / 4.5f;
+    const float c5 = (2.f * za::pi) / 4.5f;
 
     return x == 0.f   ? 0.f
            : x == 1.f ? 1.f
-           : x < 0.5f ? -(zb::pow(2.f, 20.f * x - 10.f) * zb::sin((20.f * x - 11.125f) * c5)) / 2.f
-                      : (zb::pow(2.f, -20.f * x + 10.f) * zb::sin((20.f * x - 11.125f) * c5)) / 2.f + 1.f;
+           : x < 0.5f ? -(za::pow(2.f, 20.f * x - 10.f) * za::sin((20.f * x - 11.125f) * c5)) / 2.f
+                      : (za::pow(2.f, -20.f * x + 10.f) * za::sin((20.f * x - 11.125f) * c5)) / 2.f + 1.f;
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInQuint(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
     return x * x * x * x * x;
 }
 
@@ -135,7 +135,7 @@
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeOutQuint(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
     const float t = 1.f - x;
     return 1.f - t * t * t * t * t;
@@ -145,9 +145,9 @@
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeOutElastic(const float x) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    ZA_ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
 
-    const float c4 = (2.f * zb::pi) / 3.f;
+    const float c4 = (2.f * za::pi) / 3.f;
 
-    return x == 0.f ? 0.f : x == 1.f ? 1.f : zb::pow(2.f, -10.f * x) * zb::sin((x * 10.f - 0.75f) * c4) + 1.f;
+    return x == 0.f ? 0.f : x == 1.f ? 1.f : za::pow(2.f, -10.f * x) * za::sin((x * 10.f - 0.75f) * c4) + 1.f;
 }

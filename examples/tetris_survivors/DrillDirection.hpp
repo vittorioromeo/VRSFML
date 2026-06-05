@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Builtin/Unreachable.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/Unreachable.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tsurv
@@ -16,7 +16,7 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 struct DrillDirection
 {
-    enum [[nodiscard]] Enum : zb::U8
+    enum [[nodiscard]] Enum : za::U8
     {
         Left  = 0u,
         Right = 1u,
@@ -26,7 +26,7 @@ struct DrillDirection
 
 
 /////////////////////////////////////////////////////////////
-inline constexpr zb::SizeT drillDirectionCount = 3u;
+inline constexpr za::SizeT drillDirectionCount = 3u;
 
 
 /////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ inline constexpr zb::SizeT drillDirectionCount = 3u;
         case DrillDirection::Down:
             return {0, 1};
         default:
-            ZB_UNREACHABLE();
+            ZA_UNREACHABLE();
     }
 }
 

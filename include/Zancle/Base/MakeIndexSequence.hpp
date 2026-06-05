@@ -1,0 +1,89 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
+
+
+////////////////////////////////////////////////////////////
+/// \file
+/// \brief `std::make_index_sequence<N>` replacement
+///
+/// `MakeIndexSequence<N>` evaluates to `IndexSequence<0, 1, ..., N-1>`.
+/// The implementation prefers compiler builtins (`__integer_pack` on
+/// GCC, `__make_integer_seq` on Clang/MSVC) so that the alias does not
+/// drag in `<utility>`. Falls back to `std::make_index_sequence` only
+/// when no builtin is available.
+///
+////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "Zancle/Base/IndexSequence.hpp"
+#include "Zancle/Base/SizeT.hpp"
+
+
+#if __has_builtin(__integer_pack)
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_MAKE_INDEX_SEQUENCE(N) ::za::IndexSequence<__integer_pack(N)...>
+
+namespace za
+{
+////////////////////////////////////////////////////////////
+template <SizeT N>
+using MakeIndexSequence = ZA_MAKE_INDEX_SEQUENCE(N);
+
+} // namespace za
+
+#elif __has_builtin(__make_integer_seq)
+
+namespace za::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T, T... Is>
+struct MakeIndexSequenceHelper
+{
+    using type = IndexSequence<Is...>;
+};
+
+} // namespace za::priv
+
+namespace za
+{
+////////////////////////////////////////////////////////////
+template <SizeT N>
+using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHelper, SizeT, N>::type;
+
+} // namespace za
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_MAKE_INDEX_SEQUENCE(N) ::za::MakeIndexSequence<N>
+
+#else
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+    #include <utility>
+
+
+namespace za
+{
+////////////////////////////////////////////////////////////
+template <SizeT N>
+using MakeIndexSequence = std::make_index_sequence<N>;
+
+} // namespace za
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_MAKE_INDEX_SEQUENCE(N) ::za::MakeIndexSequence<N>
+
+#endif
+
+
+////////////////////////////////////////////////////////////
+/// \brief Macro form of `std::index_sequence_for`: produces an index sequence matching a parameter pack
+///
+////////////////////////////////////////////////////////////
+#define ZA_INDEX_SEQUENCE_FOR(...) ZA_MAKE_INDEX_SEQUENCE(sizeof...(__VA_ARGS__))

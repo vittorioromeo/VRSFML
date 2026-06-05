@@ -12,10 +12,10 @@
     #include "Zancle/Window/WindowContext.hpp"
     #include "Zancle/Window/WindowHandle.hpp"
 
-    #include "Zancle/System/Priv/Vec2Base.hpp"
-    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
+    #include "Zancle/Geometry/Priv/Vec2Base.hpp"
+    #include "Zancle/Base/WindowsHeader.hpp" // IWYU pragma: keep
 
-    #include "ZancleBase/Optional.hpp"
+    #include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace
@@ -93,7 +93,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     // Test za::WindowBase functionality
     SUBCASE("za::WindowBase tests")
     {
-        zb::Optional<za::WindowBase> windowBase;
+        za::Optional<za::WindowBase> windowBase;
 
         windowBase = za::WindowBase::create(handle);
         CHECK(windowBase.hasValue());
@@ -115,7 +115,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     // Test za::Window functionality
     SUBCASE("za::Window tests")
     {
-        zb::Optional<za::Window> window;
+        za::Optional<za::Window> window;
 
         SUBCASE("Default context settings")
         {
@@ -155,7 +155,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
     SECTION("za::RenderWindow")
     {
-        zb::Optional<za::RenderWindow> renderWindow;
+        za::Optional<za::RenderWindow> renderWindow;
 
         SECTION("Default context settings")
         {

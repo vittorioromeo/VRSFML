@@ -235,7 +235,7 @@ Verified by direct grep:
 Other texture-side issues:
 
 * **C5 (already covered)**: `Shader::setUniform(loc, Texture&)` raw pointer.
-* **Copy ctor dead initializer**: [Texture.cpp:85-99](src/SFML/Graphics/Texture.cpp#L85). The hand-written member-init list is immediately overwritten by `*this = ZB_MOVE(*texture)`.
+* **Copy ctor dead initializer**: [Texture.cpp:85-99](src/SFML/Graphics/Texture.cpp#L85). The hand-written member-init list is immediately overwritten by `*this = ZA_MOVE(*texture)`.
 * **`copyToImage` aborts on FBO failure** ([Texture.cpp:373](src/SFML/Graphics/Texture.cpp#L373)) where every other failure path returns `nullOpt`.
 * **`TextureAtlas::add` padding is one-sided** ([TextureAtlasUtils.cpp:44](src/SFML/Graphics/TextureAtlasUtils.cpp#L44)). Padding applies only on right/bottom; bilinear filtering bleeds from the top/left neighbor.
 

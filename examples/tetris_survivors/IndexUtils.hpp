@@ -4,13 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
 namespace tsurv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::SizeT getIndex2Dto1D(const za::Vec2uz position, const zb::SizeT width)
+[[nodiscard]] inline za::SizeT getIndex2Dto1D(const za::Vec2uz position, const za::SizeT width)
 {
     return position.y * width + position.x;
 }

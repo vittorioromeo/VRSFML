@@ -1,14 +1,14 @@
 #pragma once
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-using zb::SizeT;
-using zb::U8;
+using za::SizeT;
+using za::U8;
 
 ////////////////////////////////////////////////////////////
-using MoneyType          = zb::U64;
-using PrestigePointsType = zb::U64;
-using ManaType           = zb::U64;
+using MoneyType          = za::U64;
+using PrestigePointsType = za::U64;
+using ManaType           = za::U64;

@@ -1,29 +1,29 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Bitset.hpp"
+#include "Zancle/Container/Bitset.hpp"
 
-#include "ZancleBase/Builtin/Popcountll.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Popcountll.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
-using zb::Bitset;
-using zb::SizeT;
-using zb::U64;
+using za::Bitset;
+using za::SizeT;
+using za::U64;
 } // namespace
 
 
 ////////////////////////////////////////////////////////////
 // Compile-time properties
 ////////////////////////////////////////////////////////////
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(Bitset<1>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(Bitset<64>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(Bitset<65>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(Bitset<256>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(Bitset<1>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(Bitset<64>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(Bitset<65>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(Bitset<256>));
 
 
 ////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ static_assert([]
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - default state")
+TEST_CASE("[Base] za::Bitset - default state")
 {
     Bitset<128> b;
     CHECK(b.size() == 128u);
@@ -104,7 +104,7 @@ TEST_CASE("[Base] zb::Bitset - default state")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - set / reset / flip / setBit on a single bit")
+TEST_CASE("[Base] za::Bitset - set / reset / flip / setBit on a single bit")
 {
     Bitset<200> b;
 
@@ -142,7 +142,7 @@ TEST_CASE("[Base] zb::Bitset - set / reset / flip / setBit on a single bit")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - operator[] reads")
+TEST_CASE("[Base] za::Bitset - operator[] reads")
 {
     Bitset<10> b{0b0000010101u};
     CHECK(b[0]);
@@ -155,7 +155,7 @@ TEST_CASE("[Base] zb::Bitset - operator[] reads")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - setAll / resetAll across word boundaries")
+TEST_CASE("[Base] za::Bitset - setAll / resetAll across word boundaries")
 {
     // Pick sizes that exercise: exactly one word, partial trailing
     // word, and exactly two full words.
@@ -189,7 +189,7 @@ TEST_CASE("[Base] zb::Bitset - setAll / resetAll across word boundaries")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - flipAll preserves the trailing-zero invariant")
+TEST_CASE("[Base] za::Bitset - flipAll preserves the trailing-zero invariant")
 {
     // If `flipAll` left the unused bits of the trailing word at 1,
     // `count()` would observe more bits than `N` and `==` would
@@ -206,7 +206,7 @@ TEST_CASE("[Base] zb::Bitset - flipAll preserves the trailing-zero invariant")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - operator~ preserves the trailing-zero invariant")
+TEST_CASE("[Base] za::Bitset - operator~ preserves the trailing-zero invariant")
 {
     Bitset<70> b;
     b.set(5);
@@ -223,7 +223,7 @@ TEST_CASE("[Base] zb::Bitset - operator~ preserves the trailing-zero invariant")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - bitwise compound and free operators")
+TEST_CASE("[Base] za::Bitset - bitwise compound and free operators")
 {
     Bitset<128> a;
     Bitset<128> b;
@@ -284,7 +284,7 @@ TEST_CASE("[Base] zb::Bitset - bitwise compound and free operators")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - equality")
+TEST_CASE("[Base] za::Bitset - equality")
 {
     Bitset<200> a;
     Bitset<200> b;
@@ -304,7 +304,7 @@ TEST_CASE("[Base] zb::Bitset - equality")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - findFirstSet / findNextSet")
+TEST_CASE("[Base] za::Bitset - findFirstSet / findNextSet")
 {
     Bitset<200> b;
 
@@ -346,7 +346,7 @@ TEST_CASE("[Base] zb::Bitset - findFirstSet / findNextSet")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - forEachSet visits every set bit in ascending order")
+TEST_CASE("[Base] za::Bitset - forEachSet visits every set bit in ascending order")
 {
     Bitset<200> b;
 
@@ -355,7 +355,7 @@ TEST_CASE("[Base] zb::Bitset - forEachSet visits every set bit in ascending orde
     for (const auto i : bitsToSet)
         b.set(i);
 
-    zb::Vector<SizeT> visited;
+    za::Vector<SizeT> visited;
     b.forEachSet([&](const SizeT i) { visited.pushBack(i); });
 
     REQUIRE(visited.size() == sizeof(bitsToSet) / sizeof(bitsToSet[0]));
@@ -366,7 +366,7 @@ TEST_CASE("[Base] zb::Bitset - forEachSet visits every set bit in ascending orde
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - any / all / none across word boundaries")
+TEST_CASE("[Base] za::Bitset - any / all / none across word boundaries")
 {
     SECTION("N == 64 (single full word)")
     {
@@ -417,13 +417,13 @@ TEST_CASE("[Base] zb::Bitset - any / all / none across word boundaries")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - toU64 round-trip for N <= 64")
+TEST_CASE("[Base] za::Bitset - toU64 round-trip for N <= 64")
 {
     constexpr U64 pattern = 0xDE'AD'BE'EF'CA'FE'BA'BEull;
 
     Bitset<64> b{pattern};
     CHECK(b.toU64() == pattern);
-    CHECK(b.count() == static_cast<SizeT>(ZB_POPCOUNTLL(pattern)));
+    CHECK(b.count() == static_cast<SizeT>(ZA_POPCOUNTLL(pattern)));
 
     Bitset<32> c{pattern};
     CHECK(c.toU64() == (pattern & 0xFF'FF'FF'FFull));
@@ -431,7 +431,7 @@ TEST_CASE("[Base] zb::Bitset - toU64 round-trip for N <= 64")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - small bitsets work edge cases")
+TEST_CASE("[Base] za::Bitset - small bitsets work edge cases")
 {
     // N == 1: minimal supported size.
     Bitset<1> b;
@@ -447,7 +447,7 @@ TEST_CASE("[Base] zb::Bitset - small bitsets work edge cases")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - left shift (operator<<= / operator<<)")
+TEST_CASE("[Base] za::Bitset - left shift (operator<<= / operator<<)")
 {
     SECTION("Shift by 0 is identity")
     {
@@ -571,7 +571,7 @@ TEST_CASE("[Base] zb::Bitset - left shift (operator<<= / operator<<)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - right shift (operator>>= / operator>>)")
+TEST_CASE("[Base] za::Bitset - right shift (operator>>= / operator>>)")
 {
     SECTION("Shift by 0 is identity")
     {
@@ -698,7 +698,7 @@ TEST_CASE("[Base] zb::Bitset - right shift (operator>>= / operator>>)")
 
 
 ////////////////////////////////////////////////////////////
-TEST_CASE("[Base] zb::Bitset - shift round-trip is monotonic for small shifts")
+TEST_CASE("[Base] za::Bitset - shift round-trip is monotonic for small shifts")
 {
     // Shifting left then right by the same amount drops the lowest
     // `n` bits but otherwise preserves the bit pattern. A double-check

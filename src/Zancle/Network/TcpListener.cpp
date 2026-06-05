@@ -13,9 +13,9 @@
 #include "Zancle/Network/SocketImpl.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za
@@ -27,17 +27,17 @@ TcpListener::TcpListener(SocketHandle handle, bool isBlocking) : Socket(Type::Tc
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBlocking, IpAddress address)
+za::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBlocking, IpAddress address)
 {
     if (address == IpAddress::Broadcast)
     {
         priv::errMsg("Cannot create TCP listener bound to broadcast address");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     const SocketHandle handle = createTcpHandle(isBlocking);
     if (handle == priv::SocketImpl::invalidSocket())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     priv::SockAddrIn addr = priv::SocketImpl::createAddress(address.toInteger(), port);
 
@@ -45,17 +45,17 @@ zb::Optional<TcpListener> TcpListener::create(unsigned short port, bool isBlocki
     {
         priv::errMsg("Failed to bind listener socket to port {}", port);
         priv::SocketImpl::close(handle);
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     if (!priv::SocketImpl::listen(handle))
     {
         priv::errMsg("Failed to listen on port {}", port);
         priv::SocketImpl::close(handle);
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    return zb::makeOptionalFromFunc([&] { return TcpListener(handle, isBlocking); });
+    return za::makeOptionalFromFunc([&] { return TcpListener(handle, isBlocking); });
 }
 
 
@@ -74,14 +74,14 @@ TcpListener::AcceptResult TcpListener::accept()
     const SocketHandle remote = priv::SocketImpl::accept(getNativeHandle(), address, length);
 
     if (remote == priv::SocketImpl::invalidSocket())
-        return {priv::SocketImpl::getErrorStatus(), zb::nullOpt};
+        return {priv::SocketImpl::getErrorStatus(), za::nullOpt};
 
     // Apply the same configuration as `Socket::createTcpHandle` to the
     // freshly-accepted handle: blocking mode, TCP_NODELAY, SO_NOSIGPIPE (macOS).
     const bool blocking = isBlocking();
     configureTcpHandle(remote, blocking);
 
-    return {Status::Done, zb::makeOptionalFromFunc([&] { return TcpSocket(remote, blocking); })};
+    return {Status::Done, za::makeOptionalFromFunc([&] { return TcpSocket(remote, blocking); })};
 }
 
 } // namespace za

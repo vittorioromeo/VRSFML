@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
 
 namespace za

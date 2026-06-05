@@ -2,13 +2,13 @@
 
 #include "GrowthFactors.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] PSVData
 {
-    const zb::SizeT     nMaxPurchases;
+    const za::SizeT     nMaxPurchases;
     const GrowthFactors cost;
     const GrowthFactors value;
 };

@@ -4,23 +4,23 @@
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/IO.hpp"
+#include "Zancle/IO/IO.hpp"
 
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/Scn/Scn.hpp"
-#include "ZancleBase/Scn/ScnString.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Scn/Scn.hpp"
+#include "Zancle/Scn/ScnString.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <string>
 
@@ -30,21 +30,21 @@ using za::testing::TemporaryFile;
 
 TEST_CASE("[System] za::OutFile and za::InFile")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::OutFile));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::OutFile));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::OutFile));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::OutFile));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::OutFile));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::OutFile));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::OutFile));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::OutFile));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::OutFile));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::OutFile));
 
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::InFile));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::InFile));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::InFile));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::InFile));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::InFile));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::InFile));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::InFile));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::InFile));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::InFile));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::InFile));
     }
 
     SECTION("openFromFile returns nullOpt on non-openable path")
@@ -63,7 +63,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             auto optOfs = za::OutFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
             REQUIRE(optOfs.hasValue());
 
-            constexpr zb::StringView payload = "Hello 42 world"_sv;
+            constexpr za::StringView payload = "Hello 42 world"_sv;
             CHECK(optOfs->write(payload.data(), payload.size()));
             CHECK(optOfs->flush());
             // Destructor closes when `optOfs` goes out of scope below.
@@ -74,10 +74,10 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             REQUIRE(optIfs.hasValue());
 
             char      buffer[14] = {};
-            zb::SizeT got        = 0;
+            za::SizeT got        = 0;
             CHECK(optIfs->read(buffer, 14, got));
             CHECK(got == 14u);
-            CHECK(zb::StringView(buffer, 14) == "Hello 42 world"_sv);
+            CHECK(za::StringView(buffer, 14) == "Hello 42 world"_sv);
         }
     }
 
@@ -89,7 +89,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         REQUIRE(optOfs.hasValue());
         CHECK(optOfs->write("abcdef", 6));
 
-        zb::PtrDiffT pos = 0;
+        za::PtrDiffT pos = 0;
         CHECK(optOfs->tellPos(pos));
         CHECK(pos == 6);
 
@@ -105,10 +105,10 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         auto optIfs = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optIfs.hasValue());
         char      buffer[7] = {};
-        zb::SizeT got       = 0;
+        za::SizeT got       = 0;
         CHECK(optIfs->read(buffer, 6, got));
         CHECK(got == 6u);
-        CHECK(zb::StringView(buffer, 6) == "abcXYZ"_sv);
+        CHECK(za::StringView(buffer, 6) == "abcXYZ"_sv);
     }
 
     SECTION("InFile seekPos and tellPos")
@@ -118,7 +118,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         auto optIfs = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optIfs.hasValue());
 
-        zb::PtrDiffT pos = -1;
+        za::PtrDiffT pos = -1;
         CHECK(optIfs->tellPos(pos));
         CHECK(pos == 0);
 
@@ -127,10 +127,10 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         CHECK(pos == 6);
 
         char      buffer[6] = {};
-        zb::SizeT got       = 0;
+        za::SizeT got       = 0;
         CHECK(optIfs->read(buffer, 5, got));
         CHECK(got == 5u);
-        CHECK(zb::StringView(buffer, 5) == "world"_sv);
+        CHECK(za::StringView(buffer, 5) == "world"_sv);
 
         CHECK(optIfs->seekPos(0, za::SeekDir::beg));
         CHECK(optIfs->tellPos(pos));
@@ -160,7 +160,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         CHECK(optIfs->seekPos(1, za::SeekDir::cur));
 
         char      ch  = '\0';
-        zb::SizeT got = 0;
+        za::SizeT got = 0;
         CHECK(optIfs->read(&ch, 1, got));
         CHECK(got == 1u);
         CHECK(ch == 'b');
@@ -174,7 +174,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         REQUIRE(optIfs.hasValue());
 
         char      buffer[8] = {};
-        zb::SizeT got       = 0;
+        za::SizeT got       = 0;
 
         // The read returns success with a short count -- EOF is normal,
         // not an error.
@@ -190,7 +190,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
         auto optIfs = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin | za::FileOpenMode::ate);
         REQUIRE(optIfs.hasValue());
 
-        zb::PtrDiffT pos = 0;
+        za::PtrDiffT pos = 0;
         CHECK(optIfs->tellPos(pos));
         CHECK(pos == 3);
     }
@@ -206,11 +206,11 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             auto optMoved = za::OutFile::open(target.getPath());
             REQUIRE(optMoved.hasValue());
 
-            za::OutFile ofs = ZB_MOVE(*optMoved);
+            za::OutFile ofs = ZA_MOVE(*optMoved);
             CHECK(ofs.write("moved", 5));
             // ofs's destructor closes when this scope ends.
             {
-                za::OutFile temp = ZB_MOVE(ofs);
+                za::OutFile temp = ZA_MOVE(ofs);
                 (void)temp;
             }
 
@@ -218,10 +218,10 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             REQUIRE(optIfs.hasValue());
 
             char      buffer[5] = {};
-            zb::SizeT got       = 0;
+            za::SizeT got       = 0;
             CHECK(optIfs->read(buffer, 5, got));
             CHECK(got == 5u);
-            CHECK(zb::StringView(buffer, 5) == "moved"_sv);
+            CHECK(za::StringView(buffer, 5) == "moved"_sv);
         }
 
         SECTION("InFile move constructor")
@@ -229,13 +229,13 @@ TEST_CASE("[System] za::OutFile and za::InFile")
             auto optMoved = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
             REQUIRE(optMoved.hasValue());
 
-            za::InFile ifs = ZB_MOVE(*optMoved);
+            za::InFile ifs = ZA_MOVE(*optMoved);
 
             char      buffer[5] = {};
-            zb::SizeT got       = 0;
+            za::SizeT got       = 0;
             CHECK(ifs.read(buffer, 5, got));
             CHECK(got == 5u);
-            CHECK(zb::StringView(buffer, 5) == "Hello"_sv);
+            CHECK(za::StringView(buffer, 5) == "Hello"_sv);
         }
     }
 }
@@ -243,7 +243,7 @@ TEST_CASE("[System] za::OutFile and za::InFile")
 
 TEST_CASE("[System] za::InFile peek/consume cache semantics")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     const TemporaryFile temporaryFile("ABCD"_sv);
 
@@ -267,10 +267,10 @@ TEST_CASE("[System] za::InFile peek/consume cache semantics")
         CHECK(*optFile->peek() == 'A');
 
         char      buf[4]{};
-        zb::SizeT got = 0u;
+        za::SizeT got = 0u;
         CHECK(optFile->read(buf, 3, got));
         CHECK(got == 3u);
-        CHECK(zb::StringView(buf, 3) == "ABC"_sv);
+        CHECK(za::StringView(buf, 3) == "ABC"_sv);
     }
 
     SECTION("tellPos accounts for peeked-but-not-consumed byte")
@@ -278,7 +278,7 @@ TEST_CASE("[System] za::InFile peek/consume cache semantics")
         auto optFile = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optFile.hasValue());
 
-        zb::PtrDiffT pos = -1;
+        za::PtrDiffT pos = -1;
         CHECK(optFile->tellPos(pos));
         CHECK(pos == 0);
 
@@ -313,18 +313,18 @@ TEST_CASE("[System] za::InFile peek/consume cache semantics")
 }
 
 
-TEST_CASE("[System] za::InFile as zb::ScnSource")
+TEST_CASE("[System] za::InFile as za::ScnSource")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("scnReadLine over a multi-KiB file")
     {
         // Big enough to exercise the FILE* internal buffer transitioning
         // mid-line (stdio default buffer is typically 4-8 KiB).
-        zb::String          payload;
-        constexpr zb::SizeT longLineSize = 16u * 1024u;
+        za::String          payload;
+        constexpr za::SizeT longLineSize = 16u * 1024u;
         payload.reserve(longLineSize + 16u);
-        for (zb::SizeT i = 0u; i < longLineSize; ++i)
+        for (za::SizeT i = 0u; i < longLineSize; ++i)
             payload.append('x');
         payload.append("\nshort\n");
 
@@ -333,15 +333,15 @@ TEST_CASE("[System] za::InFile as zb::ScnSource")
         auto optFile = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optFile.hasValue());
 
-        zb::String line;
-        CHECK(zb::scnReadLine(*optFile, line));
+        za::String line;
+        CHECK(za::scnReadLine(*optFile, line));
         CHECK(line.size() == longLineSize);
 
-        CHECK(zb::scnReadLine(*optFile, line));
-        CHECK(line == zb::String{"short"});
+        CHECK(za::scnReadLine(*optFile, line));
+        CHECK(line == za::String{"short"});
 
-        CHECK(!zb::scnReadLine(*optFile, line));
-        CHECK(zb::scnAtEnd(*optFile));
+        CHECK(!za::scnReadLine(*optFile, line));
+        CHECK(za::scnAtEnd(*optFile));
     }
 
     SECTION("scn<int> / scn<String> from a file")
@@ -351,20 +351,20 @@ TEST_CASE("[System] za::InFile as zb::ScnSource")
         auto optFile = za::InFile::open(temporaryFile.getPath(), za::FileOpenMode::bin);
         REQUIRE(optFile.hasValue());
 
-        const auto v = zb::scn<int>(*optFile);
+        const auto v = za::scn<int>(*optFile);
         REQUIRE(v.hasValue());
         CHECK(*v == 42);
 
-        const auto tok = zb::scn<zb::String>(*optFile);
+        const auto tok = za::scn<za::String>(*optFile);
         REQUIRE(tok.hasValue());
-        CHECK(*tok == zb::String{"hello"});
+        CHECK(*tok == za::String{"hello"});
     }
 }
 
 
 TEST_CASE("[System] za::writeToFile and za::readFromFile")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("Round-trip")
     {
@@ -405,7 +405,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         // The native fast path goes through a single buffered read, so make sure
         // it doesn't truncate at NUL or mangle non-ASCII bytes.
         const char           raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
-        const zb::StringView payload(raw, sizeof(raw));
+        const za::StringView payload(raw, sizeof(raw));
 
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
@@ -415,7 +415,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         std::string contents;
         CHECK(za::readFromFile(path, contents));
         CHECK(contents.size() == sizeof(raw));
-        CHECK(zb::StringView(contents.data(), contents.size()) == payload);
+        CHECK(za::StringView(contents.data(), contents.size()) == payload);
     }
 
     SECTION("Large file (multiple MiB) round-trips byte-exactly")
@@ -423,14 +423,14 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         // Sized to comfortably exceed any plausible internal buffer in the
         // fallback iostream path (typically 4-8 KiB) and force the native paths
         // to issue more than one read/ReadFile call's worth of work.
-        constexpr zb::SizeT bytes = 4u * 1024u * 1024u + 17u; // 4 MiB + odd tail
+        constexpr za::SizeT bytes = 4u * 1024u * 1024u + 17u; // 4 MiB + odd tail
 
         std::string payload;
         payload.resize(bytes);
 
         // Deterministic but non-trivial content; covers all 256 byte values.
-        zb::SizeT seed = 0x12'34'56'78u;
-        for (zb::SizeT i = 0; i < bytes; ++i)
+        za::SizeT seed = 0x12'34'56'78u;
+        for (za::SizeT i = 0; i < bytes; ++i)
         {
             seed       = seed * 1'103'515'245u + 12'345u;
             payload[i] = static_cast<char>(seed >> 16);
@@ -439,7 +439,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
-        CHECK(za::writeToFile(path, zb::StringView(payload.data(), payload.size())));
+        CHECK(za::writeToFile(path, za::StringView(payload.data(), payload.size())));
 
         std::string contents;
         CHECK(za::readFromFile(path, contents));
@@ -459,61 +459,61 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(contents == "short");
     }
 
-    SECTION("Round-trip into zb::String")
+    SECTION("Round-trip into za::String")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
-        CHECK(za::writeToFile(path, "Hello zb::String"_sv));
+        CHECK(za::writeToFile(path, "Hello za::String"_sv));
 
-        zb::String contents;
+        za::String contents;
         CHECK(za::readFromFile(path, contents));
-        CHECK(contents == zb::String{"Hello zb::String"});
+        CHECK(contents == za::String{"Hello za::String"});
     }
 
-    SECTION("Read empty file into zb::String")
+    SECTION("Read empty file into za::String")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
         CHECK(za::writeToFile(path, ""_sv));
 
-        zb::String contents{"stale"};
+        za::String contents{"stale"};
         CHECK(za::readFromFile(path, contents));
         CHECK(contents.empty());
     }
 
-    SECTION("Read missing file into zb::String fails")
+    SECTION("Read missing file into za::String fails")
     {
         const TemporaryFile temporaryFile;
         // File never created.
         const za::Path& path = temporaryFile.getPath();
 
-        zb::String contents;
+        za::String contents;
         CHECK(!za::readFromFile(path, contents));
     }
 
-    SECTION("Round-trip into zb::Vector<char>")
+    SECTION("Round-trip into za::Vector<char>")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
         CHECK(za::writeToFile(path, "Hello vector"_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         CHECK(za::readFromFile(path, contents));
         REQUIRE(contents.size() == 12u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "Hello vector"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "Hello vector"_sv);
     }
 
-    SECTION("Read empty file into zb::Vector<char>")
+    SECTION("Read empty file into za::Vector<char>")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
         CHECK(za::writeToFile(path, ""_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         // Pre-populate to verify that an empty read clears existing content.
         contents.pushBack('x');
         contents.pushBack('y');
@@ -521,16 +521,16 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
         CHECK(contents.empty());
     }
 
-    SECTION("Read missing file into zb::Vector<char> fails")
+    SECTION("Read missing file into za::Vector<char> fails")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         CHECK(!za::readFromFile(path, contents));
     }
 
-    SECTION("Read into zb::Vector<char> reuses capacity across calls")
+    SECTION("Read into za::Vector<char> reuses capacity across calls")
     {
         // Two reads into the same Vector: the second (smaller) read should not
         // grow capacity, and the first's allocation should already be amortized.
@@ -541,60 +541,60 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
 
         // Make file1 large enough to definitely allocate, file2 strictly smaller.
         std::string big(1024u, 'A');
-        CHECK(za::writeToFile(path1, zb::StringView{big.data(), big.size()}));
+        CHECK(za::writeToFile(path1, za::StringView{big.data(), big.size()}));
         CHECK(za::writeToFile(path2, "small"_sv));
 
-        zb::Vector<char> buffer;
+        za::Vector<char> buffer;
         CHECK(za::readFromFile(path1, buffer));
         const auto capacityAfterFirst = buffer.capacity();
         REQUIRE(buffer.size() == 1024u);
 
         CHECK(za::readFromFile(path2, buffer));
         CHECK(buffer.size() == 5u);
-        CHECK(zb::StringView(buffer.data(), buffer.size()) == "small"_sv);
+        CHECK(za::StringView(buffer.data(), buffer.size()) == "small"_sv);
         // The smaller read must NOT shrink or re-grow capacity.
         CHECK(buffer.capacity() == capacityAfterFirst);
     }
 
-    SECTION("Read into zb::Vector<char> overwrites pre-existing content")
+    SECTION("Read into za::Vector<char> overwrites pre-existing content")
     {
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
         CHECK(za::writeToFile(path, "abc"_sv));
 
-        zb::Vector<char> buffer;
+        za::Vector<char> buffer;
         for (char c : {'X', 'Y', 'Z', 'W', 'V'})
             buffer.pushBack(c);
 
         CHECK(za::readFromFile(path, buffer));
         CHECK(buffer.size() == 3u);
-        CHECK(zb::StringView(buffer.data(), buffer.size()) == "abc"_sv);
+        CHECK(za::StringView(buffer.data(), buffer.size()) == "abc"_sv);
     }
 
-    SECTION("Binary content with embedded NULs round-trips through zb::Vector<char>")
+    SECTION("Binary content with embedded NULs round-trips through za::Vector<char>")
     {
         const char           raw[] = {'a', '\0', 'b', '\xff', '\x01', '\x80', 'z'};
-        const zb::StringView payload(raw, sizeof(raw));
+        const za::StringView payload(raw, sizeof(raw));
 
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
         CHECK(za::writeToFile(path, payload));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         CHECK(za::readFromFile(path, contents));
         REQUIRE(contents.size() == sizeof(raw));
-        CHECK(zb::StringView(contents.data(), contents.size()) == payload);
+        CHECK(za::StringView(contents.data(), contents.size()) == payload);
     }
 
     SECTION("StringView overloads")
     {
-        // Exercise the `zb::StringView` filename overloads: the rest of the
+        // Exercise the `za::StringView` filename overloads: the rest of the
         // suite uses the `Path` overloads; these tests cover the alternate API.
         const TemporaryFile  temporaryFile;
         const auto           pathOwning = temporaryFile.getPath().to<std::string>();
-        const zb::StringView pathView{pathOwning.data(), pathOwning.size()};
+        const za::StringView pathView{pathOwning.data(), pathOwning.size()};
 
         CHECK(za::writeToFile(pathView, "Hello via StringView"_sv));
 
@@ -605,19 +605,19 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
             CHECK(contents == "Hello via StringView");
         }
 
-        SECTION("Read into zb::String via StringView")
+        SECTION("Read into za::String via StringView")
         {
-            zb::String contents;
+            za::String contents;
             CHECK(za::readFromFile(pathView, contents));
-            CHECK(contents == zb::String{"Hello via StringView"});
+            CHECK(contents == za::String{"Hello via StringView"});
         }
 
-        SECTION("Read into zb::Vector<char> via StringView")
+        SECTION("Read into za::Vector<char> via StringView")
         {
-            zb::Vector<char> contents;
+            za::Vector<char> contents;
             CHECK(za::readFromFile(pathView, contents));
             REQUIRE(contents.size() == 20u);
-            CHECK(zb::StringView(contents.data(), contents.size()) == "Hello via StringView"_sv);
+            CHECK(za::StringView(contents.data(), contents.size()) == "Hello via StringView"_sv);
         }
     }
 }
@@ -625,7 +625,7 @@ TEST_CASE("[System] za::writeToFile and za::readFromFile")
 
 TEST_CASE("[System] za::appendFromFile")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("Append into empty target equals readFromFile")
     {
@@ -634,10 +634,10 @@ TEST_CASE("[System] za::appendFromFile")
 
         CHECK(za::writeToFile(path, "alpha"_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         CHECK(za::appendFromFile(path, contents));
         REQUIRE(contents.size() == 5u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "alpha"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "alpha"_sv);
     }
 
     SECTION("Append preserves existing content")
@@ -647,13 +647,13 @@ TEST_CASE("[System] za::appendFromFile")
 
         CHECK(za::writeToFile(path, "world"_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         for (char c : {'h', 'e', 'l', 'l', 'o', ' '})
             contents.pushBack(c);
 
         CHECK(za::appendFromFile(path, contents));
         REQUIRE(contents.size() == 11u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "hello world"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "hello world"_sv);
     }
 
     SECTION("Multiple successive appends concatenate cleanly")
@@ -666,13 +666,13 @@ TEST_CASE("[System] za::appendFromFile")
         CHECK(za::writeToFile(temporaryFile2.getPath(), "bar"_sv));
         CHECK(za::writeToFile(temporaryFile3.getPath(), "baz"_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         CHECK(za::appendFromFile(temporaryFile1.getPath(), contents));
         CHECK(za::appendFromFile(temporaryFile2.getPath(), contents));
         CHECK(za::appendFromFile(temporaryFile3.getPath(), contents));
 
         REQUIRE(contents.size() == 9u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "foobarbaz"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "foobarbaz"_sv);
     }
 
     SECTION("Append from empty file leaves target unchanged")
@@ -682,13 +682,13 @@ TEST_CASE("[System] za::appendFromFile")
 
         CHECK(za::writeToFile(path, ""_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         for (char c : {'k', 'e', 'e', 'p'})
             contents.pushBack(c);
 
         CHECK(za::appendFromFile(path, contents));
         REQUIRE(contents.size() == 4u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "keep"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "keep"_sv);
     }
 
     SECTION("Append from missing file fails and does not touch target")
@@ -696,42 +696,42 @@ TEST_CASE("[System] za::appendFromFile")
         const TemporaryFile temporaryFile;
         const za::Path&     path = temporaryFile.getPath();
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         for (char c : {'i', 'n', 't', 'a', 'c', 't'})
             contents.pushBack(c);
 
         CHECK(!za::appendFromFile(path, contents));
         REQUIRE(contents.size() == 6u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "intact"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "intact"_sv);
     }
 
     SECTION("Append via StringView filename overload")
     {
         const TemporaryFile  temporaryFile;
         const auto           pathOwning = temporaryFile.getPath().to<std::string>();
-        const zb::StringView pathView{pathOwning.data(), pathOwning.size()};
+        const za::StringView pathView{pathOwning.data(), pathOwning.size()};
 
         CHECK(za::writeToFile(pathView, " world"_sv));
 
-        zb::Vector<char> contents;
+        za::Vector<char> contents;
         for (char c : {'h', 'e', 'l', 'l', 'o'})
             contents.pushBack(c);
 
         CHECK(za::appendFromFile(pathView, contents));
         REQUIRE(contents.size() == 11u);
-        CHECK(zb::StringView(contents.data(), contents.size()) == "hello world"_sv);
+        CHECK(za::StringView(contents.data(), contents.size()) == "hello world"_sv);
     }
 }
 
 
 TEST_CASE("[System] za::getThreadLocalScratchCharBuffer")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("Returns the same reference on repeated calls (same thread)")
     {
-        zb::Vector<char>& a = za::getThreadLocalScratchCharBuffer();
-        zb::Vector<char>& b = za::getThreadLocalScratchCharBuffer();
+        za::Vector<char>& a = za::getThreadLocalScratchCharBuffer();
+        za::Vector<char>& b = za::getThreadLocalScratchCharBuffer();
         CHECK(&a == &b);
     }
 
@@ -742,9 +742,9 @@ TEST_CASE("[System] za::getThreadLocalScratchCharBuffer")
 
         CHECK(za::writeToFile(path, "scratch payload"_sv));
 
-        zb::Vector<char>& scratch = za::getThreadLocalScratchCharBuffer();
+        za::Vector<char>& scratch = za::getThreadLocalScratchCharBuffer();
         CHECK(za::readFromFile(path, scratch));
-        CHECK(zb::StringView(scratch.data(), scratch.size()) == "scratch payload"_sv);
+        CHECK(za::StringView(scratch.data(), scratch.size()) == "scratch payload"_sv);
     }
 
     SECTION("Capacity is preserved across reads on the same thread")
@@ -755,9 +755,9 @@ TEST_CASE("[System] za::getThreadLocalScratchCharBuffer")
         const za::Path&     path = temporaryFile.getPath();
 
         std::string big(2048u, 'q');
-        CHECK(za::writeToFile(path, zb::StringView{big.data(), big.size()}));
+        CHECK(za::writeToFile(path, za::StringView{big.data(), big.size()}));
 
-        zb::Vector<char>& scratch = za::getThreadLocalScratchCharBuffer();
+        za::Vector<char>& scratch = za::getThreadLocalScratchCharBuffer();
         CHECK(za::readFromFile(path, scratch));
         const auto capacityAfterBig = scratch.capacity();
         REQUIRE(capacityAfterBig >= 2048u);

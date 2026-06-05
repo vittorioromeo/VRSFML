@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 // Forward declarations
@@ -58,10 +58,10 @@ bool operator==(const za::Rect2<float>& lhs, const Approx<za::Rect2<float>>& rhs
 ////////////////////////////////////////////////////////////
 namespace za
 {
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Angle& angle) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const AutoWrapAngle& angle) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Utf8String& string) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Time& time) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const Angle& angle) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const AutoWrapAngle& angle) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const Utf8String& string) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const Time& time) noexcept;
 } // namespace za
 
 
@@ -70,4 +70,4 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Time& time) noexcept;
 // through the same dispatch for its nested value.
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const ::Approx<T>& approx) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const ::Approx<T>& approx) noexcept;

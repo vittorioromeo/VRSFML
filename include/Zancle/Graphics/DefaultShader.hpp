@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace zb
+namespace za
 {
 template <typename T>
 class Optional;
@@ -138,13 +138,13 @@ void main()
     /// This is a convenient way to get a ready-to-use instance of Zancle's
     /// default shader program.
     ///
-    /// \return An `zb::Optional<za::Shader>` containing the compiled
-    ///         shader if successful, or `zb::nullOpt` if compilation
+    /// \return An `za::Optional<za::Shader>` containing the compiled
+    ///         shader if successful, or `za::nullOpt` if compilation
     ///         or linking failed.
     ///
     /// \see za::Shader::loadFromMemory
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Shader> create();
+    [[nodiscard]] static za::Optional<Shader> create();
 };
 
 } // namespace za

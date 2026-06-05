@@ -10,10 +10,10 @@
 
 #include "Zancle/Graphics/Glyph.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ namespace za
 struct [[nodiscard]] GlyphLoadSettings
 {
     const char32_t* codePoints{};     //!< Pointer to the array of code points to rasterize
-    zb::SizeT       codePointCount{}; //!< Number of code points in `codePoints` // TODO P1: span?
+    za::SizeT       codePointCount{}; //!< Number of code points in `codePoints` // TODO P1: span?
 
     unsigned int characterSize{30u};    //!< Character size, in pixels (baked into the resulting `GlyphMapping`)
     bool         bold{false};           //!< Whether to load the bold variant

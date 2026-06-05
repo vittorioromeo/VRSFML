@@ -8,18 +8,18 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace zb
+namespace za
 {
 class String;
-} // namespace zb
+} // namespace za
 
 
 namespace za
@@ -62,9 +62,9 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] Request(const zb::String& uri, Method method, const zb::String& body);
-        [[nodiscard]] Request(const zb::String& uri, Method method);
-        [[nodiscard]] Request(const zb::String& uri);
+        [[nodiscard]] Request(const za::String& uri, Method method, const za::String& body);
+        [[nodiscard]] Request(const za::String& uri, Method method);
+        [[nodiscard]] Request(const za::String& uri);
         [[nodiscard]] Request();
 
         ////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ public:
         /// \param value Value of the field
         ///
         ////////////////////////////////////////////////////////////
-        void setField(const zb::String& field, const zb::String& value);
+        void setField(const za::String& field, const za::String& value);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the request method
@@ -134,7 +134,7 @@ public:
         /// \param uri URI to request, relative to the host
         ///
         ////////////////////////////////////////////////////////////
-        void setUri(const zb::String& uri);
+        void setUri(const za::String& uri);
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the HTTP version for the request
@@ -157,7 +157,7 @@ public:
         /// \param body Content of the body
         ///
         ////////////////////////////////////////////////////////////
-        void setBody(const zb::String& body);
+        void setBody(const za::String& body);
 
     private:
         friend class Http;
@@ -172,13 +172,13 @@ public:
         /// \return `true` if the field exists, `false` otherwise
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] bool hasField(const zb::String& field) const;
+        [[nodiscard]] bool hasField(const za::String& field) const;
 
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        zb::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+        za::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -276,7 +276,7 @@ public:
         /// \return Value of the field, or empty string if not found
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const zb::String& getField(const zb::String& field) const;
+        [[nodiscard]] const za::String& getField(const za::String& field) const;
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the response status code
@@ -323,7 +323,7 @@ public:
         /// \return The response body
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const zb::String& getBody() const;
+        [[nodiscard]] const za::String& getBody() const;
 
     private:
         friend class Http;
@@ -337,13 +337,13 @@ public:
         /// \param data Content of the response to parse
         ///
         ////////////////////////////////////////////////////////////
-        void parse(const zb::String& data);
+        void parse(const za::String& data);
 
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+        za::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -372,7 +372,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Http(const zb::String& host, unsigned short port = 0);
+    [[nodiscard]] Http(const za::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -404,7 +404,7 @@ public:
     /// \return `true` if the host has been resolved and is valid, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool setHost(const zb::String& host, unsigned short port = 0);
+    bool setHost(const za::String& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a HTTP request and return the server's response.
@@ -432,7 +432,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 };
 
 } // namespace za

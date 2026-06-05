@@ -8,11 +8,11 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -94,13 +94,13 @@ public:
     /// \brief Initialize the window subsystem and return a context
     ///
     /// Boots the underlying SDL layer (and any related OS
-    /// resources). Returns `zb::nullOpt` if initialization
+    /// resources). Returns `za::nullOpt` if initialization
     /// fails.
     ///
-    /// \return The newly installed window context on success, `zb::nullOpt` on failure
+    /// \return The newly installed window context on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<WindowContext> create();
+    [[nodiscard]] static za::Optional<WindowContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -112,8 +112,8 @@ public:
     /// user code.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowContext(zb::PassKey<WindowContext>&&);
-    [[nodiscard]] explicit WindowContext(zb::PassKey<GraphicsContext>&&);
+    [[nodiscard]] explicit WindowContext(za::PassKey<WindowContext>&&);
+    [[nodiscard]] explicit WindowContext(za::PassKey<GraphicsContext>&&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -219,7 +219,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... GLContextArgs>
-    [[nodiscard]] static zb::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
+    [[nodiscard]] static za::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
                                                                             GLContextArgs&&... args);
 
     ////////////////////////////////////////////////////////////
@@ -231,7 +231,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings);
+    [[nodiscard]] static za::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -246,7 +246,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&     contextSettings,
+    [[nodiscard]] static za::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&     contextSettings,
                                                                         const priv::SDLWindowImpl& owner,
                                                                         unsigned int               bitsPerPixel);
 

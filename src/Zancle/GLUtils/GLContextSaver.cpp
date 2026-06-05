@@ -9,9 +9,9 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -19,14 +19,14 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 GLContextSaver::GLContextSaver() : m_glContext(WindowContext::getActiveThreadLocalGlContextPtr())
 {
-    ZB_ASSERT(m_glContext != nullptr);
+    ZA_ASSERT(m_glContext != nullptr);
 }
 
 
 ////////////////////////////////////////////////////////////
 GLContextSaver::~GLContextSaver()
 {
-    ZB_ASSERT(m_glContext != nullptr);
+    ZA_ASSERT(m_glContext != nullptr);
 
     if (!WindowContext::setActiveThreadLocalGlContext(*m_glContext, true))
         errMsg("Could not restore context in `GLContextSaver::~GLContextSaver()`");

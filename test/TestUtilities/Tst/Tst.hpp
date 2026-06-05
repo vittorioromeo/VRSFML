@@ -13,8 +13,8 @@
 #include "Tst/Detail/Subcase.hpp"        // IWYU pragma: export
 #include "Tst/TstFwd.hpp"                // IWYU pragma: export
 
-#include "ZancleBase/Builtin/Pragma.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/Pragma.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tst::detail
@@ -22,16 +22,16 @@ namespace tst::detail
 ////////////////////////////////////////////////////////////
 // Messages
 ////////////////////////////////////////////////////////////
-void emitInfoPushRaw(const char* file, int line, const char* data, zb::SizeT size) noexcept;
+void emitInfoPushRaw(const char* file, int line, const char* data, za::SizeT size) noexcept;
 void emitInfoPop() noexcept;
-void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, zb::SizeT size);
+void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, za::SizeT size);
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Stream-chain accumulator for `INFO`/`MESSAGE`/`CAPTURE`.
 ///
-/// Uses a fixed 1 KiB stack buffer instead of a `zb::String`,
-/// keeping this header free of `<ZancleBase/String.hpp>` -- a measurable
+/// Uses a fixed 1 KiB stack buffer instead of a `za::String`,
+/// keeping this header free of `<Zancle/String/String.hpp>` -- a measurable
 /// per-TU win across the ~130 test files that include `Tst.hpp`.
 /// Messages longer than 1 KiB are silently truncated; in practice INFO
 /// payloads are short (file paths, ints, a few words).
@@ -45,12 +45,12 @@ void emitMessageRaw(AssertKind kind, const char* file, int line, const char* dat
 ////////////////////////////////////////////////////////////
 struct MessageBuilder // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    static constexpr zb::SizeT capacity = 1024u;
+    static constexpr za::SizeT capacity = 1024u;
 
     char      buf[capacity]; // intentionally uninitialized -- avoid zeroing 1 KiB on every CHECK
-    zb::SizeT len = 0u;
+    za::SizeT len = 0u;
 
-    void appendRaw(const char* data, zb::SizeT n) noexcept;
+    void appendRaw(const char* data, za::SizeT n) noexcept;
 
 #define ZA_TST_MSGB_DECL_PAIR(T)                 \
     MessageBuilder&  operator*(T v) & noexcept;  \
@@ -59,7 +59,7 @@ struct MessageBuilder // NOLINT(cppcoreguidelines-pro-type-member-init)
     MessageBuilder&& operator<<(T v) && noexcept
 
     ZA_TST_MSGB_DECL_PAIR(const char*);
-    ZA_TST_MSGB_DECL_PAIR(zb::StringView);
+    ZA_TST_MSGB_DECL_PAIR(za::StringView);
     ZA_TST_MSGB_DECL_PAIR(bool);
     ZA_TST_MSGB_DECL_PAIR(char);
     ZA_TST_MSGB_DECL_PAIR(short);
@@ -87,7 +87,7 @@ struct MessageBuilder // NOLINT(cppcoreguidelines-pro-type-member-init)
 #define ZA_TST_MSGB_COMMA(T) MessageBuilder&& operator,(MessageBuilder&& mb, T v) noexcept
 
 ZA_TST_MSGB_COMMA(const char*);
-ZA_TST_MSGB_COMMA(zb::StringView);
+ZA_TST_MSGB_COMMA(za::StringView);
 ZA_TST_MSGB_COMMA(bool);
 ZA_TST_MSGB_COMMA(char);
 ZA_TST_MSGB_COMMA(short);
@@ -255,20 +255,20 @@ ZA_TST_DECLARE_TYPE_NAME(char, "char")
 #define ZA_TST_ASSERT_IMPL(kind, ...)                                                                                          \
     do                                                                                                                         \
     {                                                                                                                          \
-        ZB_PRAGMA(GCC diagnostic push);                                                                                        \
+        ZA_PRAGMA(GCC diagnostic push);                                                                                        \
         /* Suppress the unknown-pragma warning before mentioning Clang-only options below. */                                  \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                                         \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                                          \
-        ZB_PRAGMA(GCC diagnostic ignored "-Woverloaded-shift-op-parentheses");                                                 \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                                    \
-        ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                                                 \
+        ZA_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                                         \
+        ZA_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                                          \
+        ZA_PRAGMA(GCC diagnostic ignored "-Woverloaded-shift-op-parentheses");                                                 \
+        ZA_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                                    \
+        ZA_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                                                 \
                                                                                                                                \
         const ::tst::detail::Result zancleTstRes = ::tst::detail::ExpressionDecomposer(::tst::detail::AssertKind::kind)        \
                                                    << __VA_ARGS__;                                                             \
                                                                                                                                \
         (void)::tst::detail::handleAssertion(zancleTstRes, ::tst::detail::AssertKind::kind, __FILE__, __LINE__, #__VA_ARGS__); \
                                                                                                                                \
-        ZB_PRAGMA(GCC diagnostic pop);                                                                                         \
+        ZA_PRAGMA(GCC diagnostic pop);                                                                                         \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
 

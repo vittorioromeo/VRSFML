@@ -11,15 +11,15 @@
 #include "Zancle/Audio/SoundFileFactory.hpp"
 #include "Zancle/Audio/SoundFileWriter.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 namespace za
@@ -31,19 +31,19 @@ OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = defaul
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
+za::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     const Path&       filename,
     unsigned int      sampleRate,
     unsigned int      channelCount,
     const ChannelMap& channelMap)
 {
-    ZB_ASSERT(channelCount == channelMap.getSize() && "channelCount must match channelMap size");
+    ZA_ASSERT(channelCount == channelMap.getSize() && "channelCount must match channelMap size");
 
     if (channelCount != channelMap.getSize())
     {
         priv::errMsg("Channel count ({}) does not match channel map size ({})", channelCount, channelMap.getSize());
 
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Find a suitable writer for the file type
@@ -51,24 +51,24 @@ zb::Optional<OutputSoundFile> OutputSoundFile::openFromFile(
     if (!writer)
     {
         // Error message generated in called function.
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Pass the stream to the reader
     if (!writer->open(filename, sampleRate, channelCount, channelMap))
     {
         priv::errMsg("Failed to open output sound file from file (writer open failure)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    return zb::makeOptional<OutputSoundFile>(zb::PassKey<OutputSoundFile>{}, ZB_MOVE(writer));
+    return za::makeOptional<OutputSoundFile>(za::PassKey<OutputSoundFile>{}, ZA_MOVE(writer));
 }
 
 
 ////////////////////////////////////////////////////////////
-void OutputSoundFile::write(const zb::I16* samples, zb::U64 count)
+void OutputSoundFile::write(const za::I16* samples, za::U64 count)
 {
-    ZB_ASSERT(m_writer != nullptr);
+    ZA_ASSERT(m_writer != nullptr);
 
     if (samples && count)
         m_writer->write(samples, count);
@@ -76,8 +76,8 @@ void OutputSoundFile::write(const zb::I16* samples, zb::U64 count)
 
 
 ////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile(zb::PassKey<OutputSoundFile>&&, zb::UniquePtr<SoundFileWriter>&& writer) :
-    m_writer(ZB_MOVE(writer))
+OutputSoundFile::OutputSoundFile(za::PassKey<OutputSoundFile>&&, za::UniquePtr<SoundFileWriter>&& writer) :
+    m_writer(ZA_MOVE(writer))
 {
 }
 

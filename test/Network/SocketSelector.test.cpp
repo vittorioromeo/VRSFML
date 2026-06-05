@@ -9,16 +9,16 @@
 #include "Zancle/Network/TcpSocket.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
@@ -53,10 +53,10 @@ TEST_CASE("[Network] za::SocketSelector")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::SocketSelector));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::SocketSelector));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::SocketSelector));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::SocketSelector));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::SocketSelector));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::SocketSelector));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::SocketSelector));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::SocketSelector));
     }
 
     auto socketOpt = za::UdpSocket::create(/* isBlocking */ true);
@@ -166,7 +166,7 @@ TEST_CASE("[Network] za::SocketSelector")
         za::SocketSelector selector;
         CHECK(selector.add(*socketOpt));
 
-        za::SocketSelector moved(ZB_MOVE(selector));
+        za::SocketSelector moved(ZA_MOVE(selector));
         // `moved` owns the registration; `wait` on it still times out (no traffic)
         // but must not error out.
         CHECK(!moved.wait(za::milliseconds(25)));
@@ -227,8 +227,8 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
 
         // A ready receiver's `receive` must return immediately with the payload.
         char                        buffer[64]{};
-        zb::SizeT                   received{};
-        zb::Optional<za::IpAddress> remoteAddress;
+        za::SizeT                   received{};
+        za::Optional<za::IpAddress> remoteAddress;
         unsigned short              remotePort{};
         CHECK(receiver.receive(buffer, sizeof(buffer), received, remoteAddress, remotePort) == za::Socket::Status::Done);
         CHECK(received == sizeof(payload));
@@ -329,7 +329,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         (void)client.connect(za::IpAddress(127, 0, 0, 1), listenerPort, za::milliseconds(750));
 
         // Drive the accept loop until we have the accepted server-side socket.
-        zb::Optional<za::TcpSocket> serverSocketOpt;
+        za::Optional<za::TcpSocket> serverSocketOpt;
         const auto                  acceptStart = za::Clock::now();
 
         while (za::Clock::now() - acceptStart < za::milliseconds(750))
@@ -337,7 +337,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
             auto r = listener.accept();
             if (r.status == za::Socket::Status::Done)
             {
-                serverSocketOpt = ZB_MOVE(r.socket);
+                serverSocketOpt = ZA_MOVE(r.socket);
                 break;
             }
         }
@@ -353,14 +353,14 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         CHECK(!selector.isReady(client));
 
         const char payload[] = "ping";
-        zb::SizeT  sent{};
+        za::SizeT  sent{};
         REQUIRE(serverSocket.send(payload, sizeof(payload), sent) == za::Socket::Status::Done);
         CHECK(sent == sizeof(payload));
 
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(client); }));
 
         char      buffer[64]{};
-        zb::SizeT received{};
+        za::SizeT received{};
         CHECK(client.receive(buffer, sizeof(buffer), received) == za::Socket::Status::Done);
         CHECK(received == sizeof(payload));
     }
@@ -395,8 +395,8 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
 
         // Drain the datagram so we return to a "no data pending" state.
         char                        buffer[64]{};
-        zb::SizeT                   received{};
-        zb::Optional<za::IpAddress> remoteAddress;
+        za::SizeT                   received{};
+        za::Optional<za::IpAddress> remoteAddress;
         unsigned short              remotePort{};
         CHECK(receiver.receive(buffer, sizeof(buffer), received, remoteAddress, remotePort) == za::Socket::Status::Done);
 
@@ -536,14 +536,14 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         (void)client.connect(za::IpAddress(127, 0, 0, 1), listenerPort, za::milliseconds(750));
 
         // Accept on the server side so we have a peer to send to us.
-        zb::Optional<za::TcpSocket> serverSocketOpt;
+        za::Optional<za::TcpSocket> serverSocketOpt;
         const auto                  acceptStart = za::Clock::now();
         while (za::Clock::now() - acceptStart < za::milliseconds(750))
         {
             auto r = listener.accept();
             if (r.status == za::Socket::Status::Done)
             {
-                serverSocketOpt = ZB_MOVE(r.socket);
+                serverSocketOpt = ZA_MOVE(r.socket);
                 break;
             }
         }
@@ -555,7 +555,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         REQUIRE(selector.addForSend(client));
 
         const char payload[] = "both";
-        zb::SizeT  sent{};
+        za::SizeT  sent{};
         REQUIRE(serverSocketOpt->send(payload, sizeof(payload), sent) == za::Socket::Status::Done);
 
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(client); }));
@@ -763,14 +763,14 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         (void)client.connect(za::IpAddress(127, 0, 0, 1), listenerPort, za::milliseconds(750));
 
         // Accept on the server side so we get a peer that can send to us.
-        zb::Optional<za::TcpSocket> serverSocketOpt;
+        za::Optional<za::TcpSocket> serverSocketOpt;
         const auto                  acceptStart = za::Clock::now();
         while (za::Clock::now() - acceptStart < za::milliseconds(750))
         {
             auto r = listener.accept();
             if (r.status == za::Socket::Status::Done)
             {
-                serverSocketOpt = ZB_MOVE(r.socket);
+                serverSocketOpt = ZA_MOVE(r.socket);
                 break;
             }
         }
@@ -785,7 +785,7 @@ TEST_CASE("[Network] za::SocketSelector (loopback)")
         REQUIRE(selector.addForSend(client));
 
         const char payload[] = "both";
-        zb::SizeT  sent{};
+        za::SizeT  sent{};
         REQUIRE(serverSocketOpt->send(payload, sizeof(payload), sent) == za::Socket::Status::Done);
 
         REQUIRE(waitUntil(selector, za::milliseconds(500), [&] { return selector.isReady(client); }));

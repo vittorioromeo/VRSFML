@@ -9,7 +9,7 @@
 #include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "Zancle/Audio/SoundStreamState.hpp"
 
-#include "ZancleBase/Macros.hpp"
+#include "Zancle/Base/Macros.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ namespace za
 /// `State` is expected to expose:
 ///
 /// \code
-/// bool                      onGetData(zb::Vector<zb::I16>& outBuffer);
+/// bool                      onGetData(za::Vector<za::I16>& outBuffer);
 /// void                      onSeek(Time timeOffset);  // optional -- omit for generators that can't seek
-/// zb::Optional<zb::U64> onLoop();                 // optional -- omit if the source never loops
+/// za::Optional<za::U64> onLoop();                 // optional -- omit if the source never loops
 /// \endcode
 ///
 /// The destructor drains the audio thread before `State` is
@@ -53,7 +53,7 @@ namespace za
 /// \code
 /// struct MyState
 /// {
-///     bool onGetData(zb::Vector<zb::I16>& outBuffer)
+///     bool onGetData(za::Vector<za::I16>& outBuffer)
 ///     {
 ///         outBuffer.resize(1024); // 1024 samples of silence
 ///         return true;            // keep streaming
@@ -101,7 +101,7 @@ public:
                          const ChannelMap&  channelMap,
                          const unsigned int sampleRate,
                          StateArgs&&... stateArgs) :
-        m_state(playbackDevice, channelMap, sampleRate, ZB_FORWARD(stateArgs)...)
+        m_state(playbackDevice, channelMap, sampleRate, ZA_FORWARD(stateArgs)...)
     {
     }
 

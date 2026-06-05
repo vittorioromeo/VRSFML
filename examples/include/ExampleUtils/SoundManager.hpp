@@ -10,24 +10,24 @@
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SoundManager
 {
     ////////////////////////////////////////////////////////////
-    enum : zb::SizeT
+    enum : za::SizeT
     {
         maxSounds = 256u
     };
 
 
     ////////////////////////////////////////////////////////////
-    zb::InPlaceVector<za::Sound, maxSounds> soundsBeingPlayed;
+    za::InPlaceVector<za::Sound, maxSounds> soundsBeingPlayed;
 
 
     ////////////////////////////////////////////////////////////
@@ -49,9 +49,9 @@ struct [[nodiscard]] SoundManager
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] zb::SizeT countPlayingPooled(const LoadedSound& ls) const
+    [[nodiscard, gnu::pure]] za::SizeT countPlayingPooled(const LoadedSound& ls) const
     {
-        zb::SizeT acc = 0u;
+        za::SizeT acc = 0u;
 
         for (const za::Sound& sound : soundsBeingPlayed)
             if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
@@ -62,21 +62,21 @@ struct [[nodiscard]] SoundManager
 
 
     ////////////////////////////////////////////////////////////
-    bool playPooled(za::PlaybackDevice& playbackDevice, const LoadedSound& ls, const zb::SizeT maxOverlap)
+    bool playPooled(za::PlaybackDevice& playbackDevice, const LoadedSound& ls, const za::SizeT maxOverlap)
     {
         // TODO P2 (lib): improve in library
 
         if (countPlayingPooled(ls) >= maxOverlap)
             return false;
 
-        auto* const it = zb::findIf( //
+        auto* const it = za::findIf( //
             soundsBeingPlayed.begin(),
             soundsBeingPlayed.end(),
             [](const za::Sound& sound) { return !sound.isPlaying(); });
 
         if (it != soundsBeingPlayed.end())
         {
-            ZB_ASSERT(&it->getPlaybackDevice() == &playbackDevice);
+            ZA_ASSERT(&it->getPlaybackDevice() == &playbackDevice);
 
             if (&it->getBuffer() == &ls.buffer)
             {

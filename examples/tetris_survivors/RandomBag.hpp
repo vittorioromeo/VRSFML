@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Algorithm/Shuffle.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Algorithm/Shuffle.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tsurv
@@ -14,7 +14,7 @@ namespace tsurv
 template <typename RandomIt>
 constexpr void shuffleBag(const RandomIt begin, const RandomIt end, auto&& rng)
 {
-    zb::shuffle(begin, end, [&rng](zb::SizeT min, zb::SizeT max) { return rng.getI(min, max); });
+    za::shuffle(begin, end, [&rng](za::SizeT min, za::SizeT max) { return rng.getI(min, max); });
 }
 
 

@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
 
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ public:
     /// \return Span containing all the supported fullscreen modes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Span<const VideoMode> getFullscreenModes();
+    [[nodiscard]] static za::Span<const VideoMode> getFullscreenModes();
 };
 
 } // namespace za

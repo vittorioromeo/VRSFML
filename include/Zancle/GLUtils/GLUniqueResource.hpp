@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Exchange.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Exchange.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za
@@ -59,7 +59,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] explicit GLUniqueResource(const unsigned int id) : m_id{id}
     {
-        ZB_ASSERT(m_id != 0u);
+        ZA_ASSERT(m_id != 0u);
     }
 
 
@@ -91,9 +91,9 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] GLUniqueResource(GLUniqueResource&& rhs) noexcept :
-        m_id{zb::exchange(rhs.m_id, 0u)}
+        m_id{za::exchange(rhs.m_id, 0u)}
     {
-        ZB_ASSERT(m_id != 0u);
+        ZA_ASSERT(m_id != 0u);
     }
 
 
@@ -113,8 +113,8 @@ public:
         if (m_id != 0u)
             TFuncs::destroy(m_id);
 
-        m_id = zb::exchange(rhs.m_id, 0u);
-        ZB_ASSERT(m_id != 0u);
+        m_id = za::exchange(rhs.m_id, 0u);
+        ZA_ASSERT(m_id != 0u);
 
         return *this;
     }
@@ -160,7 +160,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] bool isBound() const
     {
-        ZB_ASSERT(m_id != 0u); // error to call `isBound()` on a moved-from instance
+        ZA_ASSERT(m_id != 0u); // error to call `isBound()` on a moved-from instance
         return getBoundId() == m_id;
     }
 
@@ -175,10 +175,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void bind() const
     {
-        ZB_ASSERT(m_id != 0u);
+        ZA_ASSERT(m_id != 0u);
         TFuncs::bind(m_id);
 
-        ZB_ASSERT(isBound());
+        ZA_ASSERT(isBound());
     }
 
 
@@ -193,7 +193,7 @@ public:
     [[gnu::always_inline, gnu::flatten]] void unbind() const
     {
         TFuncs::bind(0u);
-        ZB_ASSERT(!isBound());
+        ZA_ASSERT(!isBound());
     }
 
 private:
@@ -210,7 +210,7 @@ private:
     [[nodiscard, gnu::always_inline, gnu::flatten]] explicit GLUniqueResource()
     {
         TFuncs::create(m_id);
-        ZB_ASSERT(m_id != 0u);
+        ZA_ASSERT(m_id != 0u);
     }
 
 
@@ -227,7 +227,7 @@ private:
 ///
 /// Calls the policy's `create` function and, if it returns a valid
 /// non-zero ID, wraps the result in a `T` instance and returns it
-/// inside an `Optional`. Returns `zb::nullOpt` if the GL allocation
+/// inside an `Optional`. Returns `za::nullOpt` if the GL allocation
 /// failed (e.g. when no GL context is currently active).
 ///
 /// Use this in place of the default constructor when you need to
@@ -241,15 +241,15 @@ private:
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten]] static inline zb::Optional<T> tryCreateGLUniqueResource()
+[[nodiscard, gnu::always_inline, gnu::flatten]] static inline za::Optional<T> tryCreateGLUniqueResource()
 {
     unsigned int id{};
     T::FuncsType::create(id);
 
     if (id == 0u)
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<T>(id);
+    return za::makeOptional<T>(id);
 }
 
 } // namespace za

@@ -1,20 +1,20 @@
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace
@@ -57,17 +57,17 @@ TEST_CASE("[System] za::GlobalAnchorPointMixin")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::GlobalAnchorPointMixin));
 
-        STATIC_CHECK(ZB_IS_TRIVIAL(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::GlobalAnchorPointMixin));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::GlobalAnchorPointMixin, za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_TRIVIAL(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::GlobalAnchorPointMixin));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::GlobalAnchorPointMixin, za::GlobalAnchorPointMixin));
     }
 
     SECTION("getAnchorPoint")

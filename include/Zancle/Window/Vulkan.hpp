@@ -10,7 +10,7 @@
 
 #include "Zancle/Window/WindowHandle.hpp"
 
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -25,9 +25,9 @@ using VkSurfaceKHR = struct VkSurfaceKHR_T*;
 
 #else
 
-    #include "ZancleBase/IntTypes.hpp"
+    #include "Zancle/Base/IntTypes.hpp"
 
-using VkSurfaceKHR = zb::U64;
+using VkSurfaceKHR = za::U64;
 
 #endif
 
@@ -118,7 +118,7 @@ struct VulkanSurfaceData
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ZA_WINDOW_API zb::Span<const char* const> getGraphicsRequiredInstanceExtensions();
+[[nodiscard]] ZA_WINDOW_API za::Span<const char* const> getGraphicsRequiredInstanceExtensions();
 
 ////////////////////////////////////////////////////////////
 /// \brief Create a Vulkan rendering surface

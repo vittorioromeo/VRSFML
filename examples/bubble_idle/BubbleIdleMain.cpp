@@ -58,27 +58,27 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/FloatMax.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Ceil.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/ThreadPool.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/FloatMax.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -161,7 +161,7 @@ void Main::pushNotification(const char* const title, const char* const format, .
 
     va_end(args);
 
-    notificationState.queue.emplaceBack(title, zb::String{fmtBuffer});
+    notificationState.queue.emplaceBack(title, za::String{fmtBuffer});
 }
 
 
@@ -194,7 +194,7 @@ void Main::saveMainPlaythroughToFile()
     {
         if (ptMain.fullVersion)
         {
-            zb::printLn("Cannot save non-demo playthrough in demo version!");
+            za::printLn("Cannot save non-demo playthrough in demo version!");
             return;
         }
     }
@@ -226,7 +226,7 @@ void Main::log(const char* format, ...) // NOLINT(modernize-avoid-variadic-funct
 #pragma GCC diagnostic pop
     va_end(args);
 
-    zb::printLn(*logFile, "{} - {}", static_cast<const char*>(timeBuffer), static_cast<const char*>(messageBuffer));
+    za::printLn(*logFile, "{} - {}", static_cast<const char*>(timeBuffer), static_cast<const char*>(messageBuffer));
     (void)logFile->flush();
 }
 
@@ -240,9 +240,9 @@ void Main::addMoney(const MoneyType reward)
 
 
 ////////////////////////////////////////////////////////////
-zb::Vector<zb::Vector<zb::StringView>> Main::makeShuffledCatNames(RNGFast& rng)
+za::Vector<za::Vector<za::StringView>> Main::makeShuffledCatNames(RNGFast& rng)
 {
-    zb::Vector<zb::Vector<zb::StringView>> result(nCatTypes);
+    za::Vector<za::Vector<za::StringView>> result(nCatTypes);
 
     for (SizeT i = 0u; i < nCatTypes; ++i)
         result[i] = getShuffledCatNames(static_cast<CatType>(i), rng);
@@ -254,7 +254,7 @@ zb::Vector<zb::Vector<zb::StringView>> Main::makeShuffledCatNames(RNGFast& rng)
 ////////////////////////////////////////////////////////////
 unsigned int Main::getTPWorkerCount()
 {
-    const auto numThreads = static_cast<unsigned int>(zb::ThreadPool::getHardwareWorkerCount());
+    const auto numThreads = static_cast<unsigned int>(za::ThreadPool::getHardwareWorkerCount());
     return (numThreads == 0u) ? 3u : numThreads - 1u;
 }
 
@@ -282,10 +282,10 @@ Particle& Main::implEmplaceParticle(const za::Vec2f    position,
             .accelerationY = 0.002f,
             .opacity       = opacity,
             .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-            .rotation      = rngFast.getF(0.f, zb::tau),
+            .rotation      = rngFast.getF(0.f, za::tau),
             .torque        = rngFast.getF(-0.002f, 0.002f),
         },
-        zb::U8{0u},
+        za::U8{0u},
         particleType);
 }
 
@@ -296,7 +296,7 @@ bool Main::spawnSpentCoinParticle(const ParticleData& particleData)
     if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
         return false;
 
-    spentCoinParticles.emplaceBack(particleData, zb::U8{0u}, ParticleType::Coin);
+    spentCoinParticles.emplaceBack(particleData, za::U8{0u}, ParticleType::Coin);
     return true;
 }
 
@@ -392,18 +392,18 @@ void Main::statSecondsPlayed()
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestStarBubblePopCombo(const zb::U64 comboValue)
+void Main::statHighestStarBubblePopCombo(const za::U64 comboValue)
 {
     withAllStats([&](Stats& stats)
-    { stats.highestStarBubblePopCombo = zb::max(stats.highestStarBubblePopCombo, comboValue); });
+    { stats.highestStarBubblePopCombo = za::max(stats.highestStarBubblePopCombo, comboValue); });
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestNovaBubblePopCombo(const zb::U64 comboValue)
+void Main::statHighestNovaBubblePopCombo(const za::U64 comboValue)
 {
     withAllStats([&](Stats& stats)
-    { stats.highestNovaBubblePopCombo = zb::max(stats.highestNovaBubblePopCombo, comboValue); });
+    { stats.highestNovaBubblePopCombo = za::max(stats.highestNovaBubblePopCombo, comboValue); });
 }
 
 
@@ -450,17 +450,17 @@ void Main::statRitual(const CatType catType)
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestSimultaneousMaintenances(const zb::U64 value)
+void Main::statHighestSimultaneousMaintenances(const za::U64 value)
 {
     withAllStats([&](Stats& stats)
-    { stats.highestSimultaneousMaintenances = zb::max(stats.highestSimultaneousMaintenances, value); });
+    { stats.highestSimultaneousMaintenances = za::max(stats.highestSimultaneousMaintenances, value); });
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::statHighestDPS(const zb::U64 value)
+void Main::statHighestDPS(const za::U64 value)
 {
-    withAllStats([&](Stats& stats) { stats.highestDPS = zb::max(stats.highestDPS, value); });
+    withAllStats([&](Stats& stats) { stats.highestDPS = za::max(stats.highestDPS, value); });
 }
 
 
@@ -496,7 +496,7 @@ za::Rect2f Main::addImgResourceToUIAtlas(const za::Path& path)
 
 
 ////////////////////////////////////////////////////////////
-void Main::playSound(const LoadedSound& ls, const zb::SizeT maxOverlap)
+void Main::playSound(const LoadedSound& ls, const za::SizeT maxOverlap)
 {
 #ifndef BUBBLEBYTE_NO_AUDIO
     soundManager.playPooled(playbackDevice, ls, maxOverlap);
@@ -645,7 +645,7 @@ void Main::resetTipState()
 
 
 ////////////////////////////////////////////////////////////
-void Main::doTip(const zb::String& str, const SizeT maxPrestigeLevel)
+void Main::doTip(const za::String& str, const SizeT maxPrestigeLevel)
 {
     if (!profile.tipsEnabled || pt->psvBubbleValue.nPurchases > maxPrestigeLevel || inSpeedrunPlaythrough())
         return;
@@ -669,7 +669,7 @@ float Main::getAspectRatioScalingFactor(const za::Vec2f originalSize, const za::
     const float scaleY = windowSize.y / originalSize.y;
 
     // Use the smaller scale factor to maintain aspect ratio
-    return zb::min(scaleX, scaleY);
+    return za::min(scaleX, scaleY);
 }
 
 
@@ -678,11 +678,11 @@ float Main::getCappedGameViewAspectRatio(const za::Vec2f originalSize, const za:
 {
     const float originalAspect = originalSize.x / originalSize.y;
     const float windowAspect   = windowSize.x / windowSize.y;
-    // const float configuredMaxAspect = zb::max(maxGameViewAspectRatio, originalAspect);
+    // const float configuredMaxAspect = za::max(maxGameViewAspectRatio, originalAspect);
     // const float unlockedMapAspect   = pt != nullptr ? pt->getMapLimit() / originalSize.y : originalAspect;
-    // const float clampedMaxViewAspect = zb::min(configuredMaxAspect, unlockedMapAspect);
+    // const float clampedMaxViewAspect = za::min(configuredMaxAspect, unlockedMapAspect);
 
-    return zb::max(windowAspect, originalAspect);
+    return za::max(windowAspect, originalAspect);
 }
 
 
@@ -734,7 +734,7 @@ float Main::clampGameViewCenterX(const float desiredCenterX, const float viewWid
         return boundaries.x / 2.f;
 
     const float halfWidth = viewWidth / 2.f;
-    return zb::clamp(desiredCenterX, halfWidth, boundaries.x - halfWidth);
+    return za::clamp(desiredCenterX, halfWidth, boundaries.x - halfWidth);
 }
 
 
@@ -753,7 +753,7 @@ za::Vec2f Main::getHUDMousePos() const
 
 
 ////////////////////////////////////////////////////////////
-void Main::switchToBGM(const zb::SizeT index, const bool force)
+void Main::switchToBGM(const za::SizeT index, const bool force)
 {
 #ifndef BUBBLEBYTE_NO_AUDIO
     if (!force && lastPlayedMusic == bgmPaths[index])
@@ -778,14 +778,14 @@ void Main::switchToBGM(const zb::SizeT index, const bool force)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<BGMBuffer>& Main::getCurrentBGMBuffer()
+za::Optional<BGMBuffer>& Main::getCurrentBGMBuffer()
 {
     return bgm.bgmBuffers[currentBGMBufferIdx % 2u];
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<BGMBuffer>& Main::getNextBGMBuffer()
+za::Optional<BGMBuffer>& Main::getNextBGMBuffer()
 {
     return bgm.bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
 }
@@ -829,17 +829,17 @@ void Main::beginPrestigeTransition(const PrestigePointsType ppReward)
     updateSelectedBackgroundSelectorIndex();
     updateSelectedBGMSelectorIndex();
 
-    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ true);
+    switchToBGM(static_cast<za::SizeT>(profile.selectedBGM), /* force */ true);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<za::Rect2f> Main::getAoEDragRect(const za::Vec2f mousePos) const
+za::Optional<za::Rect2f> Main::getAoEDragRect(const za::Vec2f mousePos) const
 {
     if (!playerInputState.catDragOrigin.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<za::Rect2f>(*playerInputState.catDragOrigin, mousePos - *playerInputState.catDragOrigin);
+    return za::makeOptional<za::Rect2f>(*playerInputState.catDragOrigin, mousePos - *playerInputState.catDragOrigin);
 }
 
 
@@ -856,9 +856,9 @@ void Main::resetAllDraggedCats()
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT Main::pickDragPivotCatIndex() const
+za::SizeT Main::pickDragPivotCatIndex() const
 {
-    ZB_ASSERT(!playerInputState.draggedCats.empty());
+    ZA_ASSERT(!playerInputState.draggedCats.empty());
 
     if (playerInputState.draggedCats.size() <= 2u)
         return 0u;
@@ -872,10 +872,10 @@ zb::SizeT Main::pickDragPivotCatIndex() const
     centroid /= static_cast<float>(playerInputState.draggedCats.size());
 
     // Find the position closest to the centroid
-    zb::SizeT closestIndex       = 0u;
-    float     minDistanceSquared = ZB_FLOAT_MAX;
+    za::SizeT closestIndex       = 0u;
+    float     minDistanceSquared = ZA_FLOAT_MAX;
 
-    for (zb::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
+    for (za::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
     {
         // Calculate squared distance (avoiding square root for performance)
         const float distSquared = (playerInputState.draggedCats[i]->position - centroid).lengthSquared();
@@ -905,7 +905,7 @@ bool Main::isCatBeingDragged(const Cat& cat) const
 ////////////////////////////////////////////////////////////
 void Main::stopDraggingCat(const Cat& cat)
 {
-    zb::vectorEraseIf(playerInputState.draggedCats, [&](const Cat* c) { return c == &cat; });
+    za::vectorEraseIf(playerInputState.draggedCats, [&](const Cat* c) { return c == &cat; });
 }
 
 
@@ -993,7 +993,7 @@ void Main::addCombo(int& xCombo, Countdown& xComboCountdown) const
     else
     {
         xCombo += 1;
-        xComboCountdown.time += 150.f - zb::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
+        xComboCountdown.time += 150.f - za::clamp(static_cast<float>(xCombo) * 10.f, 0.f, 100.f);
     }
 }
 
@@ -1017,7 +1017,7 @@ void Main::turnBubbleInto(Bubble& bubble, const BubbleType newType)
     if (newType == BubbleType::Normal)
     {
         if (bubble.type == BubbleType::Bomb)
-            bombStorage->bombIdxToCatIdx.erase(static_cast<zb::SizeT>(&bubble - pt->bubbles.data()));
+            bombStorage->bombIdxToCatIdx.erase(static_cast<za::SizeT>(&bubble - pt->bubbles.data()));
 
         bubble.rotation = 0.f;
         bubble.torque   = 0.f;
@@ -1146,13 +1146,13 @@ void Main::doWizardSpellStasisField(Cat& wizardCat)
 
 
 ////////////////////////////////////////////////////////////
-void Main::castSpellByIndex(const zb::SizeT index, Cat* wizardCat, Cat* copyCat)
+void Main::castSpellByIndex(const za::SizeT index, Cat* wizardCat, Cat* copyCat)
 {
-    ZB_ASSERT(index < 4u);
+    ZA_ASSERT(index < 4u);
 
     const bool copyCatMustCast = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard;
 
-    wizardcatSpin.time = zb::tau;
+    wizardcatSpin.time = za::tau;
     statSpellCast(index);
 
     if (index == 0u) // Starpaw Conversion
@@ -1295,7 +1295,7 @@ MoneyType Main::computeFinalReward(const Bubble& bubble, const float multiplier,
     if (!bubble.attractedCountdown.isDone())
         result *= 2.f;
 
-    return static_cast<MoneyType>(zb::ceil(result));
+    return static_cast<MoneyType>(za::ceil(result));
 }
 
 
@@ -1322,22 +1322,22 @@ za::Vec2u Main::getReasonableWindowSize(const float scalingFactorMult)
 
 
 ////////////////////////////////////////////////////////////
-int Main::pickSelectedIndex(const zb::Vector<SelectorEntry>& entries, const int selectedIndex)
+int Main::pickSelectedIndex(const za::Vector<SelectorEntry>& entries, const int selectedIndex)
 {
-    const auto selectedIndexU = static_cast<zb::SizeT>(selectedIndex);
+    const auto selectedIndexU = static_cast<za::SizeT>(selectedIndex);
     return selectedIndexU < entries.size() ? entries[selectedIndexU].index : 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::selectBackground(const zb::Vector<SelectorEntry>& entries, const int selectedIndex)
+void Main::selectBackground(const za::Vector<SelectorEntry>& entries, const int selectedIndex)
 {
     profile.selectedBackground = pickSelectedIndex(entries, selectedIndex);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Main::selectBGM(const zb::Vector<SelectorEntry>& entries, const int selectedIndex)
+void Main::selectBGM(const za::Vector<SelectorEntry>& entries, const int selectedIndex)
 {
     profile.selectedBGM = pickSelectedIndex(entries, selectedIndex);
 }
@@ -1348,7 +1348,7 @@ void Main::updateSelectedBackgroundSelectorIndex() const
 {
     auto& [entries, selectedIndex] = getBackgroundSelectorData();
 
-    for (zb::SizeT i = 0u; i < entries.size(); ++i)
+    for (za::SizeT i = 0u; i < entries.size(); ++i)
         if (profile.selectedBackground == entries[i].index)
             selectedIndex = static_cast<int>(i);
 }
@@ -1359,7 +1359,7 @@ void Main::updateSelectedBGMSelectorIndex() const
 {
     auto& [entries, selectedIndex] = getBGMSelectorData();
 
-    for (zb::SizeT i = 0u; i < entries.size(); ++i)
+    for (za::SizeT i = 0u; i < entries.size(); ++i)
         if (profile.selectedBGM == entries[i].index)
             selectedIndex = static_cast<int>(i);
 }
@@ -1389,7 +1389,7 @@ Main::SelectorData& Main::getBGMSelectorData() const
     {
         data.selectedIndex = [&]
         {
-            for (zb::SizeT i = 0u; i < data.entries.size(); ++i)
+            for (za::SizeT i = 0u; i < data.entries.size(); ++i)
                 if (profile.selectedBGM == data.entries[i].index)
                     return static_cast<int>(i);
 
@@ -1434,7 +1434,7 @@ Main::SelectorData& Main::getBackgroundSelectorData() const
     {
         data.selectedIndex = [&]
         {
-            for (zb::SizeT i = 0u; i < data.entries.size(); ++i)
+            for (za::SizeT i = 0u; i < data.entries.size(); ++i)
                 if (profile.selectedBackground == data.entries[i].index)
                     return static_cast<int>(i);
 
@@ -1518,7 +1518,7 @@ void Main::forceResetGame(const bool goToShopTab)
     updateSelectedBackgroundSelectorIndex();
     updateSelectedBGMSelectorIndex();
 
-    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ true);
+    switchToBGM(static_cast<za::SizeT>(profile.selectedBGM), /* force */ true);
 }
 
 
@@ -1536,7 +1536,7 @@ TextParticle& Main::makeRewardTextParticle(const za::Vec2f position)
     return textParticles.emplaceBack(TextParticle{
         {.position      = {position.x, position.y - 10.f},
          .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-         .scale         = zb::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+         .scale         = za::clamp(1.f + 0.1f * static_cast<float>(comboState.combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
          .scaleDecay    = 0.f,
          .accelerationY = 0.0035f,
          .opacity       = 1.f,
@@ -1583,7 +1583,7 @@ void Main::doExplosion(Bubble& bubble)
     sounds.explosion.settings.position = {bubble.position.x, bubble.position.y};
     playSound(sounds.explosion);
 
-    for (zb::SizeT iP = 0u; iP < 16u; ++iP)
+    for (za::SizeT iP = 0u; iP < 16u; ++iP)
     {
         spawnParticle(
             ParticleData{
@@ -1594,7 +1594,7 @@ void Main::doExplosion(Bubble& bubble)
                 .accelerationY = 0.002f,
                 .opacity       = 0.65f,
                 .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                .rotation      = rngFast.getF(0.f, zb::tau),
+                .rotation      = rngFast.getF(0.f, za::tau),
                 .torque        = rngFast.getF(-0.002f, 0.002f) * 5.f,
             },
             0.f,
@@ -1602,20 +1602,20 @@ void Main::doExplosion(Bubble& bubble)
 
         spawnParticle(ParticleData{.position      = bubble.position,
                                    .velocity      = za::Vec2f::fromAngle(rngFast.getF(0.4f, 0.8f),
-                                                                         za::radians(zb::tau / static_cast<float>(16u) *
+                                                                         za::radians(za::tau / static_cast<float>(16u) *
                                                                                      static_cast<float>(iP))),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 2.75f,
                                    .scaleDecay    = -0.0025f,
                                    .accelerationY = 0.000001f,
                                    .opacity       = 0.35f,
                                    .opacityDecay  = rngFast.getF(0.001f, 0.002f) * 0.6f,
-                                   .rotation      = rngFast.getF(0.f, zb::tau),
+                                   .rotation      = rngFast.getF(0.f, za::tau),
                                    .torque        = rngFast.getF(-0.001f, 0.001f)},
                       0.f,
                       ParticleType::Explosion);
     }
 
-    for (zb::SizeT iP = 0u; iP < 8u; ++iP)
+    for (za::SizeT iP = 0u; iP < 8u; ++iP)
         spawnParticle(ParticleData{.position      = bubble.position,
                                    .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(-0.15f, 0.05f)},
                                    .scale         = rngFast.getF(0.65f, 1.f) * 1.25f,
@@ -1623,13 +1623,13 @@ void Main::doExplosion(Bubble& bubble)
                                    .accelerationY = -0.00017f,
                                    .opacity       = rngFast.getF(0.5f, 0.75f) * 0.7f,
                                    .opacityDecay  = rngFast.getF(0.00035f, 0.00055f) * 0.8f,
-                                   .rotation      = rngFast.getF(0.f, zb::tau),
+                                   .rotation      = rngFast.getF(0.f, za::tau),
                                    .torque        = rngFast.getF(-0.002f, 0.002f)},
                       0.f,
                       ParticleType::Smoke);
 
     // TODO P2: cleanup
-    const auto  bubbleIdx  = static_cast<zb::SizeT>(&bubble - pt->bubbles.data());
+    const auto  bubbleIdx  = static_cast<za::SizeT>(&bubble - pt->bubbles.data());
     const auto* bombIdxItr = bombStorage->bombIdxToCatIdx.find(bubbleIdx);
 
     Cat* catWhoMadeBomb = bombIdxItr != bombStorage->bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
@@ -1736,10 +1736,10 @@ void Main::popWithRewardAndReplaceBubble(const BubblePopData& data)
     statBubblePopped(bubble.type, byPlayerClick, reward);
 
     if (byPlayerClick && bubble.type == BubbleType::Star)
-        statHighestStarBubblePopCombo(static_cast<zb::U64>(comboState.combo));
+        statHighestStarBubblePopCombo(static_cast<za::U64>(comboState.combo));
 
     if (byPlayerClick && bubble.type == BubbleType::Nova)
-        statHighestNovaBubblePopCombo(static_cast<zb::U64>(comboState.combo));
+        statHighestNovaBubblePopCombo(static_cast<za::U64>(comboState.combo));
 
     const Shrine* collectorShrine = nullptr;
     for (Shrine& shrine : pt->shrines)
@@ -1779,7 +1779,7 @@ void Main::popWithRewardAndReplaceBubble(const BubblePopData& data)
                  .accelerationY = 0.f,
                  .opacity       = 0.f,
                  .opacityDecay  = -0.003f,
-                 .rotation      = rngFast.getF(0.f, zb::tau),
+                 .rotation      = rngFast.getF(0.f, za::tau),
                  .torque        = 0.f});
 
 

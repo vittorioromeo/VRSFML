@@ -12,31 +12,31 @@
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Trait/Decay.hpp"
-#include "ZancleBase/Trait/IsSame.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Trait/Decay.hpp"
+#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::String vec2ToString(const za::Vec2i vec2)
+[[nodiscard]] za::String vec2ToString(const za::Vec2i vec2)
 {
-    return '(' + zb::toString(vec2.x) + ", " + zb::toString(vec2.y) + ')';
+    return '(' + za::toString(vec2.x) + ", " + za::toString(vec2.y) + ')';
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::String scancodeToString(const za::Keyboard::Scancode scancode)
+[[nodiscard]] za::String scancodeToString(const za::Keyboard::Scancode scancode)
 {
     return za::Keyboard::getDescription(scancode).asBytes();
 }
@@ -60,13 +60,13 @@ public:
         {
         }
 
-        zb::Optional<zb::String> operator()(za::Event::Closed)
+        za::Optional<za::String> operator()(za::Event::Closed)
         {
             application.m_mustClose = true;
-            return zb::nullOpt;
+            return za::nullOpt;
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::KeyPressed& keyPress)
+        za::Optional<za::String> operator()(const za::Event::KeyPressed& keyPress)
         {
             // When the enter key is pressed, switch to the next handler type
             if (keyPress.code == za::Keyboard::Key::Enter)
@@ -75,37 +75,37 @@ public:
                 application.m_handlerText.setString("Current Handler: Overload");
             }
 
-            return zb::makeOptional<zb::String>("Key Pressed: " + scancodeToString(keyPress.scancode));
+            return za::makeOptional<za::String>("Key Pressed: " + scancodeToString(keyPress.scancode));
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::KeyReleased& keyRelease)
+        za::Optional<za::String> operator()(const za::Event::KeyReleased& keyRelease)
         {
-            return zb::makeOptional<zb::String>("Key Released: " + scancodeToString(keyRelease.scancode));
+            return za::makeOptional<za::String>("Key Released: " + scancodeToString(keyRelease.scancode));
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::MouseMoved& mouseMoved)
+        za::Optional<za::String> operator()(const za::Event::MouseMoved& mouseMoved)
         {
-            return zb::makeOptional<zb::String>("Mouse Moved: " + vec2ToString(mouseMoved.position));
+            return za::makeOptional<za::String>("Mouse Moved: " + vec2ToString(mouseMoved.position));
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::MouseButtonPressed&)
+        za::Optional<za::String> operator()(const za::Event::MouseButtonPressed&)
         {
-            return zb::makeOptional<zb::String>("Mouse Pressed");
+            return za::makeOptional<za::String>("Mouse Pressed");
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::TouchBegan& touchBegan)
+        za::Optional<za::String> operator()(const za::Event::TouchBegan& touchBegan)
         {
-            return zb::makeOptional<zb::String>("Touch Began: " + vec2ToString(touchBegan.position));
+            return za::makeOptional<za::String>("Touch Began: " + vec2ToString(touchBegan.position));
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::TouchEnded& touchEnded)
+        za::Optional<za::String> operator()(const za::Event::TouchEnded& touchEnded)
         {
-            return zb::makeOptional<zb::String>("Touch Ended: " + vec2ToString(touchEnded.position));
+            return za::makeOptional<za::String>("Touch Ended: " + vec2ToString(touchEnded.position));
         }
 
-        zb::Optional<zb::String> operator()(const za::Event::TouchMoved& touchMoved)
+        za::Optional<za::String> operator()(const za::Event::TouchMoved& touchMoved)
         {
-            return zb::makeOptional<zb::String>("Touch Moved: " + vec2ToString(touchMoved.position));
+            return za::makeOptional<za::String>("Touch Moved: " + vec2ToString(touchMoved.position));
         }
 
         // When defining a visitor, make sure all event types can be handled by it.
@@ -113,11 +113,11 @@ public:
         // event type, you can provide a templated operator() that will be selected
         // by overload resolution when no other event type matches.
         template <typename T>
-        zb::Optional<zb::String> operator()(const T&)
+        za::Optional<za::String> operator()(const T&)
         {
             // All unhandled events will end up here
             // application.m_log.emplaceBack("Other Event");
-            return zb::nullOpt;
+            return za::nullOpt;
         }
 
         Application& application;
@@ -129,7 +129,7 @@ public:
         // The "classical form" of event handling
         // Poll/Wait for events in a loop and handle them
         // individually based on their concrete type
-        while (const zb::Optional event = m_window.pollEvent())
+        while (const za::Optional event = m_window.pollEvent())
         {
             if (event->is<za::Event::Closed>())
             {
@@ -186,10 +186,10 @@ public:
         // Event Visitor
         // A visitor able to visit all event types is passed to the event
         // The visitor's defined operator()s can also return values
-        while (const zb::Optional event = m_window.pollEvent())
+        while (const za::Optional event = m_window.pollEvent())
         {
-            if (zb::Optional logMessage = event->visit(Visitor(*this)))
-                m_log.emplaceBack(ZB_MOVE(*logMessage));
+            if (za::Optional logMessage = event->visit(Visitor(*this)))
+                m_log.emplaceBack(ZA_MOVE(*logMessage));
         }
     }
 
@@ -234,13 +234,13 @@ public:
         m_window.pollAndHandleEvents([&](auto&& event)
         {
             // Remove reference and cv-qualifiers
-            using T = zb::Decay<decltype(event)>;
+            using T = za::Decay<decltype(event)>;
 
-            if constexpr (zb::isSame<T, za::Event::Closed>)
+            if constexpr (za::isSame<T, za::Event::Closed>)
             {
                 m_mustClose = true;
             }
-            else if constexpr (zb::isSame<T, za::Event::KeyPressed>)
+            else if constexpr (za::isSame<T, za::Event::KeyPressed>)
             {
                 m_log.emplaceBack("Key Pressed: " + scancodeToString(event.scancode));
 
@@ -251,27 +251,27 @@ public:
                     m_handlerText.setString("Current Handler: Forward");
                 }
             }
-            else if constexpr (zb::isSame<T, za::Event::KeyReleased>)
+            else if constexpr (za::isSame<T, za::Event::KeyReleased>)
             {
                 m_log.emplaceBack("Key Released: " + scancodeToString(event.scancode));
             }
-            else if constexpr (zb::isSame<T, za::Event::MouseMoved>)
+            else if constexpr (za::isSame<T, za::Event::MouseMoved>)
             {
                 m_log.emplaceBack("Mouse Moved: " + vec2ToString(event.position));
             }
-            else if constexpr (zb::isSame<T, za::Event::MouseButtonPressed>)
+            else if constexpr (za::isSame<T, za::Event::MouseButtonPressed>)
             {
                 m_log.emplaceBack("Mouse Pressed");
             }
-            else if constexpr (zb::isSame<T, za::Event::TouchBegan>)
+            else if constexpr (za::isSame<T, za::Event::TouchBegan>)
             {
                 m_log.emplaceBack("Touch Began: " + vec2ToString(event.position));
             }
-            else if constexpr (zb::isSame<T, za::Event::TouchEnded>)
+            else if constexpr (za::isSame<T, za::Event::TouchEnded>)
             {
                 m_log.emplaceBack("Touch Ended: " + vec2ToString(event.position));
             }
-            else if constexpr (zb::isSame<T, za::Event::TouchMoved>)
+            else if constexpr (za::isSame<T, za::Event::TouchMoved>)
             {
                 m_log.emplaceBack("Touch Moved: " + vec2ToString(event.position));
             }
@@ -327,7 +327,7 @@ public:
             // Draw the contents of the log to the window
             m_window.clear();
 
-            for (zb::SizeT i = 0u; i < m_log.size(); ++i)
+            for (za::SizeT i = 0u; i < m_log.size(); ++i)
             {
                 m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
@@ -448,7 +448,7 @@ private:
                                 .bold          = true,
                             }};
 
-    zb::Vector<zb::String> m_log;
+    za::Vector<za::String> m_log;
     HandlerType            m_handlerType{HandlerType::Classic};
     bool                   m_mustClose{false};
 };

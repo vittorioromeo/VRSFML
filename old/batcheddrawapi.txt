@@ -15,8 +15,8 @@
 #include "Zancle/System/Rect.hpp"
 #include "Zancle/System/Vector2.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/SizeT.hpp"
 #include "ZancleBase/Traits/IsSame.hpp"
 
 
@@ -67,15 +67,15 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 template <typename T>
 concept ShapeDataConcept =                             //
-    ZB_IS_SAME(T, ArrowShapeData) ||            //
-    ZB_IS_SAME(T, CircleShapeData) ||           //
-    ZB_IS_SAME(T, EllipseShapeData) ||          //
-    ZB_IS_SAME(T, PieSliceShapeData) ||         //
-    ZB_IS_SAME(T, RectangleShapeData) ||        //
-    ZB_IS_SAME(T, RingShapeData) ||             //
-    ZB_IS_SAME(T, RingPieSliceShapeData) ||     //
-    ZB_IS_SAME(T, RoundedRectangleShapeData) || //
-    ZB_IS_SAME(T, StarShapeData);
+    ZA_IS_SAME(T, ArrowShapeData) ||            //
+    ZA_IS_SAME(T, CircleShapeData) ||           //
+    ZA_IS_SAME(T, EllipseShapeData) ||          //
+    ZA_IS_SAME(T, PieSliceShapeData) ||         //
+    ZA_IS_SAME(T, RectangleShapeData) ||        //
+    ZA_IS_SAME(T, RingShapeData) ||             //
+    ZA_IS_SAME(T, RingPieSliceShapeData) ||     //
+    ZA_IS_SAME(T, RoundedRectangleShapeData) || //
+    ZA_IS_SAME(T, StarShapeData);
 
 } // namespace za::priv
 
@@ -970,7 +970,7 @@ public:
         renderTarget(theRenderTarget),
         renderStates(theRenderStates)
         {
-            ZB_ASSERT(renderTarget.m_autoBatchMode != AutoBatchMode::Disabled);
+            ZA_ASSERT(renderTarget.m_autoBatchMode != AutoBatchMode::Disabled);
             renderTarget.flushIfNeeded(renderStates);
         }
 
@@ -1111,17 +1111,17 @@ private:
 #include "Zancle/GLUtils/GLVAOGroup.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 #include "Zancle/System/Rect.hpp"
 
 #include "ZancleBase/Algorithm.hpp"
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 #include "ZancleBase/Builtins/OffsetOf.hpp"
 #include "ZancleBase/FastSinCos.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Lround.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Lround.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <atomic>
 
@@ -1161,7 +1161,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 // Check if a render target with the given ID is active in the current context
 [[nodiscard]] bool isActive(const IdType contextId, const IdType id)
 {
-    ZB_ASSERT(contextId < maxIdCount);
+    ZA_ASSERT(contextId < maxIdCount);
 
     const auto renderTargetId = contextRenderTargetMap[contextId].load();
     return (renderTargetId != invalidId) && (renderTargetId == id);
@@ -1174,7 +1174,7 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
     {                                                                                                                 \
         constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
                                                                                                                       \
-        ZB_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::zb::getArraySize(glValues));                \
+        ZA_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::zb::getArraySize(glValues));                \
         return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
 
@@ -1235,10 +1235,10 @@ ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 {
     const auto [width, height] = renderTargetSize.toVector2f();
 
-    return za::Rect<long>({ZB_MATH_LROUNDF(width * inputRect.position.x),
-                           ZB_MATH_LROUNDF(height * inputRect.position.y)},
-                          {ZB_MATH_LROUNDF(width * inputRect.size.x),
-                           ZB_MATH_LROUNDF(height * inputRect.size.y)})
+    return za::Rect<long>({ZA_MATH_LROUNDF(width * inputRect.position.x),
+                           ZA_MATH_LROUNDF(height * inputRect.position.y)},
+                          {ZA_MATH_LROUNDF(width * inputRect.size.x),
+                           ZA_MATH_LROUNDF(height * inputRect.size.y)})
         .to<za::IntRect>();
 }
 
@@ -1265,7 +1265,7 @@ ZA_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 ////////////////////////////////////////////////////////////
 void setupVertexAttribPointers()
 {
-#define ZA_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(ZB_OFFSETOF(__VA_ARGS__))
+#define ZA_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(ZA_OFFSETOF(__VA_ARGS__))
 
     // Hardcoded layout location `0u` for `za_a_position`
     glCheck(glEnableVertexAttribArray(0u));
@@ -1396,21 +1396,21 @@ struct [[nodiscard]] RenderTarget::Impl
 ////////////////////////////////////////////////////////////
 void RenderTarget::addToAutoBatch(auto&&... xs)
 {
-    ZB_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
+    ZA_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
 
 #ifdef ZA_OPENGL_ES
-    m_impl->cpuAutoBatch.add(ZB_FORWARD(xs)...);
+    m_impl->cpuAutoBatch.add(ZA_FORWARD(xs)...);
 #else
     if (m_autoBatchMode == AutoBatchMode::CPUStorage)
     {
-        m_impl->cpuAutoBatch.add(ZB_FORWARD(xs)...);
+        m_impl->cpuAutoBatch.add(ZA_FORWARD(xs)...);
         return;
     }
 
-    ZB_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+    ZA_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
 
     const auto prevVertices = m_impl->gpuAutoBatch.getNumVertices();
-    m_impl->gpuAutoBatch.add(ZB_FORWARD(xs)...);
+    m_impl->gpuAutoBatch.add(ZA_FORWARD(xs)...);
     m_impl->gpuAutoBatchState.numVertices += m_impl->gpuAutoBatch.getNumVertices() - prevVertices;
 #endif
 }
@@ -1427,7 +1427,7 @@ template void RenderTarget::addToAutoBatch(const Vertex* const, const base::Size
 ////////////////////////////////////////////////////////////
 base::SizeT RenderTarget::getAutoBatchNumVertices() const
 {
-    ZB_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
+    ZA_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
 
 #ifdef ZA_OPENGL_ES
     return m_impl->cpuAutoBatch.getNumVertices();
@@ -1435,7 +1435,7 @@ base::SizeT RenderTarget::getAutoBatchNumVertices() const
     if (m_autoBatchMode == AutoBatchMode::CPUStorage)
         return m_impl->cpuAutoBatch.getNumVertices();
 
-    ZB_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+    ZA_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
     return m_impl->gpuAutoBatchState.numVertices;
 #endif
 }
@@ -1694,7 +1694,7 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
-    ZB_ASSERT(states.texture != nullptr);
+    ZA_ASSERT(states.texture != nullptr);
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
@@ -1767,7 +1767,7 @@ struct [[nodiscard]] RenderTarget::DrawGuard
 
     [[gnu::always_inline]] ~DrawGuard()
     {
-        ZB_ASSERT(renderTarget.m_lastRenderStates == renderStates); // TODO P1: remove?
+        ZA_ASSERT(renderTarget.m_lastRenderStates == renderStates); // TODO P1: remove?
         renderTarget.cleanupDraw(renderStates);
     }
 };
@@ -1818,7 +1818,7 @@ void RenderTarget::immediateDrawIndexedQuads(const Vertex*       vertexData,
                                              const PrimitiveType type,
                                              const RenderStates& states)
 {
-    ZB_ASSERT(vertexCount % 4u == 0u);
+    ZA_ASSERT(vertexCount % 4u == 0u);
 
     immediateDrawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
 }
@@ -1851,7 +1851,7 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
 ////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
-    ZB_ASSERT(drawableBatch.m_storage.indices.size() % 3u == 0u);
+    ZA_ASSERT(drawableBatch.m_storage.indices.size() % 3u == 0u);
 
     states.transform *= drawableBatch.getTransform();
 
@@ -1949,7 +1949,7 @@ void RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, const Rend
         return;
     }
 
-    ZB_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
+    ZA_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
 
     m_impl->cpuAutoBatch.add(shapeData);
     immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states);
@@ -1981,7 +1981,7 @@ void RenderTarget::draw(const Font& font, const TextData& textData, RenderStates
         return;
     }
 
-    ZB_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
+    ZA_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
 
     m_impl->cpuAutoBatch.add(font, textData);
     draw(m_impl->cpuAutoBatch, states);
@@ -2034,7 +2034,7 @@ void RenderTarget::drawIndexedQuads(const Vertex* const vertexData,
                                     const PrimitiveType type,
                                     const RenderStates& states)
 {
-    ZB_ASSERT(vertexCount % 4u == 0u);
+    ZA_ASSERT(vertexCount % 4u == 0u);
     drawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
 }
 
@@ -2072,7 +2072,7 @@ bool RenderTarget::setActive(const bool active)
         (active && isAlreadyActive) || (!active && !isAlreadyActive))
         return true;
 
-    ZB_ASSERT(contextId < RenderTargetImpl::maxIdCount);
+    ZA_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
     const auto loadedRenderTargetId = renderTargetId.load();
@@ -2080,7 +2080,7 @@ bool RenderTarget::setActive(const bool active)
     // Deactivation
     if (!active)
     {
-        ZB_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+        ZA_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
         renderTargetId.store(RenderTargetImpl::invalidId);
 
         m_impl->cache.enable = false;
@@ -2100,8 +2100,8 @@ bool RenderTarget::setActive(const bool active)
     }
 
     // Activation on a different context
-    ZB_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
-    ZB_ASSERT(loadedRenderTargetId != m_impl->id);
+    ZA_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+    ZA_ASSERT(loadedRenderTargetId != m_impl->id);
     renderTargetId.store(m_impl->id);
 
     m_impl->cache.enable = false;
@@ -2191,7 +2191,7 @@ RenderTarget::DrawStatistics RenderTarget::flush()
         return m_currentDrawStats;
     }
 
-    ZB_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+    ZA_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
 
     const auto vertexOffset = m_impl->gpuAutoBatchState.vertexOffset;
     const auto vertexCount  = m_impl->gpuAutoBatch.getNumVertices() - vertexOffset;
@@ -2258,7 +2258,7 @@ void RenderTarget::syncGPUEndFrame()
 {
 #ifndef ZA_OPENGL_ES
     auto& fenceToCreate = m_impl->gpuAutoBatchState.fences[m_impl->gpuAutoBatchState.currentFenceIndex];
-    ZB_ASSERT(fenceToCreate == nullptr);
+    ZA_ASSERT(fenceToCreate == nullptr);
 
     fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
     if (fenceToCreate == nullptr) [[unlikely]]

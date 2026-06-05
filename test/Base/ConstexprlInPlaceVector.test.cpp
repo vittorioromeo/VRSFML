@@ -2,7 +2,7 @@
 
     #include "Tst/Tst.hpp"
 
-    #include "ZancleBase/InPlaceVector.hpp"
+    #include "Zancle/Container/InPlaceVector.hpp"
 
 
 namespace
@@ -13,7 +13,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp (Constexpr)")
     {
         constexpr auto result = []
         {
-            zb::InPlaceVector<int, 8> vec;
+            za::InPlaceVector<int, 8> vec;
 
             for (int i = 0; i < 8; ++i)
                 vec.pushBack(i);

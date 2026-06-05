@@ -4,25 +4,25 @@
 
 #include "Zancle/Network/Http.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Network] za::Http")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Http));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Http));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Http));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Http));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Http));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Http));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http));
     }
 
     SECTION("setHost")
@@ -54,10 +54,10 @@ TEST_CASE("[Network] za::Http")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Http::Request));
-            STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Http::Request));
-            STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Http::Request));
-            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http::Request));
+            STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Http::Request));
+            STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Http::Request));
+            STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Http::Request));
+            STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http::Request));
         }
     }
 
@@ -65,10 +65,10 @@ TEST_CASE("[Network] za::Http")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Http::Response));
-            STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Http::Response));
-            STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Http::Response));
-            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http::Response));
+            STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Http::Response));
+            STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Http::Response));
+            STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Http::Response));
+            STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Http::Response));
         }
 
         SECTION("Construction")
@@ -144,7 +144,7 @@ TEST_CASE("[Network] za::Http Connection")
             CHECK(!response.getField("server").empty());
             CHECK(!response.getField("Content-Type").empty());
             CHECK(!response.getField("content-type").empty());
-            CHECK(response.getBody().find("Zancle") != zb::StringView::nPos);
+            CHECK(response.getBody().find("Zancle") != za::StringView::nPos);
         }
 
         SECTION("Request Non-Existant Resource")
@@ -174,8 +174,8 @@ TEST_CASE("[Network] za::Http Connection")
             CHECK(status == za::Http::Response::Status::Ok);
             CHECK(response.getField("Content-Type") == "application/zip");
             CHECK(response.getField("content-type") == "application/zip");
-            CHECK(response.getField("Content-Disposition").find("Zancle-master.zip") != zb::StringView::nPos);
-            CHECK(response.getField("content-disposition").find("Zancle-master.zip") != zb::StringView::nPos);
+            CHECK(response.getField("Content-Disposition").find("Zancle-master.zip") != za::StringView::nPos);
+            CHECK(response.getField("content-disposition").find("Zancle-master.zip") != za::StringView::nPos);
         }
     }
 }

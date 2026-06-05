@@ -27,18 +27,18 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Math/Atan2.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Math/Atan2.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <box2d/box2d.h>
 #include <box2d/collision.h>
@@ -89,7 +89,7 @@ constexpr float texPxPerMeter = 200.f; // body-local meters → render-texture p
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool isInsideHalfBox(const za::Vec2f localM, const za::Vec2f halfSizeM)
 {
-    return zb::fabs(localM.x) <= halfSizeM.x && zb::fabs(localM.y) <= halfSizeM.y;
+    return za::fabs(localM.x) <= halfSizeM.x && za::fabs(localM.y) <= halfSizeM.y;
 }
 
 
@@ -103,7 +103,7 @@ struct Screen
     za::Vec2f halfSizeM;     // current (post-scale) half-size in world meters
     za::Vec2u textureSize;   // pixels
 
-    zb::Optional<za::ImGuiContext> imGuiContext;
+    za::Optional<za::ImGuiContext> imGuiContext;
 
     // Per-screen UI state
     float     sliderValue{1.f};    // slider drives the box scale
@@ -205,10 +205,10 @@ void rescaleScreenShape(Screen& s)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Screen* findScreenAt(zb::Vector<Screen>& screens, za::Vec2f worldM, za::Vec2f& outLocalM)
+[[nodiscard]] Screen* findScreenAt(za::Vector<Screen>& screens, za::Vec2f worldM, za::Vec2f& outLocalM)
 {
     // Iterate in reverse so the topmost (later-drawn) screen wins overlapping hits
-    for (zb::SizeT i = screens.size(); i-- > 0u;)
+    for (za::SizeT i = screens.size(); i-- > 0u;)
     {
         Screen&         s     = screens[i];
         const za::Vec2f local = toSfVec(b2Body_GetLocalPoint(s.bodyId, toB2Vec(worldM)));
@@ -281,7 +281,7 @@ int main()
 
     // ----- Screens -----
 
-    zb::Vector<Screen> screens;
+    za::Vector<Screen> screens;
     screens.reserve(3u);
 
     constexpr float palette[3][3] = {
@@ -298,7 +298,7 @@ int main()
 
     // ----- Drag/interaction state -----
 
-    zb::Optional<b2BodyId> draggedBody;
+    za::Optional<b2BodyId> draggedBody;
     za::Vec2f              dragLocalAnchor{};
 
     Screen* activeScreen = nullptr;
@@ -314,7 +314,7 @@ int main()
 
         // ----- Event handling -----
 
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -343,7 +343,7 @@ int main()
 
                 if (pressed->button == za::Mouse::Button::Right && hitScreen != nullptr)
                 {
-                    draggedBody     = zb::makeOptional(hitScreen->bodyId);
+                    draggedBody     = za::makeOptional(hitScreen->bodyId);
                     dragLocalAnchor = localM;
                     b2Body_SetAwake(hitScreen->bodyId, true);
                 }
@@ -520,9 +520,9 @@ int main()
             else
             {
                 const float bodyAngleRad = b2Rot_GetAngle(b2Body_GetRotation(s.bodyId));
-                const float gravityAlong = zb::sin(bodyAngleRad);
+                const float gravityAlong = za::sin(bodyAngleRad);
 
-                if (zb::fabs(gravityAlong) > sliderFrictionSinThresh)
+                if (za::fabs(gravityAlong) > sliderFrictionSinThresh)
                     s.sliderVelocity += gravityAlong * sliderGravityStrength * dt.asSeconds();
 
                 s.sliderVelocity -= s.sliderVelocity * sliderDamping * dt.asSeconds();
@@ -541,7 +541,7 @@ int main()
             }
 
             // If the slider moved (by the user or by gravity), resync the collision shape.
-            if (zb::fabs(s.sliderValue - s.currentScale) > 0.001f)
+            if (za::fabs(s.sliderValue - s.currentScale) > 0.001f)
                 rescaleScreenShape(s);
         }
 
@@ -568,7 +568,7 @@ int main()
                 drawCtx.draw(za::RectangleShapeData{
                     .position  = anchorWorld,
                     .origin    = {0.f, 0.02f},
-                    .rotation  = za::radians(zb::atan2(delta.y, delta.x)),
+                    .rotation  = za::radians(za::atan2(delta.y, delta.x)),
                     .fillColor = {255u, 80u, 80u, 220u},
                     .size      = {length, 0.04f},
                 });

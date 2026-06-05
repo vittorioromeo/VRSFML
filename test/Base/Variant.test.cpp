@@ -1,18 +1,18 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Variant.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
@@ -126,56 +126,56 @@ TEST_CASE("[Base] Base/Variant.hpp")
     {
         using namespace VariantTest;
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Variant<int, char>));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Variant<int, char>));
-        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<int, char>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<int, char>, zb::Variant<int, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Variant<int, char>));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Variant<int, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Variant<int, char>, za::Variant<int, char>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<int, char>));
-
-
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Variant<NonTrivial, char>));
-
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<NonTrivial, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivial, char>, zb::Variant<NonTrivial, char>));
-
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<NonTrivial, char>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Variant<int, char>));
 
 
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Variant<NonTrivial, char>));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_AGGREGATE(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Variant<NonTrivialButRelocatable, char>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_ASSIGNABLE(zb::Variant<NonTrivialButRelocatable, char>,
-                                                 zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Variant<NonTrivial, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_ASSIGNABLE(za::Variant<NonTrivial, char>, za::Variant<NonTrivial, char>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_RELOCATABLE(za::Variant<NonTrivial, char>));
+
+
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Variant<NonTrivialButRelocatable, char>));
+
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Variant<NonTrivialButRelocatable, char>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_ASSIGNABLE(za::Variant<NonTrivialButRelocatable, char>,
+                                                 za::Variant<NonTrivialButRelocatable, char>));
+
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Variant<NonTrivialButRelocatable, char>));
     }
 
     SECTION("Copy-assign fast path (same alternative)")
     {
         using namespace VariantTest;
-        using V = zb::Variant<Tracker, OtherAlt>;
+        using V = za::Variant<Tracker, OtherAlt>;
 
         V a{Tracker{1}};
         V b{Tracker{2}};
@@ -193,7 +193,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("Move-assign fast path (same alternative)")
     {
         using namespace VariantTest;
-        using V = zb::Variant<Tracker, OtherAlt>;
+        using V = za::Variant<Tracker, OtherAlt>;
 
         V a{Tracker{1}};
         V b{Tracker{2}};
@@ -211,7 +211,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("Copy-assign across different alternatives still destroys + constructs")
     {
         using namespace VariantTest;
-        using V = zb::Variant<Tracker, OtherAlt>;
+        using V = za::Variant<Tracker, OtherAlt>;
 
         V a{Tracker{1}};
         V b{OtherAlt{5}};
@@ -228,7 +228,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("operator=(T&&) is aliasing-safe when x refers to the active alternative")
     {
         using namespace VariantTest;
-        using V = zb::Variant<Tracker, OtherAlt>;
+        using V = za::Variant<Tracker, OtherAlt>;
 
         V v{Tracker{42}};
 
@@ -246,7 +246,7 @@ TEST_CASE("[Base] Base/Variant.hpp")
     SECTION("operator=(T&&) changes alternative on type mismatch")
     {
         using namespace VariantTest;
-        using V = zb::Variant<Tracker, OtherAlt>;
+        using V = za::Variant<Tracker, OtherAlt>;
 
         V v{Tracker{1}};
 

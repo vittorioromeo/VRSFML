@@ -11,12 +11,12 @@
 #include "Zancle/Audio/SoundBuffer.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace za
@@ -24,8 +24,8 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    zb::Vector<zb::I16>       samples; //!< Temporary sample buffer to hold the recorded data
-    zb::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
+    za::Vector<za::I16>       samples; //!< Temporary sample buffer to hold the recorded data
+    za::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 
@@ -52,12 +52,12 @@ bool SoundBufferRecorder::onStart(CaptureDevice&)
 
 
 ////////////////////////////////////////////////////////////
-bool SoundBufferRecorder::onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount)
+bool SoundBufferRecorder::onProcessSamples(const za::I16* samples, za::SizeT sampleCount)
 {
-    const zb::SizeT oldSize = m_impl->samples.size();
+    const za::SizeT oldSize = m_impl->samples.size();
     m_impl->samples.resize(oldSize + sampleCount);
 
-    ZB_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(zb::I16));
+    ZA_MEMCPY(m_impl->samples.data() + oldSize, samples, sampleCount * sizeof(za::I16));
 
     return true;
 }
@@ -87,7 +87,7 @@ bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 ////////////////////////////////////////////////////////////
 const SoundBuffer& SoundBufferRecorder::getBuffer() const
 {
-    ZB_ASSERT(m_impl->buffer.hasValue() && "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
+    ZA_ASSERT(m_impl->buffer.hasValue() && "SoundBufferRecorder::getBuffer() Cannot return reference to null buffer");
     return *m_impl->buffer;
 }
 

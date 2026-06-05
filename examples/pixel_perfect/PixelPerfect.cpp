@@ -32,12 +32,12 @@
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace
@@ -118,7 +118,7 @@ int main()
 
     while (true)
     {
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

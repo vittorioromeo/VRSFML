@@ -10,13 +10,13 @@
 
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ public:
         /// \param message Response message
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] explicit Response(Status code = Status::InvalidResponse, zb::StringView message = "");
+        [[nodiscard]] explicit Response(Status code = Status::InvalidResponse, za::StringView message = "");
 
         ////////////////////////////////////////////////////////////
         ~Response();
@@ -169,14 +169,14 @@ public:
         /// \return The response message
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] zb::StringView getMessage() const;
+        [[nodiscard]] za::StringView getMessage() const;
 
     private:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        zb::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
+        za::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -235,7 +235,7 @@ public:
         /// \param data      Data containing the raw listing
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] ListingResponse(const Response& response, zb::StringView data);
+        [[nodiscard]] ListingResponse(const Response& response, za::StringView data);
 
         ////////////////////////////////////////////////////////////
         ~ListingResponse();
@@ -254,14 +254,14 @@ public:
         /// \return Span containing the requested listing
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] zb::Span<const zb::String> getListing() const;
+        [[nodiscard]] za::Span<const za::String> getListing() const;
 
     private:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
         struct Impl;
-        zb::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
+        za::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -347,7 +347,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response login(zb::StringView name, zb::StringView password);
+    [[nodiscard]] Response login(za::StringView name, za::StringView password);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a null command to keep the connection alive
@@ -388,7 +388,7 @@ public:
     /// \see `getWorkingDirectory`, `changeDirectory`, `parentDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ListingResponse getDirectoryListing(zb::StringView directory = "");
+    [[nodiscard]] ListingResponse getDirectoryListing(za::StringView directory = "");
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current working directory
@@ -402,7 +402,7 @@ public:
     /// \see `getWorkingDirectory`, `getDirectoryListing`, `parentDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response changeDirectory(zb::StringView directory);
+    [[nodiscard]] Response changeDirectory(za::StringView directory);
 
     ////////////////////////////////////////////////////////////
     /// \brief Go to the parent directory of the current one
@@ -427,7 +427,7 @@ public:
     /// \see `deleteDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response createDirectory(zb::StringView name);
+    [[nodiscard]] Response createDirectory(za::StringView name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing directory
@@ -444,7 +444,7 @@ public:
     /// \see `createDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response deleteDirectory(zb::StringView name);
+    [[nodiscard]] Response deleteDirectory(za::StringView name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Rename an existing file
@@ -543,7 +543,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response sendCommand(zb::StringView command, zb::StringView parameter = "");
+    [[nodiscard]] Response sendCommand(za::StringView command, za::StringView parameter = "");
 
 private:
     ////////////////////////////////////////////////////////////
@@ -570,7 +570,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace za

@@ -8,12 +8,12 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -100,12 +100,12 @@ public:
     /// \param filename     Path of the font file to load
     /// \param textureAtlas Optional shared glyph atlas
     ///
-    /// \return Font on success, `zb::nullOpt` on failure
+    /// \return Font on success, `za::nullOpt` on failure
     ///
     /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Font> openFromFile(const Path& filename, TextureAtlas* textureAtlas = nullptr);
+    [[nodiscard]] static za::Optional<Font> openFromFile(const Path& filename, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a font from a file held in memory
@@ -118,13 +118,13 @@ public:
     /// \param sizeInBytes  Size of the data, in bytes
     /// \param textureAtlas Optional shared glyph atlas
     ///
-    /// \return Font on success, `zb::nullOpt` on failure
+    /// \return Font on success, `za::nullOpt` on failure
     ///
     /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Font> openFromMemory(const void*   data,
-                                                           zb::SizeT     sizeInBytes,
+    [[nodiscard]] static za::Optional<Font> openFromMemory(const void*   data,
+                                                           za::SizeT     sizeInBytes,
                                                            TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
@@ -137,12 +137,12 @@ public:
     /// \param stream       Source stream to read encoded font data from
     /// \param textureAtlas Optional shared glyph atlas
     ///
-    /// \return Font on success, `zb::nullOpt` on failure
+    /// \return Font on success, `za::nullOpt` on failure
     ///
     /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Font> openFromStream(InputStream& stream, TextureAtlas* textureAtlas = nullptr);
+    [[nodiscard]] static za::Optional<Font> openFromStream(InputStream& stream, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -356,7 +356,7 @@ private:
     /// \brief Open from stream and print errors with custom message
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Font> openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* type);
+    [[nodiscard]] static za::Optional<Font> openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* type);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -365,14 +365,14 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Font(zb::PassKey<Font>&&, FontFace&& fontFace, TextureAtlas* textureAtlas);
+    [[nodiscard]] explicit Font(za::PassKey<Font>&&, FontFace&& fontFace, TextureAtlas* textureAtlas);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::UniquePtr<Impl> m_impl; //!< Implementation details
+    za::UniquePtr<Impl> m_impl; //!< Implementation details
     // TODO P0: does this need address stability?
 
     ////////////////////////////////////////////////////////////

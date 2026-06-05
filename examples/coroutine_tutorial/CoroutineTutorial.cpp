@@ -17,17 +17,17 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -83,8 +83,8 @@ struct Guard
     za::Vec2f pos{}; // top-left
     za::Vec2f size{24.f, 24.f};
 
-    zb::Vector<za::Vec2f> waypoints; // top-left positions
-    zb::SizeT             currentWaypointIdx = 0u;
+    za::Vector<za::Vec2f> waypoints; // top-left positions
+    za::SizeT             currentWaypointIdx = 0u;
 
     float detectionRadius = 95.f;
     float patrolSpeed     = 55.f;
@@ -103,8 +103,8 @@ struct Guard
 struct Dialogue
 {
     bool       visible = false;
-    zb::String fullText;
-    zb::String displayedText;
+    za::String fullText;
+    za::String displayedText;
 };
 
 
@@ -116,12 +116,12 @@ struct World
     Player player{};
     Guard  guard{};
 
-    zb::Vector<Wall>   walls;
-    zb::Vector<Pickup> keys;
-    zb::Vector<Door>   doors;
+    za::Vector<Wall>   walls;
+    za::Vector<Pickup> keys;
+    za::Vector<Door>   doors;
 
     Dialogue   dialogue;
-    zb::String objective;
+    za::String objective;
 
     // game progress flags
     bool gameActive   = true;
@@ -297,7 +297,7 @@ void initLevel(World& world)
 struct Typewriter : sfex::Coroutine
 {
     ////////////////////////////////////////////////////////////
-    zb::SizeT charIdx = 0u; // persistent across yields
+    za::SizeT charIdx = 0u; // persistent across yields
 
 
     ////////////////////////////////////////////////////////////
@@ -329,7 +329,7 @@ struct Typewriter : sfex::Coroutine
 struct DialogueBeat : sfex::Coroutine
 {
     ////////////////////////////////////////////////////////////
-    zb::String text;
+    za::String text;
     Typewriter typewriter;
 
 
@@ -660,7 +660,7 @@ void driveCoroutine(auto& coro, World& world, float& waitTimer, bool& done)
 
     if (waitTimer > 0.f)
     {
-        waitTimer = zb::max(waitTimer - world.dt, 0.f);
+        waitTimer = za::max(waitTimer - world.dt, 0.f);
         return;
     }
 
@@ -672,7 +672,7 @@ void driveCoroutine(auto& coro, World& world, float& waitTimer, bool& done)
 
 
 ////////////////////////////////////////////////////////////
-void drawWorld(za::RenderWindow& window, const za::Font& font, const World& world, const zb::String& statusMessage, float statusMessageAlpha)
+void drawWorld(za::RenderWindow& window, const za::Font& font, const World& world, const za::String& statusMessage, float statusMessageAlpha)
 {
     window.clear({18u, 22u, 30u});
 
@@ -748,7 +748,7 @@ void drawWorld(za::RenderWindow& window, const za::Font& font, const World& worl
     window.draw(font,
                 za::TextData{
                     .position         = {44.f, 38.f},
-                    .string           = zb::String{"Keys: "} + static_cast<char>('0' + world.player.keys),
+                    .string           = za::String{"Keys: "} + static_cast<char>('0' + world.player.keys),
                     .characterSize    = 14u,
                     .fillColor        = {220u, 220u, 220u},
                     .outlineColor     = za::Color::Black,
@@ -831,7 +831,7 @@ void drawWorld(za::RenderWindow& window, const za::Font& font, const World& worl
 
     if (statusMessageAlpha > 0.f && !statusMessage.empty())
     {
-        const auto alpha = static_cast<zb::U8>(zb::min(statusMessageAlpha, 1.f) * 255.f);
+        const auto alpha = static_cast<za::U8>(za::min(statusMessageAlpha, 1.f) * 255.f);
         window.draw(font,
                     za::TextData{
                         .position         = {44.f, worldSize.y - 32.f},
@@ -914,9 +914,9 @@ int main()
     const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     GameState               gs;
-    zb::Optional<GameState> quickSave;
+    za::Optional<GameState> quickSave;
 
-    zb::String      statusMessage;
+    za::String      statusMessage;
     float           statusMessageT  = 0.f;
     constexpr float statusFlashTime = 1.6f;
 
@@ -943,7 +943,7 @@ int main()
         bool requestQuickSave = false;
         bool requestQuickLoad = false;
 
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -987,7 +987,7 @@ int main()
         }
 
         if (statusMessageT > 0.f)
-            statusMessageT = zb::max(statusMessageT - dt, 0.f);
+            statusMessageT = za::max(statusMessageT - dt, 0.f);
 
         if (gs.world.gameActive && !gs.world.gameOver)
         {

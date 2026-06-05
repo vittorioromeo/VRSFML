@@ -7,18 +7,18 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/ShaderUtils.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/ToChars.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/ToChars.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -30,23 +30,23 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 
 ////////////////////////////////////////////////////////////
 // Read the full contents of a file into a Vector<char>.
-[[nodiscard]] zb::Optional<zb::Vector<char>> readFileContents(const za::Path& path)
+[[nodiscard]] za::Optional<za::Vector<char>> readFileContents(const za::Path& path)
 {
-    zb::Vector<char> buffer;
+    za::Vector<char> buffer;
     if (!za::readFromFile(path, buffer))
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional(ZB_MOVE(buffer));
+    return za::makeOptional(ZA_MOVE(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
 // Recursively preprocess GLSL #include directives
 [[nodiscard]] bool preprocessGlslIncludesImpl(
-    zb::StringView        source,
+    za::StringView        source,
     const za::Path&       basePath,
-    zb::Vector<char>&     output,
-    zb::Vector<za::Path>& includeStack,
+    za::Vector<char>&     output,
+    za::Vector<za::Path>& includeStack,
     unsigned int          depth)
 {
     if (depth > maxGlslIncludeDepth)
@@ -59,13 +59,13 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
     za::ShaderUtils::emitLineDirective(output, 1);
 
     unsigned int lineNumber = 0;
-    zb::SizeT    lineStart  = 0;
+    za::SizeT    lineStart  = 0;
 
     while (lineStart < source.size())
     {
         // Find end of current line
-        zb::SizeT  lineEnd  = source.find('\n', lineStart);
-        const bool lastLine = (lineEnd == zb::StringView::nPos);
+        za::SizeT  lineEnd  = source.find('\n', lineStart);
+        const bool lastLine = (lineEnd == za::StringView::nPos);
 
         if (lastLine)
             lineEnd = source.size();
@@ -73,25 +73,25 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
         ++lineNumber;
 
         // Extract line content (without \n), strip trailing \r
-        zb::StringView line = source.substrByPosLen(lineStart, lineEnd - lineStart);
+        za::StringView line = source.substrByPosLen(lineStart, lineEnd - lineStart);
         if (!line.empty() && line[line.size() - 1] == '\r')
             line.removeSuffix(1);
 
         // Check for #include directive
-        const zb::Optional<zb::StringView> optIncludedFilename = za::ShaderUtils::parseIncludeDirective(line);
+        const za::Optional<za::StringView> optIncludedFilename = za::ShaderUtils::parseIncludeDirective(line);
 
         if (!optIncludedFilename.hasValue())
             return false; // Malformed #include directive
 
-        const zb::StringView& includedFilename = *optIncludedFilename;
+        const za::StringView& includedFilename = *optIncludedFilename;
 
         if (!includedFilename.empty())
         {
             // Build null-terminated filename for Path construction
-            ZB_ASSERT(includedFilename.size() < maxIncludeFilenameLength && "Include filename too long");
+            ZA_ASSERT(includedFilename.size() < maxIncludeFilenameLength && "Include filename too long");
 
             char filenameBuf[maxIncludeFilenameLength];
-            ZB_MEMCPY(filenameBuf, includedFilename.data(), includedFilename.size());
+            ZA_MEMCPY(filenameBuf, includedFilename.data(), includedFilename.size());
             filenameBuf[includedFilename.size()] = '\0';
 
             // Resolve include path relative to base directory
@@ -138,12 +138,12 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
             }
 
             // Get included source
-            zb::StringView includedSource{optFileContents->data(), optFileContents->size()};
+            za::StringView includedSource{optFileContents->data(), optFileContents->size()};
 
             // Emit begin-include marker
             {
-                constexpr zb::StringView prefix{"// >>> begin included from \""};
-                constexpr zb::StringView suffix{"\" >>>\n"};
+                constexpr za::StringView prefix{"// >>> begin included from \""};
+                constexpr za::StringView suffix{"\" >>>\n"};
 
                 output.emplaceRange(prefix.data(), prefix.size());
                 output.emplaceRange(filenameBuf, includedFilename.size());
@@ -160,8 +160,8 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 
             // Emit end-include marker
             {
-                constexpr zb::StringView prefix{"// <<< end included from \""};
-                constexpr zb::StringView suffix{"\" <<<\n"};
+                constexpr za::StringView prefix{"// <<< end included from \""};
+                constexpr za::StringView suffix{"\" <<<\n"};
 
                 output.emplaceRange(prefix.data(), prefix.size());
                 output.emplaceRange(filenameBuf, includedFilename.size());
@@ -195,49 +195,49 @@ constexpr unsigned int maxIncludeFilenameLength = 256;
 namespace za
 {
 ////////////////////////////////////////////////////////////
-void ShaderUtils::emitLineDirective(zb::Vector<char>& buffer, unsigned int lineNumber)
+void ShaderUtils::emitLineDirective(za::Vector<char>& buffer, unsigned int lineNumber)
 {
-    constexpr zb::StringView prefix{"#line "};
+    constexpr za::StringView prefix{"#line "};
 
     char        tmp[16];
-    char* const end = zb::toChars(tmp, tmp + sizeof(tmp), lineNumber);
-    ZB_ASSERT(end != nullptr);
+    char* const end = za::toChars(tmp, tmp + sizeof(tmp), lineNumber);
+    ZA_ASSERT(end != nullptr);
 
     buffer.emplaceRange(prefix.data(), prefix.size());
-    buffer.emplaceRange(tmp, static_cast<zb::SizeT>(end - tmp));
+    buffer.emplaceRange(tmp, static_cast<za::SizeT>(end - tmp));
     buffer.pushBack('\n');
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<zb::StringView> ShaderUtils::parseIncludeDirective(zb::StringView line)
+za::Optional<za::StringView> ShaderUtils::parseIncludeDirective(za::StringView line)
 {
     const auto fail = [&](const char* what)
     {
         priv::errMsg("Malformed GLSL #include directive ({}): {}", what, line);
-        return zb::nullOpt;
+        return za::nullOpt;
     };
 
-    zb::SizeT pos = 0;
+    za::SizeT pos = 0;
 
     // Skip leading whitespace
     while (pos < line.size() && (line[pos] == ' ' || line[pos] == '\t'))
         ++pos;
 
     // Check for #include
-    constexpr zb::StringView includeKeyword{"#include"};
+    constexpr za::StringView includeKeyword{"#include"};
 
     if (line.size() - pos < includeKeyword.size())
-        return zb::makeOptional<zb::StringView>(); // not an include
+        return za::makeOptional<za::StringView>(); // not an include
 
     if (line.substrByPosLen(pos, includeKeyword.size()) != includeKeyword)
-        return zb::makeOptional<zb::StringView>(); // not an include
+        return za::makeOptional<za::StringView>(); // not an include
 
     pos += includeKeyword.size();
 
     // Must be followed by whitespace or quote (not e.g. #includeFoo)
     if (pos < line.size() && line[pos] != ' ' && line[pos] != '\t' && line[pos] != '"')
-        return zb::makeOptional<zb::StringView>(); // not an include
+        return za::makeOptional<za::StringView>(); // not an include
 
     // At this point we know it's an #include directive -- any further issue is a hard error
 
@@ -252,7 +252,7 @@ zb::Optional<zb::StringView> ShaderUtils::parseIncludeDirective(zb::StringView l
     ++pos;
 
     // Find closing double quote
-    const zb::SizeT filenameStart = pos;
+    const za::SizeT filenameStart = pos;
     while (pos < line.size() && line[pos] != '"')
         ++pos;
 
@@ -262,12 +262,12 @@ zb::Optional<zb::StringView> ShaderUtils::parseIncludeDirective(zb::StringView l
     if (pos == filenameStart)
         return fail("empty filename");
 
-    return zb::makeOptional<zb::StringView>(line.substrByPosLen(filenameStart, pos - filenameStart));
+    return za::makeOptional<za::StringView>(line.substrByPosLen(filenameStart, pos - filenameStart));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool ShaderUtils::preprocessGlslIncludes(zb::StringView source, const Path& shaderPath, zb::Vector<char>& output)
+bool ShaderUtils::preprocessGlslIncludes(za::StringView source, const Path& shaderPath, za::Vector<char>& output)
 {
     output.clear();
 
@@ -283,7 +283,7 @@ bool ShaderUtils::preprocessGlslIncludes(zb::StringView source, const Path& shad
     }
     const Path& absoluteShaderPath = *absMaybe;
 
-    zb::Vector<Path> includeStack;
+    za::Vector<Path> includeStack;
     includeStack.pushBack(absoluteShaderPath);
 
     return preprocessGlslIncludesImpl(source, absoluteShaderPath.getParent(), output, includeStack, 0);

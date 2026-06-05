@@ -27,17 +27,17 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/String.hpp"
 
 #ifdef ZA_SYSTEM_IOS
     #include "Zancle/Main.hpp"
@@ -151,7 +151,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -180,7 +180,7 @@ int main()
                     {
                         // Make sure the ball initial angle is not too much vertical
                         ballAngle = za::degrees(rng.getF(0.f, 360.f));
-                    } while (zb::fabs(zb::cos(ballAngle.asRadians())) < 0.7f);
+                    } while (za::fabs(za::cos(ballAngle.asRadians())) < 0.7f);
                 }
             }
         }
@@ -223,9 +223,9 @@ int main()
             ball.position += za::Vec2f::fromAngle(ballSpeed * deltaTime, ballAngle);
 
 #ifdef ZA_SYSTEM_IOS
-            const zb::String inputString = "Touch the screen to restart.";
+            const za::String inputString = "Touch the screen to restart.";
 #else
-            const zb::String inputString = "Press space to restart or\nescape to exit.";
+            const za::String inputString = "Press space to restart or\nescape to exit.";
 #endif
 
             // Check collisions between the ball and the screen

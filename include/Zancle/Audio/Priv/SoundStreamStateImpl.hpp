@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -42,9 +42,9 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SoundStreamStateImplCallbacks
 {
-    bool (*onGetData)(void* state, zb::Vector<zb::I16>& outBuffer);
+    bool (*onGetData)(void* state, za::Vector<za::I16>& outBuffer);
     void (*onSeek)(void* state, Time t);
-    zb::Optional<zb::U64> (*onLoop)(void* state);
+    za::Optional<za::U64> (*onLoop)(void* state);
 };
 
 
@@ -107,7 +107,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Internals;
-    zb::InPlacePImpl<Internals, 2048> m_internals; //!< Holds miniaudio state (ma_sound etc.), hidden from this header
+    za::InPlacePImpl<Internals, 2048> m_internals; //!< Holds miniaudio state (ma_sound etc.), hidden from this header
 };
 
 } // namespace za::priv

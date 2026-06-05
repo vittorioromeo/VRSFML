@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -40,10 +40,10 @@ namespace tst::detail
 //     specialized overload below lands here and renders "<?>".
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const T&) noexcept
+[[gnu::always_inline]] inline za::SizeT stringifyValue(char* buf, za::SizeT cap, const T&) noexcept
 {
     const char* src = "<?>";
-    zb::SizeT   n   = 0u;
+    za::SizeT   n   = 0u;
 
     while (src[n] != '\0' && n < cap)
     {
@@ -59,10 +59,10 @@ template <typename T>
 // (1b) String literals / char arrays decay to the `const char*` path so
 //      `CHECK("foo" == s)` shows `"foo"` rather than "<?>".
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const char* v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const char* v) noexcept;
 
-template <zb::SizeT N>
-[[gnu::always_inline]] inline zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const char (&v)[N]) noexcept
+template <za::SizeT N>
+[[gnu::always_inline]] inline za::SizeT stringifyValue(char* buf, za::SizeT cap, const char (&v)[N]) noexcept
 {
     return stringifyValue(buf, cap, static_cast<const char*>(v));
 }
@@ -71,19 +71,19 @@ template <zb::SizeT N>
 ////////////////////////////////////////////////////////////
 // (2) Scalars -- declared here, defined out-of-line.
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, bool v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, char v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, short v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned short v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, int v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned int v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned long v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long long v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, unsigned long long v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, float v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, double v) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long double v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, bool v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, char v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, short v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, unsigned short v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, int v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, unsigned int v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, long v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, unsigned long v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, long long v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, unsigned long long v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, float v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, double v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, long double v) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -93,25 +93,25 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, long double v) noexcept;
 //     to the instantiation block there.
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec2<T>& v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Vec2<T>& v) noexcept;
 
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec3<T>& v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Vec3<T>& v) noexcept;
 
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Rect2<T>& v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Rect2<T>& v) noexcept;
 
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const tst::Approx& v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const tst::Approx& v) noexcept;
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Copies up to `cap` bytes of `[data, data + n)` into `buf` and
 /// returns the number of bytes copied. The bridge used by out-of-line
-/// formatters that build an `zb::String` internally (in their own
+/// formatters that build an `za::String` internally (in their own
 /// `.cpp`) and hand the bytes back without exposing `String` here.
 ///
 ////////////////////////////////////////////////////////////
-zb::SizeT copyInto(char* buf, zb::SizeT cap, const char* data, zb::SizeT n) noexcept;
+za::SizeT copyInto(char* buf, za::SizeT cap, const char* data, za::SizeT n) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ zb::SizeT copyInto(char* buf, zb::SizeT cap, const char* data, zb::SizeT n) noex
 /// only `stringifyValue` + `SizeT`, so it drags in neither Fmt nor String.
 ///
 ////////////////////////////////////////////////////////////
-using StringifyFn = zb::SizeT (*)(char* buf, zb::SizeT cap, const void* value);
+using StringifyFn = za::SizeT (*)(char* buf, za::SizeT cap, const void* value);
 
 
 ////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ using StringifyFn = zb::SizeT (*)(char* buf, zb::SizeT cap, const void* value);
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline zb::SizeT renderValue(char* buf, zb::SizeT cap, const T& v) noexcept
+[[gnu::always_inline]] inline za::SizeT renderValue(char* buf, za::SizeT cap, const T& v) noexcept
 {
     return stringifyValue(buf, cap, v);
 }
@@ -139,7 +139,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] inline zb::SizeT stringifyThunk(char* buf, zb::SizeT cap, const void* value) noexcept
+[[gnu::always_inline]] inline za::SizeT stringifyThunk(char* buf, za::SizeT cap, const void* value) noexcept
 {
     return renderValue(buf, cap, *static_cast<const T*>(value));
 }

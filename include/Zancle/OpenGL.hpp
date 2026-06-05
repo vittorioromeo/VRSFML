@@ -17,7 +17,7 @@
 
     // The Visual C++ version of gl.h uses WINGDIAPI and APIENTRY but doesn't define them
     #ifdef _MSC_VER
-        #include "Zancle/System/WindowsHeader.hpp"
+        #include "Zancle/Base/WindowsHeader.hpp"
     #endif
 
     #include <GL/gl.h>

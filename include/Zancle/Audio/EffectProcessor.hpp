@@ -8,13 +8,13 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "ZancleBase/FixedFunction.hpp"
+#include "Zancle/Vocabulary/FixedFunction.hpp"
 
 
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-using EffectProcessorImpl = zb::FixedFunction<
+using EffectProcessorImpl = za::FixedFunction<
     void(const float* inputFrames, unsigned int& inputFrameCount, float* outputFrames, unsigned int& outputFrameCount, unsigned int frameChannelCount),
     128>;
 

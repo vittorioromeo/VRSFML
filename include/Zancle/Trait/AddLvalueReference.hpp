@@ -1,0 +1,50 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
+
+
+#if __has_builtin(__add_lvalue_reference)
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_ADD_LVALUE_REFERENCE(...) __add_lvalue_reference(__VA_ARGS__)
+
+#else
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+    #include "Zancle/Trait/VoidT.hpp"
+
+
+namespace za::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T, typename = void>
+struct AddLvalueReferenceImpl
+{
+    using type = T;
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+struct AddLvalueReferenceImpl<T, VoidT<T&>>
+{
+    using type = T&;
+};
+
+} // namespace za::priv
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_ADD_LVALUE_REFERENCE(...) typename ::za::priv::AddLvalueReferenceImpl<__VA_ARGS__>::type
+
+#endif
+
+
+namespace za
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+using AddLvalueReference = ZA_ADD_LVALUE_REFERENCE(T);
+
+} // namespace za

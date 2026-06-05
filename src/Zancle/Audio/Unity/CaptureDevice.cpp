@@ -13,13 +13,13 @@
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -37,11 +37,11 @@ struct CaptureDevice::Impl
 
         // Copy the new samples into our temporary buffer
         impl.samples.resize(frameCount * channelCount);
-        ZB_MEMCPY(impl.samples.data(), input, frameCount * channelCount * sizeof(zb::I16));
+        ZA_MEMCPY(impl.samples.data(), input, frameCount * channelCount * sizeof(za::I16));
 
         // Notify the derived class of the availability of new samples
-        ZB_ASSERT(impl.processSamplesFunc != nullptr && "processSamplesFunc callback not registered in capture device");
-        ZB_ASSERT(impl.soundRecorder != nullptr && "processSamplesFunc callback user data is null");
+        ZA_ASSERT(impl.processSamplesFunc != nullptr && "processSamplesFunc callback not registered in capture device");
+        ZA_ASSERT(impl.soundRecorder != nullptr && "processSamplesFunc callback user data is null");
         if (impl.processSamplesFunc(impl.soundRecorder, impl.samples.data(), impl.samples.size()))
             return;
 
@@ -98,7 +98,7 @@ struct CaptureDevice::Impl
     ////////////////////////////////////////////////////////////
     CaptureDeviceHandle captureDeviceHandle;            //!< Capture device handle
     ma_uint32           sampleRate{44'100u};            //!< Sample rate
-    zb::Vector<zb::I16> samples;                        //!< Buffer to store captured samples
+    za::Vector<za::I16> samples;                        //!< Buffer to store captured samples
     ChannelMap          channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
 
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback
@@ -110,7 +110,7 @@ struct CaptureDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-// TODO P1: change to a factory returning `zb::Optional<CaptureDevice>` so a
+// TODO P1: change to a factory returning `za::Optional<CaptureDevice>` so a
 //          failed device can never be observed by the caller.
 CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
@@ -122,7 +122,7 @@ CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) : 
 ////////////////////////////////////////////////////////////
 CaptureDevice::~CaptureDevice()
 {
-    ZB_ASSERT((!m_impl->deviceInitialized || !ma_device_is_started(&m_impl->maDevice)) &&
+    ZA_ASSERT((!m_impl->deviceInitialized || !ma_device_is_started(&m_impl->maDevice)) &&
               "The miniaudio capture device must be stopped before destroying the capture device");
 }
 
@@ -185,8 +185,8 @@ unsigned int CaptureDevice::getSampleRate() const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool CaptureDevice::startDevice()
 {
-    ZB_ASSERT(isDeviceInitialized() && "Attempted to start an uninitialized audio capture device");
-    ZB_ASSERT(!isDeviceStarted() && "Attempted to start an already started audio capture device");
+    ZA_ASSERT(isDeviceInitialized() && "Attempted to start an uninitialized audio capture device");
+    ZA_ASSERT(!isDeviceStarted() && "Attempted to start an already started audio capture device");
 
     if (const auto result = ma_device_start(&m_impl->maDevice); result != MA_SUCCESS)
         return priv::MiniaudioUtils::fail("start audio capture device", result);
@@ -198,8 +198,8 @@ unsigned int CaptureDevice::getSampleRate() const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool CaptureDevice::stopDevice()
 {
-    ZB_ASSERT(isDeviceInitialized() && "Attempted to stop an uninitialized audio capture device");
-    ZB_ASSERT(isDeviceStarted() && "Attempted to stop an already stopped audio capture device");
+    ZA_ASSERT(isDeviceInitialized() && "Attempted to stop an uninitialized audio capture device");
+    ZA_ASSERT(isDeviceStarted() && "Attempted to stop an already stopped audio capture device");
 
     if (const auto result = ma_device_stop(&m_impl->maDevice); result != MA_SUCCESS)
         return priv::MiniaudioUtils::fail("stop audio capture device", result);
@@ -224,7 +224,7 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
     if (m_impl->channelMap.getSize() == channelCount)
         return true;
 
-    auto oldChannelMap = ZB_MOVE(m_impl->channelMap);
+    auto oldChannelMap = ZA_MOVE(m_impl->channelMap);
 
     // We only bother supporting mono/stereo recording for now
     if (channelCount == 1)
@@ -238,7 +238,7 @@ bool CaptureDevice::setChannelCount(unsigned int channelCount)
         priv::errMsg("Failed to set audio capture device channel count to {}", channelCount);
 
         // Roll back to old config and try to restore the previous device
-        m_impl->channelMap = ZB_MOVE(oldChannelMap);
+        m_impl->channelMap = ZA_MOVE(oldChannelMap);
 
         if (!m_impl->initialize())
             priv::errMsg("Failed to restore previous audio capture device after failed channel count change");

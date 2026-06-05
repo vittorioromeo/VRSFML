@@ -1,6 +1,6 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Exchange.hpp"
+#include "Zancle/Base/Exchange.hpp"
 
 
 TEST_CASE("[Base] Base/Algorithm.hpp")
@@ -10,7 +10,7 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         int a = 0;
         int b = 1;
 
-        CHECK(zb::exchange(a, b) == 0);
+        CHECK(za::exchange(a, b) == 0);
         CHECK(a == 1);
     }
 }

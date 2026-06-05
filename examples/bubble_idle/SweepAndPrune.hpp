@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Zancle/System/Atomic.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
 
-#include "ZancleBase/Algorithm/Sort.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/InterferenceSize.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/InterferenceSize.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -17,25 +17,25 @@ private:
     struct AABB
     {
         float   minX, maxX, minY, maxY;
-        zb::U32 objIdx;
+        za::U32 objIdx;
     };
 
-    zb::Vector<AABB> m_aabbs;
+    za::Vector<AABB> m_aabbs;
 
 public:
     ////////////////////////////////////////////////////////////
-    void forEachUniqueIndexPair(const zb::SizeT nWorkers, auto& pool, auto& func)
+    void forEachUniqueIndexPair(const za::SizeT nWorkers, auto& pool, auto& func)
     {
-        const zb::SizeT numObjects = m_aabbs.size();
+        const za::SizeT numObjects = m_aabbs.size();
 
         if (numObjects < 2)
             return;
 
-        const auto processOne = [this, numObjects, &func](zb::SizeT i)
+        const auto processOne = [this, numObjects, &func](za::SizeT i)
         {
             const AABB& aabb1 = m_aabbs[i];
 
-            for (zb::SizeT j = i + 1; j < numObjects; ++j)
+            for (za::SizeT j = i + 1; j < numObjects; ++j)
             {
                 const AABB& aabb2 = m_aabbs[j];
 
@@ -47,7 +47,7 @@ public:
                 // Since the x intervals overlap, check the y intervals.
                 if (aabb1.minY <= aabb2.maxY && aabb1.maxY >= aabb2.minY)
                 {
-                    func(zb::min(aabb1.objIdx, aabb2.objIdx), zb::max(aabb1.objIdx, aabb2.objIdx));
+                    func(za::min(aabb1.objIdx, aabb2.objIdx), za::max(aabb1.objIdx, aabb2.objIdx));
                 }
             }
         };
@@ -55,7 +55,7 @@ public:
         // If there's only one worker, process synchronously.
         if (nWorkers <= 1u)
         {
-            for (zb::SizeT i = 0; i < numObjects; ++i)
+            for (za::SizeT i = 0; i < numObjects; ++i)
                 processOne(i);
 
             return;
@@ -64,8 +64,8 @@ public:
         // Dynamic scheduling: each thread grabs the next row via atomic counter.
         // This naturally balances load since early rows (low i) have much more work
         // than late rows (high i) due to longer inner loops and less effective early-exit.
-        alignas(zb::hardwareDestructiveInterferenceSize) za::Atomic<zb::SizeT> nextI{0};
-        alignas(zb::hardwareDestructiveInterferenceSize) za::Atomic<zb::SizeT> nRemaining{nWorkers};
+        alignas(za::hardwareDestructiveInterferenceSize) za::Atomic<za::SizeT> nextI{0};
+        alignas(za::hardwareDestructiveInterferenceSize) za::Atomic<za::SizeT> nRemaining{nWorkers};
 
         auto worker = [&]
         {
@@ -85,14 +85,14 @@ public:
         };
 
         // Launch asynchronous workers.
-        for (zb::SizeT iWorker = 1u; iWorker < nWorkers; ++iWorker)
+        for (za::SizeT iWorker = 1u; iWorker < nWorkers; ++iWorker)
             pool.post(worker);
 
         // Main thread also participates as a worker.
         worker();
 
         // Wait until all workers finish.
-        nRemaining.waitUntilAcquire([](zb::SizeT val) { return val == 0; });
+        nRemaining.waitUntilAcquire([](za::SizeT val) { return val == 0; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ public:
         m_aabbs.reserve(bubbles.size());
         m_aabbs.clear();
 
-        for (zb::SizeT i = 0u; i < bubbles.size(); ++i)
+        for (za::SizeT i = 0u; i < bubbles.size(); ++i)
         {
             const auto& b = bubbles[i];
             m_aabbs.unsafeEmplaceBack(b.position.x - b.radius,
@@ -111,6 +111,6 @@ public:
                                       static_cast<unsigned int>(i));
         }
 
-        zb::quickSort(m_aabbs.begin(), m_aabbs.end(), [](const AABB& a, const AABB& b) { return a.minX < b.minX; });
+        za::quickSort(m_aabbs.begin(), m_aabbs.end(), [](const AABB& a, const AABB& b) { return a.minX < b.minX; });
     }
 };

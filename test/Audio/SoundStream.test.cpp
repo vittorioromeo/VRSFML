@@ -9,25 +9,25 @@
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
 struct TestState
 {
-    bool onGetData(zb::Vector<zb::I16>& /* outBuffer */)
+    bool onGetData(za::Vector<za::I16>& /* outBuffer */)
     {
         return true;
     }
@@ -44,11 +44,11 @@ TEST_CASE("[Audio] za::SoundStream" * tst::skip(skipAudioDeviceTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(TestSoundStream));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(TestSoundStream));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestSoundStream));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(TestSoundStream));
-        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(TestSoundStream));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(TestSoundStream));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(TestSoundStream));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestSoundStream));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_ASSIGNABLE(TestSoundStream));
+        STATIC_CHECK(ZA_HAS_VIRTUAL_DESTRUCTOR(TestSoundStream));
     }
 
     SECTION("Construction")

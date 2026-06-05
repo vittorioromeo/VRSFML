@@ -138,6 +138,20 @@
 
 
 ////////////////////////////////////////////////////////////
+// Portable import / export macro for the aggregate `zancle-system` library
+// (i.e. all utility modules: Base, Trait, Math, Diagnostic, Vocabulary,
+// Container, Algorithm, String, Geometry, Chrono, Concurrency, Fmt, IO,
+// Scn, Err, Lifetime, Mixin). Defined here in Config.hpp so callers don't
+// need to pull in a per-module Export.hpp.
+////////////////////////////////////////////////////////////
+#if defined(ZA_SYSTEM_EXPORTS)
+    #define ZA_SYSTEM_API ZA_API_EXPORT
+#else
+    #define ZA_SYSTEM_API ZA_API_IMPORT
+#endif
+
+
+////////////////////////////////////////////////////////////
 // ODR Violation Detection Mechanism
 ////////////////////////////////////////////////////////////
 extern "C"

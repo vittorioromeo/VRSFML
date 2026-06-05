@@ -14,17 +14,17 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::Font" * tst::skip(skipDisplayTests))
@@ -33,11 +33,11 @@ TEST_CASE("[Graphics] za::Font" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Font));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Font));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Font));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::Font));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(za::Font));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::Font));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Font));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Font));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Font));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::Font));
     }
 
     SECTION("openFromFile()")
@@ -53,7 +53,7 @@ TEST_CASE("[Graphics] za::Font" * tst::skip(skipDisplayTests))
             for (const auto& filenameSuffix : filenameSuffixes)
             {
                 const za::Path filename = U"tuffy" + filenameSuffix + U".ttf";
-                INFO("Filename: " << filename.to<zb::String>().cStr());
+                INFO("Filename: " << filename.to<za::String>().cStr());
 
                 const auto font = za::Font::openFromFile(filename).value();
 

@@ -10,7 +10,7 @@
 
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 void Main::uiShopDrawCoreUpgrades()
@@ -124,7 +124,7 @@ void Main::uiShopDrawCoreUpgrades()
         uiSetTooltip(
             "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
             "more money, fewer FPS!");
-        uiSetLabel("%zu bubbles", static_cast<zb::SizeT>(pt->psvBubbleCount.currentValue()));
+        uiSetLabel("%zu bubbles", static_cast<za::SizeT>(pt->psvBubbleCount.currentValue()));
         makePSVButton("More bubbles", pt->psvBubbleCount);
     }
 

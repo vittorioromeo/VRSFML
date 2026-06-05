@@ -5,7 +5,7 @@
 
 ## 1. Goals
 
-1. **Eliminate the `ZA_*` / `ZB_*` visual-similarity problem at the structural
+1. **Eliminate the `ZA_*` / `ZA_*` visual-similarity problem at the structural
    level**, by using a single namespace (`za::`) and letting the file path
    carry the topic information instead.
 2. **Levelize** the module graph (à la John Lakos): a strict linear DAG
@@ -23,7 +23,7 @@
   `za::priv::` for internals). The current `zb::` namespace and the
   `ZancleBase/` include root go away.
 - **One macro prefix**: `ZA_*` (and `ZA_PRIV_*` for internals). The current
-  `ZB_*` family becomes `ZA_*`.
+  `ZA_*` family becomes `ZA_*`.
 - **Module = include root sibling**: `<Zancle/Container/Vector.hpp>`,
   `<Zancle/Math/Sin.hpp>`, etc. Each module has its own `CMakeLists.txt`,
   its own `Export.hpp`, and its own static library when convenient
@@ -145,19 +145,19 @@ Compiler-intrinsic wrappers, type aliases, low-level macros, foundational
 language primitives, forward declarations of `std::` types.
 
 ```
-Macros.hpp                      (← ZancleBase/Macros.hpp)
-TokenPaste.hpp                  (← ZancleBase/TokenPaste.hpp)
+Macros.hpp                      (← Zancle/Base/Macros.hpp)
+TokenPaste.hpp                  (← Zancle/Base/TokenPaste.hpp)
 RequireDesignatedInitializers.hpp
 TrivialAbi.hpp
 
-IntTypes.hpp                    (← ZancleBase/IntTypes.hpp)
+IntTypes.hpp                    (← Zancle/Base/IntTypes.hpp)
 FloatTypes.hpp
 SizeT.hpp
 PtrDiffT.hpp
 UIntPtrT.hpp
 MaxAlignT.hpp
 
-DeclVal.hpp                     (← ZancleBase/DeclVal.hpp)
+DeclVal.hpp                     (← Zancle/Base/DeclVal.hpp)
 PlacementNew.hpp
 Launder.hpp
 Exchange.hpp
@@ -173,7 +173,7 @@ TypePackElement.hpp
 TypePackIndex.hpp
 NonDeduced.hpp
 
-BitCast.hpp                     (← ZancleBase/Builtin/* -- flat into Base/)
+BitCast.hpp                     (← Zancle/Base/* -- flat into Base/)
 Bswap64.hpp
 Clzll.hpp
 Ctzll.hpp
@@ -204,7 +204,7 @@ FwdStdString.hpp
 
 ### 5.2 `Zancle/Trait/`
 
-The existing `ZancleBase/Trait/` headers, flattened, plus `MiniPFR`.
+The existing `Zancle/Trait/` headers, flattened, plus `MiniPFR`.
 
 ```
 AddConst.hpp, AddLvalueReference.hpp, AddPointer.hpp,
@@ -226,7 +226,7 @@ IsTriviallyRelocatable.hpp, IsUnion.hpp, IsUnsigned.hpp, IsVoid.hpp,
 MakeUnsigned.hpp, RemoveConst.hpp, RemoveCV.hpp, RemoveCVRef.hpp,
 RemoveReference.hpp, UnderlyingType.hpp, VoidT.hpp, RegularizeVoid.hpp
 
-MiniPFR.hpp                     (← ZancleBase/MiniPFR.hpp -- aggregate reflection)
+MiniPFR.hpp                     (← Zancle/Trait/MiniPFR.hpp -- aggregate reflection)
 ```
 
 ### 5.3 `Zancle/Math/`
@@ -263,7 +263,7 @@ Priv/Impl.hpp
 Assertions, abort, stack traces.
 
 ```
-Assert.hpp                      (← ZancleBase/Assert.hpp)
+Assert.hpp                      (← Zancle/Diagnostic/Assert.hpp)
 AssertAndAssume.hpp
 Abort.hpp
 StackTrace.hpp                  (header for current src/ZancleBase/StackTrace.cpp)
@@ -274,7 +274,7 @@ StackTrace.hpp                  (header for current src/ZancleBase/StackTrace.cp
 Single-value wrappers and basic vocabulary types.
 
 ```
-Optional.hpp                    (← ZancleBase/Optional.hpp)
+Optional.hpp                    (← Zancle/Vocabulary/Optional.hpp)
 Variant.hpp
 Span.hpp
 FunctionRef.hpp
@@ -293,7 +293,7 @@ Radix.hpp
 Statically-sized and dynamically-sized collections.
 
 ```
-Array.hpp                       (← ZancleBase/Array.hpp)
+Array.hpp                       (← Zancle/Container/Array.hpp)
 EnumArray.hpp
 Bitset.hpp
 Vector.hpp
@@ -311,7 +311,7 @@ Priv/VectorUtils.hpp
 Free functions on iterator ranges.
 
 ```
-AdjacentFind.hpp                (← ZancleBase/Algorithm/*)
+AdjacentFind.hpp                (← Zancle/Algorithm/*)
 AllOf.hpp, AnyOf.hpp,
 Copy.hpp, Count.hpp,
 Erase.hpp, Find.hpp,
@@ -326,16 +326,16 @@ SwapAndPop.hpp, Unique.hpp
 String types and char-level numeric I/O.
 
 ```
-StringView.hpp                  (← ZancleBase/StringView.hpp)
+StringView.hpp                  (← Zancle/String/StringView.hpp)
 StringViewSplits.hpp
 StringViewStreamOp.hpp
 String.hpp
 StringStreamOp.hpp
-Utf.hpp                         (← Zancle/System/Utf.hpp)
+Utf.hpp                         (← Zancle/String/Utf.hpp)
 Utf8String.hpp
 Utf8StringCodepoints.hpp
 
-FromChars.hpp                   (← ZancleBase/FromChars.hpp)
+FromChars.hpp                   (← Zancle/String/FromChars.hpp)
 FromCharsRadix.hpp
 FromCharsResult.hpp
 ToChars.hpp
@@ -348,7 +348,7 @@ ToString.hpp
 Math primitives for space and packing.
 
 ```
-Vec2.hpp                        (← Zancle/System/Vec2.hpp)
+Vec2.hpp                        (← Zancle/Geometry/Vec2.hpp)
 Vec3.hpp
 Rect2.hpp
 RectUtils.hpp
@@ -365,11 +365,11 @@ Priv/Vec2Math.hpp
 Time and clocks.
 
 ```
-Time.hpp                        (← Zancle/System/Time.hpp)
+Time.hpp                        (← Zancle/Chrono/Time.hpp)
 Clock.hpp
 SuspendAwareClock.hpp
 TimeChronoUtil.hpp
-StdChrono.hpp                   (← ZancleBase/StdChrono.hpp)
+StdChrono.hpp                   (← Zancle/Chrono/StdChrono.hpp)
 ```
 
 ### 5.11 `Zancle/Concurrency/`
@@ -377,11 +377,11 @@ StdChrono.hpp                   (← ZancleBase/StdChrono.hpp)
 Atomics, locks, threads, pools.
 
 ```
-Atomic.hpp                      (← Zancle/System/Atomic.hpp)
+Atomic.hpp                      (← Zancle/Concurrency/Atomic.hpp)
 AtomicMutex.hpp
 LockGuard.hpp
 Thread.hpp
-ThreadPool.hpp                  (← ZancleBase/ThreadPool.hpp)
+ThreadPool.hpp                  (← Zancle/Concurrency/ThreadPool.hpp)
 ```
 
 ### 5.12 `Zancle/Fmt/`
@@ -389,7 +389,7 @@ ThreadPool.hpp                  (← ZancleBase/ThreadPool.hpp)
 Formatting machinery.
 
 ```
-Fmt.hpp                         (← ZancleBase/Fmt/Fmt.hpp)
+Fmt.hpp                         (← Zancle/Fmt/Fmt.hpp)
 FmtSink.hpp, FmtSinkRef.hpp,
 FmtSpec.hpp, FmtString.hpp,
 FmtSpan.hpp, FmtCString.hpp,
@@ -405,10 +405,10 @@ FmtArgDefaultAlign.hpp
 Streams and filesystem.
 
 ```
-InputStream.hpp                 (← Zancle/System/InputStream.hpp)
+InputStream.hpp                 (← Zancle/IO/InputStream.hpp)
 FileInputStream.hpp
 MemoryInputStream.hpp
-IO.hpp                          (← Zancle/System/IO.hpp)
+IO.hpp                          (← Zancle/IO/IO.hpp)
 Path.hpp
 PathStreamOp.hpp
 ```
@@ -418,7 +418,7 @@ PathStreamOp.hpp
 Scanning / parsing.
 
 ```
-Scn.hpp                         (← ZancleBase/Scn/Scn.hpp)
+Scn.hpp                         (← Zancle/Scn/Scn.hpp)
 ScnCore.hpp
 ScnChar.hpp
 ScnNumeric.hpp
@@ -432,8 +432,8 @@ ScnStdin.hpp
 Multimedia error reporting.
 
 ```
-Err.hpp                         (← Zancle/System/Err.hpp)
-FmtPath.hpp                     (← Zancle/System/Fmt/FmtPath.hpp -- depends on Path, kept here)
+Err.hpp                         (← Zancle/Err/Err.hpp)
+FmtPath.hpp                     (← Zancle/Err/FmtPath.hpp -- depends on Path, kept here)
 ```
 
 ### 5.16 `Zancle/Lifetime/`
@@ -441,7 +441,7 @@ FmtPath.hpp                     (← Zancle/System/Fmt/FmtPath.hpp -- depends on
 Resource-graph lifetime tracking.
 
 ```
-LifetimeDependant.hpp           (← Zancle/System/LifetimeDependant.hpp)
+LifetimeDependant.hpp           (← Zancle/Lifetime/LifetimeDependant.hpp)
 LifetimeDependee.hpp
 ```
 
@@ -450,7 +450,7 @@ LifetimeDependee.hpp
 Re-usable mixin templates.
 
 ```
-GlobalAnchorPointMixin.hpp      (← Zancle/System/GlobalAnchorPointMixin.hpp)
+GlobalAnchorPointMixin.hpp      (← Zancle/Mixin/GlobalAnchorPointMixin.hpp)
 LocalAnchorPointMixin.hpp
 ```
 
@@ -473,9 +473,9 @@ The two existing top-level roots disappear:
 |---|---|
 | `zb::Vector`, `zb::Optional`, etc. | `za::Vector`, `za::Optional`, etc. |
 | `zb::priv::*` | `za::priv::*` |
-| `ZB_ASSERT` | `ZA_ASSERT` |
-| `ZB_IS_SAME` | `ZA_IS_SAME` |
-| `ZB_BASE_API` (export macro) | per-module: `ZA_BASE_API`, `ZA_MATH_API`, ... |
+| `ZA_ASSERT` | `ZA_ASSERT` |
+| `ZA_IS_SAME` | `ZA_IS_SAME` |
+| `ZA_BASE_API` (export macro) | per-module: `ZA_BASE_API`, `ZA_MATH_API`, ... |
 
 Every existing `zb::` identifier becomes `za::` (the codebase already
 uses `za::` for half of its types; this completes the unification). The
@@ -540,7 +540,7 @@ One large commit per phase to keep the bisectable:
 3. **Rename namespaces** `zb::` → `za::` in one sed pass across the
    codebase. Build, fix any straggler ambiguities (e.g. `za::priv::*`
    that previously coexisted as `zb::priv::*`).
-4. **Rename macros** `ZB_*` → `ZA_*` in one sed pass.
+4. **Rename macros** `ZA_*` → `ZA_*` in one sed pass.
 5. **Retire the old roots**: `git rm -r include/ZancleBase include/Zancle/System`.
 6. **Update the .clang-format `IncludeCategories`** to match the new
    module layout (priorities ordered by level).

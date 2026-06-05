@@ -28,25 +28,25 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Round.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Round.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 #ifdef ZA_SYSTEM_IOS
@@ -332,8 +332,8 @@ constexpr const char* keyIdentifier(za::Keyboard::Key code)
 #undef CASE
     }
 
-    zb::printErr("invalid keyboard code");
-    zb::abort();
+    za::printErr("invalid keyboard code");
+    za::abort();
 }
 
 // Get the C++ enumerator name of the given `za::Keyboard::Scancode` value including `Scan::` prefix
@@ -594,8 +594,8 @@ constexpr const char* scancodeIdentifier(za::Keyboard::Scancode scancode)
 #undef CASE
     }
 
-    zb::printErr("invalid keyboard scancode");
-    zb::abort();
+    za::printErr("invalid keyboard scancode");
+    za::abort();
 }
 
 
@@ -616,21 +616,21 @@ public:
             {
                 for (const auto& [scancode, size, marginRight] : cells)
                 {
-                    ZB_ASSERT(!scancodesInMatrix[static_cast<zb::SizeT>(scancode)]);
-                    scancodesInMatrix[static_cast<zb::SizeT>(scancode)] = true;
+                    ZA_ASSERT(!scancodesInMatrix[static_cast<za::SizeT>(scancode)]);
+                    scancodesInMatrix[static_cast<za::SizeT>(scancode)] = true;
                 }
             }
 
             // TODO P1: restore?
-            // ZB_ASSERT(scancodesInMatrix.size() == za::Keyboard::ScancodeCount);
+            // ZA_ASSERT(scancodesInMatrix.size() == za::Keyboard::ScancodeCount);
         }
 
         // Initialize keys color and label
         forEachKey([this](za::Keyboard::Scancode scancode, const za::Rect2f& rect)
         {
-            const auto scancodeIndex = static_cast<zb::SizeT>(scancode);
+            const auto scancodeIndex = static_cast<za::SizeT>(scancode);
 
-            for (zb::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+            for (za::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
                 m_triangles[6u * scancodeIndex + vertexIndex]
                     .color = za::Keyboard::delocalize(za::Keyboard::localize(scancode)) != scancode
                                  ? za::Color::Red
@@ -650,8 +650,8 @@ public:
                 label.setCharacterSize(label.getCharacterSize() - 2);
 
             const za::Rect2f bounds = label.getLocalBounds();
-            label.origin            = {zb::round(bounds.position.x + bounds.size.x / 2.f),
-                                       zb::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
+            label.origin            = {za::round(bounds.position.x + bounds.size.x / 2.f),
+                                       za::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
         });
     }
 
@@ -661,12 +661,12 @@ public:
         if (const auto* keyPressed = event.getIf<za::Event::KeyPressed>())
         {
             if (keyPressed->scancode != za::Keyboard::Scan::Unknown)
-                m_moveFactors[static_cast<zb::SizeT>(keyPressed->scancode)] = 1.f;
+                m_moveFactors[static_cast<za::SizeT>(keyPressed->scancode)] = 1.f;
         }
         else if (const auto* keyReleased = event.getIf<za::Event::KeyReleased>())
         {
             if (keyReleased->scancode != za::Keyboard::Scan::Unknown)
-                m_moveFactors[static_cast<zb::SizeT>(keyReleased->scancode)] = -1.f;
+                m_moveFactors[static_cast<za::SizeT>(keyReleased->scancode)] = -1.f;
         }
     }
 
@@ -676,14 +676,14 @@ public:
         static constexpr za::Time transitionDuration = za::milliseconds(200);
         for (float& factor : m_moveFactors)
         {
-            const float absoluteChange = zb::min(zb::fabs(factor), frameTime / transitionDuration);
+            const float absoluteChange = za::min(za::fabs(factor), frameTime / transitionDuration);
             factor += factor > 0.f ? -absoluteChange : absoluteChange;
         }
 
         // Update vertices positions from m_moveFactors and opacity from real-time keyboard state
         forEachKey([this](za::Keyboard::Scancode scancode, const za::Rect2f& rect)
         {
-            const auto scancodeIndex = static_cast<zb::SizeT>(scancode);
+            const auto scancodeIndex = static_cast<za::SizeT>(scancode);
 
             static constexpr za::Vec2f square[]{
                 {0.f, 0.f},
@@ -695,11 +695,11 @@ public:
             static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
 
             const float     moveFactor = m_moveFactors[scancodeIndex];
-            const za::Vec2f move(0.f, 2.f * moveFactor * (1.f - zb::fabs(moveFactor)) * padding);
+            const za::Vec2f move(0.f, 2.f * moveFactor * (1.f - za::fabs(moveFactor)) * padding);
 
             const bool pressed = za::Keyboard::isKeyPressed(scancode);
 
-            for (zb::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+            for (za::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
                 za::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
                 const za::Vec2f            corner = square[cornerIndexes[vertexIndex]];
@@ -764,17 +764,17 @@ private:
 
     struct Row
     {
-        Row(zb::Vector<Cell> theCells, float marginBottomRatio = 0.f) :
-            cells(ZB_MOVE(theCells)),
+        Row(za::Vector<Cell> theCells, float marginBottomRatio = 0.f) :
+            cells(ZA_MOVE(theCells)),
             marginBottom(marginBottomRatio * keySize)
         {
         }
 
-        zb::Vector<Cell> cells;
+        za::Vector<Cell> cells;
         float            marginBottom;
     };
 
-    const zb::Array<Row, 9> m_matrix{{
+    const za::Array<Row, 9> m_matrix{{
         {{{za::Keyboard::Scan::Escape, 1},
           {za::Keyboard::Scan::F1},
           {za::Keyboard::Scan::F2},
@@ -922,9 +922,9 @@ private:
           {za::Keyboard::Scan::LaunchMediaSelect}}},
     }};
 
-    zb::Vector<za::Vertex>                        m_triangles{za::Keyboard::ScancodeCount * 6};
-    zb::Vector<za::Text>                          m_labels;
-    zb::Array<float, za::Keyboard::ScancodeCount> m_moveFactors{};
+    za::Vector<za::Vertex>                        m_triangles{za::Keyboard::ScancodeCount * 6};
+    za::Vector<za::Text>                          m_labels;
+    za::Array<float, za::Keyboard::ScancodeCount> m_moveFactors{};
 };
 
 
@@ -947,10 +947,10 @@ public:
     void update(za::Time frameTime)
     {
         const float ratio = m_remaining / duration;
-        const float alpha = zb::max(0.f, ratio * (2.f - ratio)) * 0.5f;
+        const float alpha = za::max(0.f, ratio * (2.f - ratio)) * 0.5f;
 
         za::Color color = getOutlineColor();
-        color.a         = static_cast<zb::U8>(255 * alpha);
+        color.a         = static_cast<za::U8>(255 * alpha);
         setOutlineColor(color);
 
         if (m_remaining > za::Time{})
@@ -1035,7 +1035,7 @@ za::Utf8String textEventDescription(const za::Event::TextEntered& textEntered)
     text += textEntered.unicode;
     text += "\nU+";
 
-    (void)zb::fmtTo(text, "{:0>4x}", static_cast<zb::U32>(textEntered.unicode));
+    (void)za::fmtTo(text, "{:0>4x}", static_cast<za::U32>(textEntered.unicode));
 
     return text;
 }
@@ -1098,7 +1098,7 @@ int main()
     while (true)
     {
         // Handle events
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             // Window closed: exit
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
@@ -1154,7 +1154,7 @@ int main()
         textEnteredText.update(frameTime);
         {
             za::Utf8String text = "isKeyPressed(za::Keyboard::Key)\n\n";
-            for (zb::SizeT keyIndex = 0u; keyIndex < za::Keyboard::KeyCount; ++keyIndex)
+            for (za::SizeT keyIndex = 0u; keyIndex < za::Keyboard::KeyCount; ++keyIndex)
             {
                 const auto key = static_cast<za::Keyboard::Key>(keyIndex);
                 if (za::Keyboard::isKeyPressed(key))

@@ -11,14 +11,14 @@
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 
-#include "Zancle/System/Atomic.hpp"
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -103,12 +103,12 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
 
 ////////////////////////////////////////////////////////////
 template <typename THandle, typename F>
-zb::Vector<THandle> getAvailableDeviceHandles(zb::PassKey<za::AudioContext>&& passKey,
+za::Vector<THandle> getAvailableDeviceHandles(za::PassKey<za::AudioContext>&& passKey,
                                               ma_context&                     maContext,
                                               const char*                     type,
                                               F&&                             fMAContextGetDevices)
 {
-    zb::Vector<THandle> deviceHandles; // Use a single local variable for NRVO
+    za::Vector<THandle> deviceHandles; // Use a single local variable for NRVO
 
     ma_device_info* maDeviceInfosPtr{};
     ma_uint32       maDeviceInfoCount{};
@@ -125,7 +125,7 @@ zb::Vector<THandle> getAvailableDeviceHandles(zb::PassKey<za::AudioContext>&& pa
     deviceHandles.reserve(maDeviceInfoCount);
 
     for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        deviceHandles.emplaceBack(ZB_MOVE(passKey), &maDeviceInfosPtr[i]);
+        deviceHandles.emplaceBack(ZA_MOVE(passKey), &maDeviceInfosPtr[i]);
 
     return deviceHandles;
 }
@@ -151,7 +151,7 @@ struct AudioContextImpl
 
 
 ////////////////////////////////////////////////////////////
-constinit zb::Optional<AudioContextImpl> installedAudioContext;
+constinit za::Optional<AudioContextImpl> installedAudioContext;
 constinit za::Atomic<unsigned int>       audioContextRC{0u};
 
 
@@ -161,7 +161,7 @@ AudioContextImpl& ensureInstalled()
     if (!installedAudioContext.hasValue()) [[unlikely]]
     {
         za::priv::errMsg("`za::AudioContext` not installed -- did you forget to create one in `main`?");
-        zb::abort();
+        za::abort();
     }
 
     return *installedAudioContext;
@@ -173,12 +173,12 @@ AudioContextImpl& ensureInstalled()
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::Optional<AudioContext> AudioContext::create()
+za::Optional<AudioContext> AudioContext::create()
 {
     const auto fail = [](const char* what)
     {
         priv::errMsg("Error creating `za::AudioContext`: {}", what);
-        return zb::nullOpt;
+        return za::nullOpt;
     };
 
     //
@@ -191,7 +191,7 @@ zb::Optional<AudioContext> AudioContext::create()
     if (!tryCreateMALog(ac.maLog))
     {
         installedAudioContext.reset();
-        return zb::nullOpt; // Error message generated in called function.
+        return za::nullOpt; // Error message generated in called function.
     }
 
     ac.maLogInitialized = true;
@@ -199,12 +199,12 @@ zb::Optional<AudioContext> AudioContext::create()
     if (!tryCreateMAContext(ac.maLog, ac.maContext))
     {
         installedAudioContext.reset();
-        return zb::nullOpt; // Error message generated in called function.
+        return za::nullOpt; // Error message generated in called function.
     }
 
     ac.maContextInitialized = true;
 
-    return zb::makeOptional<AudioContext>(zb::PassKey<AudioContext>{});
+    return za::makeOptional<AudioContext>(za::PassKey<AudioContext>{});
 }
 
 
@@ -216,14 +216,14 @@ void* AudioContext::getMAContext()
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(zb::PassKey<AudioContext>&&)
+AudioContext::AudioContext(za::PassKey<AudioContext>&&)
 {
     audioContextRC.fetchAddRelaxed(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(zb::PassKey<AudioContext>{})
+AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(za::PassKey<AudioContext>{})
 {
 }
 
@@ -246,12 +246,12 @@ bool AudioContext::isInstalled()
 
 
 ////////////////////////////////////////////////////////////
-zb::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
+za::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
 {
     ensureInstalled();
 
     return getAvailableDeviceHandles<PlaybackDeviceHandle> //
-        (zb::PassKey<AudioContext>{},
+        (za::PassKey<AudioContext>{},
          *static_cast<ma_context*>(AudioContext::getMAContext()),
          "playback",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
@@ -260,25 +260,25 @@ zb::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
+za::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
 {
     ensureInstalled();
 
     for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
         if (deviceHandle.isDefault())
-            return zb::makeOptional(deviceHandle);
+            return za::makeOptional(deviceHandle);
 
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
+za::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
 {
     ensureInstalled();
 
     return getAvailableDeviceHandles<CaptureDeviceHandle> //
-        (zb::PassKey<AudioContext>{},
+        (za::PassKey<AudioContext>{},
          *static_cast<ma_context*>(AudioContext::getMAContext()),
          "capture",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
@@ -287,15 +287,15 @@ zb::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
+za::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
 {
     ensureInstalled();
 
     for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
         if (deviceHandle.isDefault())
-            return zb::makeOptional(deviceHandle);
+            return za::makeOptional(deviceHandle);
 
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 } // namespace za

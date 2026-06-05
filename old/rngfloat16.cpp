@@ -8,7 +8,7 @@
         // We extract 11 random bits, which is enough to fill the 10-bit mantissa of _Float16,
         // and normalize by dividing by (2^11 - 1).
 
-        const zb::U32 randomBits = next() >> (64 - 11);                                    // Extract 11 bits.
+        const za::U32 randomBits = next() >> (64 - 11);                                    // Extract 11 bits.
         const _Float16 normalized = static_cast<_Float16>(randomBits) / _Float16((1 << 11) - 1); // Normalize to [0, 1].
 
         return min + normalized * (max - min);

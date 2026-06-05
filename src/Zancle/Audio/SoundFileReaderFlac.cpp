@@ -10,16 +10,16 @@
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/InputStream.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/InputStream.hpp"
 
-#include "ZancleBase/Algorithm/Copy.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Copy.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <FLAC/format.h>
 #include <FLAC/ordinals.h>
@@ -36,19 +36,19 @@ struct FlacClientData
 {
     za::InputStream*          stream{};
     za::SoundFileReader::Info info;
-    zb::I16*                  buffer{};
-    zb::U64                   remaining{};
-    zb::Vector<zb::I16>       leftovers;
+    za::I16*                  buffer{};
+    za::U64                   remaining{};
+    za::Vector<za::I16>       leftovers;
     bool                      error{};
 };
 
 
 ////////////////////////////////////////////////////////////
-FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte buffer[], zb::SizeT* bytes, void* clientData)
+FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte buffer[], za::SizeT* bytes, void* clientData)
 {
     auto* data = static_cast<FlacClientData*>(clientData);
 
-    if (const zb::Optional count = data->stream->read(buffer, *bytes))
+    if (const za::Optional count = data->stream->read(buffer, *bytes))
     {
         if (*count > 0)
         {
@@ -68,7 +68,7 @@ FLAC__StreamDecoderSeekStatus streamSeek(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<FlacClientData*>(clientData);
 
-    if (data->stream->seek(static_cast<zb::SizeT>(absoluteByteOffset)).hasValue())
+    if (data->stream->seek(static_cast<za::SizeT>(absoluteByteOffset)).hasValue())
         return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 
     return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
@@ -80,7 +80,7 @@ FLAC__StreamDecoderTellStatus streamTell(const FLAC__StreamDecoder*, FLAC__uint6
 {
     auto* data = static_cast<FlacClientData*>(clientData);
 
-    if (const zb::Optional position = data->stream->tell())
+    if (const za::Optional position = data->stream->tell())
     {
         *absoluteByteOffset = *position;
         return FLAC__STREAM_DECODER_TELL_STATUS_OK;
@@ -95,7 +95,7 @@ FLAC__StreamDecoderLengthStatus streamLength(const FLAC__StreamDecoder*, FLAC__u
 {
     auto* data = static_cast<FlacClientData*>(clientData);
 
-    if (const zb::Optional count = data->stream->getSize())
+    if (const za::Optional count = data->stream->getSize())
     {
         *streamLength = *count;
         return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
@@ -125,7 +125,7 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
     // Reserve memory if we're going to use the leftovers buffer
     const unsigned int frameSamples = frame->header.blocksize * frame->header.channels;
     if (data->remaining < frameSamples)
-        data->leftovers.reserve(static_cast<zb::SizeT>(frameSamples - data->remaining));
+        data->leftovers.reserve(static_cast<za::SizeT>(frameSamples - data->remaining));
 
     // Decode the samples
     for (unsigned i = 0; i < frame->header.blocksize; ++i)
@@ -133,23 +133,23 @@ FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*,
         for (unsigned int j = 0; j < frame->header.channels; ++j)
         {
             // Decode the current sample
-            zb::I16 sample = 0;
+            za::I16 sample = 0;
             switch (frame->header.bits_per_sample)
             {
                 case 8:
-                    sample = static_cast<zb::I16>(buffer[j][i] << 8);
+                    sample = static_cast<za::I16>(buffer[j][i] << 8);
                     break;
                 case 16:
-                    sample = static_cast<zb::I16>(buffer[j][i]);
+                    sample = static_cast<za::I16>(buffer[j][i]);
                     break;
                 case 24:
-                    sample = static_cast<zb::I16>(buffer[j][i] >> 8);
+                    sample = static_cast<za::I16>(buffer[j][i] >> 8);
                     break;
                 case 32:
-                    sample = static_cast<zb::I16>(buffer[j][i] >> 16);
+                    sample = static_cast<za::I16>(buffer[j][i] >> 16);
                     break;
                 default:
-                    ZB_ASSERT(false && "Invalid bits per sample. Must be 8, 16, 24, or 32.");
+                    ZA_ASSERT(false && "Invalid bits per sample. Must be 8, 16, 24, or 32.");
                     break;
             }
 
@@ -217,7 +217,7 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
                 break;
             default:
                 za::priv::errMsg("FLAC files with more than 8 channels not supported");
-                ZB_ASSERT(false);
+                ZA_ASSERT(false);
                 break;
         }
     }
@@ -251,7 +251,7 @@ struct SoundFileReaderFlac::Impl
         }
     };
 
-    zb::UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> decoder; //!< FLAC decoder
+    za::UniquePtr<FLAC__StreamDecoder, FlacStreamDecoderDeleter> decoder; //!< FLAC decoder
     FlacClientData clientData;                                            //!< Structure passed to the decoder callbacks
 };
 
@@ -299,14 +299,14 @@ bool SoundFileReaderFlac::check(InputStream& stream)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
+za::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& stream)
 {
     // Create the decoder
     m_impl->decoder.reset(FLAC__stream_decoder_new());
     if (!m_impl->decoder)
     {
         priv::errMsg("Failed to open FLAC file (failed to allocate the decoder)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Initialize the decoder with our callbacks
@@ -327,18 +327,18 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderFlac::open(InputStream& strea
     {
         m_impl->decoder.reset();
         priv::errMsg("Failed to open FLAC file (failed to read metadata)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Retrieve the sound properties
-    return zb::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
+    return za::makeOptional(m_impl->clientData.info); // was filled in the "metadata" callback
 }
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderFlac::seek(zb::U64 sampleOffset)
+void SoundFileReaderFlac::seek(za::U64 sampleOffset)
 {
-    ZB_ASSERT(m_impl->decoder != nullptr &&
+    ZA_ASSERT(m_impl->decoder != nullptr &&
               "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // Reset the callback data (the "write" callback will be called)
@@ -370,29 +370,29 @@ void SoundFileReaderFlac::seek(zb::U64 sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-zb::U64 SoundFileReaderFlac::read(zb::I16* samples, zb::U64 maxCount)
+za::U64 SoundFileReaderFlac::read(za::I16* samples, za::U64 maxCount)
 {
-    ZB_ASSERT(m_impl->decoder != nullptr &&
+    ZA_ASSERT(m_impl->decoder != nullptr &&
               "No decoder available. Call SoundFileReaderFlac::open() to create a new one.");
 
     // If there are leftovers from previous call, use it first
-    const zb::SizeT left = m_impl->clientData.leftovers.size();
+    const za::SizeT left = m_impl->clientData.leftovers.size();
     if (left > 0)
     {
         if (left > maxCount)
         {
             // There are more leftovers than needed
-            for (zb::SizeT i = 0; i < maxCount; ++i)
+            for (za::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
-            m_impl->clientData.leftovers = zb::Vector<zb::I16>(m_impl->clientData.leftovers.begin() + maxCount,
+            m_impl->clientData.leftovers = za::Vector<za::I16>(m_impl->clientData.leftovers.begin() + maxCount,
                                                                m_impl->clientData.leftovers.end());
 
             return maxCount;
         }
 
         // We can use all the leftovers and decode new frames
-        zb::copy(m_impl->clientData.leftovers.begin(), m_impl->clientData.leftovers.end(), samples);
+        za::copy(m_impl->clientData.leftovers.begin(), m_impl->clientData.leftovers.end(), samples);
     }
 
     // Reset the data that will be used in the callback

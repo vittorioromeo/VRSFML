@@ -15,14 +15,14 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Atomic.hpp"
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 namespace za
@@ -38,7 +38,7 @@ struct GraphicsContextImpl
 
 
 ///////////////////////////////////////////////////////////
-constinit zb::Optional<GraphicsContextImpl> installedGraphicsContext;
+constinit za::Optional<GraphicsContextImpl> installedGraphicsContext;
 constinit za::Atomic<unsigned int>          graphicsContextRC{0u};
 
 
@@ -48,7 +48,7 @@ GraphicsContextImpl& ensureInstalled()
     if (!installedGraphicsContext.hasValue()) [[unlikely]]
     {
         priv::errMsg("`za::GraphicsContext` not installed -- did you forget to create one in `main`?");
-        zb::abort();
+        za::abort();
     }
 
     return *installedGraphicsContext;
@@ -59,7 +59,7 @@ GraphicsContextImpl& ensureInstalled()
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
-    explicit Impl(WindowContext&& theWindowContext) : windowContext(ZB_MOVE(theWindowContext))
+    explicit Impl(WindowContext&& theWindowContext) : windowContext(ZA_MOVE(theWindowContext))
     {
     }
 
@@ -67,12 +67,12 @@ struct GraphicsContext::Impl
 };
 
 ////////////////////////////////////////////////////////////
-zb::Optional<GraphicsContext> GraphicsContext::create()
+za::Optional<GraphicsContext> GraphicsContext::create()
 {
     const auto fail = [](const char* what)
     {
         priv::errMsg("Error creating `za::GraphicsContext`: {}", what);
-        return zb::nullOpt;
+        return za::nullOpt;
     };
 
     //
@@ -82,7 +82,7 @@ zb::Optional<GraphicsContext> GraphicsContext::create()
 
     //
     // Install window context if necessary
-    auto windowContext = WindowContext::isInstalled() ? WindowContext{zb::PassKey<GraphicsContext>{}}
+    auto windowContext = WindowContext::isInstalled() ? WindowContext{za::PassKey<GraphicsContext>{}}
                                                       : WindowContext::create().value(); // TODO P1: propagate failure
 
     //
@@ -99,15 +99,15 @@ zb::Optional<GraphicsContext> GraphicsContext::create()
 
     //
     // Install graphics context
-    installedGraphicsContext.emplace(*ZB_MOVE(shader), *ZB_MOVE(texture));
+    installedGraphicsContext.emplace(*ZA_MOVE(shader), *ZA_MOVE(texture));
 
-    return zb::makeOptional<GraphicsContext>(zb::PassKey<GraphicsContext>{}, ZB_MOVE(windowContext));
+    return za::makeOptional<GraphicsContext>(za::PassKey<GraphicsContext>{}, ZA_MOVE(windowContext));
 }
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext(zb::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
-    m_impl(ZB_MOVE(windowContext))
+GraphicsContext::GraphicsContext(za::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
+    m_impl(ZA_MOVE(windowContext))
 {
     graphicsContextRC.fetchAddRelaxed(1u);
 }
@@ -129,7 +129,7 @@ GraphicsContext::~GraphicsContext()
 
     // Need to activate shared context during destruction to avoid GL errors when destroying texture and shader
     [[maybe_unused]] const bool rc = WindowContext::setActiveThreadLocalGlContextToSharedContext();
-    ZB_ASSERT(rc);
+    ZA_ASSERT(rc);
 
     installedGraphicsContext.reset();
 }
@@ -201,7 +201,7 @@ bool GraphicsContext::isInstalled()
 ////////////////////////////////////////////////////////////
 Shader& GraphicsContext::getInstalledBuiltInShader()
 {
-    ZB_ASSERT(installedGraphicsContext.hasValue());
+    ZA_ASSERT(installedGraphicsContext.hasValue());
     return installedGraphicsContext->builtInShader;
 }
 
@@ -209,7 +209,7 @@ Shader& GraphicsContext::getInstalledBuiltInShader()
 ////////////////////////////////////////////////////////////
 Texture& GraphicsContext::getInstalledBuiltInWhiteDotTexture()
 {
-    ZB_ASSERT(installedGraphicsContext.hasValue());
+    ZA_ASSERT(installedGraphicsContext.hasValue());
     return installedGraphicsContext->builtInWhiteDotTexture;
 }
 

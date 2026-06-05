@@ -3,8 +3,8 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,15 +22,15 @@ void TextEffectWiggle::apply(za::Text& text)
     auto       nOutlineVertices = text.getFillVerticesStartIndex();
     const auto t                = m_time * m_frequency;
 
-    auto func = [this](float xTime, zb::SizeT xIndex)
-    { return static_cast<float>(zb::sin(xTime + float(xIndex) + m_phase) * m_amplitude); };
+    auto func = [this](float xTime, za::SizeT xIndex)
+    { return static_cast<float>(za::sin(xTime + float(xIndex) + m_phase) * m_amplitude); };
 
-    for (zb::SizeT i = 0u; i < nOutlineVertices / 4u; ++i)
-        for (zb::SizeT j = 0u; j < 4u; ++j)
+    for (za::SizeT i = 0u; i < nOutlineVertices / 4u; ++i)
+        for (za::SizeT j = 0u; j < 4u; ++j)
             tvData[i * 4u + j].position.y += func(t, i);
 
-    for (zb::SizeT i = nOutlineVertices / 4u; i < tvSize / 4u; ++i)
-        for (zb::SizeT j = 0u; j < 4u; ++j)
+    for (za::SizeT i = nOutlineVertices / 4u; i < tvSize / 4u; ++i)
+        for (za::SizeT j = 0u; j < 4u; ++j)
             tvData[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
 }
 

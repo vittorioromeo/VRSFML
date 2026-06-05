@@ -24,15 +24,15 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
 
 
 namespace
@@ -76,7 +76,7 @@ private:
 
     ////////////////////////////////////////////////////////////
     unsigned int m_lastFrameDrawCallCount = 0u;
-    zb::SizeT    m_lastFrameDrawnVertices = 0u;
+    za::SizeT    m_lastFrameDrawnVertices = 0u;
 
     ////////////////////////////////////////////////////////////
     za::TextureAtlas m_textureAtlas{za::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
@@ -135,7 +135,7 @@ private:
                          samples.data(),
                          static_cast<int>(samples.capacity()),
                          static_cast<int>(samples.insertionIndex()),
-                         (zb::toString(samples.getAverageAs<double>()) + unit).cStr(),
+                         (za::toString(samples.getAverageAs<double>()) + unit).cStr(),
                          0.f,
                          upperBound,
                          ImVec2{256.f, 32.f});
@@ -152,7 +152,7 @@ private:
     {
         m_clock.restart();
 
-        while (zb::Optional event = m_window.pollEvent())
+        while (za::Optional event = m_window.pollEvent())
         {
             m_imGuiContext.processEvent(m_window, *event);
 
@@ -208,7 +208,7 @@ private:
         ImGui::SetNextItemWidth(120.f);
         {
             const char* names[exampleCount];
-            for (zb::SizeT i = 0u; i < exampleCount; ++i)
+            for (za::SizeT i = 0u; i < exampleCount; ++i)
                 names[i] = m_examples[i]->name;
 
             ImGui::Combo("Example", &m_activeExample, names, exampleCount);

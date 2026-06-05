@@ -15,19 +15,19 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcmp.hpp"
-#include "ZancleBase/Builtin/Strcmp.hpp"
-#include "ZancleBase/Builtin/Strlen.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/ScopeGuard.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Base/Strcmp.hpp"
+#include "Zancle/Base/Strlen.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/ScopeGuard.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
@@ -460,7 +460,7 @@ namespace za::priv
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, static_cast<Sint64>(SDL_WINDOW_OPENGL));
 #elif defined(ZA_SYSTEM_LINUX_OR_BSD)
-    if (currentVideoDriver != nullptr && ZB_STRCMP(currentVideoDriver, "wayland") == 0)
+    if (currentVideoDriver != nullptr && ZA_STRCMP(currentVideoDriver, "wayland") == 0)
         SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER, reinterpret_cast<void*>(handle));
     else
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, static_cast<Sint64>(handle));
@@ -537,7 +537,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(const zb::U8 sdlButton) noexcept
+[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(const za::U8 sdlButton) noexcept
 {
     // clang-format off
     switch (sdlButton)
@@ -550,13 +550,13 @@ namespace za::priv
     }
     // clang-format on
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return Mouse::Button::Left;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] zb::U8 getSDLButtonFromSFMLButton(const Mouse::Button button) noexcept
+[[nodiscard, gnu::const]] za::U8 getSDLButtonFromSFMLButton(const Mouse::Button button) noexcept
 {
     // clang-format off
     switch (button)
@@ -569,7 +569,7 @@ namespace za::priv
     }
     // clang-format on
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return SDL_BUTTON_LEFT;
 }
 
@@ -603,7 +603,7 @@ SDLLayer::SDLLayer()
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
         errMsg("`SDL_Init` failed: {}", SDL_GetError());
-        zb::abort();
+        za::abort();
     }
 }
 
@@ -627,14 +627,14 @@ SDLAllocatedArray<SDL_DisplayID> SDLLayer::getDisplays() const
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_DisplayID>{SDLUPtr<SDL_DisplayID>{displays}, static_cast<zb::SizeT>(displayCount)};
+    return SDLAllocatedArray<SDL_DisplayID>{SDLUPtr<SDL_DisplayID>{displays}, static_cast<za::SizeT>(displayCount)};
 }
 
 
 ////////////////////////////////////////////////////////////
 SDLAllocatedArray<SDL_DisplayMode*> SDLLayer::getFullscreenDisplayModesForDisplay(const SDL_DisplayID displayId)
 {
-    ZB_ASSERT(displayId != 0u);
+    ZA_ASSERT(displayId != 0u);
 
     int               modeCount = 0;
     SDL_DisplayMode** modes     = SDL_GetFullscreenDisplayModes(displayId, &modeCount);
@@ -645,14 +645,14 @@ SDLAllocatedArray<SDL_DisplayMode*> SDLLayer::getFullscreenDisplayModesForDispla
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_DisplayMode*>{SDLUPtr<SDL_DisplayMode*>(modes), static_cast<zb::SizeT>(modeCount)};
+    return SDLAllocatedArray<SDL_DisplayMode*>{SDLUPtr<SDL_DisplayMode*>(modes), static_cast<za::SizeT>(modeCount)};
 }
 
 
 ////////////////////////////////////////////////////////////
 const SDL_PixelFormatDetails* SDLLayer::getPixelFormatDetails(const SDL_PixelFormat format) const
 {
-    ZB_ASSERT(format != 0);
+    ZA_ASSERT(format != 0);
 
     const auto* result = SDL_GetPixelFormatDetails(format);
 
@@ -669,7 +669,7 @@ const SDL_PixelFormatDetails* SDLLayer::getPixelFormatDetails(const SDL_PixelFor
 ////////////////////////////////////////////////////////////
 const SDL_DisplayMode* SDLLayer::getDesktopDisplayMode(const SDL_DisplayID displayId) const
 {
-    ZB_ASSERT(displayId != 0u);
+    ZA_ASSERT(displayId != 0u);
 
     const auto* result = SDL_GetDesktopDisplayMode(displayId);
 
@@ -716,14 +716,14 @@ SDLAllocatedArray<SDL_TouchID> SDLLayer::getTouchDevices()
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_TouchID>{SDLUPtr<SDL_TouchID>(ids), static_cast<zb::SizeT>(idCount)};
+    return SDLAllocatedArray<SDL_TouchID>{SDLUPtr<SDL_TouchID>(ids), static_cast<za::SizeT>(idCount)};
 }
 
 
 ////////////////////////////////////////////////////////////
 SDLAllocatedArray<SDL_Finger*> SDLLayer::getTouchFingers(const SDL_TouchID touchDeviceId)
 {
-    ZB_ASSERT(touchDeviceId != 0u);
+    ZA_ASSERT(touchDeviceId != 0u);
 
     int          fingerCount = 0;
     SDL_Finger** fingers     = SDL_GetTouchFingers(touchDeviceId, &fingerCount);
@@ -734,14 +734,14 @@ SDLAllocatedArray<SDL_Finger*> SDLLayer::getTouchFingers(const SDL_TouchID touch
         return nullptr;
     }
 
-    return SDLAllocatedArray<SDL_Finger*>{SDLUPtr<SDL_Finger*>(fingers), static_cast<zb::SizeT>(fingerCount)};
+    return SDLAllocatedArray<SDL_Finger*>{SDLUPtr<SDL_Finger*>(fingers), static_cast<za::SizeT>(fingerCount)};
 }
 
 
 ////////////////////////////////////////////////////////////
 SDL_TouchDeviceType SDLLayer::getTouchDeviceType(const SDL_TouchID touchDeviceId)
 {
-    ZB_ASSERT(touchDeviceId != 0u);
+    ZA_ASSERT(touchDeviceId != 0u);
 
     return SDL_GetTouchDeviceType(touchDeviceId);
 }
@@ -750,7 +750,7 @@ SDL_TouchDeviceType SDLLayer::getTouchDeviceType(const SDL_TouchID touchDeviceId
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getTouchDeviceName(const SDL_TouchID touchDeviceId)
 {
-    ZB_ASSERT(touchDeviceId != 0u);
+    ZA_ASSERT(touchDeviceId != 0u);
 
     return SDL_GetTouchDeviceName(touchDeviceId);
 }
@@ -782,7 +782,7 @@ Keyboard::Scancode SDLLayer::delocalizeScancode(const Keyboard::Key key) const n
 bool SDLLayer::isKeyPressedByScancode(const Keyboard::Scancode code) const noexcept
 {
     const bool* keyboardState = SDL_GetKeyboardState(nullptr);
-    ZB_ASSERT(keyboardState != nullptr);
+    ZA_ASSERT(keyboardState != nullptr);
 
     return keyboardState[mapSFMLScancodeToSDL(code)];
 }
@@ -843,15 +843,15 @@ Utf8String SDLLayer::getClipboardString() const noexcept
         return Utf8String{};
 
     char* clipboardText = SDL_GetClipboardText();
-    ZB_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
+    ZA_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
 
-    if (ZB_STRCMP(clipboardText, "") == 0)
+    if (ZA_STRCMP(clipboardText, "") == 0)
     {
         errMsg("`SDL_GetClipboardText` failed: {}", SDL_GetError());
         return Utf8String{};
     }
 
-    return Utf8String{clipboardText, ZB_STRLEN(clipboardText)};
+    return Utf8String{clipboardText, ZA_STRLEN(clipboardText)};
 }
 
 
@@ -871,7 +871,7 @@ bool SDLLayer::setClipboardString(const Utf8String& string) const noexcept
 ////////////////////////////////////////////////////////////
 float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
 {
-    ZB_ASSERT(displayID != 0u);
+    ZA_ASSERT(displayID != 0u);
 
     const float result = SDL_GetDisplayContentScale(displayID);
     if (result == 0.f)
@@ -887,7 +887,7 @@ float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
 ////////////////////////////////////////////////////////////
 Utf8String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
 {
-    ZB_ASSERT(displayID != 0u);
+    ZA_ASSERT(displayID != 0u);
 
     const char* const name = SDL_GetDisplayName(displayID);
     if (name == nullptr)
@@ -896,14 +896,14 @@ Utf8String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
         return Utf8String{};
     }
 
-    return Utf8String{name, ZB_STRLEN(name)};
+    return Utf8String{name, ZA_STRLEN(name)};
 }
 
 
 ////////////////////////////////////////////////////////////
 Rect2i SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
 {
-    ZB_ASSERT(displayID != 0u);
+    ZA_ASSERT(displayID != 0u);
 
     SDL_Rect out{};
     if (!SDL_GetDisplayBounds(displayID, &out))
@@ -919,7 +919,7 @@ Rect2i SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
 ////////////////////////////////////////////////////////////
 Rect2i SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
 {
-    ZB_ASSERT(displayID != 0u);
+    ZA_ASSERT(displayID != 0u);
 
     SDL_Rect out{};
     if (!SDL_GetDisplayUsableBounds(displayID, &out))
@@ -935,7 +935,7 @@ Rect2i SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
 ////////////////////////////////////////////////////////////
 DisplayOrientation SDLLayer::getNaturalDisplayOrientation(const SDL_DisplayID displayID) const
 {
-    ZB_ASSERT(displayID != 0u);
+    ZA_ASSERT(displayID != 0u);
     return mapSDLDisplayOrientationToSFML(SDL_GetNaturalDisplayOrientation(displayID));
 }
 
@@ -943,7 +943,7 @@ DisplayOrientation SDLLayer::getNaturalDisplayOrientation(const SDL_DisplayID di
 ////////////////////////////////////////////////////////////
 DisplayOrientation SDLLayer::getCurrentDisplayOrientation(const SDL_DisplayID displayID) const
 {
-    ZB_ASSERT(displayID != 0u);
+    ZA_ASSERT(displayID != 0u);
     return mapSDLDisplayOrientationToSFML(SDL_GetCurrentDisplayOrientation(displayID));
 }
 
@@ -985,9 +985,9 @@ float SDLLayer::getDisplayScale(SDL_Window& window) const
 
 
 ////////////////////////////////////////////////////////////
-SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const zb::U8* pixels, Vec2u size) const
+SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(const za::U8* pixels, Vec2u size) const
 {
-    ZB_ASSERT(pixels != nullptr);
+    ZA_ASSERT(pixels != nullptr);
 
     SDL_Surface* surface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
                                                  static_cast<int>(size.y),
@@ -1098,7 +1098,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool SDLLayer::areGUIDsEqual(const SDL_GUID& a, const SDL_GUID& b)
 {
-    return ZB_MEMCMP(&a, &b, sizeof(SDL_GUID)) == 0;
+    return ZA_MEMCMP(&a, &b, sizeof(SDL_GUID)) == 0;
 }
 
 

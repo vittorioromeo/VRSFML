@@ -18,14 +18,14 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Math/Lround.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Math/Lround.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 namespace
 {
@@ -34,19 +34,19 @@ void clampDemoPlaythrough(Main& main)
     if constexpr (!isDemoVersion)
         return;
 
-    const auto clampNPurchases = [](auto& psv) { psv.nPurchases = zb::min(psv.nPurchases, psv.data->nMaxPurchases); };
+    const auto clampNPurchases = [](auto& psv) { psv.nPurchases = za::min(psv.nPurchases, psv.data->nMaxPurchases); };
 
     clampNPurchases(main.pt->psvMapExtension);
     clampNPurchases(main.pt->psvShrineActivation);
     clampNPurchases(main.pt->psvBubbleValue);
 
-    zb::vectorEraseIf(main.pt->cats,
+    za::vectorEraseIf(main.pt->cats,
                       [](const Cat& cat) { return cat.type >= CatType::Mouse && cat.type <= CatType::Duck; });
 }
 
-[[nodiscard]] zb::Vector<za::Vec2f> collectDownFingers(const Main& main)
+[[nodiscard]] za::Vector<za::Vec2f> collectDownFingers(const Main& main)
 {
-    zb::Vector<za::Vec2f> downFingers;
+    za::Vector<za::Vec2f> downFingers;
 
     for (const auto maybeFinger : main.playerInputState.fingerPositions)
         if (maybeFinger.hasValue())
@@ -55,7 +55,7 @@ void clampDemoPlaythrough(Main& main)
     return downFingers;
 }
 
-void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers)
+void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const za::Vector<za::Vec2f>& downFingers)
 {
     if (!main.pt->mapPurchased)
         return;
@@ -65,20 +65,20 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const zb::Ve
     else if (main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::End))
         main.playerInputState.scroll = static_cast<float>(main.pt->getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
 
-    const auto currentScrollScreenIndex = static_cast<zb::SizeT>(
-        zb::lround(main.playerInputState.scroll / (gameScreenSize.x * 0.5f)));
+    const auto currentScrollScreenIndex = static_cast<za::SizeT>(
+        za::lround(main.playerInputState.scroll / (gameScreenSize.x * 0.5f)));
 
     if (main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::PageDown) ||
         main.inputHelper.wasMouseButtonJustPressed(za::Mouse::Button::Extra2))
     {
-        const auto nextScrollScreenIndex = zb::min(currentScrollScreenIndex + 1u, main.pt->getMapLimitIncreases());
+        const auto nextScrollScreenIndex = za::min(currentScrollScreenIndex + 1u, main.pt->getMapLimitIncreases());
         main.playerInputState.scroll     = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
     }
     else if ((main.inputHelper.wasKeyJustPressed(za::Keyboard::Key::PageUp) ||
               main.inputHelper.wasMouseButtonJustPressed(za::Mouse::Button::Extra1)) &&
              currentScrollScreenIndex > 0u)
     {
-        const auto nextScrollScreenIndex = zb::max(static_cast<zb::SizeT>(0u), currentScrollScreenIndex - 1u);
+        const auto nextScrollScreenIndex = za::max(static_cast<za::SizeT>(0u), currentScrollScreenIndex - 1u);
 
         main.playerInputState.scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
     }
@@ -115,7 +115,7 @@ void handleGameLoopScrollInput(Main& main, const float deltaTimeMs, const zb::Ve
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Main::gameLoopHandleEvents(FrameInput& frameInput, const bool shouldDrawUI)
 {
-    while (const zb::Optional event = window.pollEvent())
+    while (const za::Optional event = window.pollEvent())
     {
         inputHelper.applyEvent(*event);
         imGuiContext.processEvent(window, *event);

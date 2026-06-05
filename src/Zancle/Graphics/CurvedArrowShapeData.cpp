@@ -11,14 +11,14 @@
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/MinMaxMacros.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMaxMacros.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za
@@ -38,7 +38,7 @@ template <typename MapFn>
     const float endAngle   = sd.startAngle.asRadians() + sweepRad;
     const float pathRadius = (sd.outerRadius + sd.innerRadius) * 0.5f;
 
-    const auto [endSin, endCos] = zb::sinCosLookup(zb::positiveRemainder(endAngle, zb::tau));
+    const auto [endSin, endCos] = za::sinCosLookup(za::positiveRemainder(endAngle, za::tau));
 
     const Vec2f attach    = {sd.outerRadius + pathRadius * endCos, sd.outerRadius + pathRadius * endSin};
     const Vec2f tangent   = {-endSin, endCos};
@@ -51,10 +51,10 @@ template <typename MapFn>
     const auto fold = [&](const Vec2f localPoint)
     {
         const Vec2f p    = mapFn(localPoint);
-        const float minX = ZB_MIN(inout.position.x, p.x);
-        const float minY = ZB_MIN(inout.position.y, p.y);
-        const float maxX = ZB_MAX(inout.position.x + inout.size.x, p.x);
-        const float maxY = ZB_MAX(inout.position.y + inout.size.y, p.y);
+        const float minX = ZA_MIN(inout.position.x, p.x);
+        const float minY = ZA_MIN(inout.position.y, p.y);
+        const float maxX = ZA_MAX(inout.position.x + inout.size.x, p.x);
+        const float maxY = ZA_MAX(inout.position.y + inout.size.y, p.y);
         inout            = {{minX, minY}, {maxX - minX, maxY - minY}};
     };
 
@@ -76,7 +76,7 @@ Rect2f CurvedArrowShapeData::getLocalBounds() const noexcept
     // A negative sweep sweeps backwards from `startAngle`, so the equivalent forward-sweep sector
     // starts at `startAngle + sweepAngle` and has sweep `|sweepAngle|`.
     const float sweepRad = sweepAngle.asRadians();
-    const float absSweep = ZB_MATH_FABSF(sweepRad);
+    const float absSweep = ZA_MATH_FABSF(sweepRad);
     const float startRad = (sweepRad < 0.f) ? startAngle.asRadians() + sweepRad : startAngle.asRadians();
     const auto  idFn     = [](const Vec2f p) noexcept { return p; };
 
@@ -140,7 +140,7 @@ Vec2f CurvedArrowShapeData::getCentroid() const noexcept
         return center;
 
     const float sweepRad   = sweepAngle.asRadians();
-    const float absSweep   = ZB_MATH_FABSF(sweepRad);
+    const float absSweep   = ZA_MATH_FABSF(sweepRad);
     const float halfSwpAbs = absSweep * 0.5f;
     const float sweepSign  = (sweepRad < 0.f) ? -1.f : 1.f;
     const float startRad   = startAngle.asRadians();
@@ -153,12 +153,12 @@ Vec2f CurvedArrowShapeData::getCentroid() const noexcept
 
     if (diffSq > 0.f && absSweep > 0.f)
     {
-        const auto [sinHalf, cosHalf] = zb::sinCosLookup(zb::positiveRemainder(halfSwpAbs, zb::tau));
+        const auto [sinHalf, cosHalf] = za::sinCosLookup(za::positiveRemainder(halfSwpAbs, za::tau));
 
         const float d        = priv::annulusSectorCentroidDistance(outerRadius, innerRadius, absSweep, sinHalf);
         const float bisector = startRad + sweepRad * 0.5f;
 
-        const auto [sinB, cosB] = zb::sinCosLookup(zb::positiveRemainder(bisector, zb::tau));
+        const auto [sinB, cosB] = za::sinCosLookup(za::positiveRemainder(bisector, za::tau));
 
         bodyCentroid = {center.x + d * cosB, center.y + d * sinB};
         bodyArea     = 0.5f * diffSq * absSweep;
@@ -168,7 +168,7 @@ Vec2f CurvedArrowShapeData::getCentroid() const noexcept
     const float endAngle   = startRad + sweepRad;
     const float pathRadius = (outerRadius + innerRadius) * 0.5f;
 
-    const auto [endSin, endCos] = zb::sinCosLookup(zb::positiveRemainder(endAngle, zb::tau));
+    const auto [endSin, endCos] = za::sinCosLookup(za::positiveRemainder(endAngle, za::tau));
 
     const Vec2f attach    = {center.x + pathRadius * endCos, center.y + pathRadius * endSin};
     const Vec2f tangent   = {-endSin, endCos};

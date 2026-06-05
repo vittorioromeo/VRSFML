@@ -31,7 +31,7 @@ bool isKeyPressed(const Keyboard::Key key)
 bool isKeyPressed(const Keyboard::Scancode code)
 {
     const bool* keyboardState = SDL_GetKeyboardState(nullptr);
-    ZB_ASSERT(keyboardState != nullptr);
+    ZA_ASSERT(keyboardState != nullptr);
 
     return keyboardState[mapSFMLScancodeToSDL(code)];
 }

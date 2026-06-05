@@ -10,7 +10,7 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
 namespace za::priv

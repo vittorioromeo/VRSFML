@@ -5,14 +5,14 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/WindowsHeader.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Base/WindowsHeader.hpp"
 
-#include "ZancleBase/Math/Cos.hpp"
+#include "Zancle/Math/Cos.hpp"
 
 
 namespace
@@ -155,7 +155,7 @@ int main()
                                   .rotation = za::degrees(time * 100)});
 
                 // Draw sprite 2 on view 2
-                zancleView2.draw(texture2, {.position = {zb::cos(time) * 100.f, 0.f}});
+                zancleView2.draw(texture2, {.position = {za::cos(time) * 100.f, 0.f}});
 
                 // Display each view on screen
                 zancleView1.display();

@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
 
-#include "ZancleBase/EnumClassBitwiseOps.hpp"
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Vocabulary/EnumClassBitwiseOps.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -21,7 +21,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct ContextSettings
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ////////////////////////////////////////////////////////////
     /// \brief Bit flags describing OpenGL context attributes
@@ -105,7 +105,7 @@ struct ContextSettings
 
 
 ////////////////////////////////////////////////////////////
-ZB_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
+ZA_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
 
 
 ////////////////////////////////////////////////////////////

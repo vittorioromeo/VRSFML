@@ -2,11 +2,11 @@
 
 #include "CatType.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ struct [[nodiscard]] GameConstants
         za::Vec2f origin{};
     };
 
-    zb::Array<za::Vec2f, nCatTypes> catTailOffsetsByType{{
+    za::Array<za::Vec2f, nCatTypes> catTailOffsetsByType{{
         {-40.f, 0.f},    // Normal
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
@@ -40,7 +40,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f},      // Duck
     }};
 
-    zb::Array<za::Vec2f, nCatTypes> catDrawOffsetsByType{{
+    za::Array<za::Vec2f, nCatTypes> catDrawOffsetsByType{{
         {0.f, 0.f}, // Normal
         {0.f, 0.f}, // Uni
         {0.f, 0.f}, // Devil
@@ -56,7 +56,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f}, // Duck
     }};
 
-    zb::Array<za::Vec2f, nCatTypes> catEyeOffsetsByType{{
+    za::Array<za::Vec2f, nCatTypes> catEyeOffsetsByType{{
         {-40.f, 0.f},    // Normal
         {-35.f, -222.f}, // Uni
         {-8.f, 2.f},     // Devil
@@ -72,7 +72,7 @@ struct [[nodiscard]] GameConstants
         {0.f, 0.f},      // Duck
     }};
 
-    zb::Array<float, nCatTypes> catHueByType{{
+    za::Array<float, nCatTypes> catHueByType{{
         0.f,    // Normal
         160.f,  // Uni
         -25.f,  // Devil
@@ -88,7 +88,7 @@ struct [[nodiscard]] GameConstants
         0.f,    // Duck
     }};
 
-    zb::Array<CloudModifier, nCatTypes> cloudModifiers{{
+    za::Array<CloudModifier, nCatTypes> cloudModifiers{{
         CloudModifier{{0.f, 0.f}, 1.f},    // Normal
         CloudModifier{{0.f, -10.f}, 1.5f}, // Uni
         CloudModifier{{0.f, 0.f}, 1.5f},   // Devil
@@ -195,7 +195,7 @@ struct [[nodiscard]] GameConstants
         float     durationMs       = 12'000.f;
         float     regionWidth      = 240.f;
         float     spawnIntervalMs  = 10.f;
-        zb::SizeT bubblesPerTick   = 3u;
+        za::SizeT bubblesPerTick   = 3u;
         float     initialVelocityY = 0.55f;
         float     velocityJitterY  = 0.25f;
         float     velocityJitterX  = 0.05f;
@@ -221,7 +221,7 @@ struct [[nodiscard]] GameConstants
 
         // Combo mechanic tuning.
         float   comboTimerMaxMs      = 1000.f;  // window after each click before the bubble pops
-        zb::U32 maxClicks            = 25u;     // auto-pop after this many clicks
+        za::U32 maxClicks            = 25u;     // auto-pop after this many clicks
         float   rewardScalePerClick  = 5.f;     // base coins per click
         float   rewardClickExponent  = 1.5f;    // reward = base * pow(clicks, exp)
         float   ambientRepelRadius   = 128.f;   // gentle "stand-out" push while alive
@@ -240,8 +240,8 @@ struct [[nodiscard]] GameConstants
         // against either horizontal edge of the map.
         float   spawnEdgeMarginPx   = 300.f;
         float   payoutCoinDelayMs   = 35.f; // ms between rising-pitch coin collections
-        zb::U32 payoutCoinsPerClick = 2u;   // coins spewed per click
-        zb::U32 payoutMaxCoins      = 80u;  // hard cap on the spew
+        za::U32 payoutCoinsPerClick = 2u;   // coins spewed per click
+        za::U32 payoutMaxCoins      = 80u;  // hard cap on the spew
 
         // Burst phase: coins explode outward from the bubble, damp to a stop,
         // then transition into the rising-pitch collection sequence.

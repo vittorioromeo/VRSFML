@@ -10,10 +10,10 @@
 #include "Zancle/Graphics/Shape.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -43,9 +43,9 @@ Vec2f RectangleShape::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f RectangleShape::getPoint(zb::SizeT index) const
+Vec2f RectangleShape::getPoint(za::SizeT index) const
 {
-    ZB_ASSERT(index < 4u && "Index is out of bounds");
+    ZA_ASSERT(index < 4u && "Index is out of bounds");
     return ShapeUtils::computeRectanglePoint(index, m_size);
 }
 

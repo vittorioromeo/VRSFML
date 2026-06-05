@@ -9,13 +9,13 @@
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowSwappable.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowSwappable.hpp"
 
 
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
@@ -25,13 +25,13 @@ TEST_CASE("[Graphics] za::VertexBuffer", "[.display]")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::VertexBuffer));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::VertexBuffer));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(za::VertexBuffer));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::VertexBuffer));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(za::VertexBuffer));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::VertexBuffer));
-        STATIC_CHECK(ZB_IS_NOTHROW_SWAPPABLE(za::VertexBuffer));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::VertexBuffer));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::VertexBuffer));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::VertexBuffer));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::VertexBuffer));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::VertexBuffer));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::VertexBuffer));
+        STATIC_CHECK(ZA_IS_NOTHROW_SWAPPABLE(za::VertexBuffer));
     }
 
     SECTION("Construction")

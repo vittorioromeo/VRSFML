@@ -9,10 +9,10 @@
 
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -31,7 +31,7 @@ void eglCheckError(const unsigned int eglError, const char* file, unsigned int l
                '\n');
     };
 
-    ZB_ASSERT(eglError != EGL_SUCCESS);
+    ZA_ASSERT(eglError != EGL_SUCCESS);
 
     switch (eglError)
     {

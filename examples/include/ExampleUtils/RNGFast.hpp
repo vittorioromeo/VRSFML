@@ -6,16 +6,16 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Xoroshiro128PlusPlusBitGenerator.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Math/Sqrt.hpp"
-#include "ZancleBase/Trait/IsIntegral.hpp"
-#include "ZancleBase/Trait/MakeUnsigned.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/Sqrt.hpp"
+#include "Zancle/Trait/IsIntegral.hpp"
+#include "Zancle/Trait/MakeUnsigned.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ private:
     Xoroshiro128PlusPlusBitGenerator m_engine;
 
 public:
-    using SeedType = zb::U64; //!< Type used for seeding
+    using SeedType = za::U64; //!< Type used for seeding
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor. Initializes with a fixed internal seed.
@@ -60,16 +60,16 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline T getI(const T min, const T max)
     {
-        static_assert(ZB_IS_INTEGRAL(T));
+        static_assert(ZA_IS_INTEGRAL(T));
 
-        ZB_ASSERT_AND_ASSUME(min <= max);
+        ZA_ASSERT_AND_ASSUME(min <= max);
 
-        using UnsignedT = ZB_MAKE_UNSIGNED(T);
+        using UnsignedT = ZA_MAKE_UNSIGNED(T);
 
         const auto unsignedMin = static_cast<UnsignedT>(min);
         const auto unsignedMax = static_cast<UnsignedT>(max);
 
-        const auto range = static_cast<zb::U64>(unsignedMax - unsignedMin) + zb::U64{1};
+        const auto range = static_cast<za::U64>(unsignedMax - unsignedMin) + za::U64{1};
 
         return min + static_cast<T>(m_engine.next() % range);
     }
@@ -85,14 +85,14 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getF(const float min, const float max)
     {
-        ZB_ASSERT_AND_ASSUME(min <= max);
+        ZA_ASSERT_AND_ASSUME(min <= max);
 
         // Returns a float in the inclusive range [min, max].
 
         // We extract 24 random bits, which is enough to fill the 23-bit mantissa of a float,
         // and normalize by dividing by (2^24 - 1).
 
-        const auto  randomBits = static_cast<zb::U32>(m_engine.next() >> (64u - 24u));  // Extract 24 bits.
+        const auto  randomBits = static_cast<za::U32>(m_engine.next() >> (64u - 24u));  // Extract 24 bits.
         const float normalized = static_cast<float>(randomBits) / float{(1 << 24) - 1}; // Normalize to [0, 1].
 
         return min + normalized * (max - min);
@@ -136,11 +136,11 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getPointInCircle(const za::Vec2f center, const float radius)
     {
-        const float angle    = getF(0.f, zb::tau);
-        const float distance = radius * ZB_MATH_SQRTF(getF(0.f, 1.f));
+        const float angle    = getF(0.f, za::tau);
+        const float distance = radius * ZA_MATH_SQRTF(getF(0.f, 1.f));
 
         // Compute the point's coordinates using polar-to-Cartesian conversion.
-        return {center.x + distance * ZB_MATH_COSF(angle), center.y + distance * ZB_MATH_SINF(angle)};
+        return {center.x + distance * ZA_MATH_COSF(angle), center.y + distance * ZA_MATH_SINF(angle)};
     }
 
     ////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getDirVec2f()
     {
-        const float angle = getF(0.f, zb::tau);
-        return {ZB_MATH_COSF(angle), ZB_MATH_SINF(angle)};
+        const float angle = getF(0.f, za::tau);
+        return {ZA_MATH_COSF(angle), ZA_MATH_SINF(angle)};
     }
 };

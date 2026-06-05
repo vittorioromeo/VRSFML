@@ -17,13 +17,13 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 int main()
 {
@@ -70,7 +70,7 @@ int main()
     // TODO P0:
     const auto modes = za::VideoModeUtils::getFullscreenModes();
     for (const auto& mode : modes)
-        zb::printLn("Fullscreen mode: {}x{}; {}bpp; {}x pixel density; {}Hz",
+        za::printLn("Fullscreen mode: {}x{}; {}bpp; {}x pixel density; {}Hz",
                     mode.size.x,
                     mode.size.y,
                     mode.bitsPerPixel,
@@ -79,7 +79,7 @@ int main()
 
     while (true)
     {
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             imGuiContext.processEvent(window, *event);
 
@@ -87,7 +87,7 @@ int main()
                 return 0;
 
             if (const auto* eResized = event->getIf<za::Event::Resized>())
-                zb::printLn("Resized event: {}, {}", eResized->size.x, eResized->size.y);
+                za::printLn("Resized event: {}, {}", eResized->size.x, eResized->size.y);
 
             if (const auto* eMouseMoved = event->getIf<za::Event::MouseMoved>())
                 eventMousePosition = eMouseMoved->position;

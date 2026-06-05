@@ -7,12 +7,12 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ const char* kindLabel(AssertKind k) noexcept
         case AssertKind::RequireFalse:
             return "REQUIRE_FALSE";
         default:
-            ZB_ASSERT(k == AssertKind::Warn);
+            ZA_ASSERT(k == AssertKind::Warn);
             return "WARN";
     }
 }
@@ -66,10 +66,10 @@ const char* decomposeNonNull(const char* s) noexcept
 ////////////////////////////////////////////////////////////
 void emitActiveSubcases(const ContextState& ctx)
 {
-    for (zb::SizeT i = 0u; i < ctx.traversal.activeSubcases.size(); ++i)
+    for (za::SizeT i = 0u; i < ctx.traversal.activeSubcases.size(); ++i)
     {
         const auto& subcase = ctx.traversal.activeSubcases.data()[i];
-        (void)zb::printErrLn("  subcase: {} ({}:{})",
+        (void)za::printErrLn("  subcase: {} ({}:{})",
                              decomposeNonNull(subcase.name),
                              decomposeNonNull(subcase.file),
                              subcase.line);
@@ -83,7 +83,7 @@ void emitDecomposition(ContextState& ctx)
     if (!ctx.hasDecomp)
         return;
 
-    (void)zb::printErrLn("  expansion: {}", zb::StringView{ctx.decompBuf, ctx.decompLen});
+    (void)za::printErrLn("  expansion: {}", za::StringView{ctx.decompBuf, ctx.decompLen});
     ctx.hasDecomp = false;
 }
 
@@ -93,8 +93,8 @@ void emitFailureBanner(AssertKind kind, const char* file, int line, const char* 
 {
     auto& ctx = contextState();
 
-    (void)zb::printErrLn("{}:{}: FAILED: {}({})", file, line, kindLabel(kind), exprStr);
-    (void)zb::printErrLn("  test case: {} ({}:{})",
+    (void)za::printErrLn("{}:{}: FAILED: {}({})", file, line, kindLabel(kind), exprStr);
+    (void)za::printErrLn("  test case: {} ({}:{})",
                          decomposeNonNull(ctx.currentTestName),
                          decomposeNonNull(ctx.currentTestFile),
                          ctx.currentTestLine);
@@ -103,8 +103,8 @@ void emitFailureBanner(AssertKind kind, const char* file, int line, const char* 
     emitDecomposition(ctx);
 
     // Replay scoped INFO messages (newest at the back, but emit oldest-first).
-    for (zb::SizeT i = 0u; i < ctx.infoStack.size(); ++i)
-        (void)zb::printErrLn("  info: {}", ctx.infoStack.data()[i].toStringView());
+    for (za::SizeT i = 0u; i < ctx.infoStack.size(); ++i)
+        (void)za::printErrLn("  info: {}", ctx.infoStack.data()[i].toStringView());
 }
 
 
@@ -113,8 +113,8 @@ void emitWarningBanner(const char* file, int line, const char* exprStr)
 {
     auto& ctx = contextState();
 
-    (void)zb::printErrLn("{}:{}: WARNING: WARN({})", file, line, exprStr);
-    (void)zb::printErrLn("  test case: {} ({}:{})",
+    (void)za::printErrLn("{}:{}: WARNING: WARN({})", file, line, exprStr);
+    (void)za::printErrLn("  test case: {} ({}:{})",
                          decomposeNonNull(ctx.currentTestName),
                          decomposeNonNull(ctx.currentTestFile),
                          ctx.currentTestLine);
@@ -122,8 +122,8 @@ void emitWarningBanner(const char* file, int line, const char* exprStr)
 
     emitDecomposition(ctx);
 
-    for (zb::SizeT i = 0u; i < ctx.infoStack.size(); ++i)
-        (void)zb::printErrLn("  info: {}", ctx.infoStack.data()[i].toStringView());
+    for (za::SizeT i = 0u; i < ctx.infoStack.size(); ++i)
+        (void)za::printErrLn("  info: {}", ctx.infoStack.data()[i].toStringView());
 }
 
 } // namespace
@@ -166,8 +166,8 @@ void recordDecomposition(const char* opStr, const void* lhs, StringifyFn lhsFn, 
 {
     auto&           ctx  = contextState();
     char* const     base = ctx.decompBuf;
-    const zb::SizeT cap  = sizeof(ctx.decompBuf);
-    zb::SizeT       len  = 0u;
+    const za::SizeT cap  = sizeof(ctx.decompBuf);
+    za::SizeT       len  = 0u;
 
     len += lhsFn(base + len, cap - len, lhs);
 

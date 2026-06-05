@@ -8,13 +8,13 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
-#include "ZancleBase/Scn/ScnString.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
+#include "Zancle/Scn/ScnString.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -33,22 +33,22 @@ void runUdpServer(unsigned short port)
     // Listen to messages on the specified port
     if (socket.bind(port) != za::Socket::Status::Done)
         return;
-    zb::printLn("Server is listening to port {}, waiting for a message... ", port);
+    za::printLn("Server is listening to port {}, waiting for a message... ", port);
 
     // Wait for a message
     char                        in[128];
-    zb::SizeT                   received = 0;
-    zb::Optional<za::IpAddress> sender;
+    za::SizeT                   received = 0;
+    za::Optional<za::IpAddress> sender;
     unsigned short              senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message received from client {}: \"{}{}", za::IpAddressUtils::toString(sender.value()), in, '"');
+    za::printLn("Message received from client {}: \"{}{}", za::IpAddressUtils::toString(sender.value()), in, '"');
 
     // Send an answer to the client
     const char out[] = "Hi, I'm the server";
     if (socket.send(out, sizeof(out), sender.value(), senderPort) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message sent to the client: \"{}{}", out, '"');
+    za::printLn("Message sent to the client: \"{}{}", out, '"');
 }
 
 
@@ -59,13 +59,13 @@ void runUdpServer(unsigned short port)
 void runUdpClient(unsigned short port)
 {
     // Ask for the server address
-    zb::Optional<za::IpAddress> server;
+    za::Optional<za::IpAddress> server;
     do
     {
-        zb::print("Type the address or name of the server to connect to: ");
+        za::print("Type the address or name of the server to connect to: ");
 
-        zb::String addressStr;
-        (void)zb::scnStdinInto(addressStr);
+        za::String addressStr;
+        (void)za::scnStdinInto(addressStr);
         server = za::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
@@ -80,14 +80,14 @@ void runUdpClient(unsigned short port)
     const char out[] = "Hi, I'm a client";
     if (socket.send(out, sizeof(out), server.value(), port) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message sent to the server: \"{}{}", out, '"');
+    za::printLn("Message sent to the server: \"{}{}", out, '"');
 
     // Receive an answer from anyone (but most likely from the server)
     char                        in[128];
-    zb::SizeT                   received = 0;
-    zb::Optional<za::IpAddress> sender;
+    za::SizeT                   received = 0;
+    za::Optional<za::IpAddress> sender;
     unsigned short              senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != za::Socket::Status::Done)
         return;
-    zb::printLn("Message received from {}: \"{}{}", za::IpAddressUtils::toString(sender.value()), in, '"');
+    za::printLn("Message received from {}: \"{}{}", za::IpAddressUtils::toString(sender.value()), in, '"');
 }

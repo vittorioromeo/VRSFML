@@ -11,17 +11,17 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/MathUtils.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/MinMax.hpp"
 
 namespace
 {
 struct GameLoopFrameState
 {
     bool             shouldDrawUI{false};
-    zb::U8           shouldDrawUIAlpha{0u};
+    za::U8           shouldDrawUIAlpha{0u};
     FrameInput       input;
     FrameUpdateState update;
     za::Time         deltaTime;
@@ -45,8 +45,8 @@ struct GameLoopFrameState
     GameLoopFrameState frame;
     frame.shouldDrawUI = !inPrestigeTransition && splashCountdown.time <= 0.f;
     frame.shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.asProgress().getElapsed() < 0.75f
-                                  ? static_cast<zb::U8>(0u)
-                                  : static_cast<zb::U8>(
+                                  ? static_cast<za::U8>(0u)
+                                  : static_cast<za::U8>(
                                         remap(easeInOutSine(splashCountdown.asProgress().getElapsed()), 0.75f, 1.f, 0.f, 255.f));
 
     fps = 1.f / fpsClock.getElapsedTime().asSeconds();
@@ -57,7 +57,7 @@ struct GameLoopFrameState
         return false;
 
     frame.deltaTime   = deltaClock.restart();
-    frame.deltaTimeMs = zb::min(24.f, static_cast<float>(frame.deltaTime.asMicroseconds()) / 1000.f);
+    frame.deltaTimeMs = za::min(24.f, static_cast<float>(frame.deltaTime.asMicroseconds()) / 1000.f);
     shaderTime += frame.deltaTimeMs * 0.001f;
 
     gameLoopPrepareInput(frame.input, frame.deltaTimeMs);
@@ -76,7 +76,7 @@ struct GameLoopFrameState
 ////////////////////////////////////////////////////////////
 void Main::loadPlaythroughFromFileAndReseed()
 {
-    const zb::StringView loadMessage = loadPlaythroughFromFile(ptMain, "userdata/playthrough.json");
+    const za::StringView loadMessage = loadPlaythroughFromFile(ptMain, "userdata/playthrough.json");
 
     if (!loadMessage.empty())
         pushNotification("Playthrough loading info", "%s", loadMessage.data());

@@ -10,7 +10,7 @@
 #include "Zancle/System/String.hpp"
 #include "Zancle/System/Win32/WindowsHeader.hpp" // used
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 #include <string>
 
@@ -94,7 +94,7 @@ void setWindowBorderless(
     const unsigned int width,
     const unsigned int height)
 {
-    ZB_ASSERT(hwnd != nullptr);
+    ZA_ASSERT(hwnd != nullptr);
     auto* hwndPtr = reinterpret_cast<HWND>(hwnd);
 
     int styleFlags = getWindowStyle(fullscreen, hasTitlebar, resizable);

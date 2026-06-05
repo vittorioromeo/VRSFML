@@ -10,10 +10,10 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Thread.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 // Do we want to showcase direct JNI/NDK interaction?
 // Undefine this to get real cross-platform code.
@@ -27,7 +27,7 @@
 
     // Since we want to get the native activity from Zancle, we'll have to use an
     // extra header here:
-    #include "Zancle/System/NativeActivity.hpp"
+    #include "Zancle/Window/NativeActivity.hpp"
 
 // NDK/JNI sub example - call Java code from native code
 int vibrate(za::Time duration)
@@ -119,7 +119,7 @@ int main(int, char**)
 
     while (true)
     {
-        while (const zb::Optional event = active ? window.pollEvent() : window.waitEvent())
+        while (const za::Optional event = active ? window.pollEvent() : window.waitEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

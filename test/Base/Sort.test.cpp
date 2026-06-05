@@ -2,11 +2,11 @@
 #include "StringifyZbStringUtil.hpp" // IWYU pragma: keep
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Algorithm/Sort.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
 
-#include "ZancleBase/Algorithm/IsSorted.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/IsSorted.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -22,7 +22,7 @@ TEST_CASE("[Base] Base/Sort.hpp")
     {
         int values[]{3, 2, 1, 0};
 
-        zb::insertionSort(values, values + 4, lessCmp);
+        za::insertionSort(values, values + 4, lessCmp);
 
         CHECK(values[0] == 0);
         CHECK(values[1] == 1);
@@ -34,7 +34,7 @@ TEST_CASE("[Base] Base/Sort.hpp")
     {
         int values[]{3, 2, 1, 0};
 
-        zb::quickSort(values, values + 4, lessCmp);
+        za::quickSort(values, values + 4, lessCmp);
 
         CHECK(values[0] == 0);
         CHECK(values[1] == 1);
@@ -45,7 +45,7 @@ TEST_CASE("[Base] Base/Sort.hpp")
 
 struct Person
 {
-    zb::String name;
+    za::String name;
     int        age;
 
     bool operator<(const Person& other) const
@@ -58,17 +58,17 @@ TEST_CASE("QuickSort (Default Comparator): Core functionality")
 {
     SUBCASE("Sorting a general vector of integers")
     {
-        zb::Vector<int> vec      = {9, 0, 2, 7, 5, 3, 8, 1, 6, 4};
-        zb::Vector<int> expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        zb::quickSort(vec.begin(), vec.end(), lessCmp);
+        za::Vector<int> vec      = {9, 0, 2, 7, 5, 3, 8, 1, 6, 4};
+        za::Vector<int> expected = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        za::quickSort(vec.begin(), vec.end(), lessCmp);
         CHECK(vec == expected);
     }
 
     SUBCASE("Sorting a vector with duplicate elements")
     {
-        zb::Vector<int> vec      = {5, 2, 8, 2, 9, 5, 8, 1, 5};
-        zb::Vector<int> expected = {1, 2, 2, 5, 5, 5, 8, 8, 9};
-        zb::quickSort(vec.begin(), vec.end(), lessCmp);
+        za::Vector<int> vec      = {5, 2, 8, 2, 9, 5, 8, 1, 5};
+        za::Vector<int> expected = {1, 2, 2, 5, 5, 5, 8, 8, 9};
+        za::quickSort(vec.begin(), vec.end(), lessCmp);
         CHECK(vec == expected);
     }
 }
@@ -77,37 +77,37 @@ TEST_CASE("QuickSort (Default Comparator): Edge cases")
 {
     SUBCASE("Sorting an empty vector")
     {
-        zb::Vector<int> vec;
-        zb::quickSort(vec.begin(), vec.end());
+        za::Vector<int> vec;
+        za::quickSort(vec.begin(), vec.end());
         CHECK(vec.empty());
     }
 
     SUBCASE("Sorting a single-element vector")
     {
-        zb::Vector<int> vec = {42};
-        zb::quickSort(vec.begin(), vec.end(), lessCmp);
-        CHECK(vec == zb::Vector<int>{42});
+        za::Vector<int> vec = {42};
+        za::quickSort(vec.begin(), vec.end(), lessCmp);
+        CHECK(vec == za::Vector<int>{42});
     }
 
     SUBCASE("Sorting an already sorted vector")
     {
-        zb::Vector<int> vec = {1, 2, 3, 4, 5};
-        zb::quickSort(vec.begin(), vec.end(), lessCmp);
-        CHECK(vec == zb::Vector<int>{1, 2, 3, 4, 5});
+        za::Vector<int> vec = {1, 2, 3, 4, 5};
+        za::quickSort(vec.begin(), vec.end(), lessCmp);
+        CHECK(vec == za::Vector<int>{1, 2, 3, 4, 5});
     }
 
     SUBCASE("Sorting a reverse-sorted vector")
     {
-        zb::Vector<int> vec = {10, 9, 8, 7, 6};
-        zb::quickSort(vec.begin(), vec.end(), lessCmp);
-        CHECK(vec == zb::Vector<int>{6, 7, 8, 9, 10});
+        za::Vector<int> vec = {10, 9, 8, 7, 6};
+        za::quickSort(vec.begin(), vec.end(), lessCmp);
+        CHECK(vec == za::Vector<int>{6, 7, 8, 9, 10});
     }
 
     SUBCASE("Sorting a vector with all elements identical")
     {
-        zb::Vector<int> vec = {7, 7, 7, 7, 7};
-        zb::quickSort(vec.begin(), vec.end(), lessCmp);
-        CHECK(vec == zb::Vector<int>{7, 7, 7, 7, 7});
+        za::Vector<int> vec = {7, 7, 7, 7, 7};
+        za::quickSort(vec.begin(), vec.end(), lessCmp);
+        CHECK(vec == za::Vector<int>{7, 7, 7, 7, 7});
     }
 }
 
@@ -115,20 +115,20 @@ TEST_CASE("QuickSort (Custom Comparator): Functionality")
 {
     SUBCASE("Sorting integers in descending order using std::greater")
     {
-        zb::Vector<int> vec      = {3, 1, 4, 1, 5, 9};
-        zb::Vector<int> expected = {9, 5, 4, 3, 1, 1};
-        zb::quickSort(vec.begin(), vec.end(), greaterCmp);
+        za::Vector<int> vec      = {3, 1, 4, 1, 5, 9};
+        za::Vector<int> expected = {9, 5, 4, 3, 1, 1};
+        za::quickSort(vec.begin(), vec.end(), greaterCmp);
         CHECK(vec == expected);
     }
 
     SUBCASE("Sorting a custom struct by a member using a lambda")
     {
-        zb::Vector<Person> people = {{"Charlie", 35}, {"Alice", 30}, {"Bob", 25}};
+        za::Vector<Person> people = {{"Charlie", 35}, {"Alice", 30}, {"Bob", 25}};
 
         auto compareByAge = [](const Person& a, const Person& b) { return a.age < b.age; };
 
-        zb::quickSort(people.begin(), people.end(), compareByAge);
-        CHECK(zb::isSorted(people.begin(), people.end(), compareByAge));
+        za::quickSort(people.begin(), people.end(), compareByAge);
+        CHECK(za::isSorted(people.begin(), people.end(), compareByAge));
 
         CHECK(people[0].name == "Bob");
         CHECK(people[1].name == "Alice");
@@ -137,9 +137,9 @@ TEST_CASE("QuickSort (Custom Comparator): Functionality")
 
     SUBCASE("Sorting a custom struct using its default operator<")
     {
-        zb::Vector<Person> people = {{"Charlie", 35}, {"Alice", 30}, {"Bob", 25}};
+        za::Vector<Person> people = {{"Charlie", 35}, {"Alice", 30}, {"Bob", 25}};
 
-        zb::quickSort(people.begin(), people.end(), lessCmp);
+        za::quickSort(people.begin(), people.end(), lessCmp);
 
         CHECK(people[0].name == "Alice");
         CHECK(people[1].name == "Bob");
@@ -151,24 +151,24 @@ TEST_CASE("InsertionSort (with Comparator): Functionality")
 {
     SUBCASE("Sorting a small, unsorted array ascending")
     {
-        zb::Vector<int> vec      = {5, 1, 4, 2, 8};
-        zb::Vector<int> expected = {1, 2, 4, 5, 8};
-        zb::insertionSort(vec.begin(), vec.end(), lessCmp);
+        za::Vector<int> vec      = {5, 1, 4, 2, 8};
+        za::Vector<int> expected = {1, 2, 4, 5, 8};
+        za::insertionSort(vec.begin(), vec.end(), lessCmp);
         CHECK(vec == expected);
     }
 
     SUBCASE("Sorting a small, unsorted array descending")
     {
-        zb::Vector<int> vec      = {5, 1, 4, 2, 8};
-        zb::Vector<int> expected = {8, 5, 4, 2, 1};
-        zb::insertionSort(vec.begin(), vec.end(), greaterCmp);
+        za::Vector<int> vec      = {5, 1, 4, 2, 8};
+        za::Vector<int> expected = {8, 5, 4, 2, 1};
+        za::insertionSort(vec.begin(), vec.end(), greaterCmp);
         CHECK(vec == expected);
     }
 
     SUBCASE("Sorting an empty range")
     {
-        zb::Vector<int> vec;
-        zb::insertionSort(vec.begin(), vec.end(), lessCmp);
+        za::Vector<int> vec;
+        za::insertionSort(vec.begin(), vec.end(), lessCmp);
         CHECK(vec.empty());
     }
 }

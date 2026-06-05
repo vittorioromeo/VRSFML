@@ -33,26 +33,26 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Algorithm/AnyOf.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Strlen.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/FloatMax.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/AnyOf.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Strlen.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/FloatMax.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -109,7 +109,7 @@ bool Main::drawTabButton(const float             scaleMult,
 ////////////////////////////////////////////////////////////
 float Main::uiGetMaxWindowHeight() const
 {
-    return zb::max(getResolution().y - 19.f, (getResolution().y - 19.f) / profile.uiScale);
+    return za::max(getResolution().y - 19.f, (getResolution().y - 19.f) / profile.uiScale);
 }
 
 ////////////////////////////////////////////////////////////
@@ -169,7 +169,7 @@ void Main::uiPopButtonColors()
 ////////////////////////////////////////////////////////////
 void Main::uiBeginTooltip(const float width)
 {
-    ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, ZB_FLOAT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, ZA_FLOAT_MAX));
 
     ImGui::BeginTooltip();
     ImGui::PushFont(fontImGuiMouldyCheese);
@@ -420,9 +420,9 @@ Hex buff: grant the same buff as the mimicked cat.)",
 It's a duck.)",
         };
 
-        static_assert(zb::getArraySize(catTooltipsByType) == nCatTypes);
+        static_assert(za::getArraySize(catTooltipsByType) == nCatTypes);
 
-        ZB_ASSERT(hoveredCat != nullptr);
+        ZA_ASSERT(hoveredCat != nullptr);
         std::sprintf(uiState.uiTooltipBuffer, "%s", catTooltipsByType[static_cast<SizeT>(hoveredCat->type)] + 1);
     }
 
@@ -478,11 +478,11 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     auto* animState = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
     if (animState == nullptr)
     {
-        static zb::Vector<zb::UniquePtr<AnimState>> animStateStorage;
+        static za::Vector<za::UniquePtr<AnimState>> animStateStorage;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
-        animState = animStateStorage.emplaceBack(zb::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
+        animState = animStateStorage.emplaceBack(za::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
 #pragma GCC diagnostic pop
 
         storage->SetVoidPtr(animStateId, animState);
@@ -507,7 +507,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     const float timeSinceClick = static_cast<float>(ImGui::GetTime()) - animState->lastClickTime;
 
     const float clickAnimDir = timeSinceClick > 0.f && timeSinceClick < 0.2f ? 1.f : -1.f;
-    animState->clickAnim     = zb::clamp(animState->clickAnim + deltaTime * 4.5f * clickAnimDir, 0.f, 1.f);
+    animState->clickAnim     = za::clamp(animState->clickAnim + deltaTime * 4.5f * clickAnimDir, 0.f, 1.f);
 
     // Save current cursor pos
     const ImVec2 originalPos = imGuiWindow->DC.CursorPos;
@@ -526,11 +526,11 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(
     const float scale = 1.f - easeInOutBack(animState->clickAnim) * 0.35f;
 
     // Tilt transform: rotate by up to 0.05 radians (≈2.9°). (Use ~0.0873f for 5°.)
-    const float tiltAngle  = zb::sin(easeInOutSine(animState->hoverAnim) * zb::tau) * 0.1f;
-    const float tiltCos    = zb::cos(tiltAngle);
-    const float tiltSin    = zb::sin(tiltAngle);
-    const float tiltCosOpp = zb::cos(-tiltAngle);
-    const float tiltSinOpp = zb::sin(-tiltAngle);
+    const float tiltAngle  = za::sin(easeInOutSine(animState->hoverAnim) * za::tau) * 0.1f;
+    const float tiltCos    = za::cos(tiltAngle);
+    const float tiltSin    = za::sin(tiltAngle);
+    const float tiltCosOpp = za::cos(-tiltAngle);
+    const float tiltSinOpp = za::sin(-tiltAngle);
 
     // Helper lambda: apply scale & rotation about the button center.
     const auto transformPoint = [&](const ImVec2& p) -> ImVec2
@@ -664,7 +664,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
 
     float fontScaleMult = 1.f;
 
-    const auto xBufferLen = ZB_STRLEN(xBuffer);
+    const auto xBufferLen = ZA_STRLEN(xBuffer);
 
     if (xBufferLen > 20)
         fontScaleMult = 0.65f;
@@ -678,7 +678,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
         fontScaleMult = 1.f;
 
     if (fontScale == uiSubBulletFontScale)
-        fontScaleMult = zb::pow(fontScaleMult, 0.4f);
+        fontScaleMult = za::pow(fontScaleMult, 0.4f);
 
     const float scaledButtonWidth = uiButtonWidth * profile.uiScale;
 
@@ -702,7 +702,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
                                  .accelerationY = 0.002f,
                                  .opacity       = 1.f,
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                                 .rotation      = rngFast.getF(0.f, zb::tau),
+                                 .rotation      = rngFast.getF(0.f, za::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
                                 /* hue */ wrapHue(165.f + uiState.uiButtonHueMod + currentBackgroundHue.asDegrees()),
                                 ParticleType::Star);
@@ -719,7 +719,7 @@ bool Main::uiMakeButtonImpl(const char* label, const char* xBuffer)
                                  .accelerationY = 0.002f * 0.75f,
                                  .opacity       = 1.f,
                                  .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                                 .rotation      = rngFast.getF(0.f, zb::tau),
+                                 .rotation      = rngFast.getF(0.f, za::tau),
                                  .torque        = rngFast.getF(-0.002f, 0.002f)},
                                 /* hue */ 0.f,
                                 ParticleType::Bubble);
@@ -816,12 +816,12 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
     {
         uiState.btnWasDisabled[label] = false;
 
-        const bool anyPurchaseUnlockedEffectWithSameLabel = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameLabel = za::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                       uiState.purchaseUnlockedEffects.end(),
                                                                       [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
-        const bool anyPurchaseUnlockedEffectWithSameY = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameY = za::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                   uiState.purchaseUnlockedEffects.end(),
                                                                   [&](const PurchaseUnlockedEffect& effect)
         {
@@ -1078,16 +1078,16 @@ bool Main::uiRadio(const char* label, int* i, const int value)
 
 
 ////////////////////////////////////////////////////////////
-void Main::uiSetUnlockLabelY(const zb::SizeT unlockId)
+void Main::uiSetUnlockLabelY(const za::SizeT unlockId)
 {
-    const zb::String label    = zb::toString(unlockId);
+    const za::String label    = za::toString(unlockId);
     uiState.uiLabelToY[label] = ImGui::GetCursorScreenPos().y;
 }
 
 ////////////////////////////////////////////////////////////
-bool Main::checkUiUnlock(const zb::SizeT unlockId, const bool unlockCondition)
+bool Main::checkUiUnlock(const za::SizeT unlockId, const bool unlockCondition)
 {
-    const zb::String label = zb::toString(unlockId);
+    const za::String label = za::toString(unlockId);
 
     if (!unlockCondition)
     {
@@ -1099,12 +1099,12 @@ bool Main::checkUiUnlock(const zb::SizeT unlockId, const bool unlockCondition)
     {
         profile.uiUnlocks[unlockId] = true;
 
-        const bool anyPurchaseUnlockedEffectWithSameLabel = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameLabel = za::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                       uiState.purchaseUnlockedEffects.end(),
                                                                       [&](const PurchaseUnlockedEffect& effect)
         { return effect.widgetLabel == label; });
 
-        const bool anyPurchaseUnlockedEffectWithSameY = zb::anyOf(uiState.purchaseUnlockedEffects.begin(),
+        const bool anyPurchaseUnlockedEffectWithSameY = za::anyOf(uiState.purchaseUnlockedEffects.begin(),
                                                                   uiState.purchaseUnlockedEffects.end(),
                                                                   [&](const PurchaseUnlockedEffect& effect)
         {
@@ -1206,7 +1206,7 @@ void Main::uiImgsep2(const za::Rect2f& txr, const char* sepLabel)
 
 ////////////////////////////////////////////////////////////
 
-void Main::gameLoopDrawImGui(const zb::U8 shouldDrawUIAlpha)
+void Main::gameLoopDrawImGui(const za::U8 shouldDrawUIAlpha)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 

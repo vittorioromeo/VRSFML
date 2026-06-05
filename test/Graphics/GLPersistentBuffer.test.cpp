@@ -12,15 +12,15 @@
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Builtin/Memcmp.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Builtin/Memset.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Memset.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 #ifndef ZA_OPENGL_ES
@@ -40,7 +40,7 @@ using EBuffer = za::GLPersistentBuffer<EBO>;
 /// a readable mapping (`GL_MAP_READ_BIT`).
 ////////////////////////////////////////////////////////////
 template <typename TBufferObject>
-void readbackBufferBytes(const TBufferObject& obj, const zb::SizeT offset, const zb::SizeT size, unsigned char* const out)
+void readbackBufferBytes(const TBufferObject& obj, const za::SizeT offset, const za::SizeT size, unsigned char* const out)
 {
     glCheck(glGetNamedBufferSubData(obj.getId(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), out));
 }
@@ -80,8 +80,8 @@ struct ScopedPersistentBuffer
         // buffer object is replaced, otherwise the driver mapping leaks.
         buffer.unmapIfNeeded(obj);
 
-        obj    = ZB_MOVE(rhs.obj);
-        buffer = ZB_MOVE(rhs.buffer);
+        obj    = ZA_MOVE(rhs.obj);
+        buffer = ZA_MOVE(rhs.buffer);
 
         return *this;
     }
@@ -96,15 +96,15 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!zb::isCopyConstructible<VBuffer>);
-        STATIC_CHECK(!zb::isCopyAssignable<VBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveConstructible<VBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveAssignable<VBuffer>);
+        STATIC_CHECK(!za::isCopyConstructible<VBuffer>);
+        STATIC_CHECK(!za::isCopyAssignable<VBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveConstructible<VBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveAssignable<VBuffer>);
 
-        STATIC_CHECK(!zb::isCopyConstructible<EBuffer>);
-        STATIC_CHECK(!zb::isCopyAssignable<EBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveConstructible<EBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveAssignable<EBuffer>);
+        STATIC_CHECK(!za::isCopyConstructible<EBuffer>);
+        STATIC_CHECK(!za::isCopyAssignable<EBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveConstructible<EBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveAssignable<EBuffer>);
     }
 
     SECTION("Default-constructed state has no mapping")
@@ -210,7 +210,7 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         auto* const bytes = static_cast<unsigned char*>(sb.buffer.data());
         REQUIRE(bytes != nullptr);
 
-        ZB_MEMSET(bytes, 0x5A, 1024u);
+        ZA_MEMSET(bytes, 0x5A, 1024u);
 
         sb.buffer.flushBytesToGPU(sb.obj, /* byteOffset */ 0u, /* byteCount */ 1024u);
     }
@@ -243,10 +243,10 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         REQUIRE(writePtr != nullptr);
 
         unsigned char pattern[128];
-        for (zb::SizeT i = 0u; i < 128u; ++i)
+        for (za::SizeT i = 0u; i < 128u; ++i)
             pattern[i] = static_cast<unsigned char>((i * 17u) ^ 0xABu);
 
-        ZB_MEMCPY(writePtr, pattern, 128u);
+        ZA_MEMCPY(writePtr, pattern, 128u);
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         // Grow: internally memcpys the old [0, 128) range into the new mapping.
@@ -261,20 +261,20 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         unsigned char readback[128]{};
         readbackBufferBytes(sb.obj, /* offset */ 0u, /* size */ 128u, readback);
 
-        CHECK(ZB_MEMCMP(readback, pattern, 128u) == 0);
+        CHECK(ZA_MEMCMP(readback, pattern, 128u) == 0);
 
         // The rest of the grown buffer remains writable and round-trips through
         // the GL server.
         unsigned char tail[256];
-        for (zb::SizeT i = 0u; i < 256u; ++i)
+        for (za::SizeT i = 0u; i < 256u; ++i)
             tail[i] = static_cast<unsigned char>(i);
 
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u, tail, 256u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u, tail, 256u);
         sb.buffer.flushBytesToGPU(sb.obj, 128u, 256u);
 
         unsigned char tailReadback[256]{};
         readbackBufferBytes(sb.obj, 128u, 256u, tailReadback);
-        CHECK(ZB_MEMCMP(tailReadback, tail, 256u) == 0);
+        CHECK(ZA_MEMCMP(tailReadback, tail, 256u) == 0);
     }
 
     SECTION("Growth with preserveExistingData=false leaves a writable mapping")
@@ -285,23 +285,23 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         // The pre-growth contents are intentionally discarded by the grow path;
         // the spec only guarantees that the post-growth bytes are indeterminate,
         // so we don't assert anything about them.
-        ZB_MEMSET(sb.buffer.data(), 0xAB, 128u);
+        ZA_MEMSET(sb.buffer.data(), 0xAB, 128u);
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         REQUIRE(sb.buffer.reserve(sb.obj, 4096u, /* preserveExistingData */ false));
         REQUIRE(sb.buffer.data() != nullptr);
 
         unsigned char fresh[256];
-        for (zb::SizeT i = 0u; i < 256u; ++i)
+        for (za::SizeT i = 0u; i < 256u; ++i)
             fresh[i] = static_cast<unsigned char>((i + 7u) * 13u);
 
-        ZB_MEMCPY(sb.buffer.data(), fresh, 256u);
+        ZA_MEMCPY(sb.buffer.data(), fresh, 256u);
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 256u);
 
         unsigned char readback[256]{};
         readbackBufferBytes(sb.obj, 0u, 256u, readback);
 
-        CHECK(ZB_MEMCMP(readback, fresh, 256u) == 0);
+        CHECK(ZA_MEMCMP(readback, fresh, 256u) == 0);
     }
 
     SECTION("CPU writes through the mapping round-trip through glGetNamedBufferSubData")
@@ -310,38 +310,38 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         REQUIRE(sb.buffer.reserve(sb.obj, 512u, false));
 
         unsigned char pattern[512];
-        for (zb::SizeT i = 0u; i < 512u; ++i)
+        for (za::SizeT i = 0u; i < 512u; ++i)
             pattern[i] = static_cast<unsigned char>(i & 0xFFu);
 
-        ZB_MEMCPY(sb.buffer.data(), pattern, 512u);
+        ZA_MEMCPY(sb.buffer.data(), pattern, 512u);
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 512u);
 
         unsigned char readback[512]{};
         readbackBufferBytes(sb.obj, 0u, 512u, readback);
-        CHECK(ZB_MEMCMP(readback, pattern, 512u) == 0);
+        CHECK(ZA_MEMCMP(readback, pattern, 512u) == 0);
 
         // Partial overwrite + partial readback.
-        for (zb::SizeT i = 0u; i < 64u; ++i)
+        for (za::SizeT i = 0u; i < 64u; ++i)
             pattern[128u + i] = static_cast<unsigned char>(0xF0u - i);
 
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u, pattern + 128u, 64u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + 128u, pattern + 128u, 64u);
         sb.buffer.flushBytesToGPU(sb.obj, 128u, 64u);
 
         unsigned char slice[64]{};
         readbackBufferBytes(sb.obj, 128u, 64u, slice);
-        CHECK(ZB_MEMCMP(slice, pattern + 128u, 64u) == 0);
+        CHECK(ZA_MEMCMP(slice, pattern + 128u, 64u) == 0);
     }
 
     SECTION("Repeated grow-write-flush cycles succeed")
     {
         ScopedPersistentBuffer<VBO> sb;
 
-        for (zb::SizeT size = 64u; size <= 16u * 1024u; size *= 2u)
+        for (za::SizeT size = 64u; size <= 16u * 1024u; size *= 2u)
         {
             (void)sb.buffer.reserve(sb.obj, size, /* preserveExistingData */ true);
             REQUIRE(sb.buffer.data() != nullptr);
 
-            ZB_MEMSET(sb.buffer.data(), static_cast<int>(size & 0xFFu), size);
+            ZA_MEMSET(sb.buffer.data(), static_cast<int>(size & 0xFFu), size);
             sb.buffer.flushBytesToGPU(sb.obj, 0u, size);
         }
     }
@@ -367,7 +367,7 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         void* const originalPtr = source.buffer.data();
         REQUIRE(originalPtr != nullptr);
 
-        ScopedPersistentBuffer<VBO> dest{ZB_MOVE(source)};
+        ScopedPersistentBuffer<VBO> dest{ZA_MOVE(source)};
 
         CHECK(source.buffer.data() == nullptr);
         CHECK(dest.buffer.data() == originalPtr);
@@ -389,7 +389,7 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         REQUIRE(originalPtr != nullptr);
 
         ScopedPersistentBuffer<VBO> dest;
-        dest = ZB_MOVE(source);
+        dest = ZA_MOVE(source);
 
         CHECK(source.buffer.data() == nullptr);
         CHECK(dest.buffer.data() == originalPtr);
@@ -407,7 +407,7 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         #pragma GCC diagnostic push
         #pragma GCC diagnostic ignored "-Wself-move"
     #endif
-        sb.buffer = ZB_MOVE(sb.buffer);
+        sb.buffer = ZA_MOVE(sb.buffer);
     #if defined(__GNUC__)
         #pragma GCC diagnostic pop
     #endif
@@ -423,7 +423,7 @@ TEST_CASE("[GLUtils] za::GLPersistentBuffer" * tst::skip(skipDisplayTests))
         REQUIRE(sb.buffer.data() != nullptr);
 
         auto* const bytes = static_cast<unsigned char*>(sb.buffer.data());
-        ZB_MEMSET(bytes, 0x7F, 128u);
+        ZA_MEMSET(bytes, 0x7F, 128u);
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 128u);
 
         REQUIRE(sb.buffer.reserve(sb.obj, 4096u, /* preserveExistingData */ true));

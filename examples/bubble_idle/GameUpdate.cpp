@@ -12,10 +12,10 @@
 
 #include "Zancle/Graphics/DrawableBatch.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Clamp.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Math/Clamp.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& frameInput, FrameUpdateState& frameUpdate)
@@ -48,7 +48,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
         constexpr float dragOutSpeed = 2.5f;
 
         const float dragDelta = isCatBeingDragged(cat) ? deltaTimeMs * dragInSpeed : -deltaTimeMs * dragOutSpeed;
-        cat.dragTime          = zb::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
+        cat.dragTime          = za::clamp(cat.dragTime + dragDelta, 0.f, maxDragTime);
     }
 
     gameLoopUpdateCatDragging(deltaTimeMs, frameInput.downFingers.size(), frameInput.mousePos);
@@ -67,7 +67,7 @@ void Main::gameLoopUpdateFrameWorld(const float realDeltaTimeMs, FrameInput& fra
         if (delayCountdown.tick(deltaTimeMs) == TickResult::JustFinished)
             func();
 
-    zb::vectorEraseIf(delayedActions, [](const auto& delayedAction) { return delayedAction.delayCountdown.isDone(); });
+    za::vectorEraseIf(delayedActions, [](const auto& delayedAction) { return delayedAction.delayCountdown.isDone(); });
 
     // Reap ephemeral bubbles (e.g. from Bubblefall) that fell off the bottom
     // this frame. Must run after all bubble collision passes so that the

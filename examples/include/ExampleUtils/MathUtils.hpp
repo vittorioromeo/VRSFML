@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/Math/Exp.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/Exp.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
     const float newMin,
     const float newMax) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(oldMax != oldMin);
+    ZA_ASSERT_AND_ASSUME(oldMax != oldMin);
     return newMin + ((x - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
 }
 
@@ -50,9 +50,9 @@
     const float deltaTimeMs,
     const float timeToConverge) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(timeToConverge > 0.f);
+    ZA_ASSERT_AND_ASSUME(timeToConverge > 0.f);
 
-    const float factor = 1.f - zb::exp(-deltaTimeMs / timeToConverge);
+    const float factor = 1.f - za::exp(-deltaTimeMs / timeToConverge);
     return current + (target - current) * factor;
 }
 
@@ -64,8 +64,8 @@
     const float     deltaTimeMs,
     const float     timeToConverge) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(timeToConverge > 0.f);
+    ZA_ASSERT_AND_ASSUME(timeToConverge > 0.f);
 
-    const float factor = 1.f - zb::exp(-deltaTimeMs / timeToConverge);
+    const float factor = 1.f - za::exp(-deltaTimeMs / timeToConverge);
     return current + (target - current) * factor;
 }

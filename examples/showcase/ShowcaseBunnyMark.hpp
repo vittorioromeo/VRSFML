@@ -10,15 +10,15 @@
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -73,10 +73,10 @@ private:
     float m_time = 0.f;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<Bunny>             m_bunnies;
-    zb::Vector<za::Sprite>        m_sprites;
-    zb::Vector<BunnyInstanceData> m_instanceData;
-    zb::SizeT                     m_bunnyTargetCount = 100'000u;
+    za::Vector<Bunny>             m_bunnies;
+    za::Vector<za::Sprite>        m_sprites;
+    za::Vector<BunnyInstanceData> m_instanceData;
+    za::SizeT                     m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast  m_rng{/* seed */ 1234};
@@ -86,14 +86,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Instanced rendering resources
     ////////////////////////////////////////////////////////////
-    zb::Optional<za::Shader>                  m_instancedShader;
-    zb::Optional<za::Shader::UniformLocation> m_ulInvTexSize;
+    za::Optional<za::Shader>                  m_instancedShader;
+    za::Optional<za::Shader::UniformLocation> m_ulInvTexSize;
     za::VAOHandle                             m_vaoHandle;
     za::VBOHandle                             m_instanceVBO;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] za::Rect2f        addImgToAtlasWithRotatedHue(const za::Path& path, float hueDegrees);
-    [[nodiscard]] static zb::String toDigitSeparatedString(zb::SizeT value);
+    [[nodiscard]] static za::String toDigitSeparatedString(za::SizeT value);
 
     ////////////////////////////////////////////////////////////
     void drawInstanced();

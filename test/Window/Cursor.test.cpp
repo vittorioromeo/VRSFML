@@ -6,14 +6,14 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 TEST_CASE("[Window] za::Cursor" * tst::skip(skipDisplayTests))
 {
@@ -21,16 +21,16 @@ TEST_CASE("[Window] za::Cursor" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Cursor));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Cursor));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Cursor));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Cursor));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Cursor));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::Cursor));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Cursor));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Cursor));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Cursor));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Cursor));
     }
 
     SECTION("loadFromPixels()")
     {
-        static constexpr zb::U8 pixels[4]{};
+        static constexpr za::U8 pixels[4]{};
 
         CHECK(!za::Cursor::loadFromPixels(nullptr, {}, {}).hasValue());
         CHECK(!za::Cursor::loadFromPixels(pixels, {0, 1}, {}).hasValue());

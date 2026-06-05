@@ -1,45 +1,45 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/ThreadPool.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
 
-#include "Zancle/System/Atomic.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
 
 
 TEST_CASE("[Base] Base/ThreadPool.hpp")
 {
     SECTION("Construct with 1 worker")
     {
-        zb::ThreadPool pool(1u);
+        za::ThreadPool pool(1u);
         REQUIRE(pool.getWorkerCount() == 1u);
     }
 
     SECTION("Construct with 4 workers")
     {
-        zb::ThreadPool pool(4u);
+        za::ThreadPool pool(4u);
         REQUIRE(pool.getWorkerCount() == 4u);
     }
 
     SECTION("Construct with 8 workers")
     {
-        zb::ThreadPool pool(8u);
+        za::ThreadPool pool(8u);
         REQUIRE(pool.getWorkerCount() == 8u);
     }
 
     SECTION("Construct with 16 workers")
     {
-        zb::ThreadPool pool(16u);
+        za::ThreadPool pool(16u);
         REQUIRE(pool.getWorkerCount() == 16u);
     }
 
     SECTION("Construct with 32 workers")
     {
-        zb::ThreadPool pool(32u);
+        za::ThreadPool pool(32u);
         REQUIRE(pool.getWorkerCount() == 32u);
     }
 
     const auto doJoinTest = [](za::Atomic<int>& result, const int nTasks)
     {
-        zb::ThreadPool pool(4u);
+        za::ThreadPool pool(4u);
 
         for (int i = 0; i < nTasks; ++i)
             pool.post([&] { result.fetchAddRelaxed(1); });

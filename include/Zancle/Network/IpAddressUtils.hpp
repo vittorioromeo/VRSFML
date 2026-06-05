@@ -10,17 +10,17 @@
 
 #include "Zancle/Network/IpAddress.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace zb
+namespace za
 {
 class String;
-} // namespace zb
+} // namespace za
 
 
 namespace za
@@ -40,10 +40,10 @@ public:
     ///
     /// \param address IP address or network name
     ///
-    /// \return Address on success, `zb::nullOpt` otherwise
+    /// \return Address on success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<IpAddress> resolve(zb::StringView address);
+    [[nodiscard]] static za::Optional<IpAddress> resolve(za::StringView address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a string representation of the address
@@ -57,7 +57,7 @@ public:
     /// \see toInteger
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::String toString(IpAddress ipAddress);
+    [[nodiscard]] static za::String toString(IpAddress ipAddress);
 };
 
 } // namespace za

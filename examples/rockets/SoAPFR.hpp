@@ -1,23 +1,23 @@
 #pragma once
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IndexSequence.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/MakeIndexSequence.hpp"
-#include "ZancleBase/MiniPFR.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsMemberPointer.hpp"
-#include "ZancleBase/TypePackElement.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IndexSequence.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/MakeIndexSequence.hpp"
+#include "Zancle/Trait/MiniPFR.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsMemberPointer.hpp"
+#include "Zancle/Base/TypePackElement.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-template <zb::SizeT I, typename T>
+template <za::SizeT I, typename T>
 struct SoABase
 {
-    zb::Vector<T> data;
+    za::Vector<T> data;
 };
 
 } // namespace priv
@@ -28,26 +28,26 @@ class SoA;
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
-#define SOA_AS_BASE(I)       static_cast<priv::SoABase<I, ZB_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
-#define SOA_AS_CONST_BASE(I) static_cast<const priv::SoABase<I, ZB_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
+#define SOA_AS_BASE(I)       static_cast<priv::SoABase<I, ZA_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
+#define SOA_AS_CONST_BASE(I) static_cast<const priv::SoABase<I, ZA_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
 #define SOA_ALL_BASES()      static_cast<priv::SoABase<Is, Ts>&>(*this)
 
 ////////////////////////////////////////////////////////////
-template <typename T, zb::SizeT... Is, typename... Ts>
-class SoA<T, zb::IndexSequence<Is...>, Ts...> : private priv::SoABase<Is, Ts>...
+template <typename T, za::SizeT... Is, typename... Ts>
+class SoA<T, za::IndexSequence<Is...>, Ts...> : private priv::SoABase<Is, Ts>...
 {
 private:
     ////////////////////////////////////////////////////////////
     template <auto PM>
-    [[nodiscard]] static consteval zb::SizeT fieldIndexFromPM()
+    [[nodiscard]] static consteval za::SizeT fieldIndexFromPM()
     {
         // const auto& obj = minipfr::priv::getFakeObject<T>();
         constexpr T obj{};
 
-        auto result = static_cast<zb::SizeT>(-1);
+        auto result = static_cast<za::SizeT>(-1);
 
         (...,
-         ((static_cast<const void*>(&(zb::minipfr::getField<Is>(obj))) == static_cast<const void*>(&(obj.*PM)))
+         ((static_cast<const void*>(&(za::minipfr::getField<Is>(obj))) == static_cast<const void*>(&(obj.*PM)))
               ? (result = Is)
               : 0));
 
@@ -62,13 +62,13 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve(const zb::SizeT capacity)
+    [[gnu::always_inline]] void reserve(const za::SizeT capacity)
     {
         (..., SOA_ALL_BASES().data.reserve(capacity));
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(const zb::SizeT size)
+    [[gnu::always_inline]] void resize(const za::SizeT size)
     {
         (..., SOA_ALL_BASES().data.resize(size));
     }
@@ -76,30 +76,30 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void pushBack(const T& aos)
     {
-        emplaceBack(zb::minipfr::getField<Is>(aos)...);
+        emplaceBack(za::minipfr::getField<Is>(aos)...);
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void emplaceBack(auto&&... values)
     {
-        (..., SOA_ALL_BASES().data.emplaceBack(ZB_FORWARD(values)));
+        (..., SOA_ALL_BASES().data.emplaceBack(ZA_FORWARD(values)));
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] zb::SizeT getSize() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] za::SizeT getSize() const
     {
         return SOA_AS_CONST_BASE(0).data.size();
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT I>
+    template <za::SizeT I>
     [[nodiscard, gnu::always_inline]] auto& get() noexcept
     {
         return SOA_AS_BASE(I).data;
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT I>
+    template <za::SizeT I>
     [[nodiscard, gnu::always_inline]] const auto& get() const noexcept
     {
         return SOA_AS_CONST_BASE(I).data;
@@ -108,7 +108,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <auto PM>
     [[nodiscard, gnu::always_inline]] auto& get() noexcept
-        requires zb::isMemberPointer<decltype(PM)>
+        requires za::isMemberPointer<decltype(PM)>
     {
         return get<fieldIndexFromPM<PM>()>();
     }
@@ -116,85 +116,85 @@ public:
     ////////////////////////////////////////////////////////////
     template <auto PM>
     [[nodiscard, gnu::always_inline]] const auto& get() const noexcept
-        requires zb::isMemberPointer<decltype(PM)>
+        requires za::isMemberPointer<decltype(PM)>
     {
         return get<fieldIndexFromPM<PM>()>();
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT... Js>
-    [[gnu::always_inline]] void withNth(const zb::SizeT i, auto&& f)
+    template <za::SizeT... Js>
+    [[gnu::always_inline]] void withNth(const za::SizeT i, auto&& f)
     {
         f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void withAllNth(const zb::SizeT i, auto&& f)
+    [[gnu::always_inline]] void withAllNth(const za::SizeT i, auto&& f)
     {
         f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT... Js>
-    [[gnu::always_inline]] void withSubRange(const zb::SizeT start, const zb::SizeT end, auto&& f)
+    template <za::SizeT... Js>
+    [[gnu::always_inline]] void withSubRange(const za::SizeT start, const za::SizeT end, auto&& f)
     {
-        ZB_ASSERT(end <= getSize());
-        ZB_ASSERT(start <= end);
+        ZA_ASSERT(end <= getSize());
+        ZA_ASSERT(start <= end);
 
-        for (zb::SizeT i = start; i < end; ++i)
+        for (za::SizeT i = start; i < end; ++i)
             f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void withAllSubRange(const zb::SizeT start, const zb::SizeT end, auto&& f)
+    [[gnu::always_inline]] void withAllSubRange(const za::SizeT start, const za::SizeT end, auto&& f)
     {
-        ZB_ASSERT(end <= getSize());
-        ZB_ASSERT(start <= end);
+        ZA_ASSERT(end <= getSize());
+        ZA_ASSERT(start <= end);
 
-        for (zb::SizeT i = start; i < end; ++i)
+        for (za::SizeT i = start; i < end; ++i)
             f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT... Js>
+    template <za::SizeT... Js>
     [[gnu::always_inline]] void with(auto&& f)
     {
-        const zb::SizeT size = getSize();
+        const za::SizeT size = getSize();
 
-        for (zb::SizeT i = 0u; i < size; ++i)
+        for (za::SizeT i = 0u; i < size; ++i)
             f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
     template <auto... PMs>
     [[gnu::always_inline]] void with(auto&& f)
-        requires(... && zb::isMemberPointer<decltype(PMs)>)
+        requires(... && za::isMemberPointer<decltype(PMs)>)
     {
-        with<fieldIndexFromPM<PMs>()...>(ZB_FORWARD(f));
+        with<fieldIndexFromPM<PMs>()...>(ZA_FORWARD(f));
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void withAll(auto&& f)
     {
-        const zb::SizeT size = getSize();
+        const za::SizeT size = getSize();
 
-        for (zb::SizeT i = 0u; i < size; ++i)
+        for (za::SizeT i = 0u; i < size; ++i)
             f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT... Js>
+    template <za::SizeT... Js>
     void eraseIfByShifting(auto&& f)
     {
-        const zb::SizeT n = getSize();
+        const za::SizeT n = getSize();
 
         // Find the first element to remove.
-        zb::SizeT i = 0u;
+        za::SizeT i = 0u;
         while (i < n && !f(SOA_AS_BASE(Js).data[i]...))
             ++i;
 
         // For the remaining elements, shift over those that must be kept.
-        zb::SizeT newSize = i;
+        za::SizeT newSize = i;
 
         for (; i < n; ++i)
         {
@@ -202,7 +202,7 @@ public:
                 continue;
 
             if (newSize != i)
-                (..., (SOA_ALL_BASES().data[newSize] = ZB_MOVE(SOA_ALL_BASES().data[i])));
+                (..., (SOA_ALL_BASES().data[newSize] = ZA_MOVE(SOA_ALL_BASES().data[i])));
 
             ++newSize;
         }
@@ -212,18 +212,18 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT... Js>
+    template <za::SizeT... Js>
     void eraseIfBySwapping(auto&& f)
     {
-        zb::SizeT currentSize = getSize();
+        za::SizeT currentSize = getSize();
 
-        for (zb::SizeT i = currentSize; i-- > 0u;)
+        for (za::SizeT i = currentSize; i-- > 0u;)
         {
             if (!f(SOA_AS_BASE(Js).data[i]...))
                 continue;
 
             --currentSize;
-            (..., (SOA_ALL_BASES().data[i] = ZB_MOVE(SOA_ALL_BASES().data[currentSize])));
+            (..., (SOA_ALL_BASES().data[i] = ZA_MOVE(SOA_ALL_BASES().data[currentSize])));
         }
 
         (..., SOA_ALL_BASES().data.resize(currentSize));
@@ -232,9 +232,9 @@ public:
     ////////////////////////////////////////////////////////////
     template <auto... PMs>
     [[gnu::always_inline]] void eraseIfBySwapping(auto&& f)
-        requires(... && zb::isMemberPointer<decltype(PMs)>)
+        requires(... && za::isMemberPointer<decltype(PMs)>)
     {
-        eraseIfBySwapping<fieldIndexFromPM<PMs>()...>(ZB_FORWARD(f));
+        eraseIfBySwapping<fieldIndexFromPM<PMs>()...>(ZA_FORWARD(f));
     }
 };
 
@@ -248,13 +248,13 @@ template <typename, typename T>
 class SoAHelper;
 
 ////////////////////////////////////////////////////////////
-template <zb::SizeT... Is, typename T>
-class SoAHelper<zb::IndexSequence<Is...>, T>
+template <za::SizeT... Is, typename T>
+class SoAHelper<za::IndexSequence<Is...>, T>
 {
 public:
-    using Type = SoA<T, zb::IndexSequence<Is...>, zb::minipfr::FieldType<Is, T>...>;
+    using Type = SoA<T, za::IndexSequence<Is...>, za::minipfr::FieldType<Is, T>...>;
 };
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SoAFor = typename SoAHelper<ZB_MAKE_INDEX_SEQUENCE(zb::minipfr::numFields<T>), T>::Type;
+using SoAFor = typename SoAHelper<ZA_MAKE_INDEX_SEQUENCE(za::minipfr::numFields<T>), T>::Type;

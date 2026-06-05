@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline void streamToGPU(const unsigned int    bufferId,
                                                              const void* const     data,
-                                                             const zb::SizeT dataByteCount)
+                                                             const za::SizeT dataByteCount)
 {
 #ifdef ZA_OPENGL_ES
     // On OpenGL ES, the "naive" method seems faster, also named buffers are not supported
@@ -27,9 +27,9 @@
                               static_cast<GLsizeiptr>(dataByteCount),
                               GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
 
-    ZB_MEMCPY(ptr, data, dataByteCount);
+    ZA_MEMCPY(ptr, data, dataByteCount);
 
     [[maybe_unused]] const auto rc = glCheck(glUnmapNamedBuffer(bufferId));
-    ZB_ASSERT(rc == GL_TRUE);
+    ZA_ASSERT(rc == GL_TRUE);
 #endif
 }

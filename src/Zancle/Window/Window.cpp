@@ -16,16 +16,16 @@
 
 #include "Zancle/GLUtils/GlContext.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #ifdef ZA_SYSTEM_EMSCRIPTEN
     #include <emscripten.h>
@@ -62,22 +62,22 @@ EM_ASYNC_JS(void, zancle_yield_to_raf, (), {
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
-    zb::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
+    za::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                          clock;          //!< Clock for measuring the elapsed time between frames
     Time                           frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(zb::UniquePtr<priv::GlContext>&& theContext) : glContext(ZB_MOVE(theContext))
+    explicit Impl(za::UniquePtr<priv::GlContext>&& theContext) : glContext(ZA_MOVE(theContext))
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(zb::PassKey<Window>&&, WindowBase&& windowBase, const WindowSettings& windowSettings, unsigned int bitsPerPixel) :
-    WindowBase(ZB_MOVE(windowBase)),
+Window::Window(za::PassKey<Window>&&, WindowBase&& windowBase, const WindowSettings& windowSettings, unsigned int bitsPerPixel) :
+    WindowBase(ZA_MOVE(windowBase)),
     m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
-    ZB_ASSERT(m_impl->glContext != nullptr && "Failed to create GL context for window");
+    ZA_ASSERT(m_impl->glContext != nullptr && "Failed to create GL context for window");
 
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVerticalSyncEnabled(windowSettings.vsync);
@@ -90,31 +90,31 @@ Window::Window(zb::PassKey<Window>&&, WindowBase&& windowBase, const WindowSetti
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Window> Window::create(const WindowSettings& windowSettings)
+za::Optional<Window> Window::create(const WindowSettings& windowSettings)
 {
     auto windowBase = WindowBase::create(windowSettings);
 
     return windowBase.hasValue()
-               ? zb::Optional<Window>(zb::inPlace,
-                                      zb::PassKey<Window>{},
-                                      ZB_MOVE(*windowBase),
+               ? za::Optional<Window>(za::inPlace,
+                                      za::PassKey<Window>{},
+                                      ZA_MOVE(*windowBase),
                                       windowSettings,
                                       windowSettings.bitsPerPixel)
-               : zb::nullOpt;
+               : za::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
+za::Optional<Window> Window::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
     auto windowBase = WindowBase::create(handle);
 
     if (!windowBase.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::Optional<Window>(zb::inPlace,
-                                zb::PassKey<Window>{},
-                                ZB_MOVE(*windowBase),
+    return za::Optional<Window>(za::inPlace,
+                                za::PassKey<Window>{},
+                                ZA_MOVE(*windowBase),
                                 WindowSettings{.size{}, .contextSettings = contextSettings},
                                 VideoModeUtils::getDesktopMode().bitsPerPixel);
 }
@@ -135,7 +135,7 @@ Window::~Window()
 
     // Need to activate window context during destruction to avoid GL errors
     [[maybe_unused]] const bool rc = setActive(true);
-    ZB_ASSERT(rc);
+    ZA_ASSERT(rc);
 }
 
 
@@ -151,8 +151,8 @@ Window& Window::operator=(Window&& rhs) noexcept
 
     // Make sure the window is destroyed after the context,
     //  as SDL context activation requires the window to be alive
-    m_impl = ZB_MOVE(rhs.m_impl);
-    WindowBase::operator=(ZB_MOVE(rhs));
+    m_impl = ZA_MOVE(rhs.m_impl);
+    WindowBase::operator=(ZA_MOVE(rhs));
 
     return *this;
 }
@@ -161,7 +161,7 @@ Window& Window::operator=(Window&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 const ContextSettings& Window::getSettings() const
 {
-    ZB_ASSERT(m_impl->glContext != nullptr);
+    ZA_ASSERT(m_impl->glContext != nullptr);
     return m_impl->glContext->getSettings();
 }
 
@@ -191,7 +191,7 @@ void Window::setFramerateLimit(unsigned int limit)
 ////////////////////////////////////////////////////////////
 bool Window::setActive(bool active) const
 {
-    ZB_ASSERT(m_impl->glContext != nullptr);
+    ZA_ASSERT(m_impl->glContext != nullptr);
 
     if (WindowContext::setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;

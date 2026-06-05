@@ -8,11 +8,11 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/ContextSettings.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -41,12 +41,12 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] WindowSettings
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
-    zb::Optional<Vec2i> position{zb::nullOpt};    //!< Initial window position (`zb::nullOpt` lets the OS pick)
+    za::Optional<Vec2i> position{za::nullOpt};    //!< Initial window position (`za::nullOpt` lets the OS pick)
     Vec2u               size;                     //!< Window inner size in pixels (width, height)
-    zb::Optional<Vec2u> minimumSize{zb::nullOpt}; //!< Initial minimum size enforced on user resizes
-    zb::Optional<Vec2u> maximumSize{zb::nullOpt}; //!< Initial maximum size enforced on user resizes
+    za::Optional<Vec2u> minimumSize{za::nullOpt}; //!< Initial minimum size enforced on user resizes
+    za::Optional<Vec2u> maximumSize{za::nullOpt}; //!< Initial maximum size enforced on user resizes
     unsigned int        bitsPerPixel{32u};        //!< Pixel depth, in bits per pixel
     Utf8String          title{"Untitled Window"}; //!< Title displayed in the window's title bar
     bool                fullscreen{false};        //!< Whether the window is created in fullscreen mode

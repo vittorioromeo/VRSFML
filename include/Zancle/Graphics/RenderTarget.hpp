@@ -18,13 +18,13 @@
 #include "Zancle/Graphics/RenderStates.hpp"
 #include "Zancle/Graphics/Texture.hpp" // needed for `hasGenerationMismatch` to access `Texture::m_destructiveGeneration`
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/FunctionRef.hpp"
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Vocabulary/FunctionRef.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -82,11 +82,11 @@ public:
     struct DrawStatistics
     {
         unsigned int drawCalls{0u};     //!< Number of draw calls
-        zb::SizeT    drawnVertices{0u}; //!< Number of vertices drawn
+        za::SizeT    drawnVertices{0u}; //!< Number of vertices drawn
     };
 
     ////////////////////////////////////////////////////////////
-    enum : zb::SizeT
+    enum : za::SizeT
     {
         drawQuadsMaxQuadsPerCall = 65'536u, //!< Max quad count for `drawQuads` (precomputed-index-buffer capacity).
         drawQuadsMaxVerticesPerCall = drawQuadsMaxQuadsPerCall * 4u, //!< Max vertex count for `drawQuads` (multiple of 4).
@@ -227,7 +227,7 @@ public:
     /// \see `getAutoBatchVertexThreshold`
     ///
     ////////////////////////////////////////////////////////////
-    void setAutoBatchVertexThreshold(zb::SizeT threshold);
+    void setAutoBatchVertexThreshold(za::SizeT threshold);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the vertex threshold for auto-batching
@@ -237,7 +237,7 @@ public:
     /// \see `setAutoBatchVertexThreshold`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT getAutoBatchVertexThreshold() const;
+    [[nodiscard]] za::SizeT getAutoBatchVertexThreshold() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Reserve space in the current auto-batch for triangles
@@ -248,7 +248,7 @@ public:
     /// \param triangleCount Number of triangles to reserve for
     ///
     ////////////////////////////////////////////////////////////
-    void reserveAutoBatchTriangles(zb::SizeT triangleCount);
+    void reserveAutoBatchTriangles(za::SizeT triangleCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Reserve space in the current auto-batch for quads
@@ -259,7 +259,7 @@ public:
     /// \param quadCount Number of quads to reserve for
     ///
     ////////////////////////////////////////////////////////////
-    void reserveAutoBatchQuads(zb::SizeT quadCount);
+    void reserveAutoBatchQuads(za::SizeT quadCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target with default parameters
@@ -387,7 +387,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, zb::SizeT firstVertex, zb::SizeT vertexCount, const RenderStates& states = {});
+    void draw(const VertexBuffer& vertexBuffer, za::SizeT firstVertex, za::SizeT vertexCount, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape from its plain `*ShapeData` description
@@ -512,7 +512,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void drawInstancedVertices(const DrawInstancedVerticesSettings&            settings,
-                               zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                               za::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                const RenderStates&                             states = {});
 
     ////////////////////////////////////////////////////////////
@@ -529,7 +529,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&     settings,
-                                      zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                      za::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                       const RenderStates&                             states = {});
 
     ////////////////////////////////////////////////////////////
@@ -878,7 +878,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&            settings,
-                                        zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                        za::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                         const RenderStates&                             states);
 
     ////////////////////////////////////////////////////////////
@@ -889,7 +889,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&     settings,
-                                               zb::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
+                                               za::FunctionRef<void(InstanceAttributeBinder&)> setupFn,
                                                const RenderStates&                             states);
 
     ////////////////////////////////////////////////////////////
@@ -909,8 +909,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void updateCachedGenerations(const RenderStates& states)
     {
-        m_lastShaderGeneration  = states.shader != nullptr ? states.shader->m_uniformGeneration : zb::U32{0};
-        m_lastTextureGeneration = states.texture != nullptr ? states.texture->m_destructiveGeneration : zb::U32{0};
+        m_lastShaderGeneration  = states.shader != nullptr ? states.shader->m_uniformGeneration : za::U32{0};
+        m_lastTextureGeneration = states.texture != nullptr ? states.texture->m_destructiveGeneration : za::U32{0};
     }
 
     ////////////////////////////////////////////////////////////
@@ -925,7 +925,7 @@ private:
     {
         if (m_isStateLocked)
         {
-            ZB_ASSERT(m_lastRenderStates == states && !hasGenerationMismatch(states) &&
+            ZA_ASSERT(m_lastRenderStates == states && !hasGenerationMismatch(states) &&
                       "State mutation detected while inside a 'withLockedRenderStates' context!\n If you are "
                       "drawing Text, Shapes, or Sprites, you must explicitly bind their Texture to the context "
                       "upfront.");
@@ -1048,7 +1048,7 @@ private:
     /// \param vertexCount Number of vertices to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void invokePrimitiveDrawCall(PrimitiveType type, zb::SizeT firstVertex, zb::SizeT vertexCount);
+    void invokePrimitiveDrawCall(PrimitiveType type, za::SizeT firstVertex, za::SizeT vertexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: indexed
@@ -1062,7 +1062,7 @@ private:
     /// \param indexOffset Offset of the first index to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void invokePrimitiveDrawCallIndexed(PrimitiveType type, zb::SizeT indexCount, zb::SizeT indexOffset);
+    void invokePrimitiveDrawCallIndexed(PrimitiveType type, za::SizeT indexCount, za::SizeT indexOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: indexed with base vertex (not supported on OpenGL ES 3.1)
@@ -1078,9 +1078,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void invokePrimitiveDrawCallIndexedBaseVertex(PrimitiveType type,
-                                                  zb::SizeT     indexCount,
-                                                  zb::SizeT     indexOffset,
-                                                  zb::SizeT     vertexOffset);
+                                                  za::SizeT     indexCount,
+                                                  za::SizeT     indexOffset,
+                                                  za::SizeT     vertexOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: instanced, non-indexed
@@ -1095,7 +1095,7 @@ private:
     /// \param instanceCount Number of instances to draw
     ///
     ////////////////////////////////////////////////////////////
-    void invokeInstancedPrimitiveDrawCall(PrimitiveType type, zb::SizeT vertexOffset, zb::SizeT vertexCount, zb::SizeT instanceCount);
+    void invokeInstancedPrimitiveDrawCall(PrimitiveType type, za::SizeT vertexOffset, za::SizeT vertexCount, za::SizeT instanceCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invoke primitive draw call: instanced, indexed
@@ -1111,9 +1111,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     void invokeInstancedPrimitiveDrawCallIndexed(PrimitiveType type,
-                                                 zb::SizeT     indexOffset,
-                                                 zb::SizeT     indexCount,
-                                                 zb::SizeT     instanceCount);
+                                                 za::SizeT     indexOffset,
+                                                 za::SizeT     indexCount,
+                                                 za::SizeT     instanceCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Forward a draw description to the active auto-batch
@@ -1169,7 +1169,7 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    template <zb::SizeT N>
+    template <za::SizeT N>
     [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
     {
         drawVertices(
@@ -1228,17 +1228,17 @@ private:
     ////////////////////////////////////////////////////////////
     DrawStatistics m_currentDrawStats{};                       //!< Statistics for current draw calls
     AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
-    zb::SizeT      m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
-    zb::SizeT      m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
+    za::SizeT      m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
+    za::SizeT      m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates{};                       //!< Cached render states (autobatching)
-    zb::U32        m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
-    zb::U32        m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
+    za::U32        m_lastShaderGeneration{0};  //!< Cached shader uniform generation (autobatch invalidation)
+    za::U32        m_lastTextureGeneration{0}; //!< Cached texture destructive generation (autobatch invalidation)
     bool           m_isStateLocked{false}; //!< Whether render states are currently bound via `withLockedRenderStates`
     bool           m_isSrgb{false};        //!< Whether the target uses sRGB encoding (set at construction)
 
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 2560> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 2560> m_impl; //!< Implementation details
 };
 
 } // namespace za

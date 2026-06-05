@@ -261,13 +261,13 @@ TODO P0: update
     zb::InPlacePImpl<T, 128 /* buffer size */> pImpl(/* ...`T` constructor args... */);
 
     // Fast traits (zero instantiation via compiler built-ins, does not virally include expensive `<type_traits>`)
-    static_assert(ZB_IS_TRIVIALLY_COPYABLE(T));
+    static_assert(ZA_IS_TRIVIALLY_COPYABLE(T));
 
     // Fast math (uses compiler built-in if available)
     constexpr auto result = zb::cos(3.14f);
 
     // Fast index sequences (uses compiler built-in if available)
-    constexpr auto indexSequence = ZB_MAKE_INDEX_SEQUENCE(32);
+    constexpr auto indexSequence = ZA_MAKE_INDEX_SEQUENCE(32);
 
     // ...and much more...
     ```

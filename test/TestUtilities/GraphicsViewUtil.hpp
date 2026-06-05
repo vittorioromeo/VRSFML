@@ -10,5 +10,5 @@
 namespace za
 {
 // Found by ADL when a `View::ScissorRect` operand needs rendering.
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const View::ScissorRect& scissorRect) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const View::ScissorRect& scissorRect) noexcept;
 } // namespace za

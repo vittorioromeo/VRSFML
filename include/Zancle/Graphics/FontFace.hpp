@@ -10,12 +10,12 @@
 
 #include "Zancle/Graphics/Glyph.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -93,10 +93,10 @@ public:
     ///
     /// \param filename Path of the font file to load
     ///
-    /// \return `FontFace` on success, `zb::nullOpt` on failure
+    /// \return `FontFace` on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<FontFace> openFromFile(const Path& filename);
+    [[nodiscard]] static za::Optional<FontFace> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a font face from an encoded buffer in memory
@@ -108,10 +108,10 @@ public:
     /// \param data        Pointer to the encoded font bytes in memory
     /// \param sizeInBytes Size of the data, in bytes
     ///
-    /// \return `FontFace` on success, `zb::nullOpt` on failure
+    /// \return `FontFace` on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<FontFace> openFromMemory(const void* data, zb::SizeT sizeInBytes);
+    [[nodiscard]] static za::Optional<FontFace> openFromMemory(const void* data, za::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a font face from a custom input stream
@@ -122,10 +122,10 @@ public:
     ///
     /// \param stream Source stream to read encoded font data from
     ///
-    /// \return `FontFace` on success, `zb::nullOpt` on failure
+    /// \return `FontFace` on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<FontFace> openFromStream(InputStream& stream);
+    [[nodiscard]] static za::Optional<FontFace> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get general information about the font (family name, etc.)
@@ -229,12 +229,12 @@ public:
     /// \param bold             Whether to rasterize the bold version
     /// \param outlineThickness Outline thickness; pass `0` for the fill glyph
     ///
-    /// \return Rasterized `za::Glyph` on success, `zb::nullOpt` if the atlas is full
+    /// \return Rasterized `za::Glyph` on success, `za::nullOpt` if the atlas is full
     ///
     /// \note Not thread-safe due to internal FreeType caching.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Glyph> rasterizeAndPackGlyph(
+    [[nodiscard]] za::Optional<Glyph> rasterizeAndPackGlyph(
         TextureAtlas& atlas,
         char32_t      codePoint,
         unsigned int  characterSize,
@@ -256,31 +256,31 @@ public:
     /// \param atlas    Atlas to upload the rasterized bitmaps into
     /// \param settings Glyph load settings (range, character size, style, ...)
     ///
-    /// \return `GlyphMapping` on success, `zb::nullOpt` if the atlas is full
+    /// \return `GlyphMapping` on success, `za::nullOpt` if the atlas is full
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<GlyphMapping> loadGlyphs(TextureAtlas& atlas, const GlyphLoadSettings& settings) const;
+    [[nodiscard]] za::Optional<GlyphMapping> loadGlyphs(TextureAtlas& atlas, const GlyphLoadSettings& settings) const;
 
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Open from stream and print errors with custom message
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<FontFace> openFromStreamImpl(InputStream& stream, const char* type);
+    [[nodiscard]] static za::Optional<FontFace> openFromStreamImpl(InputStream& stream, const char* type);
 
 public:
     ////////////////////////////////////////////////////////////
     /// \private
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit FontFace(zb::PassKey<FontFace>&&);
+    [[nodiscard]] explicit FontFace(za::PassKey<FontFace>&&);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::UniquePtr<Impl> m_impl;
+    za::UniquePtr<Impl> m_impl;
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

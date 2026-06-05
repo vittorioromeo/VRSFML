@@ -14,14 +14,14 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Unreachable.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Unreachable.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #ifdef ZA_OPENGL_ES
-    #include "Zancle/System/Err.hpp"
+    #include "Zancle/Err/Err.hpp"
 
-    #include "ZancleBase/Abort.hpp"
+    #include "Zancle/Diagnostic/Abort.hpp"
 #endif
 
 
@@ -46,7 +46,7 @@ namespace
             return false;
     }
 
-    ZB_UNREACHABLE();
+    ZA_UNREACHABLE();
 }
 
 
@@ -65,7 +65,7 @@ namespace
     {
 #ifdef ZA_OPENGL_ES
         za::priv::errMsg("FATAL ERROR: per-instance `double` attributes are unsupported on OpenGL ES");
-        zb::abort();
+        za::abort();
 #else
         glCheck(glVertexAttribLPointer(/*  index */ location,
                                        /*   size */ static_cast<GLint>(size),
@@ -102,9 +102,9 @@ namespace
 namespace za
 {
 ////////////////////////////////////////////////////////////
-InstanceAttributeBinder::InstanceAttributeBinder(const zb::SizeT instanceCount) : m_instanceCount(instanceCount)
+InstanceAttributeBinder::InstanceAttributeBinder(const za::SizeT instanceCount) : m_instanceCount(instanceCount)
 {
-    ZB_ASSERT(instanceCount > 0u);
+    ZA_ASSERT(instanceCount > 0u);
 }
 
 ////////////////////////////////////////////////////////////
@@ -124,10 +124,10 @@ InstanceAttributeBinder::~InstanceAttributeBinder()
 
 
 ////////////////////////////////////////////////////////////
-void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const data, const zb::SizeT stride)
+void InstanceAttributeBinder::uploadData(VBOHandle& vboHandle, const void* const data, const za::SizeT stride)
 {
-    ZB_ASSERT(data != nullptr);
-    ZB_ASSERT(stride > 0u);
+    ZA_ASSERT(data != nullptr);
+    ZA_ASSERT(stride > 0u);
 
     m_currentVBOHandle        = &vboHandle;
     m_currentUploadByteOffset = vboHandle.uploadStreamingData(data, stride * m_instanceCount);
@@ -154,13 +154,13 @@ void InstanceAttributeBinder::setup(
     const unsigned int size,
     const GlDataType   type,
     const bool         normalized,
-    const zb::SizeT    stride,
-    const zb::SizeT    fieldOffset)
+    const za::SizeT    stride,
+    const za::SizeT    fieldOffset)
 {
-    ZB_ASSERT(size >= 1u && size <= 4u);
-    ZB_ASSERT(stride > 0u);
-    ZB_ASSERT(fieldOffset < stride);
-    ZB_ASSERT(m_currentVBOHandle != nullptr);
+    ZA_ASSERT(size >= 1u && size <= 4u);
+    ZA_ASSERT(stride > 0u);
+    ZA_ASSERT(fieldOffset < stride);
+    ZA_ASSERT(m_currentVBOHandle != nullptr);
     m_deferredSetups.emplaceBack(DeferredSetup{
         .vboHandle  = m_currentVBOHandle,
         .location   = location,

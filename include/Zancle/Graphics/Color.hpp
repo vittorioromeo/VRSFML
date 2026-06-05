@@ -8,14 +8,14 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/Builtin/Unreachable.hpp"
-#include "ZancleBase/ClampMacro.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/MinMaxMacros.hpp"
-#include "ZancleBase/Remainder.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Base/Unreachable.hpp"
+#include "Zancle/Math/ClampMacro.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMaxMacros.hpp"
+#include "Zancle/Math/Remainder.hpp"
 
 
 namespace za
@@ -32,7 +32,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     /// \param alpha Alpha channel of the white mask
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color whiteWithAlpha(const zb::U8 alpha)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color whiteWithAlpha(const za::U8 alpha)
     {
         return {255u, 255u, 255u, alpha};
     }
@@ -44,7 +44,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     /// \param alpha Alpha channel of the black mask
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color blackWithAlpha(const zb::U8 alpha)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color blackWithAlpha(const za::U8 alpha)
     {
         return {0u, 0u, 0u, alpha};
     }
@@ -68,15 +68,15 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
         const float b,
         const float a = 1.f)
     {
-        ZB_ASSERT_AND_ASSUME(r >= 0.f && r <= 1.f);
-        ZB_ASSERT_AND_ASSUME(g >= 0.f && g <= 1.f);
-        ZB_ASSERT_AND_ASSUME(b >= 0.f && b <= 1.f);
-        ZB_ASSERT_AND_ASSUME(a >= 0.f && a <= 1.f);
+        ZA_ASSERT_AND_ASSUME(r >= 0.f && r <= 1.f);
+        ZA_ASSERT_AND_ASSUME(g >= 0.f && g <= 1.f);
+        ZA_ASSERT_AND_ASSUME(b >= 0.f && b <= 1.f);
+        ZA_ASSERT_AND_ASSUME(a >= 0.f && a <= 1.f);
 
-        return {static_cast<zb::U8>(r * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
-                static_cast<zb::U8>(g * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
-                static_cast<zb::U8>(b * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
-                static_cast<zb::U8>(a * 255.f + 0.5f)}; // NOLINT(bugprone-incorrect-roundings)
+        return {static_cast<za::U8>(r * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
+                static_cast<za::U8>(g * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
+                static_cast<za::U8>(b * 255.f + 0.5f),  // NOLINT(bugprone-incorrect-roundings)
+                static_cast<za::U8>(a * 255.f + 0.5f)}; // NOLINT(bugprone-incorrect-roundings)
     }
 
 
@@ -90,12 +90,12 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     /// \param color Number containing the RGBA components (in that order)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromRGBA(const zb::U32 color)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromRGBA(const za::U32 color)
     {
-        return {static_cast<zb::U8>((color & 0xff'00'00'00) >> 24),
-                static_cast<zb::U8>((color & 0x00'ff'00'00) >> 16),
-                static_cast<zb::U8>((color & 0x00'00'ff'00) >> 8),
-                static_cast<zb::U8>((color & 0x00'00'00'ff) >> 0)};
+        return {static_cast<za::U8>((color & 0xff'00'00'00) >> 24),
+                static_cast<za::U8>((color & 0x00'ff'00'00) >> 16),
+                static_cast<za::U8>((color & 0x00'00'ff'00) >> 8),
+                static_cast<za::U8>((color & 0x00'00'00'ff) >> 0)};
     }
 
 
@@ -122,23 +122,23 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     /// \param alpha Alpha component (0 to 255)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromHSLA(HSL hsl, const zb::U8 alpha = 255u)
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromHSLA(HSL hsl, const za::U8 alpha = 255u)
     {
         auto& [hue, saturation, lightness] = hsl;
 
-        hue        = zb::positiveRemainder(hue, 360.f);
-        saturation = ZB_CLAMP(saturation, 0.f, 1.f);
-        lightness  = ZB_CLAMP(lightness, 0.f, 1.f);
+        hue        = za::positiveRemainder(hue, 360.f);
+        saturation = ZA_CLAMP(saturation, 0.f, 1.f);
+        lightness  = ZA_CLAMP(lightness, 0.f, 1.f);
 
         if (saturation == 0.f)
         {
-            const auto gray = static_cast<zb::U8>(lightness * 255.f + 0.5f); // NOLINT(bugprone-incorrect-roundings)
+            const auto gray = static_cast<za::U8>(lightness * 255.f + 0.5f); // NOLINT(bugprone-incorrect-roundings)
             return {gray, gray, gray, alpha};
         }
 
         // Uses standard HSL to RGB conversion intermediate values C, X, m
-        const float c = (1.f - ZB_MATH_FABSF(2.f * lightness - 1.f)) * saturation;
-        const float x = c * (1.f - ZB_MATH_FABSF(zb::positiveRemainder(hue / 60.f, 2.f) - 1.f));
+        const float c = (1.f - ZA_MATH_FABSF(2.f * lightness - 1.f)) * saturation;
+        const float x = c * (1.f - ZA_MATH_FABSF(za::positiveRemainder(hue / 60.f, 2.f) - 1.f));
         const float m = lightness - c / 2.f;
 
         float rPrime = 0.f;
@@ -147,7 +147,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
 
         // Uses hue segments (0-5) and a switch statement
         const int hueSegment = static_cast<int>(hue / 60.f); // Result is [0, 5] due to hue normalization
-        ZB_ASSERT_AND_ASSUME(hueSegment >= 0 && hueSegment <= 5);
+        ZA_ASSERT_AND_ASSUME(hueSegment >= 0 && hueSegment <= 5);
 
         // clang-format off
         switch (hueSegment)
@@ -160,14 +160,14 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
             case 5: rPrime = c;   gPrime = 0.f; bPrime = x;   break;
 
             default:
-                ZB_UNREACHABLE();
+                ZA_UNREACHABLE();
         }
         // clang-format on
 
         // NOLINTBEGIN(bugprone-incorrect-roundings)
-        return {static_cast<zb::U8>((rPrime + m) * 255.f + 0.5f),
-                static_cast<zb::U8>((gPrime + m) * 255.f + 0.5f),
-                static_cast<zb::U8>((bPrime + m) * 255.f + 0.5f),
+        return {static_cast<za::U8>((rPrime + m) * 255.f + 0.5f),
+                static_cast<za::U8>((gPrime + m) * 255.f + 0.5f),
+                static_cast<za::U8>((bPrime + m) * 255.f + 0.5f),
                 alpha};
         // NOLINTEND(bugprone-incorrect-roundings)
     }
@@ -191,15 +191,15 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
         const float gNorm = static_cast<float>(g) / 255.f;
         const float bNorm = static_cast<float>(b) / 255.f;
 
-        const float maxVal = ZB_MAX(ZB_MAX(rNorm, gNorm), bNorm);
-        const float minVal = ZB_MIN(ZB_MIN(rNorm, gNorm), bNorm);
+        const float maxVal = ZA_MAX(ZA_MAX(rNorm, gNorm), bNorm);
+        const float minVal = ZA_MIN(ZA_MIN(rNorm, gNorm), bNorm);
         const float chroma = maxVal - minVal;
 
         if (chroma == 0.f)
             return {0.f, 0.f, maxVal};
 
         const float lightness = (maxVal + minVal) / 2.f;
-        ZB_ASSERT(lightness != 0.f && lightness != 1.f);
+        ZA_ASSERT(lightness != 0.f && lightness != 1.f);
 
         float hue = (maxVal == rNorm   ? (gNorm - bNorm) / chroma
                      : maxVal == gNorm ? (bNorm - rNorm) / chroma + 2.f
@@ -210,7 +210,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
         if (hue < 0.f)
             hue += 360.f;
 
-        return {hue, chroma / (1.f - ZB_MATH_FABSF(2.f * lightness - 1.f)), lightness};
+        return {hue, chroma / (1.f - ZA_MATH_FABSF(2.f * lightness - 1.f)), lightness};
     }
 
 
@@ -225,9 +225,9 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     /// \return Color represented as a 32-bit unsigned integer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr zb::U32 toInteger() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr za::U32 toInteger() const
     {
-        return static_cast<zb::U32>((r << 24) | (g << 16) | (b << 8) | a);
+        return static_cast<za::U32>((r << 24) | (g << 16) | (b << 8) | a);
     }
 
 
@@ -240,7 +240,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ///         while G, B, and A components remain the same as the original color.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withRed(const zb::U8 red) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withRed(const za::U8 red) const
     {
         return {red, g, b, a};
     }
@@ -255,7 +255,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ///         while R, B, and A components remain the same as the original color.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withGreen(const zb::U8 green) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withGreen(const za::U8 green) const
     {
         return {r, green, b, a};
     }
@@ -270,7 +270,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ///         while R, G, and A components remain the same as the original color.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withBlue(const zb::U8 blue) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withBlue(const za::U8 blue) const
     {
         return {r, g, blue, a};
     }
@@ -285,7 +285,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ///         while R, G, and B components remain the same as the original color.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withAlpha(const zb::U8 alpha) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withAlpha(const za::U8 alpha) const
     {
         return {r, g, b, alpha};
     }
@@ -307,7 +307,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withRotatedHue(const float degrees) const
     {
         auto hsl = toHSL();
-        hsl.hue  = zb::positiveRemainder(hsl.hue + degrees, 360.f);
+        hsl.hue  = za::positiveRemainder(hsl.hue + degrees, 360.f);
         return fromHSLA(hsl, a);
     }
 
@@ -328,7 +328,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withSaturation(const float saturation) const
     {
         auto hsl       = toHSL();
-        hsl.saturation = ZB_CLAMP(saturation, 0.f, 1.f);
+        hsl.saturation = ZA_CLAMP(saturation, 0.f, 1.f);
         return fromHSLA(hsl, a);
     }
 
@@ -349,7 +349,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withLightness(const float lightness) const
     {
         auto hsl      = toHSL();
-        hsl.lightness = ZB_CLAMP(lightness, 0.f, 1.f);
+        hsl.lightness = ZA_CLAMP(lightness, 0.f, 1.f);
         return fromHSLA(hsl, a);
     }
 
@@ -360,7 +360,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     /// The vector's components (x, y, z, w) are assumed to be floating-point values
     /// in the range `[0, 1]` and correspond to R, G, B, A respectively.
     /// Values outside this range will be clamped. Each component is then scaled
-    /// by 255 and rounded to the nearest integer to fit into `zb::U8`.
+    /// by 255 and rounded to the nearest integer to fit into `za::U8`.
     ///
     /// \tparam TVec4 The type of the 4D vector (e.g., `za::Vector4f`).
     ///               It must have public `x, y, z, w` members.
@@ -374,7 +374,7 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr Color fromVec4(const TVec4& vec)
     {
         const auto convert = []<typename T>(const T value)
-        { return static_cast<zb::U8>(ZB_CLAMP(value * T{255}, T{0}, T{255})); };
+        { return static_cast<za::U8>(ZA_CLAMP(value * T{255}, T{0}, T{255})); };
 
         return {convert(vec.x), convert(vec.y), convert(vec.z), convert(vec.w)};
     }
@@ -549,10 +549,10 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator+(const Color lhs, const Color rhs)
     {
-        const auto clampedAdd = [] [[gnu::always_inline, gnu::flatten]] (const zb::U8 lc, const zb::U8 rc) -> zb::U8
+        const auto clampedAdd = [] [[gnu::always_inline, gnu::flatten]] (const za::U8 lc, const za::U8 rc) -> za::U8
         {
             const int intResult = int{lc} + int{rc};
-            return static_cast<zb::U8>(intResult < 255 ? intResult : 255);
+            return static_cast<za::U8>(intResult < 255 ? intResult : 255);
         };
 
         return {clampedAdd(lhs.r, rhs.r), clampedAdd(lhs.g, rhs.g), clampedAdd(lhs.b, rhs.b), clampedAdd(lhs.a, rhs.a)};
@@ -574,10 +574,10 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator-(const Color lhs, const Color rhs)
     {
-        const auto clampedSub = [] [[gnu::always_inline, gnu::flatten]] (const zb::U8 lc, const zb::U8 rc) -> zb::U8
+        const auto clampedSub = [] [[gnu::always_inline, gnu::flatten]] (const za::U8 lc, const za::U8 rc) -> za::U8
         {
             const int intResult = int{lc} - int{rc};
-            return static_cast<zb::U8>(intResult > 0 ? intResult : 0);
+            return static_cast<za::U8>(intResult > 0 ? intResult : 0);
         };
 
         return {clampedSub(lhs.r, rhs.r), clampedSub(lhs.g, rhs.g), clampedSub(lhs.b, rhs.b), clampedSub(lhs.a, rhs.a)};
@@ -601,10 +601,10 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] friend constexpr Color operator*(const Color lhs, const Color rhs)
     {
-        const auto scaledMul = [] [[gnu::always_inline, gnu::flatten]] (const zb::U8 lc, const zb::U8 rc) -> zb::U8
+        const auto scaledMul = [] [[gnu::always_inline, gnu::flatten]] (const za::U8 lc, const za::U8 rc) -> za::U8
         {
-            const auto uint16Result = static_cast<zb::U16>(zb::U16{lc} * zb::U16{rc});
-            return static_cast<zb::U8>(uint16Result / 255u);
+            const auto uint16Result = static_cast<za::U16>(za::U16{lc} * za::U16{rc});
+            return static_cast<za::U8>(uint16Result / 255u);
         };
 
         return {scaledMul(lhs.r, rhs.r), scaledMul(lhs.g, rhs.g), scaledMul(lhs.b, rhs.b), scaledMul(lhs.a, rhs.a)};
@@ -676,10 +676,10 @@ struct [[nodiscard]] ZA_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::U8 r{};     //!< Red component
-    zb::U8 g{};     //!< Green component
-    zb::U8 b{};     //!< Blue component
-    zb::U8 a{255u}; //!< Alpha (opacity) component
+    za::U8 r{};     //!< Red component
+    za::U8 g{};     //!< Green component
+    za::U8 b{};     //!< Blue component
+    za::U8 a{255u}; //!< Alpha (opacity) component
 };
 
 
@@ -785,7 +785,7 @@ inline constexpr Color Color::VeryDarkGray{32u, 32u, 32u};
 /// \li Blue
 /// \li Alpha (opacity)
 ///
-/// Each component is a public `zb::U8` member in the range
+/// Each component is a public `za::U8` member in the range
 /// `[0, 255]`. Colors can be constructed and manipulated very easily:
 ///
 /// \code

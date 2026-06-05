@@ -98,7 +98,7 @@ Non-exhaustive table:
 | `std::string_view` | `zb::StringView`  |
 | `std::array`       | `zb::Array`       |
 | `std::span`        | `zb::Span`        |
-| `assert(...)`      | `ZB_ASSERT(...)` |
+| `assert(...)`      | `ZA_ASSERT(...)` |
 | `std::uint8_t`     | `zb::U8`          |
 | `std::uint16_t`    | `zb::U16`         |
 | `std::uint32_t`    | `zb::U32`         |

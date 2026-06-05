@@ -12,14 +12,14 @@
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Builtin/Memcmp.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 #ifndef ZA_OPENGL_ES
@@ -35,7 +35,7 @@ using ERingBuffer = za::GLPersistentRingBuffer<EBO>;
 
 ////////////////////////////////////////////////////////////
 template <typename TBufferObject>
-void ringReadbackBufferBytes(const TBufferObject& obj, const zb::SizeT offset, const zb::SizeT size, unsigned char* const out)
+void ringReadbackBufferBytes(const TBufferObject& obj, const za::SizeT offset, const za::SizeT size, unsigned char* const out)
 {
     glCheck(glGetNamedBufferSubData(obj.getId(), static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), out));
 }
@@ -75,8 +75,8 @@ struct ScopedRingBuffer
             return *this;
 
         buffer.destroy(obj);
-        obj    = ZB_MOVE(rhs.obj);
-        buffer = ZB_MOVE(rhs.buffer);
+        obj    = ZA_MOVE(rhs.obj);
+        buffer = ZA_MOVE(rhs.buffer);
 
         return *this;
     }
@@ -84,9 +84,9 @@ struct ScopedRingBuffer
 
 
 ////////////////////////////////////////////////////////////
-void fillPattern(unsigned char* const dst, const zb::SizeT size, const unsigned char salt)
+void fillPattern(unsigned char* const dst, const za::SizeT size, const unsigned char salt)
 {
-    for (zb::SizeT i = 0u; i < size; ++i)
+    for (za::SizeT i = 0u; i < size; ++i)
         dst[i] = static_cast<unsigned char>((i * 11u) ^ (salt + 0x17u));
 }
 
@@ -99,15 +99,15 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!zb::isCopyConstructible<VRingBuffer>);
-        STATIC_CHECK(!zb::isCopyAssignable<VRingBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveConstructible<VRingBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveAssignable<VRingBuffer>);
+        STATIC_CHECK(!za::isCopyConstructible<VRingBuffer>);
+        STATIC_CHECK(!za::isCopyAssignable<VRingBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveConstructible<VRingBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveAssignable<VRingBuffer>);
 
-        STATIC_CHECK(!zb::isCopyConstructible<ERingBuffer>);
-        STATIC_CHECK(!zb::isCopyAssignable<ERingBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveConstructible<ERingBuffer>);
-        STATIC_CHECK(zb::isNoThrowMoveAssignable<ERingBuffer>);
+        STATIC_CHECK(!za::isCopyConstructible<ERingBuffer>);
+        STATIC_CHECK(!za::isCopyAssignable<ERingBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveConstructible<ERingBuffer>);
+        STATIC_CHECK(za::isNoThrowMoveAssignable<ERingBuffer>);
     }
 
     SECTION("Default-constructed state has no mapping and zero capacity")
@@ -251,7 +251,7 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 
         const auto lastCommitSnapshot = sb.buffer.beginWrite(sb.obj, 64u);
         // Uncommitted: scribble some CPU writes.
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + lastCommitSnapshot, "ABCDEFGHIJKLMNOP", 16u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + lastCommitSnapshot, "ABCDEFGHIJKLMNOP", 16u);
 
         sb.buffer.rollback();
 
@@ -319,12 +319,12 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         unsigned char pattern[512];
         fillPattern(pattern, 512u, /* salt */ 0x00u);
 
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offset, pattern, 512u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offset, pattern, 512u);
         sb.buffer.flushBytesToGPU(sb.obj, offset, 512u);
 
         unsigned char readback[512]{};
         ringReadbackBufferBytes(sb.obj, offset, 512u, readback);
-        CHECK(ZB_MEMCMP(readback, pattern, 512u) == 0);
+        CHECK(ZA_MEMCMP(readback, pattern, 512u) == 0);
     }
 
     SECTION("Multiple uploads within one commit cycle round-trip independently")
@@ -338,12 +338,12 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 
         const auto offsetA = sb.buffer.beginWrite(sb.obj, 128u);
         REQUIRE(offsetA == 0u);
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetA, patternA, 128u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetA, patternA, 128u);
         sb.buffer.flushBytesToGPU(sb.obj, offsetA, 128u);
 
         const auto offsetB = sb.buffer.beginWrite(sb.obj, 64u);
         REQUIRE(offsetB == 128u);
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetB, patternB, 64u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetB, patternB, 64u);
         sb.buffer.flushBytesToGPU(sb.obj, offsetB, 64u);
 
         sb.buffer.commit();
@@ -353,8 +353,8 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         ringReadbackBufferBytes(sb.obj, 0u, 128u, readbackA);
         ringReadbackBufferBytes(sb.obj, 128u, 64u, readbackB);
 
-        CHECK(ZB_MEMCMP(readbackA, patternA, 128u) == 0);
-        CHECK(ZB_MEMCMP(readbackB, patternB, 64u) == 0);
+        CHECK(ZA_MEMCMP(readbackA, patternA, 128u) == 0);
+        CHECK(ZA_MEMCMP(readbackB, patternB, 64u) == 0);
     }
 
     SECTION("Growth during a commit cycle preserves already-written data")
@@ -369,7 +369,7 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         // First write: sizes the buffer to exactly 100.
         const auto offsetA = sb.buffer.beginWrite(sb.obj, 100u);
         REQUIRE(offsetA == 0u);
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetA, patternA, 100u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetA, patternA, 100u);
         sb.buffer.flushBytesToGPU(sb.obj, offsetA, 100u);
 
         // Second write: forces `growForWrite` because capacity is exactly 100
@@ -377,7 +377,7 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         // uncommitted bytes via `GLPersistentBuffer::reserve(preserve=true)`.
         const auto offsetB = sb.buffer.beginWrite(sb.obj, 1024u);
         REQUIRE(offsetB == 100u);
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetB, patternB, 1024u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetB, patternB, 1024u);
 
         // Re-flush the preserved range in the new mapping, then flush the new write.
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 100u);
@@ -389,8 +389,8 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         ringReadbackBufferBytes(sb.obj, 0u, 100u, readbackA);
         ringReadbackBufferBytes(sb.obj, 100u, 1024u, readbackB);
 
-        CHECK(ZB_MEMCMP(readbackA, patternA, 100u) == 0);
-        CHECK(ZB_MEMCMP(readbackB, patternB, 1024u) == 0);
+        CHECK(ZA_MEMCMP(readbackA, patternA, 100u) == 0);
+        CHECK(ZA_MEMCMP(readbackB, patternB, 1024u) == 0);
     }
 
     SECTION("Growth re-flushes preserved bytes so earlier uploads stay visible")
@@ -404,14 +404,14 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 
         const auto offsetA = sb.buffer.beginWrite(sb.obj, 100u);
         REQUIRE(offsetA == 0u);
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetA, patternA, 100u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetA, patternA, 100u);
         sb.buffer.flushBytesToGPU(sb.obj, offsetA, 100u);
 
         // This second allocation forces a grow. The ring buffer must re-flush
         // the copied prefix internally, so callers only need to flush the new write.
         const auto offsetB = sb.buffer.beginWrite(sb.obj, 1024u);
         REQUIRE(offsetB == 100u);
-        ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetB, patternB, 1024u);
+        ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + offsetB, patternB, 1024u);
         sb.buffer.flushBytesToGPU(sb.obj, offsetB, 1024u);
 
         unsigned char readbackA[100]{};
@@ -419,8 +419,8 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         ringReadbackBufferBytes(sb.obj, 0u, 100u, readbackA);
         ringReadbackBufferBytes(sb.obj, 100u, 1024u, readbackB);
 
-        CHECK(ZB_MEMCMP(readbackA, patternA, 100u) == 0);
-        CHECK(ZB_MEMCMP(readbackB, patternB, 1024u) == 0);
+        CHECK(ZA_MEMCMP(readbackA, patternA, 100u) == 0);
+        CHECK(ZA_MEMCMP(readbackB, patternB, 1024u) == 0);
     }
 
     SECTION("Rollback + fresh commit overwrites cleanly")
@@ -434,7 +434,7 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 
         // Start a cycle, write garbage, roll it back before commit.
         const auto offset0 = sb.buffer.beginWrite(sb.obj, 256u);
-        ZB_MEMCPY(sb.buffer.data(), garbage, 256u);
+        ZA_MEMCPY(sb.buffer.data(), garbage, 256u);
         sb.buffer.flushBytesToGPU(sb.obj, offset0, 256u);
 
         sb.buffer.rollback();
@@ -442,13 +442,13 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         // Next cycle reuses [0, 256).
         const auto offset1 = sb.buffer.beginWrite(sb.obj, 256u);
         CHECK(offset1 == 0u);
-        ZB_MEMCPY(sb.buffer.data(), fresh, 256u);
+        ZA_MEMCPY(sb.buffer.data(), fresh, 256u);
         sb.buffer.flushBytesToGPU(sb.obj, offset1, 256u);
         sb.buffer.commit();
 
         unsigned char readback[256]{};
         ringReadbackBufferBytes(sb.obj, 0u, 256u, readback);
-        CHECK(ZB_MEMCMP(readback, fresh, 256u) == 0);
+        CHECK(ZA_MEMCMP(readback, fresh, 256u) == 0);
     }
 
     SECTION("DrawableBatch-style append pattern (drain at batch start, monotonic offsets)")
@@ -458,34 +458,34 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         // then reserveMoreVertices/Indices bump-allocate monotonically.
         ScopedRingBuffer<VBO> sb;
 
-        constexpr zb::SizeT chunkSize = 64u;
-        constexpr zb::SizeT numChunks = 8u;
-        constexpr zb::SizeT total     = chunkSize * numChunks;
+        constexpr za::SizeT chunkSize = 64u;
+        constexpr za::SizeT numChunks = 8u;
+        constexpr za::SizeT total     = chunkSize * numChunks;
 
         unsigned char expected[total];
-        for (zb::SizeT i = 0u; i < numChunks; ++i)
+        for (za::SizeT i = 0u; i < numChunks; ++i)
             fillPattern(expected + i * chunkSize, chunkSize, static_cast<unsigned char>(i));
 
         // Frame 1
         sb.buffer.drain(); // no-op, buffer is idle
-        for (zb::SizeT i = 0u; i < numChunks; ++i)
+        for (za::SizeT i = 0u; i < numChunks; ++i)
         {
             const auto writeOffset = sb.buffer.beginWrite(sb.obj, chunkSize);
             CHECK(writeOffset == i * chunkSize);
-            ZB_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + writeOffset, expected + writeOffset, chunkSize);
+            ZA_MEMCPY(static_cast<unsigned char*>(sb.buffer.data()) + writeOffset, expected + writeOffset, chunkSize);
         }
         sb.buffer.flushBytesToGPU(sb.obj, 0u, total);
         sb.buffer.commit();
 
         unsigned char readback[total]{};
         ringReadbackBufferBytes(sb.obj, 0u, total, readback);
-        CHECK(ZB_MEMCMP(readback, expected, total) == 0);
+        CHECK(ZA_MEMCMP(readback, expected, total) == 0);
 
         // Frame 2: drain (simulating clear), fill again from 0.
         ringDrainGLCommandQueue();
         sb.buffer.drain();
 
-        for (zb::SizeT i = 0u; i < numChunks; ++i)
+        for (za::SizeT i = 0u; i < numChunks; ++i)
         {
             const auto writeOffset = sb.buffer.beginWrite(sb.obj, chunkSize);
             CHECK(writeOffset == i * chunkSize);
@@ -534,7 +534,7 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         REQUIRE(originalPtr != nullptr);
         REQUIRE(originalCap >= 256u);
 
-        ScopedRingBuffer<VBO> dest{ZB_MOVE(source)};
+        ScopedRingBuffer<VBO> dest{ZA_MOVE(source)};
 
         CHECK(dest.buffer.data() == originalPtr);
         CHECK(dest.buffer.capacity() == originalCap);
@@ -558,7 +558,7 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         REQUIRE(originalPtr != nullptr);
 
         ScopedRingBuffer<VBO> dest;
-        dest = ZB_MOVE(source);
+        dest = ZA_MOVE(source);
 
         CHECK(dest.buffer.data() == originalPtr);
         CHECK(dest.buffer.capacity() == originalCap);
@@ -575,13 +575,13 @@ TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
         unsigned char pattern[256];
         fillPattern(pattern, 256u, /* salt */ 0xC9u);
 
-        ZB_MEMCPY(sb.buffer.data(), pattern, 256u);
+        ZA_MEMCPY(sb.buffer.data(), pattern, 256u);
         sb.buffer.flushBytesToGPU(sb.obj, 0u, 256u);
         sb.buffer.commit();
 
         unsigned char readback[256]{};
         ringReadbackBufferBytes(sb.obj, 0u, 256u, readback);
-        CHECK(ZB_MEMCMP(readback, pattern, 256u) == 0);
+        CHECK(ZA_MEMCMP(readback, pattern, 256u) == 0);
 
         ringDrainGLCommandQueue();
         sb.buffer.drain();

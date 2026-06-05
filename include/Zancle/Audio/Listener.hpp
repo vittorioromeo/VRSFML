@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
 
 namespace za

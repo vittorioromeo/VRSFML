@@ -4,9 +4,9 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -33,14 +33,14 @@ struct [[nodiscard]] Bubble
     // once at spawn so the color stays put even when earlier bubbles in the
     // vector get erased (which would otherwise shift every other bubble's
     // index-based hue).
-    zb::U32 hueSeed = 0u;
+    za::U32 hueSeed = 0u;
 
     // Combo (invincible) bubble state. After the first click, `comboTimerMs`
     // becomes the bespoke combo window: each subsequent click resets it; if it
     // reaches 0 the bubble pops with payout. `comboClickCount` is the running
     // tally of clicks on this bubble -- drives the payout magnitude.
     float   comboTimerMs    = 0.f;
-    zb::U32 comboClickCount = 0u;
+    za::U32 comboClickCount = 0u;
 
     // Pending bubble transformation (Unicat star, Devilcat bomb, ...).
     // While `pendingTransformMs > 0`, the bubble is frozen mid-air and inert
@@ -48,8 +48,8 @@ struct [[nodiscard]] Bubble
     // `pendingTransformTargetType`; if `pendingTransformCatIdx` is not the
     // sentinel (0xFFFF) it is credited in `bombIdxToCatIdx` at resolve time.
     float   pendingTransformMs         = 0.f;
-    zb::U8  pendingTransformTargetType = 0u;
-    zb::U16 pendingTransformCatIdx     = 0xFF'FFu;
+    za::U8  pendingTransformTargetType = 0u;
+    za::U16 pendingTransformCatIdx     = 0xFF'FFu;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline float getRadiusSquared() const

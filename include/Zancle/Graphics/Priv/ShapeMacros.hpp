@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Rect2.hpp" // IWYU pragma: keep
+#include "Zancle/Geometry/Rect2.hpp" // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////

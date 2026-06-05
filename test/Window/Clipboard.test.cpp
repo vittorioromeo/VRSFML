@@ -7,7 +7,7 @@
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
 
 #ifndef ZA_SYSTEM_EMSCRIPTEN // TODO P1: clipboard not implemented for emscripten

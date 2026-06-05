@@ -1,0 +1,31 @@
+#pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/Zancle/blob/master/license.md
+
+
+#if __has_builtin(__is_aggregate)
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_IS_AGGREGATE(...) __is_aggregate(__VA_ARGS__)
+
+#else
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+    #include <type_traits>
+
+
+    ////////////////////////////////////////////////////////////
+    #define ZA_IS_AGGREGATE(...) ::std::is_aggregate_v<__VA_ARGS__>
+
+#endif
+
+
+namespace za
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+inline constexpr bool isAggregate = ZA_IS_AGGREGATE(T);
+
+} // namespace za

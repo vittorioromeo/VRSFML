@@ -4,17 +4,17 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/RemoveConst.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/RemoveConst.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <limits>
 #include <string>
@@ -54,14 +54,14 @@
         CHECK(!packet.endOfPacket());                               \
         CHECK(bool{packet});                                        \
                                                                     \
-        ZB_REMOVE_CONST(decltype(expected)) received;               \
+        ZA_REMOVE_CONST(decltype(expected)) received;               \
         packet >> received;                                         \
         CHECK(packet.getReadPosition() == (size));                  \
         CHECK(packet.getData() != nullptr);                         \
         CHECK(packet.getDataSize() == (size));                      \
         CHECK(packet.endOfPacket());                                \
         CHECK(bool{packet});                                        \
-        CHECK(zb::String{expected} == zb::String{received});        \
+        CHECK(za::String{expected} == za::String{received});        \
     } while (false)
 
 #define CHECK_PACKET_WIDE_STRING_STREAM_OPERATORS(expected, size)                               \
@@ -75,7 +75,7 @@
         CHECK(!packet.endOfPacket());                                                           \
         CHECK(bool{packet});                                                                    \
                                                                                                 \
-        ZB_REMOVE_CONST(decltype(expected)) received;                                           \
+        ZA_REMOVE_CONST(decltype(expected)) received;                                           \
         packet >> received;                                                                     \
         CHECK(packet.getReadPosition() == (size));                                              \
         CHECK(packet.getData() != nullptr);                                                     \
@@ -97,10 +97,10 @@ TEST_CASE("[Network] za::Packet")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Packet));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Packet));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Packet));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Packet));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Packet));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Packet));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Packet));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Packet));
     }
 
     SECTION("Default constructor")
@@ -139,19 +139,19 @@ TEST_CASE("[Network] za::Packet")
 
         SECTION("16 bit int")
         {
-            packet << zb::U16{12'345};
+            packet << za::U16{12'345};
             const auto*                 dataPtr = static_cast<const std::byte*>(packet.getData());
-            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const zb::Vector<std::byte> expectedBytes{std::byte{0x39}, std::byte{0x30}};
+            const za::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const za::Vector<std::byte> expectedBytes{std::byte{0x39}, std::byte{0x30}};
             CHECK((bytes == expectedBytes));
         }
 
         SECTION("32 bit int")
         {
-            packet << zb::U32{1'234'567'890};
+            packet << za::U32{1'234'567'890};
             const auto*                 dataPtr = static_cast<const std::byte*>(packet.getData());
-            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const zb::Vector<std::byte> expectedBytes{std::byte{0xD2}, std::byte{0x02}, std::byte{0x96}, std::byte{0x49}};
+            const za::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const za::Vector<std::byte> expectedBytes{std::byte{0xD2}, std::byte{0x02}, std::byte{0x96}, std::byte{0x49}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -159,8 +159,8 @@ TEST_CASE("[Network] za::Packet")
         {
             packet << 123.456f;
             const auto*                 dataPtr = static_cast<const std::byte*>(packet.getData());
-            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const zb::Vector<std::byte> expectedBytes{std::byte{0x79}, std::byte{0xe9}, std::byte{0xf6}, std::byte{0x42}};
+            const za::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const za::Vector<std::byte> expectedBytes{std::byte{0x79}, std::byte{0xe9}, std::byte{0xf6}, std::byte{0x42}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -168,8 +168,8 @@ TEST_CASE("[Network] za::Packet")
         {
             packet << 789.123;
             const auto*                 dataPtr = static_cast<const std::byte*>(packet.getData());
-            const zb::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const zb::Vector<std::byte> expectedBytes{std::byte{0x44},
+            const za::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const za::Vector<std::byte> expectedBytes{std::byte{0x44},
                                                       std::byte{0x8b},
                                                       std::byte{0x6c},
                                                       std::byte{0xe7},
@@ -189,68 +189,68 @@ TEST_CASE("[Network] za::Packet")
             CHECK_PACKET_STREAM_OPERATORS(false);
         }
 
-        SECTION("zb::I8")
+        SECTION("za::I8")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::I8(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::I8(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I8>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I8>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::I8(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::I8(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I8>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I8>::max());
         }
 
-        SECTION("zb::U8")
+        SECTION("za::U8")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::U8(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::U8(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U8>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U8>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::U8(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::U8(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U8>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U8>::max());
         }
 
-        SECTION("zb::I16")
+        SECTION("za::I16")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::I16(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::I16(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I16>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I16>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::I16(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::I16(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I16>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I16>::max());
         }
 
-        SECTION("zb::U16")
+        SECTION("za::U16")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::U16(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::U16(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U16>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U16>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::U16(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::U16(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U16>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U16>::max());
         }
 
-        SECTION("zb::I32")
+        SECTION("za::I32")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::I32(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::I32(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I32>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I32>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::I32(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::I32(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I32>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I32>::max());
         }
 
-        SECTION("zb::U32")
+        SECTION("za::U32")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::U32(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::U32(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U32>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U32>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::U32(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::U32(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U32>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U32>::max());
         }
 
-        SECTION("zb::I64")
+        SECTION("za::I64")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::I64(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::I64(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I64>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::I64>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::I64(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::I64(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I64>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::I64>::max());
         }
 
-        SECTION("zb::U64")
+        SECTION("za::U64")
         {
-            CHECK_PACKET_STREAM_OPERATORS(zb::U64(0));
-            CHECK_PACKET_STREAM_OPERATORS(zb::U64(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U64>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<zb::U64>::max());
+            CHECK_PACKET_STREAM_OPERATORS(za::U64(0));
+            CHECK_PACKET_STREAM_OPERATORS(za::U64(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U64>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<za::U64>::max());
         }
 
         SECTION("float")
@@ -275,9 +275,9 @@ TEST_CASE("[Network] za::Packet")
             CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
-        SECTION("zb::String")
+        SECTION("za::String")
         {
-            const zb::String string = "testing";
+            const za::String string = "testing";
             CHECK_PACKET_NARROW_STRING_STREAM_OPERATORS(string, string.size() + 4);
         }
 
@@ -298,7 +298,7 @@ TEST_CASE("[Network] za::Packet")
     SECTION("onSend")
     {
         Packet    packet;
-        zb::SizeT size = 0;
+        za::SizeT size = 0;
         CHECK(packet.onSend(size) == nullptr);
         CHECK(size == 0);
 
@@ -320,7 +320,7 @@ TEST_CASE("[Network] za::Packet")
     {
         static constexpr struct
         {
-            zb::U32 length{std::numeric_limits<decltype(length)>::max()};
+            za::U32 length{std::numeric_limits<decltype(length)>::max()};
             char    data[4]{'S', 'F', 'M', 'L'};
         } string;
 

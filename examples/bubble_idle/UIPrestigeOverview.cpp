@@ -7,9 +7,9 @@
 
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <cstdio>
 
@@ -37,12 +37,12 @@ void Main::uiPrestigeDrawOverview()
 
     const auto currentPrestigeLevel    = pt->psvBubbleValue.nPurchases;
     const auto currentCompletedShrines = pt->nShrinesCompleted;
-    const auto maxPrestigeLevel        = zb::SizeT{20u};
+    const auto maxPrestigeLevel        = za::SizeT{20u};
 
-    zb::SizeT maxPurchaseablePrestigeLevel = currentPrestigeLevel;
+    za::SizeT maxPurchaseablePrestigeLevel = currentPrestigeLevel;
     MoneyType maxCost                      = 0u;
 
-    for (zb::SizeT iPrestige = currentPrestigeLevel + 1u; iPrestige < maxPrestigeLevel; ++iPrestige)
+    for (za::SizeT iPrestige = currentPrestigeLevel + 1u; iPrestige < maxPrestigeLevel; ++iPrestige)
     {
         const auto requiredMoney = static_cast<MoneyType>(
             pt->psvBubbleValue.cumulativeCostBetween(currentPrestigeLevel, iPrestige));
@@ -62,7 +62,7 @@ void Main::uiPrestigeDrawOverview()
     const auto prestigeTimes = maxPurchaseablePrestigeLevel - currentPrestigeLevel;
     const auto ppReward      = pt->calculatePrestigePointReward(prestigeTimes);
 
-    const auto printNextPrestigeRequirements = [&](const zb::SizeT level)
+    const auto printNextPrestigeRequirements = [&](const za::SizeT level)
     {
         const auto nextCost = static_cast<MoneyType>(pt->psvBubbleValue.cumulativeCostBetween(currentPrestigeLevel, level));
         const auto nextRequiredShrines = Playthrough::getShrinesCompletedNeededForPrestigeLevel(level);
@@ -109,7 +109,7 @@ void Main::uiPrestigeDrawOverview()
     uiState.uiButtonHueMod = 0.f;
     uiSetFontScale(0.75f);
 
-    const auto currentMult = static_cast<zb::SizeT>(pt->psvBubbleValue.currentValue()) + 1u;
+    const auto currentMult = static_cast<za::SizeT>(pt->psvBubbleValue.currentValue()) + 1u;
 
     if (prestigeTimes > 0u)
     {
@@ -143,7 +143,7 @@ void Main::uiPrestigeDrawOverview()
 
         uiSetFontScale(uiSubBulletFontScale);
         ImGui::InputInt("times##buypptimes", &buyPPTimes);
-        buyPPTimes = zb::clamp(buyPPTimes, 1, 100);
+        buyPPTimes = za::clamp(buyPPTimes, 1, 100);
         uiSetFontScale(uiNormalFontScale);
 
         ImGui::Columns(1);
@@ -153,7 +153,7 @@ void Main::uiPrestigeDrawOverview()
         if (maxCost == 0u)
             ImGui::Text("  not enough money to prestige");
 
-        const zb::SizeT shrinesNeeded = pt->getShrinesCompletedNeededForNextPrestige();
+        const za::SizeT shrinesNeeded = pt->getShrinesCompletedNeededForNextPrestige();
 
         if (pt->nShrinesCompleted < shrinesNeeded)
             ImGui::Text("  must complete %zu more shrine(s)", shrinesNeeded - pt->nShrinesCompleted);
@@ -184,7 +184,7 @@ void Main::uiPrestigeDrawOverview()
                                         done,
                                         "Undo your last PP purchase, refunding you the prestige points."))
         {
-            ZB_ASSERT(!undoPPPurchase.empty());
+            ZA_ASSERT(!undoPPPurchase.empty());
 
             undoPPPurchase.back()();
             undoPPPurchase.popBack();

@@ -15,14 +15,14 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Event.hpp"
 
-#include "Zancle/System/Android/Activity.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Window/Android/Activity.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
 
 #include <android/native_activity.h>
 #include <android/window.h>
@@ -452,7 +452,7 @@ void onConfigurationChanged(ANativeActivity* /* activity */)
 
 
 ////////////////////////////////////////////////////////////
-void* onSaveInstanceState(ANativeActivity* /* activity */, zb::SizeT* outLen)
+void* onSaveInstanceState(ANativeActivity* /* activity */, za::SizeT* outLen)
 {
     *outLen = 0;
     return nullptr;
@@ -490,7 +490,7 @@ void* main(ActivityStates* states)
 } // namespace za::priv
 
 ////////////////////////////////////////////////////////////
-JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, zb::SizeT savedStateSize)
+JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, za::SizeT savedStateSize)
 {
     // Create an activity states (will keep us in the know, about events we care)
     auto* states = new za::priv::ActivityStates();
@@ -552,8 +552,8 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     getFullScreenSizeInPixels(*activity, states->fullScreenSize.x, states->fullScreenSize.y);
 
     // Redirect error messages to logcat via the Fmt sink hook.
-    za::priv::setErrSink([](void* /*ctx*/, const char* data, zb::SizeT size) {
-        __android_log_write(ANDROID_LOG_INFO, "zancle-error", zb::String{data, size}.c_str());
+    za::priv::setErrSink([](void* /*ctx*/, const char* data, za::SizeT size) {
+        __android_log_write(ANDROID_LOG_INFO, "zancle-error", za::String{data, size}.c_str());
     }, nullptr);
 
     // Launch the main thread

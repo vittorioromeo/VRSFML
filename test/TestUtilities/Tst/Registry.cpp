@@ -8,8 +8,8 @@
 #include "Tst/Detail/Registry.hpp"
 #include "Tst/Detail/State.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -23,9 +23,9 @@
 namespace tst::detail
 {
 ////////////////////////////////////////////////////////////
-zb::Vector<TestCaseInfo>& registeredTestCases() noexcept
+za::Vector<TestCaseInfo>& registeredTestCases() noexcept
 {
-    static zb::Vector<TestCaseInfo> instance;
+    static za::Vector<TestCaseInfo> instance;
     return instance;
 }
 
@@ -53,10 +53,10 @@ void setTestCaseName(int index, const char* name) noexcept
 {
     auto& list = registeredTestCases();
 
-    if (index < 0 || static_cast<zb::SizeT>(index) >= list.size())
+    if (index < 0 || static_cast<za::SizeT>(index) >= list.size())
         return;
 
-    list.data()[static_cast<zb::SizeT>(index)].name = name;
+    list.data()[static_cast<za::SizeT>(index)].name = name;
 }
 
 
@@ -65,10 +65,10 @@ void setTestCaseSkip(int index, bool skip) noexcept
 {
     auto& list = registeredTestCases();
 
-    if (index < 0 || static_cast<zb::SizeT>(index) >= list.size())
+    if (index < 0 || static_cast<za::SizeT>(index) >= list.size())
         return;
 
-    list.data()[static_cast<zb::SizeT>(index)].skipped = skip;
+    list.data()[static_cast<za::SizeT>(index)].skipped = skip;
 }
 
 } // namespace tst::detail

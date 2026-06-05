@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 struct Doll;
@@ -12,7 +12,7 @@ struct Doll;
 // a witchcat) can keep hexed simultaneously. Bumping this constant is
 // sufficient for the underlying systems to support more concurrent hexes;
 // an upgrade that raises the effective limit can be layered on top later.
-inline constexpr zb::SizeT maxConcurrentHexes = 2u;
+inline constexpr za::SizeT maxConcurrentHexes = 2u;
 
 
 ////////////////////////////////////////////////////////////
@@ -21,8 +21,8 @@ inline constexpr zb::SizeT maxConcurrentHexes = 2u;
 // `Playthrough::cats`.
 struct [[nodiscard]] HexSession
 {
-    zb::SizeT        catIdx{0u};
-    zb::Vector<Doll> dolls;
+    za::SizeT        catIdx{0u};
+    za::Vector<Doll> dolls;
 
     HexSession();
     ~HexSession();

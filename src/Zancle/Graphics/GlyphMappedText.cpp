@@ -13,9 +13,9 @@
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za
@@ -70,7 +70,7 @@ void GlyphMappedText::setGlyphMapping(const FontFace& fontFace, const Texture& t
 ////////////////////////////////////////////////////////////
 const GlyphMapping& GlyphMappedText::getGlyphMapping() const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return *m_glyphMapping;
 }
 
@@ -78,7 +78,7 @@ const GlyphMapping& GlyphMappedText::getGlyphMapping() const
 ////////////////////////////////////////////////////////////
 bool GlyphMappedText::isBold() const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->bold;
 }
 
@@ -93,7 +93,7 @@ const GlyphMappedText& GlyphMappedText::getFontSource() const
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getKerning(const char32_t first, const char32_t second, const unsigned int characterSize, const bool bold) const
 {
-    ZB_ASSERT(m_fontFace != nullptr);
+    ZA_ASSERT(m_fontFace != nullptr);
     return m_fontFace->getKerning(first, second, characterSize, bold);
 }
 
@@ -104,7 +104,7 @@ const Glyph& GlyphMappedText::getGlyph(const char32_t     codePoint,
                                        const bool         bold,
                                        const float        outlineThickness) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getGlyph(codePoint, characterSize, bold, outlineThickness);
 }
 
@@ -116,7 +116,7 @@ GlyphMapping::GlyphPair GlyphMappedText::getFillAndOutlineGlyph(
     const bool         bold,
     const float        outlineThickness) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getFillAndOutlineGlyph(codePoint, characterSize, bold, outlineThickness);
 }
 
@@ -124,7 +124,7 @@ GlyphMapping::GlyphPair GlyphMappedText::getFillAndOutlineGlyph(
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getLineSpacing(const unsigned int characterSize) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getLineSpacing(characterSize);
 }
 
@@ -132,7 +132,7 @@ float GlyphMappedText::getLineSpacing(const unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getAscent(const unsigned int characterSize) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getAscent(characterSize);
 }
 
@@ -140,7 +140,7 @@ float GlyphMappedText::getAscent(const unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getDescent(const unsigned int characterSize) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getDescent(characterSize);
 }
 
@@ -148,7 +148,7 @@ float GlyphMappedText::getDescent(const unsigned int characterSize) const
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getUnderlinePosition(const unsigned int characterSize) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getUnderlinePosition(characterSize);
 }
 
@@ -156,7 +156,7 @@ float GlyphMappedText::getUnderlinePosition(const unsigned int characterSize) co
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getUnderlineThickness(const unsigned int characterSize) const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->getUnderlineThickness(characterSize);
 }
 
@@ -164,7 +164,7 @@ float GlyphMappedText::getUnderlineThickness(const unsigned int characterSize) c
 ////////////////////////////////////////////////////////////
 const Texture& GlyphMappedText::getTexture() const
 {
-    ZB_ASSERT(m_texture != nullptr);
+    ZA_ASSERT(m_texture != nullptr);
     return *m_texture;
 }
 
@@ -172,7 +172,7 @@ const Texture& GlyphMappedText::getTexture() const
 ////////////////////////////////////////////////////////////
 unsigned int GlyphMappedText::getCharacterSize() const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->characterSize;
 }
 
@@ -180,7 +180,7 @@ unsigned int GlyphMappedText::getCharacterSize() const
 ////////////////////////////////////////////////////////////
 float GlyphMappedText::getOutlineThickness() const
 {
-    ZB_ASSERT(m_glyphMapping != nullptr);
+    ZA_ASSERT(m_glyphMapping != nullptr);
     return m_glyphMapping->outlineThickness;
 }
 

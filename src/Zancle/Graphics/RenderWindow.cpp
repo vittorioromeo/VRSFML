@@ -18,19 +18,19 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 namespace za
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(zb::PassKey<RenderWindow>&&, Window&& window) : Window(ZB_MOVE(window))
+RenderWindow::RenderWindow(za::PassKey<RenderWindow>&&, Window&& window) : Window(ZA_MOVE(window))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
@@ -39,22 +39,22 @@ RenderWindow::RenderWindow(zb::PassKey<RenderWindow>&&, Window&& window) : Windo
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<RenderWindow> RenderWindow::create(const WindowSettings& windowSettings)
+za::Optional<RenderWindow> RenderWindow::create(const WindowSettings& windowSettings)
 {
     auto window = Window::create(windowSettings);
 
-    return window.hasValue() ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
-                             : zb::nullOpt;
+    return window.hasValue() ? za::Optional<RenderWindow>(za::inPlace, za::PassKey<RenderWindow>{}, ZA_MOVE(*window))
+                             : za::nullOpt;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<RenderWindow> RenderWindow::create(const WindowHandle handle, const ContextSettings& contextSettings)
+za::Optional<RenderWindow> RenderWindow::create(const WindowHandle handle, const ContextSettings& contextSettings)
 {
     auto window = Window::create(handle, contextSettings);
 
-    return window.hasValue() ? zb::Optional<RenderWindow>(zb::inPlace, zb::PassKey<RenderWindow>{}, ZB_MOVE(*window))
-                             : zb::nullOpt;
+    return window.hasValue() ? za::Optional<RenderWindow>(za::inPlace, za::PassKey<RenderWindow>{}, ZA_MOVE(*window))
+                             : za::nullOpt;
 }
 
 
@@ -71,7 +71,7 @@ RenderWindow::~RenderWindow()
 
     // Need to activate window context during destruction to avoid GL errors
     [[maybe_unused]] const bool rc = setActive(true);
-    ZB_ASSERT(rc);
+    ZA_ASSERT(rc);
 }
 
 

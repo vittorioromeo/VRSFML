@@ -13,19 +13,19 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Utf8String.hpp"
-#include "Zancle/System/Utf8StringCodepoints.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/String/Utf8String.hpp"
+#include "Zancle/String/Utf8StringCodepoints.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Restrict.hpp"
-#include "ZancleBase/Math/Ceil.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Floor.hpp"
-#include "ZancleBase/MinMaxMacros.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Restrict.hpp"
+#include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Floor.hpp"
+#include "Zancle/Math/MinMaxMacros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za::TextUtils
@@ -109,13 +109,13 @@ template <typename TFontSource>
 /// (underline / strikethrough).
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::SizeT precomputeTextQuadCount(const Utf8String& string, const bool isUnderlined, const bool isStrikeThrough)
+[[nodiscard]] inline za::SizeT precomputeTextQuadCount(const Utf8String& string, const bool isUnderlined, const bool isStrikeThrough)
 {
-    ZB_ASSERT(!string.empty());
+    ZA_ASSERT(!string.empty());
 
-    const zb::SizeT linesPerNewline = zb::SizeT{isUnderlined} + zb::SizeT{isStrikeThrough};
+    const za::SizeT linesPerNewline = za::SizeT{isUnderlined} + za::SizeT{isStrikeThrough};
 
-    zb::SizeT result          = 0u;
+    za::SizeT result          = 0u;
     char32_t  prevChar        = 0;
     bool      lineHasContents = false;
 
@@ -158,7 +158,7 @@ template <typename TFontSource>
 /// \brief Convenience overload that reads styling from a `TextData`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::SizeT precomputeTextQuadCount(const TextData& textData)
+[[nodiscard]] inline za::SizeT precomputeTextQuadCount(const TextData& textData)
 {
     if (textData.string.empty())
         return 0u;
@@ -172,8 +172,8 @@ template <typename TFontSource>
 template <typename F>
 [[gnu::always_inline]] inline void addLineImpl(
     F&&                       fTransform,
-    Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                index,
+    Vertex* const ZA_RESTRICT vertices,
+    za::SizeT&                index,
     const float               lineLength,
     const float               lineTop,
     const Color               color,
@@ -181,8 +181,8 @@ template <typename F>
     const float               thickness,
     const float               outlineThickness)
 {
-    const float top    = ZB_MATH_FLOORF(lineTop + offset - (thickness / 2.f) + 0.5f);
-    const float bottom = top + ZB_MATH_FLOORF(thickness + 0.5f);
+    const float top    = ZA_MATH_FLOORF(lineTop + offset - (thickness / 2.f) + 0.5f);
+    const float bottom = top + ZA_MATH_FLOORF(thickness + 0.5f);
 
     auto* ptr = vertices + index;
 
@@ -200,8 +200,8 @@ template <typename F>
 template <typename F>
 [[gnu::always_inline]] inline void addGlyphQuadImpl(
     F&&                       fTransform,
-    Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                index,
+    Vertex* const ZA_RESTRICT vertices,
+    za::SizeT&                index,
     const Vec2f               position,
     const Color               color,
     const Glyph&              glyph,
@@ -234,8 +234,8 @@ template <typename F>
 
 
 ////////////////////////////////////////////////////////////
-inline void addLine(Vertex* const ZB_RESTRICT vertices,
-                    zb::SizeT&                index,
+inline void addLine(Vertex* const ZA_RESTRICT vertices,
+                    za::SizeT&                index,
                     const float               lineLength,
                     const float               lineTop,
                     const Color               color,
@@ -250,8 +250,8 @@ inline void addLine(Vertex* const ZB_RESTRICT vertices,
 ////////////////////////////////////////////////////////////
 inline void addLinePreTransformed(
     const Transform&          transform,
-    Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                index,
+    Vertex* const ZA_RESTRICT vertices,
+    za::SizeT&                index,
     const float               lineLength,
     const float               lineTop,
     const Color               color,
@@ -266,8 +266,8 @@ inline void addLinePreTransformed(
 
 
 ////////////////////////////////////////////////////////////
-inline void addGlyphQuad(Vertex* const ZB_RESTRICT vertices,
-                         zb::SizeT&                index,
+inline void addGlyphQuad(Vertex* const ZA_RESTRICT vertices,
+                         za::SizeT&                index,
                          const Vec2f               position,
                          const Color               color,
                          const Glyph&              glyph,
@@ -280,8 +280,8 @@ inline void addGlyphQuad(Vertex* const ZB_RESTRICT vertices,
 ////////////////////////////////////////////////////////////
 inline void addGlyphQuadPreTransformed(
     const Transform&          transform,
-    Vertex* const ZB_RESTRICT vertices,
-    zb::SizeT&                index,
+    Vertex* const ZA_RESTRICT vertices,
+    za::SizeT&                index,
     const Vec2f               position,
     const Color               color,
     const Glyph&              glyph,
@@ -308,7 +308,7 @@ inline void addGlyphQuadPreTransformed(
 ////////////////////////////////////////////////////////////
 template <bool CalculateBounds, typename TFontSource>
 inline auto createTextGeometryAndGetBounds(
-    const zb::SizeT         outlineVertexCount,
+    const za::SizeT         outlineVertexCount,
     const TFontSource&      font,
     const Utf8String&       string,
     const TextLayoutInputs& inputs,
@@ -346,8 +346,8 @@ inline auto createTextGeometryAndGetBounds(
                                                                inputs.letterSpacing,
                                                                inputs.lineSpacing);
 
-    zb::SizeT currFillIndex    = outlineVertexCount;
-    zb::SizeT currOutlineIndex = 0u;
+    za::SizeT currFillIndex    = outlineVertexCount;
+    za::SizeT currOutlineIndex = 0u;
 
     float x = 0.f;
     auto  y = static_cast<float>(inputs.characterSize);
@@ -380,10 +380,10 @@ inline auto createTextGeometryAndGetBounds(
             const float newMinY = y + p1.y;
             const float newMaxY = y + p2.y;
 
-            minX = ZB_MIN(minX, newMinX);
-            maxX = ZB_MAX(maxX, newMaxX);
-            minY = ZB_MIN(minY, newMinY);
-            maxY = ZB_MAX(maxY, newMaxY);
+            minX = ZA_MIN(minX, newMinX);
+            maxX = ZA_MAX(maxX, newMaxX);
+            minY = ZA_MIN(minY, newMinY);
+            maxY = ZA_MAX(maxY, newMaxY);
         }
 
         x += fillGlyph.advance + finalLetterSpacing;
@@ -417,8 +417,8 @@ inline auto createTextGeometryAndGetBounds(
             // Update the current bounds (min coordinates)
             if constexpr (CalculateBounds)
             {
-                minX = ZB_MIN(minX, x);
-                minY = ZB_MIN(minY, y);
+                minX = ZA_MIN(minX, x);
+                minY = ZA_MIN(minY, y);
             }
 
             switch (curChar)
@@ -438,8 +438,8 @@ inline auto createTextGeometryAndGetBounds(
             // Update the current bounds (max coordinates)
             if constexpr (CalculateBounds)
             {
-                maxX = ZB_MAX(maxX, x);
-                maxY = ZB_MAX(maxY, y);
+                maxX = ZA_MAX(maxX, x);
+                maxY = ZA_MAX(maxY, y);
             }
 
             // Next glyph, no need to create a quad for whitespace
@@ -470,7 +470,7 @@ inline auto createTextGeometryAndGetBounds(
     {
         if (inputs.outlineThickness != 0.f)
         {
-            const float outline = ZB_MATH_CEILF(ZB_MATH_FABSF(inputs.outlineThickness));
+            const float outline = ZA_MATH_CEILF(ZA_MATH_FABSF(inputs.outlineThickness));
             minX -= outline;
             maxX += outline;
             minY -= outline;

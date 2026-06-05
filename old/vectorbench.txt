@@ -8,8 +8,8 @@
 
     // Assuming SFML base headers are accessible
     // You might need to adjust paths or provide the content if compiling standalone
-    #include "ZancleBase/InPlaceVector.hpp"
-    #include "ZancleBase/Vector.hpp"
+    #include "Zancle/Container/InPlaceVector.hpp"
+    #include "Zancle/Container/Vector.hpp"
 // VectorUtils.hpp is included by Vector.hpp and InPlaceVector.hpp
 
 // --- Dummy Obj and counters (not strictly needed for int, but keeps structure if you change type) ---

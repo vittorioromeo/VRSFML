@@ -8,11 +8,11 @@
 #include "ShapeDimension.hpp"
 #include "ShapeMatrix.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tsurv::tetramino_shapes
@@ -188,7 +188,7 @@ inline constexpr ShapeMatrix zR3{_, D, _, _,
 
 
 ////////////////////////////////////////////////////////////
-enum class TetraminoType : zb::U8
+enum class TetraminoType : za::U8
 {
     I = 0u,
     J = 1u,
@@ -201,13 +201,13 @@ enum class TetraminoType : zb::U8
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr zb::SizeT tetraminoShapeCount = 7u;
+inline constexpr za::SizeT tetraminoShapeCount = 7u;
 
 
 ////////////////////////////////////////////////////////////
 // This master array stores all rotation data
 // Indexing: tetraminoShapes[pieceType][rotationState]
-inline constexpr zb::Array<zb::Array<ShapeMatrix, shapeDimension>, tetraminoShapeCount> srsTetraminoShapes = {{
+inline constexpr za::Array<za::Array<ShapeMatrix, shapeDimension>, tetraminoShapeCount> srsTetraminoShapes = {{
     {iR0, iR1, iR2, iR3}, // 0: I-Piece
     {jR0, jR1, jR2, jR3}, // 1: J-Piece
     {lR0, lR1, lR2, lR3}, // 2: L-Piece
@@ -221,12 +221,12 @@ inline constexpr zb::Array<zb::Array<ShapeMatrix, shapeDimension>, tetraminoShap
 ////////////////////////////////////////////////////////////
 // These tables define the "kick" offsets to test for wall/floor collisions during rotation
 // There are 5 tests for each rotation (the first valid one is used)
-using KickTable = zb::Array<za::Vec2i, 5>;
+using KickTable = za::Array<za::Vec2i, 5>;
 
 
 ////////////////////////////////////////////////////////////
 // Kick data for J, L, S, T, Z pieces
-inline constexpr zb::Array<KickTable, 8> kickDataJLSTZ = {{
+inline constexpr za::Array<KickTable, 8> kickDataJLSTZ = {{
     /* 0 -> 1 */ {{{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}}},
     /* 1 -> 0 */ {{{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}},
     /* 1 -> 2 */ {{{0, 0}, {1, 0}, {1, 1}, {0, -2}, {1, -2}}},
@@ -240,7 +240,7 @@ inline constexpr zb::Array<KickTable, 8> kickDataJLSTZ = {{
 
 ////////////////////////////////////////////////////////////
 // Kick data for the I piece
-inline constexpr zb::Array<KickTable, 8> kickDataI = {{
+inline constexpr za::Array<KickTable, 8> kickDataI = {{
     /* 0 -> 1 */ {{{0, 0}, {-2, 0}, {1, 0}, {-2, 1}, {1, -2}}},
     /* 1 -> 0 */ {{{0, 0}, {2, 0}, {-1, 0}, {2, -1}, {-1, 2}}},
     /* 1 -> 2 */ {{{0, 0}, {-1, 0}, {2, 0}, {-1, -2}, {2, 1}}},

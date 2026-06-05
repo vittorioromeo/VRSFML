@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -28,17 +28,17 @@ namespace za::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::UniquePtr<SoundFileReader> createReader()
+za::UniquePtr<SoundFileReader> createReader()
 {
-    return zb::makeUnique<T>();
+    return za::makeUnique<T>();
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::UniquePtr<SoundFileWriter> createWriter()
+za::UniquePtr<SoundFileWriter> createWriter()
 {
-    return zb::makeUnique<T>();
+    return za::makeUnique<T>();
 }
 
 } // namespace za::priv
@@ -131,7 +131,7 @@ public:
     /// \see `createReaderFromMemory`, `createReaderFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::UniquePtr<SoundFileReader> createReaderFromFilename(const Path& filename);
+    [[nodiscard]] static za::UniquePtr<SoundFileReader> createReaderFromFilename(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -144,7 +144,7 @@ public:
     /// \see `createReaderFromFilename`, `createReaderFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, zb::SizeT sizeInBytes);
+    [[nodiscard]] static za::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, za::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in stream
@@ -156,7 +156,7 @@ public:
     /// \see `createReaderFromFilename`, `createReaderFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::UniquePtr<SoundFileReader> createReaderFromStream(InputStream& stream);
+    [[nodiscard]] static za::UniquePtr<SoundFileReader> createReaderFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right writer for the given file on disk
@@ -166,14 +166,14 @@ public:
     /// \return A new sound file writer that can write given file, or `nullptr` if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::UniquePtr<SoundFileWriter> createWriterFromFilename(const Path& filename);
+    [[nodiscard]] static za::UniquePtr<SoundFileWriter> createWriterFromFilename(const Path& filename);
 
 private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
     template <typename T>
-    using CreateFnPtr = zb::UniquePtr<T> (*)();
+    using CreateFnPtr = za::UniquePtr<T> (*)();
 
     using ReaderCheckFnPtr = bool (*)(InputStream&);
     using WriterCheckFnPtr = bool (*)(const Path&);
@@ -211,10 +211,10 @@ private:
 /// Usage example:
 /// \code
 /// za::SoundFileFactory::registerReader<MySoundFileReader>();
-/// ZB_ASSERT(za::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
+/// ZA_ASSERT(za::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
 ///
 /// za::SoundFileFactory::registerWriter<MySoundFileWriter>();
-/// ZB_ASSERT(za::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
+/// ZA_ASSERT(za::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
 /// \endcode
 ///
 /// \see `za::InputSoundFile`, `za::OutputSoundFile`, `za::SoundFileReader`, `za::SoundFileWriter`

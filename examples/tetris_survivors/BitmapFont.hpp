@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace tsurv
@@ -18,23 +18,23 @@ class [[nodiscard]] BitmapFont
 {
 private:
     //////////////////////////////////////////////////////////////
-    zb::Array<za::Rect2uz, 256> m_glyphRects;
+    za::Array<za::Rect2uz, 256> m_glyphRects;
 
 public:
     //////////////////////////////////////////////////////////////
     void addGlyph(const char c, const za::Vec2uz position, const za::Vec2uz size)
     {
-        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
+        ZA_ASSERT(static_cast<za::SizeT>(c) < m_glyphRects.size());
 
-        m_glyphRects[static_cast<zb::SizeT>(c)] = {position, size};
+        m_glyphRects[static_cast<za::SizeT>(c)] = {position, size};
     }
 
     //////////////////////////////////////////////////////////////
     [[nodiscard]] za::Rect2uz getGlyphRect(const char c) const
     {
-        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
+        ZA_ASSERT(static_cast<za::SizeT>(c) < m_glyphRects.size());
 
-        const auto& [glyphPos, glyphSize] = m_glyphRects[static_cast<zb::SizeT>(c)];
+        const auto& [glyphPos, glyphSize] = m_glyphRects[static_cast<za::SizeT>(c)];
 
         return {
             .position = glyphPos,
@@ -56,18 +56,18 @@ public:
     //////////////////////////////////////////////////////////////
     [[nodiscard]] za::Vec2uz getGlyphSize([[maybe_unused]] const char c) const
     {
-        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
+        ZA_ASSERT(static_cast<za::SizeT>(c) < m_glyphRects.size());
 
-        return m_glyphRects[static_cast<zb::SizeT>(c)].size;
+        return m_glyphRects[static_cast<za::SizeT>(c)].size;
     }
 
 
     //////////////////////////////////////////////////////////////
     void adjustSize(const char c, const za::Vec2i offset)
     {
-        ZB_ASSERT(static_cast<zb::SizeT>(c) < m_glyphRects.size());
+        ZA_ASSERT(static_cast<za::SizeT>(c) < m_glyphRects.size());
 
-        auto& glyphRect = m_glyphRects[static_cast<zb::SizeT>(c)];
+        auto& glyphRect = m_glyphRects[static_cast<za::SizeT>(c)];
         glyphRect.size  = (glyphRect.size.toVec2i() + offset).toVec2uz();
     }
 };

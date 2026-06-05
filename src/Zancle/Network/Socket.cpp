@@ -10,10 +10,10 @@
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Exchange.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Exchange.hpp"
 
 
 namespace za
@@ -24,7 +24,7 @@ Socket::Socket(Type type, SocketHandle handle, bool isBlocking) :
     m_socket(handle),
     m_isBlocking(isBlocking)
 {
-    ZB_ASSERT(handle != priv::SocketImpl::invalidSocket());
+    ZA_ASSERT(handle != priv::SocketImpl::invalidSocket());
 }
 
 
@@ -39,7 +39,7 @@ Socket::~Socket()
 ////////////////////////////////////////////////////////////
 Socket::Socket(Socket&& rhs) noexcept :
     m_type(rhs.m_type),
-    m_socket(zb::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
+    m_socket(za::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
     m_isBlocking(rhs.m_isBlocking)
 {
 }
@@ -55,7 +55,7 @@ Socket& Socket::operator=(Socket&& rhs) noexcept
         priv::SocketImpl::close(m_socket);
 
     m_type       = rhs.m_type;
-    m_socket     = zb::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket());
+    m_socket     = za::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket());
     m_isBlocking = rhs.m_isBlocking;
 
     return *this;
@@ -65,7 +65,7 @@ Socket& Socket::operator=(Socket&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 void Socket::setBlocking(bool blocking)
 {
-    ZB_ASSERT(m_socket != priv::SocketImpl::invalidSocket() &&
+    ZA_ASSERT(m_socket != priv::SocketImpl::invalidSocket() &&
               "Socket handle must be valid (constructed via factory, not moved-from or disconnected)");
 
     priv::SocketImpl::setBlocking(m_socket, blocking);
@@ -90,7 +90,7 @@ SocketHandle Socket::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Socket::configureTcpHandle(SocketHandle handle, bool isBlocking)
 {
-    ZB_ASSERT(handle != priv::SocketImpl::invalidSocket());
+    ZA_ASSERT(handle != priv::SocketImpl::invalidSocket());
 
     priv::SocketImpl::setBlocking(handle, isBlocking);
 
@@ -155,7 +155,7 @@ void Socket::closeHandle()
 ////////////////////////////////////////////////////////////
 unsigned short Socket::getLocalPortImpl(const char* socketTypeStr) const
 {
-    ZB_ASSERT(m_socket != priv::SocketImpl::invalidSocket() &&
+    ZA_ASSERT(m_socket != priv::SocketImpl::invalidSocket() &&
               "Socket handle must be valid (constructed via factory, not moved-from or disconnected)");
 
     priv::SockAddrIn address{};

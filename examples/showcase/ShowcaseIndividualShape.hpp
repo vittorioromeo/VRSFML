@@ -18,8 +18,8 @@
 #include "Zancle/Graphics/StarShapeData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
 ////////////////////////////////////////////////////////////

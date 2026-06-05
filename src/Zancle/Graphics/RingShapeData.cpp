@@ -9,7 +9,7 @@
 
 #include "Zancle/Graphics/Priv/EllipticalGlobalBounds.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
 
 namespace za

@@ -11,15 +11,15 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
@@ -40,11 +40,11 @@ TEST_CASE("[Window] za::WindowBase" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::WindowBase));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::WindowBase));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::WindowBase));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::WindowBase));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::WindowBase));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::WindowBase));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::WindowBase));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::WindowBase));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::WindowBase));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::WindowBase));
     }
 
     SECTION("Construction")

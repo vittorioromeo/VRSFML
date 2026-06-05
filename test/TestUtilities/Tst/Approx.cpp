@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "Tst/Approx.hpp"
 
-#include "ZancleBase/Math/Fabs.hpp"
+#include "Zancle/Math/Fabs.hpp"
 
 
 namespace tst
@@ -24,11 +24,11 @@ constexpr double defaultScale   = 1.0;
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool compareApprox(double lhs, double approxValue, double epsilon, double margin, double scale) noexcept
 {
-    const double absL    = zb::fabs(lhs);
-    const double absR    = zb::fabs(approxValue);
+    const double absL    = za::fabs(lhs);
+    const double absR    = za::fabs(approxValue);
     const double largest = absL > absR ? absL : absR;
 
-    return zb::fabs(lhs - approxValue) < epsilon * (scale + largest) + margin;
+    return za::fabs(lhs - approxValue) < epsilon * (scale + largest) + margin;
 }
 
 } // namespace
@@ -181,7 +181,7 @@ bool operator==(float value, const WithinAbs& m) noexcept
 ////////////////////////////////////////////////////////////
 bool operator==(double value, const WithinAbs& m) noexcept
 {
-    return zb::fabs(value - m.target) <= m.epsilon;
+    return za::fabs(value - m.target) <= m.epsilon;
 }
 } // namespace Matchers
 

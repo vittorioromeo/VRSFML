@@ -1,20 +1,20 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/System/Utf8StringCodepoints.hpp"
+#include "Zancle/String/Utf8StringCodepoints.hpp"
 
-#include "ZancleBase/Fmt/FmtAppendMixin.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
-#include "ZancleBase/InitializerList.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Swap.hpp"
-#include "ZancleBase/Trait/IsSame.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Fmt/FmtAppendMixin.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
+#include "Zancle/Base/InitializerList.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Base/Swap.hpp"
+#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -22,9 +22,9 @@ namespace
 namespace Utf8StringTest // for unity builds
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Vector<char32_t> collect(const za::Utf8String& s)
+[[nodiscard]] za::Vector<char32_t> collect(const za::Utf8String& s)
 {
-    zb::Vector<char32_t> out;
+    za::Vector<char32_t> out;
     for (const char32_t cp : s.codepoints())
         out.pushBack(cp);
     return out;
@@ -32,13 +32,13 @@ namespace Utf8StringTest // for unity builds
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool equals(const zb::Vector<char32_t>& vec, std::initializer_list<char32_t> expected)
+[[nodiscard]] bool equals(const za::Vector<char32_t>& vec, std::initializer_list<char32_t> expected)
 {
     if (vec.size() != expected.size())
         return false;
 
     const char32_t* it = expected.begin();
-    for (zb::SizeT i = 0; i < vec.size(); ++i, ++it)
+    for (za::SizeT i = 0; i < vec.size(); ++i, ++it)
         if (vec[i] != *it)
             return false;
 
@@ -73,18 +73,18 @@ TEST_CASE("[System] za::Utf8String - construction and basic accessors")
         CHECK(s.codepointCount() == 2u);
     }
 
-    SECTION("Construct from zb::StringView")
+    SECTION("Construct from za::StringView")
     {
-        const zb::StringView view = "view";
+        const za::StringView view = "view";
         const za::Utf8String s    = view;
         CHECK(s.byteSize() == 4u);
         CHECK(s.codepointCount() == 4u);
     }
 
-    SECTION("Construct from zb::String (move)")
+    SECTION("Construct from za::String (move)")
     {
-        zb::String           owning = "moved";
-        const za::Utf8String s      = static_cast<zb::String&&>(owning);
+        za::String           owning = "moved";
+        const za::Utf8String s      = static_cast<za::String&&>(owning);
         CHECK(s.byteSize() == 5u);
         CHECK(s.codepointCount() == 5u);
     }
@@ -231,7 +231,7 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
     SECTION("ASCII walk")
     {
         const za::Utf8String s = "abc";
-        zb::Vector<char32_t> out;
+        za::Vector<char32_t> out;
         s.forCodepoints([&](char32_t cp) { out.pushBack(cp); });
         CHECK(equals(out, {U'a', U'b', U'c'}));
     }
@@ -241,13 +241,13 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
         // "a" (1) + "é" (2) + "カ" (3) + "🐌" (4)
         const za::Utf8String s = "a\xC3\xA9\xE3\x82\xAB\xF0\x9F\x90\x8C";
 
-        zb::Vector<char32_t> viaCallback;
+        za::Vector<char32_t> viaCallback;
         s.forCodepoints([&](char32_t cp) { viaCallback.pushBack(cp); });
 
         const auto viaIterator = collect(s);
 
         CHECK(viaCallback.size() == viaIterator.size());
-        for (zb::SizeT i = 0; i < viaCallback.size(); ++i)
+        for (za::SizeT i = 0; i < viaCallback.size(); ++i)
             CHECK(viaCallback[i] == viaIterator[i]);
     }
 
@@ -262,7 +262,7 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
     SECTION("Truncated trailing sequence yields one replacement codepoint")
     {
         const za::Utf8String s = "\xF0\x9F";
-        zb::Vector<char32_t> out;
+        za::Vector<char32_t> out;
         s.forCodepoints([&](char32_t cp) { out.pushBack(cp); });
         CHECK(out.size() == 1u);
         CHECK(out[0] == za::Utf8String::replacementCodepoint);
@@ -271,7 +271,7 @@ TEST_CASE("[System] za::Utf8String - forCodepoints")
     SECTION("Callback may mutate captured state freely")
     {
         const za::Utf8String s          = "hello";
-        zb::SizeT            asciiCount = 0;
+        za::SizeT            asciiCount = 0;
         s.forCodepoints([&](char32_t cp)
         {
             if (cp < 0x80u)
@@ -321,7 +321,7 @@ TEST_CASE("[System] za::Utf8String - mutation")
     SECTION("operator+= with StringView")
     {
         za::Utf8String s = "ab";
-        s += zb::StringView{"cd"};
+        s += za::StringView{"cd"};
         CHECK(static_cast<bool>(s == za::Utf8String{"abcd"}));
     }
 
@@ -353,7 +353,7 @@ TEST_CASE("[System] za::Utf8String - mutation")
     {
         za::Utf8String s = "ab";
         s.append(za::Utf8String{"cd"});
-        s.append(zb::StringView{"ef"});
+        s.append(za::StringView{"ef"});
         s.append("gh");
         s.append("ij+ignored", 2u);
         CHECK(s == "abcdefghij");
@@ -407,21 +407,21 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
         CHECK("world" != s);
     }
 
-    SECTION("Equality with zb::StringView")
+    SECTION("Equality with za::StringView")
     {
         const za::Utf8String s    = "hello";
-        const zb::StringView view = "hello";
+        const za::StringView view = "hello";
         CHECK(static_cast<bool>(s == view));
         CHECK(static_cast<bool>(view == s));
 
-        const zb::StringView other = "world";
+        const za::StringView other = "world";
         CHECK(static_cast<bool>(s != other));
     }
 
-    SECTION("Implicit conversion to zb::StringView")
+    SECTION("Implicit conversion to za::StringView")
     {
         const za::Utf8String s = "hello";
-        const zb::StringView v = s;
+        const za::StringView v = s;
         CHECK(v.size() == 5u);
         CHECK(v.data() == s.data());
     }
@@ -435,22 +435,22 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
         CHECK(s.cStr()[3] == '\0');
     }
 
-    SECTION("asBytes exposes the underlying zb::String")
+    SECTION("asBytes exposes the underlying za::String")
     {
         const za::Utf8String s = "abc";
         CHECK(s.asBytes().size() == 3u);
-        CHECK(static_cast<bool>(s.asBytes() == zb::StringView{"abc"}));
+        CHECK(static_cast<bool>(s.asBytes() == za::StringView{"abc"}));
     }
 
     SECTION("asBytes() && moves the underlying bytes out (rvalue overload)")
     {
         // Use a string longer than the small-string-optimization threshold so
         // that the bytes live on the heap and the move-out can be observed via
-        // pointer identity. `zb::String::maxSsoSize` is 23 on a 64-bit build.
+        // pointer identity. `za::String::maxSsoSize` is 23 on a 64-bit build.
         za::Utf8String    s            = "this string is intentionally longer than SSO so it goes to the heap";
         const char* const originalData = s.data();
 
-        zb::String taken = static_cast<za::Utf8String&&>(s).asBytes();
+        za::String taken = static_cast<za::Utf8String&&>(s).asBytes();
 
         CHECK(taken.size() == 67u);
         CHECK(taken.data() == originalData); // heap pointer transferred, no copy
@@ -463,10 +463,10 @@ TEST_CASE("[System] za::Utf8String - equality and conversion")
 
         // `makeUtf8()` is an rvalue, so `.asBytes()` picks the && overload
         // and moves rather than returning a reference.
-        zb::String taken = makeUtf8().asBytes();
+        za::String taken = makeUtf8().asBytes();
 
         CHECK(taken.size() == 9u);
-        CHECK(static_cast<bool>(taken == zb::StringView{"transient"}));
+        CHECK(static_cast<bool>(taken == za::StringView{"transient"}));
     }
 }
 
@@ -488,8 +488,8 @@ TEST_CASE("[System] za::Utf8String - iterator byte pointer slicing")
     CHECK(it.bytePtr() == s.data() + 3u);
 
     // The substring [s.data(), it.bytePtr()) is the "caf" prefix.
-    const zb::StringView prefix{s.data(), static_cast<zb::SizeT>(it.bytePtr() - s.data())};
-    CHECK(static_cast<bool>(prefix == zb::StringView{"caf"}));
+    const za::StringView prefix{s.data(), static_cast<za::SizeT>(it.bytePtr() - s.data())};
+    CHECK(static_cast<bool>(prefix == za::StringView{"caf"}));
 }
 
 
@@ -532,10 +532,10 @@ TEST_CASE("[System] za::Utf8String - iterator operations")
     {
         // These should compile -- they're a static-properties check.
         using Iter = za::Utf8String::CodepointIter;
-        static_assert(ZB_IS_SAME(Iter::value_type, char32_t));
-        static_assert(ZB_IS_SAME(Iter::reference, char32_t));
-        static_assert(ZB_IS_SAME(Iter::pointer, const char32_t*));
-        static_assert(ZB_IS_SAME(Iter::difference_type, zb::PtrDiffT));
+        static_assert(ZA_IS_SAME(Iter::value_type, char32_t));
+        static_assert(ZA_IS_SAME(Iter::reference, char32_t));
+        static_assert(ZA_IS_SAME(Iter::pointer, const char32_t*));
+        static_assert(ZA_IS_SAME(Iter::difference_type, za::PtrDiffT));
 
         const za::Utf8String s  = "x";
         auto                 it = s.codepoints().begin();
@@ -552,33 +552,33 @@ TEST_CASE("[System] za::Utf8String - search/inspection")
 
     SECTION("startsWith")
     {
-        CHECK(s.startsWith(zb::StringView{"snail"}));
-        CHECK(!s.startsWith(zb::StringView{"cat"}));
-        CHECK(s.startsWith(zb::StringView{""}));
+        CHECK(s.startsWith(za::StringView{"snail"}));
+        CHECK(!s.startsWith(za::StringView{"cat"}));
+        CHECK(s.startsWith(za::StringView{""}));
     }
 
     SECTION("endsWith")
     {
         // 5 Japanese codepoints x 3 bytes = 15 bytes for "カタツムリ"
-        CHECK(s.endsWith(zb::StringView{"\xE3\x83\xAA"})); // 'リ' (3 bytes)
-        CHECK(!s.endsWith(zb::StringView{"snail"}));
+        CHECK(s.endsWith(za::StringView{"\xE3\x83\xAA"})); // 'リ' (3 bytes)
+        CHECK(!s.endsWith(za::StringView{"snail"}));
     }
 
     SECTION("contains")
     {
-        CHECK(s.contains(zb::StringView{"ail:"}));
-        CHECK(s.contains(zb::StringView{"\xE3\x82\xAB"})); // 'カ'
-        CHECK(!s.contains(zb::StringView{"dog"}));
+        CHECK(s.contains(za::StringView{"ail:"}));
+        CHECK(s.contains(za::StringView{"\xE3\x82\xAB"})); // 'カ'
+        CHECK(!s.contains(za::StringView{"dog"}));
     }
 
     SECTION("find returns byte offset of first match")
     {
         // ':' is at byte index 5 in "snail: ..."
-        CHECK(s.find(zb::StringView{":"}) == 5u);
+        CHECK(s.find(za::StringView{":"}) == 5u);
         // 'カ' starts at byte index 7 (after "snail: ")
-        CHECK(s.find(zb::StringView{"\xE3\x82\xAB"}) == 7u);
+        CHECK(s.find(za::StringView{"\xE3\x82\xAB"}) == 7u);
         // No match.
-        CHECK(s.find(zb::StringView{"zzz"}) == zb::StringView::nPos);
+        CHECK(s.find(za::StringView{"zzz"}) == za::StringView::nPos);
     }
 }
 
@@ -730,11 +730,11 @@ TEST_CASE("[System] za::Utf8String - swap")
         CHECK(b == "alpha");
     }
 
-    SECTION("zb::genericSwap dispatches to the member swap")
+    SECTION("za::genericSwap dispatches to the member swap")
     {
         za::Utf8String a = "one";
         za::Utf8String b = "two";
-        zb::genericSwap(a, b);
+        za::genericSwap(a, b);
         CHECK(a == "two");
         CHECK(b == "one");
     }
@@ -742,7 +742,7 @@ TEST_CASE("[System] za::Utf8String - swap")
     SECTION("Self-swap is a no-op")
     {
         za::Utf8String a = "self";
-        zb::genericSwap(a, a);
+        za::genericSwap(a, a);
         CHECK(a == "self");
     }
 }
@@ -800,7 +800,7 @@ TEST_CASE("[System] za::Utf8String - FmtAppendMixin (appendFmt / appendArg)")
     SECTION("appendFmt with multiple heterogeneous placeholders")
     {
         za::Utf8String s;
-        s.appendFmt("{}-{}-{}", 1, 'x', zb::StringView{"end"});
+        s.appendFmt("{}-{}-{}", 1, 'x', za::StringView{"end"});
         CHECK(s == "1-x-end");
     }
 
@@ -847,7 +847,7 @@ TEST_CASE("[System] za::Utf8String - FmtAppendMixin (appendFmt / appendArg)")
         s.appendArg(',' /*char*/);
         CHECK(s == "n=42,");
 
-        s.appendArg(zb::StringView{"tail"});
+        s.appendArg(za::StringView{"tail"});
         CHECK(s == "n=42,tail");
     }
 

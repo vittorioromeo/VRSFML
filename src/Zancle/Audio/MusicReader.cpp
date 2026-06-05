@@ -9,17 +9,17 @@
 
 #include "Zancle/Audio/InputSoundFile.hpp"
 
-#include "Zancle/System/AtomicMutex.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/LockGuard.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/AtomicMutex.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Concurrency/LockGuard.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 namespace za
@@ -30,15 +30,15 @@ struct MusicReader::Impl
     InputSoundFile file;  //!< Input sound file
     AtomicMutex    mutex; //!< Mutex protecting the data
 
-    explicit Impl(InputSoundFile&& theFile) : file(ZB_MOVE(theFile))
+    explicit Impl(InputSoundFile&& theFile) : file(ZA_MOVE(theFile))
     {
     }
 };
 
 
 ////////////////////////////////////////////////////////////
-MusicReader::MusicReader(zb::PassKey<MusicReader>&&, InputSoundFile&& file) :
-    m_impl(zb::makeUnique<Impl>(ZB_MOVE(file)))
+MusicReader::MusicReader(za::PassKey<MusicReader>&&, InputSoundFile&& file) :
+    m_impl(za::makeUnique<Impl>(ZA_MOVE(file)))
 {
 }
 
@@ -50,35 +50,35 @@ MusicReader& MusicReader::operator=(MusicReader&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(zb::Optional<InputSoundFile>&& optFile,
+za::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(za::Optional<InputSoundFile>&& optFile,
                                                                  const char* const              errorContext)
 {
     if (!optFile.hasValue())
     {
         priv::errMsg("Failed to open music from {}", errorContext);
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    return zb::makeOptional<MusicReader>(zb::PassKey<MusicReader>{}, ZB_MOVE(*optFile));
+    return za::makeOptional<MusicReader>(za::PassKey<MusicReader>{}, ZA_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<MusicReader> MusicReader::openFromFile(const Path& filename)
+za::Optional<MusicReader> MusicReader::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<MusicReader> MusicReader::openFromMemory(const void* const data, const zb::SizeT sizeInBytes)
+za::Optional<MusicReader> MusicReader::openFromMemory(const void* const data, const za::SizeT sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<MusicReader> MusicReader::openFromStream(InputStream& stream)
+za::Optional<MusicReader> MusicReader::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
@@ -113,14 +113,14 @@ const ChannelMap& MusicReader::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::U64 MusicReader::getSampleCount() const
+[[nodiscard]] za::U64 MusicReader::getSampleCount() const
 {
     return m_impl->file.getSampleCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-MusicReader::SeekAndReadResult MusicReader::seekAndRead(const zb::U64 sampleOffset, zb::I16* const samples, const zb::U64 maxCount)
+MusicReader::SeekAndReadResult MusicReader::seekAndRead(const za::U64 sampleOffset, za::I16* const samples, const za::U64 maxCount)
 {
     const LockGuard lock(m_impl->mutex);
 

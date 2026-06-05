@@ -10,15 +10,15 @@
 
 #include "Zancle/Window/WindowHandle.hpp"
 
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
-#include "Zancle/System/LocalAnchorPointMixin.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -65,14 +65,14 @@ public:
     /// video mode (see `za::VideoModeUtils::getFullscreenModes`).
     ///
     /// On failure (invalid settings, OS error, ...) returns
-    /// `zb::nullOpt`.
+    /// `za::nullOpt`.
     ///
     /// \param windowSettings Window creation parameters
     ///
-    /// \return The newly created window on success, `zb::nullOpt` on failure
+    /// \return The newly created window on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<WindowBase> create(const WindowSettings& windowSettings);
+    [[nodiscard]] static za::Optional<WindowBase> create(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a window wrapping an existing native control
@@ -83,10 +83,10 @@ public:
     ///
     /// \param handle Platform-specific handle of the control to attach to
     ///
-    /// \return The newly wrapped window on success, `zb::nullOpt` on failure
+    /// \return The newly wrapped window on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<WindowBase> create(WindowHandle handle);
+    [[nodiscard]] static za::Optional<WindowBase> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -124,23 +124,23 @@ public:
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
     ///
     /// This function is not blocking: if there's no pending event then
-    /// it will return a `zb::nullOpt`. Note that more than one event
+    /// it will return a `za::nullOpt`. Note that more than one event
     /// may be present in the event queue, thus you should always call
     /// this function in a loop to make sure that you process every
     /// pending event.
     /// \code
-    /// while (const zb::Optional event = window.pollEvent())
+    /// while (const za::Optional event = window.pollEvent())
     /// {
     ///    // process event...
     /// }
     /// \endcode
     ///
-    /// \return The potentially pending event, `zb::nullOpt` otherwise
+    /// \return The potentially pending event, `za::nullOpt` otherwise
     ///
     /// \see `waitEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Event> pollEvent();
+    [[nodiscard]] za::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Wait for an event and return it
@@ -148,12 +148,12 @@ public:
     /// This function is blocking: if there's no pending event then
     /// it will wait until an event is received or until the provided
     /// timeout elapses. Only if an error or a timeout occurs the
-    /// returned event will be `zb::nullOpt`.
+    /// returned event will be `za::nullOpt`.
     /// This function is typically used when you have a thread that is
     /// dedicated to events handling: you want to make this thread sleep
     /// as long as no new event is received.
     /// \code
-    /// while (const zb::Optional event = window.waitEvent())
+    /// while (const za::Optional event = window.waitEvent())
     /// {
     ///    // process event...
     /// }
@@ -161,13 +161,13 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time{}` for infinite)
     ///
-    /// \return The event on success, `zb::nullOpt` on timeout or if window was closed
+    /// \return The event on success, `za::nullOpt` on timeout or if window was closed
     ///
     /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Event> waitEvent();
-    [[nodiscard]] zb::Optional<Event> waitEvent(Time timeout);
+    [[nodiscard]] za::Optional<Event> waitEvent();
+    [[nodiscard]] za::Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -302,26 +302,26 @@ public:
     ///
     /// The OS will prevent the user from resizing the window
     /// below this size. Use the `Optional` overload and pass
-    /// `zb::nullOpt` to clear any previously set minimum.
+    /// `za::nullOpt` to clear any previously set minimum.
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMinimumSize(const Vec2u& minimumSize);
-    void setMinimumSize(const zb::Optional<Vec2u>& minimumSize);
+    void setMinimumSize(const za::Optional<Vec2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
     /// The OS will prevent the user from resizing the window
     /// above this size. Use the `Optional` overload and pass
-    /// `zb::nullOpt` to clear any previously set maximum.
+    /// `za::nullOpt` to clear any previously set maximum.
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
     void setMaximumSize(const Vec2u& maximumSize);
-    void setMaximumSize(const zb::Optional<Vec2u>& maximumSize);
+    void setMaximumSize(const za::Optional<Vec2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -349,7 +349,7 @@ public:
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(const zb::U8* pixels, Vec2u size);
+    void setIcon(const za::U8* pixels, Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -586,7 +586,7 @@ public:
     /// \brief Construct a window base from the inner implementation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(zb::PassKey<WindowBase>&&, zb::UniquePtr<priv::SDLWindowImpl>&& impl);
+    [[nodiscard]] explicit WindowBase(za::PassKey<WindowBase>&&, za::UniquePtr<priv::SDLWindowImpl>&& impl);
 
 private:
     friend class Window;
@@ -609,12 +609,12 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Event> filterEvent(zb::Optional<Event> event);
+    [[nodiscard]] za::Optional<Event> filterEvent(za::Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::UniquePtr<priv::SDLWindowImpl> m_impl; //!< Platform-specific implementation of the window
+    za::UniquePtr<priv::SDLWindowImpl> m_impl; //!< Platform-specific implementation of the window
     Vec2u                              m_size; //!< Current size of the window
 };
 
@@ -652,7 +652,7 @@ private:
 /// while (true)
 /// {
 ///     // Event processing
-///     while (const zb::Optional event = window.pollEvent())
+///     while (const za::Optional event = window.pollEvent())
 ///     {
 ///         // Request for closing the window
 ///         if (event->is<za::Event::Closed>())

@@ -8,16 +8,16 @@
 #include "Tst/Approx.hpp"
 #include "Tst/Detail/StringifyValue.hpp"
 
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtCString.hpp" // IWYU pragma: keep
-#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "ZancleBase/Fmt/FmtSink.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtCString.hpp" // IWYU pragma: keep
+#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+#include "Zancle/Fmt/FmtSink.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -32,20 +32,20 @@
 namespace tst::detail
 {
 ////////////////////////////////////////////////////////////
-zb::SizeT copyInto(char* buf, zb::SizeT cap, const char* data, zb::SizeT n) noexcept
+za::SizeT copyInto(char* buf, za::SizeT cap, const char* data, za::SizeT n) noexcept
 {
-    const zb::SizeT toCopy = n < cap ? n : cap;
+    const za::SizeT toCopy = n < cap ? n : cap;
     if (toCopy != 0u)
-        ZB_MEMCPY(buf, data, toCopy);
+        ZA_MEMCPY(buf, data, toCopy);
     return toCopy;
 }
 
 
 ////////////////////////////////////////////////////////////
 #define ZA_TST_DEFINE_STRINGIFY_NUMERIC(T)                           \
-    zb::SizeT stringifyValue(char* buf, zb::SizeT cap, T v) noexcept \
+    za::SizeT stringifyValue(char* buf, za::SizeT cap, T v) noexcept \
     {                                                                \
-        zb::FmtSink sink{buf, cap};                                  \
+        za::FmtSink sink{buf, cap};                                  \
         (void)sink.fmt("{}", v);                                     \
         return sink.size();                                          \
     }
@@ -68,27 +68,27 @@ ZA_TST_DEFINE_STRINGIFY_NUMERIC(long double)
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, bool v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, bool v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
     (void)sink.append(v ? "true" : "false", v ? 4u : 5u);
     return sink.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, char v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, char v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
     (void)sink.fmt("'{}'", v);
     return sink.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const char* v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const char* v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
 
     if (v == nullptr)
         (void)sink.append("<null>", 6u);
@@ -101,9 +101,9 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const char* v) noexcept
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec2<T>& v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Vec2<T>& v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
     (void)sink.fmt("({}, {})", v.x, v.y);
     return sink.size();
 }
@@ -111,9 +111,9 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec2<T>& v) noexcep
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec3<T>& v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Vec3<T>& v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
     (void)sink.fmt("({}, {}, {})", v.x, v.y, v.z);
     return sink.size();
 }
@@ -121,33 +121,33 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Vec3<T>& v) noexcep
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Rect2<T>& v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Rect2<T>& v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
     (void)sink.fmt("[pos=({}, {}) size=({}, {})]", v.position.x, v.position.y, v.size.x, v.size.y);
     return sink.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const tst::Approx& v) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const tst::Approx& v) noexcept
 {
-    zb::FmtSink sink{buf, cap};
+    za::FmtSink sink{buf, cap};
     (void)sink.fmt("Approx({})", v.value());
     return sink.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Vec2<int>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Vec2<unsigned int>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Vec2<float>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Vec2<int>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Vec2<unsigned int>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Vec2<float>&) noexcept;
 
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Vec3<int>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Vec3<unsigned int>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Vec3<float>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Vec3<int>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Vec3<unsigned int>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Vec3<float>&) noexcept;
 
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Rect2<int>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const za::Rect2<float>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Rect2<int>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const za::Rect2<float>&) noexcept;
 
 } // namespace tst::detail

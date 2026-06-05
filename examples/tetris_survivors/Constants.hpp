@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tsurv
@@ -14,7 +14,7 @@ namespace tsurv
 ////////////////////////////////////////////////////////////
 inline constexpr za::Vec2f resolution{320.f, 240.f};
 inline constexpr float     ticksPerSecond = 120.f;
-inline constexpr zb::SizeT gridGraceY     = 4u;
+inline constexpr za::SizeT gridGraceY     = 4u;
 
 
 ////////////////////////////////////////////////////////////

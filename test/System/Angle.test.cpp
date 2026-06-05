@@ -1,32 +1,32 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Angle.hpp"
+#include "Zancle/Geometry/Angle.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 
 TEST_CASE("[System] za::Angle")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Angle));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Angle));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Angle));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Angle));
 
-        STATIC_CHECK(!ZB_IS_AGGREGATE(za::Angle));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Angle));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Angle));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Angle, za::Angle));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Angle));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Angle, za::Angle));
     }
 
     SECTION("Construction")
@@ -70,8 +70,8 @@ TEST_CASE("[System] za::Angle")
 
     SECTION("rotatedTowards()")
     {
-        constexpr float pi  = zb::pi;
-        constexpr float tau = zb::tau;
+        constexpr float pi  = za::pi;
+        constexpr float tau = za::tau;
 
         SECTION("Current angle already equals target")
         {

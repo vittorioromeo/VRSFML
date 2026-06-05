@@ -14,14 +14,14 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/RectUtils.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/RectUtils.hpp"
 
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Swap.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Swap.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -42,22 +42,22 @@ private:
     za::RectangleShape m_player;
     za::Vec2f          m_playerVelocity;
 
-    zb::Vector<za::RectangleShape> m_bricks;
+    za::Vector<za::RectangleShape> m_bricks;
 
     void createBrickGrid()
     {
         constexpr za::Vec2f offset{50.f, 50.f};
 
-        constexpr zb::SizeT nBricksPerRow = 13;
-        constexpr zb::SizeT nRows         = 4;
+        constexpr za::SizeT nBricksPerRow = 13;
+        constexpr za::SizeT nRows         = 4;
 
         constexpr float spacing = 120.f / 14.f;
 
         za::Vec2f next{0.f, 0.f};
 
-        for (zb::SizeT y = 0; y < nRows; ++y)
+        for (za::SizeT y = 0; y < nRows; ++y)
         {
-            for (zb::SizeT x = 0; x < nBricksPerRow; ++x)
+            for (za::SizeT x = 0; x < nBricksPerRow; ++x)
             {
                 m_bricks.emplaceBack(
                     za::RectangleShapeData{.position         = offset + next,
@@ -88,13 +88,13 @@ private:
         const float overlapTop{ballBounds.getBottom() - brickBounds.getTop()};
         const float overlapBottom{brickBounds.getBottom() - ballBounds.getTop()};
 
-        const bool ballFromLeft(zb::fabs(overlapLeft) < zb::fabs(overlapRight));
-        const bool ballFromTop(zb::fabs(overlapTop) < zb::fabs(overlapBottom));
+        const bool ballFromLeft(za::fabs(overlapLeft) < za::fabs(overlapRight));
+        const bool ballFromTop(za::fabs(overlapTop) < za::fabs(overlapBottom));
 
         const float minOverlapX{ballFromLeft ? overlapLeft : overlapRight};
         const float minOverlapY{ballFromTop ? overlapTop : overlapBottom};
 
-        if (zb::fabs(minOverlapX) < zb::fabs(minOverlapY))
+        if (za::fabs(minOverlapX) < za::fabs(minOverlapY))
             m_ballVelocity.x = ballFromLeft ? -ballSpeed : ballSpeed;
         else
             m_ballVelocity.y = ballFromTop ? -ballSpeed : ballSpeed;
@@ -154,7 +154,7 @@ private:
         {
             if (performBallBrickCollisionResolution(*it))
             {
-                zb::genericSwap(*it, m_bricks.back());
+                za::genericSwap(*it, m_bricks.back());
                 m_bricks.popBack();
                 break;
             }
@@ -258,7 +258,7 @@ int main()
 
     while (true)
     {
-        while (zb::Optional event = window.pollEvent())
+        while (za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

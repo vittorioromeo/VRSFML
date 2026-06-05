@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ZancleBase/Variant.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -34,4 +34,4 @@ struct [[nodiscard]] EInvincibleBubble
 
 
 ////////////////////////////////////////////////////////////
-using GameEvent = zb::Variant<EBubblefall, EInvincibleBubble>;
+using GameEvent = za::Variant<EBubblefall, EInvincibleBubble>;

@@ -2,7 +2,7 @@
 
 #include "Zancle/Window/Event.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -10,7 +10,7 @@ void InputState::apply(const za::Event& event)
 {
     if (const auto* e = event.getIf<za::Event::KeyPressed>())
     {
-        keys[static_cast<zb::SizeT>(e->code)] = true;
+        keys[static_cast<za::SizeT>(e->code)] = true;
 
         alt     = e->alt;
         control = e->control;
@@ -22,7 +22,7 @@ void InputState::apply(const za::Event& event)
 
     if (const auto* e = event.getIf<za::Event::KeyReleased>())
     {
-        keys[static_cast<zb::SizeT>(e->code)] = false;
+        keys[static_cast<za::SizeT>(e->code)] = false;
 
         alt     = e->alt;
         control = e->control;
@@ -34,7 +34,7 @@ void InputState::apply(const za::Event& event)
 
     if (const auto* e = event.getIf<za::Event::MouseButtonPressed>())
     {
-        buttons[static_cast<zb::SizeT>(e->button)] = true;
+        buttons[static_cast<za::SizeT>(e->button)] = true;
         mousePosition                              = e->position;
 
         return;
@@ -42,7 +42,7 @@ void InputState::apply(const za::Event& event)
 
     if (const auto* e = event.getIf<za::Event::MouseButtonReleased>())
     {
-        buttons[static_cast<zb::SizeT>(e->button)] = false;
+        buttons[static_cast<za::SizeT>(e->button)] = false;
         mousePosition                              = e->position;
 
         return;

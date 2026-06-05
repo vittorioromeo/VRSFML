@@ -4,31 +4,31 @@
 #include "GraphicsUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 TEST_CASE("[Graphics] za::Image")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Image));
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Image));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Image));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Image));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Image));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::Image));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Image));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Image));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Image));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Image));
     }
 
     SECTION("Construction")
@@ -45,9 +45,9 @@ TEST_CASE("[Graphics] za::Image")
             CHECK(image.getSize() == za::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color::Black);
                 }
@@ -60,20 +60,20 @@ TEST_CASE("[Graphics] za::Image")
             CHECK(image.getSize() == za::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color::Red);
                 }
             }
         }
 
-        SECTION("Vec2 and zb::U8* constructor")
+        SECTION("Vec2 and za::U8* constructor")
         {
             // 10 x 10, with 4 color channels array
-            zb::U8 pixels[400]{};
-            for (zb::SizeT i = 0; i < 400; i += 4)
+            za::U8 pixels[400]{};
+            for (za::SizeT i = 0; i < 400; i += 4)
             {
                 pixels[i]     = 255; // r
                 pixels[i + 1] = 0;   // g
@@ -85,9 +85,9 @@ TEST_CASE("[Graphics] za::Image")
             CHECK(image.getSize() == za::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color::Red);
                 }
@@ -117,7 +117,7 @@ TEST_CASE("[Graphics] za::Image")
 
         SECTION("Successful load")
         {
-            zb::Optional<za::Image> image;
+            za::Optional<za::Image> image;
 
             SECTION("bmp")
             {
@@ -187,7 +187,7 @@ TEST_CASE("[Graphics] za::Image")
 
         SECTION("Failed load")
         {
-            zb::Vector<zb::U8> memory;
+            za::Vector<za::U8> memory;
 
             SECTION("Empty")
             {
@@ -196,7 +196,7 @@ TEST_CASE("[Graphics] za::Image")
 
             SECTION("Junk data")
             {
-                memory.pushBackMultiple(zb::U8{1}, zb::U8{2}, zb::U8{3}, zb::U8{4});
+                memory.pushBackMultiple(za::U8{1}, za::U8{2}, za::U8{3}, za::U8{4});
             }
 
             CHECK(!za::Image::loadFromMemory(memory.data(), memory.size()).hasValue());
@@ -353,7 +353,7 @@ TEST_CASE("[Graphics] za::Image")
 
         SECTION("Successful save")
         {
-            zb::Vector<zb::U8> output;
+            za::Vector<za::U8> output;
 
             SECTION("To bmp")
             {
@@ -420,9 +420,9 @@ TEST_CASE("[Graphics] za::Image")
             auto       image2 = za::Image::create(za::Vec2u{10, 10}).value();
             CHECK(image2.copy(image1, za::Vec2u{0, 0}));
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image1.getPixel(za::Vec2u{i, j}) == image2.getPixel(za::Vec2u{i, j}));
                 }
@@ -435,9 +435,9 @@ TEST_CASE("[Graphics] za::Image")
             auto       image2 = za::Image::create(za::Vec2u{10, 10}).value();
             CHECK(image2.copy(image1, za::Vec2u{0, 0}, za::Rect2i(za::Vec2i{0, 0}, za::Vec2i{5, 5})));
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     if (i <= 4 && j <= 4)
                         CHECK(image2.getPixel(za::Vec2u{i, j}) == za::Color::Blue);
@@ -453,19 +453,19 @@ TEST_CASE("[Graphics] za::Image")
             const za::Color source(5, 255, 78, 232);
 
             // Create the composited color for via the alpha composite over operation
-            const auto a = static_cast<zb::U8>(source.a + (dest.a * (255 - source.a)) / 255);
-            const auto r = static_cast<zb::U8>(((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
-            const auto g = static_cast<zb::U8>(((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
-            const auto b = static_cast<zb::U8>(((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
+            const auto a = static_cast<za::U8>(source.a + (dest.a * (255 - source.a)) / 255);
+            const auto r = static_cast<za::U8>(((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
+            const auto g = static_cast<za::U8>(((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
+            const auto b = static_cast<za::U8>(((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
             const za::Color composite(r, g, b, a);
 
             auto       image1 = za::Image::create(za::Vec2u{10, 10}, dest).value();
             const auto image2 = za::Image::create(za::Vec2u{10, 10}, source).value();
             CHECK(image1.copy(image2, za::Vec2u{0, 0}, za::Rect2i(za::Vec2i{0, 0}, za::Vec2i{10, 10}), true));
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image1.getPixel(za::Vec2u{i, j}) == composite);
                 }
@@ -478,9 +478,9 @@ TEST_CASE("[Graphics] za::Image")
             auto       image2 = za::Image::create(za::Vec2u{10, 10}, za::Color::Red).value();
             CHECK(!image2.copy(image1, za::Vec2u{0, 0}, za::Rect2i(za::Vec2i{5, 5}, za::Vec2i{9, 9})));
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image2.getPixel(za::Vec2u{i, j}) == za::Color::Red);
                 }
@@ -495,23 +495,23 @@ TEST_CASE("[Graphics] za::Image")
             auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Blue).value();
             image.createMaskFromColor(za::Color::Blue);
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color(0, 0, 255, 0));
                 }
             }
         }
 
-        SECTION("createMaskFromColor(Color, zb::U8)")
+        SECTION("createMaskFromColor(Color, za::U8)")
         {
             auto image = za::Image::create(za::Vec2u{10, 10}, za::Color::Blue).value();
             image.createMaskFromColor(za::Color::Blue, 100);
 
-            for (zb::U32 i = 0; i < 10; ++i)
+            for (za::U32 i = 0; i < 10; ++i)
             {
-                for (zb::U32 j = 0; j < 10; ++j)
+                for (za::U32 j = 0; j < 10; ++j)
                 {
                     CHECK(image.getPixel(za::Vec2u{i, j}) == za::Color(0, 0, 255, 100));
                 }

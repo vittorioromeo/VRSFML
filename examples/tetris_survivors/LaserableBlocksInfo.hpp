@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/InPlaceVector.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
 
 
 namespace tsurv
@@ -14,8 +14,8 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 struct [[nodiscard]] LaserableBlocksInfo
 {
-    zb::InPlaceVector<za::Vec2i, 32> positions;
-    zb::InPlaceVector<za::Vec2i, 32> bouncePositions;
+    za::InPlaceVector<za::Vec2i, 32> positions;
+    za::InPlaceVector<za::Vec2i, 32> bouncePositions;
     za::Vec2i                        bouncePos;
 };
 

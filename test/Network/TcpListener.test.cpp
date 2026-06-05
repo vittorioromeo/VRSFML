@@ -7,21 +7,21 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Network] za::TcpListener")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::TcpListener));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::TcpListener));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::TcpListener));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::TcpListener));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::TcpListener));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::TcpListener));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::TcpListener));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::TcpListener));
     }
 
     SECTION("Factory: valid port")

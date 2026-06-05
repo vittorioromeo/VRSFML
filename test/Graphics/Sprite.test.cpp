@@ -9,19 +9,19 @@
 
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 
 TEST_CASE("[Graphics] za::Sprite" * tst::skip(skipDisplayTests))
@@ -30,17 +30,17 @@ TEST_CASE("[Graphics] za::Sprite" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Sprite));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Sprite));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Sprite));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Sprite));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Sprite));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Sprite));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Sprite));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Sprite));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Sprite)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Sprite));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::Sprite));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Sprite));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Sprite));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Sprite, za::Sprite));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Sprite)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Sprite));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::Sprite));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Sprite));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Sprite));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Sprite, za::Sprite));
     }
 
     const auto texture = za::Texture::create({64, 64}).value();

@@ -12,11 +12,11 @@
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
 
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
-#include "Zancle/System/LocalAnchorPointMixin.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -59,7 +59,7 @@ struct ZA_GRAPHICS_API Sprite : TransformableMixin, GlobalAnchorPointMixin, Loca
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ZA_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
     Rect2f textureRect;         //!< Rectangle defining the area of the source texture to display

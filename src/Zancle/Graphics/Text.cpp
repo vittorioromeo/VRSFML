@@ -11,9 +11,9 @@
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za
@@ -87,7 +87,7 @@ void Text::setOutlineThickness(const float thickness)
 ////////////////////////////////////////////////////////////
 const Font& Text::getFont() const
 {
-    ZB_ASSERT(m_font != nullptr);
+    ZA_ASSERT(m_font != nullptr);
     return *m_font;
 }
 

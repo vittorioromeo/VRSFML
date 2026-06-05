@@ -12,9 +12,9 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 namespace
@@ -33,7 +33,7 @@ namespace
     if (id == 131'169 || id == 131'185 || id == 131'218 || id == 131'204 || id == 1 || id == 2)
         return;
 
-    const auto sourceStr = [&]() -> zb::StringView
+    const auto sourceStr = [&]() -> za::StringView
     {
         // clang-format off
         switch (source)
@@ -49,7 +49,7 @@ namespace
         return "";
     }();
 
-    const auto typeStr = [&]() -> zb::StringView
+    const auto typeStr = [&]() -> za::StringView
     {
         // clang-format off
         switch (type)
@@ -68,7 +68,7 @@ namespace
         return "";
     }();
 
-    const auto severityStr = [&]() -> zb::StringView
+    const auto severityStr = [&]() -> za::StringView
     {
         // clang-format off
         switch (severity)

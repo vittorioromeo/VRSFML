@@ -12,10 +12,10 @@
 #include "Zancle/Graphics/Text.hpp"            // IWYU pragma: keep
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ void TextBase::setFillColor(const Color color)
     m_fillColor = color;
 
     if (!m_geometryNeedUpdate)
-        for (zb::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+        for (za::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
             m_vertices[i].color = m_fillColor;
 }
 
@@ -113,13 +113,13 @@ void TextBase::setOutlineColor(const Color color)
     m_outlineColor = color;
 
     if (!m_geometryNeedUpdate)
-        for (zb::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
+        for (za::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
             m_vertices[i].color = m_outlineColor;
 }
 
 
 ////////////////////////////////////////////////////////////
-void TextBase::setFillColorAlpha(const zb::U8 alpha)
+void TextBase::setFillColorAlpha(const za::U8 alpha)
 {
     if (m_fillColor.a == alpha)
         return;
@@ -127,13 +127,13 @@ void TextBase::setFillColorAlpha(const zb::U8 alpha)
     m_fillColor.a = alpha;
 
     if (!m_geometryNeedUpdate)
-        for (zb::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+        for (za::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
             m_vertices[i].color.a = m_fillColor.a;
 }
 
 
 ////////////////////////////////////////////////////////////
-void TextBase::setOutlineColorAlpha(const zb::U8 alpha)
+void TextBase::setOutlineColorAlpha(const za::U8 alpha)
 {
     if (m_outlineColor.a == alpha)
         return;
@@ -141,7 +141,7 @@ void TextBase::setOutlineColorAlpha(const zb::U8 alpha)
     m_outlineColor.a = alpha;
 
     if (!m_geometryNeedUpdate)
-        for (zb::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
+        for (za::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
             m_vertices[i].color.a = m_outlineColor.a;
 }
 
@@ -203,14 +203,14 @@ Color TextBase::getOutlineColor() const
 
 
 ////////////////////////////////////////////////////////////
-zb::U8 TextBase::getFillColorAlpha() const
+za::U8 TextBase::getFillColorAlpha() const
 {
     return m_fillColor.a;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::U8 TextBase::getOutlineColorAlpha() const
+za::U8 TextBase::getOutlineColorAlpha() const
 {
     return m_outlineColor.a;
 }
@@ -225,7 +225,7 @@ zb::U8 TextBase::getOutlineColorAlpha() const
 // in `TextBase.hpp` (no heavy rendering includes).
 ////////////////////////////////////////////////////////////
 #define ZA_PRIV_INSTANTIATE_TEXTBASE_DEDUCING_THIS(TDerived)                                                         \
-    template za::Vec2f           za::TextBase::findCharacterPos<TDerived>(const TDerived&, zb::SizeT);               \
+    template za::Vec2f           za::TextBase::findCharacterPos<TDerived>(const TDerived&, za::SizeT);               \
     template const za::Rect2f&   za::TextBase::getLocalBounds<TDerived>(const TDerived&);                            \
     template za::Rect2f          za::TextBase::getGlobalBounds<TDerived>(const TDerived&);                           \
     template void                za::TextBase::draw<TDerived>(const TDerived&, za::RenderTarget&, za::RenderStates); \

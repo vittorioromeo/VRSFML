@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/Export.hpp"
 
-#include "ZancleBase/FwdStdString.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/FwdStdString.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,10 +22,10 @@ namespace za
 class Utf8String;
 } // namespace za
 
-namespace zb
+namespace za
 {
 class String;
-} // namespace zb
+} // namespace za
 
 
 namespace za
@@ -92,7 +92,7 @@ public:
     /// \pre `data != nullptr`
     /// \pre `sizeInBytes > 0`
     ///
-    /// Both preconditions are checked via `ZB_ASSERT_AND_ASSUME`:
+    /// Both preconditions are checked via `ZA_ASSERT_AND_ASSUME`:
     /// in debug builds a violation aborts; in release the compiler
     /// assumes the conditions and may optimize accordingly. Guard
     /// at the call-site if the source can legitimately be empty.
@@ -101,7 +101,7 @@ public:
     /// \see `getReadPosition`
     ///
     ////////////////////////////////////////////////////////////
-    Packet& append(const void* data, zb::SizeT sizeInBytes);
+    Packet& append(const void* data, za::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the packet
@@ -113,7 +113,7 @@ public:
     /// \see `append`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT getReadPosition() const;
+    [[nodiscard]] za::SizeT getReadPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the packet
@@ -151,7 +151,7 @@ public:
     /// \see `getData`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT getDataSize() const;
+    [[nodiscard]] za::SizeT getDataSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the reading position has reached the
@@ -212,42 +212,42 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::I8& data);
+    Packet& operator>>(za::I8& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::U8& data);
+    Packet& operator>>(za::U8& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::I16& data);
+    Packet& operator>>(za::I16& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::U16& data);
+    Packet& operator>>(za::U16& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::I32& data);
+    Packet& operator>>(za::I32& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::U32& data);
+    Packet& operator>>(za::U32& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::I64& data);
+    Packet& operator>>(za::I64& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::U64& data);
+    Packet& operator>>(za::U64& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
@@ -267,7 +267,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(zb::String& data);
+    Packet& operator>>(za::String& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
@@ -288,42 +288,42 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::I8 data);
+    Packet& operator<<(za::I8 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::U8 data);
+    Packet& operator<<(za::U8 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::I16 data);
+    Packet& operator<<(za::I16 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::U16 data);
+    Packet& operator<<(za::U16 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::I32 data);
+    Packet& operator<<(za::I32 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::U32 data);
+    Packet& operator<<(za::U32 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::I64 data);
+    Packet& operator<<(za::I64 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(zb::U64 data);
+    Packet& operator<<(za::U64 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
@@ -343,7 +343,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(const zb::String& data);
+    Packet& operator<<(const za::String& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
@@ -377,7 +377,7 @@ protected:
     /// \see `onReceive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual const void* onSend(zb::SizeT& size);
+    [[nodiscard]] virtual const void* onSend(za::SizeT& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Called after the packet is received over the network
@@ -399,7 +399,7 @@ protected:
     /// \see `onSend`
     ///
     ////////////////////////////////////////////////////////////
-    virtual void onReceive(const void* data, zb::SizeT size);
+    virtual void onReceive(const void* data, za::SizeT size);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -412,33 +412,33 @@ private:
     /// \return `true` if \a size bytes can be read from the packet
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool checkSize(zb::SizeT size);
+    [[nodiscard]] bool checkSize(za::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Bytes available to read from the current position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT remaining() const;
+    [[nodiscard]] za::SizeT remaining() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Bounds-checked memcpy from the read cursor; advances on success
     ///
     ////////////////////////////////////////////////////////////
-    Packet& readBytes(void* dst, zb::SizeT size);
+    Packet& readBytes(void* dst, za::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return a reference to the send position used by
     ///        `TcpSocket` to track partial sends across calls.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT& getSendPos();
+    [[nodiscard]] za::SizeT& getSendPos();
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::Vector<unsigned char> m_data;          //!< Data stored in the packet
-    zb::SizeT                 m_readPos{};     //!< Current reading position in the packet
-    zb::SizeT                 m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
+    za::Vector<unsigned char> m_data;          //!< Data stored in the packet
+    za::SizeT                 m_readPos{};     //!< Current reading position in the packet
+    za::SizeT                 m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
     bool                      m_isValid{true}; //!< Reading state of the packet
 };
 
@@ -456,7 +456,7 @@ private:
 /// Packets solve 2 fundamental problems that arise when
 /// transferring data over the network:
 /// \li trivial types are serialized with a fixed wire size (so a
-///     `zb::I32` is always 4 bytes on the wire regardless of host)
+///     `za::I32` is always 4 bytes on the wire regardless of host)
 /// \li the bounds of the packet are preserved (one send == one receive)
 ///
 /// The wire format is host byte order and assumes both peers are
@@ -466,14 +466,14 @@ private:
 /// It is designed to follow the behavior of standard C++ streams,
 /// using operators >> and << to extract and insert data.
 ///
-/// It is recommended to use only fixed-size types (like `zb::I32`, etc.),
+/// It is recommended to use only fixed-size types (like `za::I32`, etc.),
 /// to avoid possible differences between the sender and the receiver.
 /// Indeed, the native C++ types may have different sizes on two platforms
 /// and your data may be corrupted if that happens.
 ///
 /// Usage example:
 /// \code
-/// zb::U32 x = 24;
+/// za::U32 x = 24;
 /// std::string s = "hello";
 /// double d = 5.89;
 ///
@@ -491,7 +491,7 @@ private:
 /// socket.receive(packet);
 ///
 /// // Extract the variables contained in the packet
-/// zb::U32 x;
+/// za::U32 x;
 /// std::string s;
 /// double d;
 /// if (packet >> x >> s >> d)
@@ -503,9 +503,9 @@ private:
 /// Packets have built-in `operator>>` and << overloads for
 /// standard types:
 /// \li `bool`
-/// \li fixed-size integer types (`zb::I8`/`zb::U8` ... `zb::I64`/`zb::U64`)
+/// \li fixed-size integer types (`za::I8`/`za::U8` ... `za::I64`/`za::U64`)
 /// \li floating point numbers (`float`, `double`)
-/// \li string types (`std::string`, `std::wstring`, `zb::String`, `za::Utf8String`)
+/// \li string types (`std::string`, `std::wstring`, `za::String`, `za::Utf8String`)
 ///
 /// Raw `char*` / `wchar_t*` overloads are intentionally not provided
 /// because they would either rely on caller-supplied null termination
@@ -520,7 +520,7 @@ private:
 /// struct MyStruct
 /// {
 ///     float       number{};
-///     zb::I8 integer{};
+///     za::I8 integer{};
 ///     std::string str;
 /// };
 ///
@@ -546,17 +546,17 @@ private:
 /// \code
 /// class ZipPacket : public za::Packet
 /// {
-///     const void* onSend(zb::SizeT& size) override
+///     const void* onSend(za::SizeT& size) override
 ///     {
 ///         const void* srcData = getData();
-///         zb::SizeT srcSize = getDataSize();
+///         za::SizeT srcSize = getDataSize();
 ///
 ///         return MySuperZipFunction(srcData, srcSize, &size);
 ///     }
 ///
-///     void onReceive(const void* data, zb::SizeT size) override
+///     void onReceive(const void* data, za::SizeT size) override
 ///     {
-///         zb::SizeT dstSize;
+///         za::SizeT dstSize;
 ///         const void* dstData = MySuperUnzipFunction(data, size, &dstSize);
 ///
 ///         append(dstData, dstSize);

@@ -1,8 +1,8 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace
@@ -17,7 +17,7 @@ using HashL = ankerl::unordered_dense::v4_8_1::hash<long double>;
 
 ////////////////////////////////////////////////////////////
 template <typename Hasher, typename Float>
-constexpr zb::U64 hashOf(Float v)
+constexpr za::U64 hashOf(Float v)
 {
     return Hasher{}(v);
 }
@@ -26,7 +26,7 @@ constexpr zb::U64 hashOf(Float v)
 } // namespace
 
 
-TEST_CASE("[Base] zb::ankerl floating-point hashers")
+TEST_CASE("[Base] za::ankerl floating-point hashers")
 {
     using AnkerlUnorderedDenseFloatHashTest::HashD;
     using AnkerlUnorderedDenseFloatHashTest::HashF;
@@ -68,24 +68,24 @@ TEST_CASE("[Base] zb::ankerl floating-point hashers")
     SECTION("Distinct values hash distinctly (float)")
     {
         const float values[]{1.0F, 2.0F, -1.0F, 3.14159F, 1e-10F, 1e10F};
-        for (zb::SizeT i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
-            for (zb::SizeT j = i + 1; j < sizeof(values) / sizeof(values[0]); ++j)
+        for (za::SizeT i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
+            for (za::SizeT j = i + 1; j < sizeof(values) / sizeof(values[0]); ++j)
                 CHECK(hashOf<HashF>(values[i]) != hashOf<HashF>(values[j]));
     }
 
     SECTION("Distinct values hash distinctly (double)")
     {
         const double values[]{1.0, 2.0, -1.0, 3.14159265358979, 1e-100, 1e100};
-        for (zb::SizeT i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
-            for (zb::SizeT j = i + 1; j < sizeof(values) / sizeof(values[0]); ++j)
+        for (za::SizeT i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
+            for (za::SizeT j = i + 1; j < sizeof(values) / sizeof(values[0]); ++j)
                 CHECK(hashOf<HashD>(values[i]) != hashOf<HashD>(values[j]));
     }
 
     SECTION("Distinct values hash distinctly (long double)")
     {
         const long double values[]{1.0L, 2.0L, -1.0L, 3.14159265358979L, 1e-100L, 1e100L};
-        for (zb::SizeT i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
-            for (zb::SizeT j = i + 1; j < sizeof(values) / sizeof(values[0]); ++j)
+        for (za::SizeT i = 0; i < sizeof(values) / sizeof(values[0]); ++i)
+            for (za::SizeT j = i + 1; j < sizeof(values) / sizeof(values[0]); ++j)
                 CHECK(hashOf<HashL>(values[i]) != hashOf<HashL>(values[j]));
     }
 

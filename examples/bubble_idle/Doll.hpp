@@ -4,12 +4,12 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Remainder.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ struct [[nodiscard]] Doll
     CatType   catType;
 
     TimedCountdown               tcActivation;
-    zb::Optional<TimedCountdown> tcDeath;
+    za::Optional<TimedCountdown> tcDeath;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline bool isActive() const
@@ -45,14 +45,14 @@ struct [[nodiscard]] Doll
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {
-        wobbleRadians = zb::remainder(wobbleRadians + deltaTime * 0.002f, zb::tau);
+        wobbleRadians = za::remainder(wobbleRadians + deltaTime * 0.002f, za::tau);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] inline za::Vec2f getDrawPosition() const
     {
-        const za::Vec2f wobbleOffset{zb::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
-                                     zb::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
+        const za::Vec2f wobbleOffset{za::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
+                                     za::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
 
         return position + getActivationProgress() * wobbleOffset;
     }

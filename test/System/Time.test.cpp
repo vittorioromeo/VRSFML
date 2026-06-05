@@ -1,22 +1,22 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/System/TimeChronoUtil.hpp"
+#include "Zancle/Chrono/TimeChronoUtil.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/StdChrono.hpp"
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Chrono/StdChrono.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 using namespace std::chrono_literals;
 
@@ -24,18 +24,18 @@ TEST_CASE("[System] za::Time")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Time));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Time));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Time));
-        STATIC_CHECK(!ZB_IS_AGGREGATE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Time));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Time, za::Time));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Time));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Time));
+        STATIC_CHECK(!ZA_IS_AGGREGATE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Time));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Time, za::Time));
     }
 
     SECTION("Construction")
@@ -252,18 +252,18 @@ TEST_CASE("[System] za::Time")
         {
             STATIC_CHECK(za::seconds(1) * 2.f == za::seconds(2));
             STATIC_CHECK(za::seconds(12) * 0.5f == za::seconds(6));
-            STATIC_CHECK(za::seconds(1) * zb::I64{2} == za::seconds(2));
-            STATIC_CHECK(za::seconds(42) * zb::I64{2} == za::seconds(84));
+            STATIC_CHECK(za::seconds(1) * za::I64{2} == za::seconds(2));
+            STATIC_CHECK(za::seconds(42) * za::I64{2} == za::seconds(84));
             STATIC_CHECK(2.f * za::seconds(1) == za::seconds(2));
             STATIC_CHECK(0.5f * za::seconds(12) == za::seconds(6));
-            STATIC_CHECK(zb::I64{2} * za::seconds(1) == za::seconds(2));
-            STATIC_CHECK(zb::I64{2} * za::seconds(42) == za::seconds(84));
+            STATIC_CHECK(za::I64{2} * za::seconds(1) == za::seconds(2));
+            STATIC_CHECK(za::I64{2} * za::seconds(42) == za::seconds(84));
         }
 
         SECTION("operator*=")
         {
             za::Time time = za::milliseconds(1000);
-            time *= zb::I64{10};
+            time *= za::I64{10};
             CHECK(time == za::milliseconds(10'000));
             time *= 0.1f;
             CHECK(time.asMilliseconds() == 1000);
@@ -273,8 +273,8 @@ TEST_CASE("[System] za::Time")
         {
             STATIC_CHECK(za::seconds(1) / 2.f == za::seconds(0.5f));
             STATIC_CHECK(za::seconds(12) / 0.5f == za::seconds(24));
-            STATIC_CHECK(za::seconds(1) / zb::I64{2} == za::seconds(0.5f));
-            STATIC_CHECK(za::seconds(42) / zb::I64{2} == za::seconds(21));
+            STATIC_CHECK(za::seconds(1) / za::I64{2} == za::seconds(0.5f));
+            STATIC_CHECK(za::seconds(42) / za::I64{2} == za::seconds(21));
             STATIC_CHECK(za::seconds(1) / za::seconds(1) == 1.f);
             CHECK(za::milliseconds(10) / za::microseconds(1) == Approx(10'000.f));
         }
@@ -282,7 +282,7 @@ TEST_CASE("[System] za::Time")
         SECTION("operator/=")
         {
             za::Time time = za::milliseconds(1000);
-            time /= zb::I64{2};
+            time /= za::I64{2};
             CHECK(time == za::milliseconds(500));
             time /= 0.5f;
             CHECK(time.asMilliseconds() == 1000);

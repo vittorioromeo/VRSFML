@@ -32,36 +32,36 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Fmt/FmtPath.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Err/FmtPath.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Floor.hpp"
-#include "ZancleBase/Math/Fmod.hpp"
-#include "ZancleBase/Math/Lround.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Math/Tan.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Floor.hpp"
+#include "Zancle/Math/Fmod.hpp"
+#include "Zancle/Math/Lround.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/Tan.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <limits>
 
@@ -89,7 +89,7 @@ class Effect
 public:
     virtual ~Effect() = default;
 
-    [[nodiscard]] const zb::String& getName() const
+    [[nodiscard]] const za::String& getName() const
     {
         return m_name;
     }
@@ -105,12 +105,12 @@ public:
     }
 
 protected:
-    explicit Effect(zb::String name) : m_name(ZB_MOVE(name))
+    explicit Effect(za::String name) : m_name(ZA_MOVE(name))
     {
     }
 
 private:
-    zb::String m_name;
+    za::String m_name;
 };
 
 
@@ -147,7 +147,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            zb::printErrLn("Failed to update listener");
+            za::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
@@ -169,7 +169,7 @@ private:
     za::CircleShape         m_listenerShape{{.origin = {10.f, 10.f}, .fillColor = za::Color::Red, .radius = 20.f}};
     za::CircleShape         m_soundShape{{.origin = {10.f, 10.f}, .radius = 20.f}};
     za::Vec2f               m_position;
-    zb::Optional<za::Music> m_music;
+    za::Optional<za::Music> m_music;
 };
 
 
@@ -199,14 +199,14 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_pitch  = zb::clamp(2.f * x, 0.f, 2.f);
-        m_volume = zb::clamp(100.f * (1.f - y), 0.f, 100.f);
+        m_pitch  = za::clamp(2.f * x, 0.f, 2.f);
+        m_volume = za::clamp(100.f * (1.f - y), 0.f, 100.f);
 
         m_music->setPitch(m_pitch);
         m_music->setVolume(m_volume / 100.f);
 
-        m_pitchText.setString("Pitch: " + zb::toString(m_pitch));
-        m_volumeText.setString("Volume: " + zb::toString(m_volume));
+        m_pitchText.setString("Pitch: " + za::toString(m_pitch));
+        m_volumeText.setString("Volume: " + za::toString(m_volume));
     }
 
     void draw(za::RenderTarget& target, za::RenderStates states) const override
@@ -221,7 +221,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            zb::printErrLn("Failed to update listener");
+            za::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
@@ -246,7 +246,7 @@ private:
     float                   m_volume{100.f};
     za::Text                m_pitchText;
     za::Text                m_volumeText;
-    zb::Optional<za::Music> m_music;
+    za::Optional<za::Music> m_music;
 };
 
 
@@ -293,7 +293,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            zb::printErrLn("Failed to update listener");
+            za::printErrLn("Failed to update listener");
 
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
@@ -308,7 +308,7 @@ public:
         static constexpr auto makeCone = [](auto& shape, const auto& angle)
         {
             const auto theta = za::degrees(90.f) - (angle / 2);
-            const auto x     = coneHeight / zb::tan(theta.asRadians());
+            const auto x     = coneHeight / za::tan(theta.asRadians());
 
             shape.setPoint(1, {-x, coneHeight});
             shape.setPoint(2, {x, coneHeight});
@@ -346,7 +346,7 @@ private:
     za::ConvexShape m_soundConeInner{{.position = {10.f, 10.f}, .fillColor = za::Color::Cyan, .pointCount = 3u}};
     za::Text        m_text;
     za::Vec2f       m_position;
-    zb::Optional<za::Music> m_music;
+    za::Optional<za::Music> m_music;
 
     float m_attenuation{0.01f};
 };
@@ -358,7 +358,7 @@ private:
 class Tone : public Effect
 {
 private:
-    enum class Type : zb::SizeT
+    enum class Type : za::SizeT
     {
         Sine,
         Square,
@@ -370,7 +370,7 @@ private:
     {
         Tone& tone;
 
-        bool onGetData(zb::Vector<zb::I16>& outBuffer)
+        bool onGetData(za::Vector<za::I16>& outBuffer)
         {
             const auto period = 1.f / tone.m_frequency;
 
@@ -384,32 +384,32 @@ private:
                 {
                     case Type::Sine:
                     {
-                        value = tone.m_amplitude * zb::sin(2 * zb::pi * tone.m_frequency * tone.m_time);
+                        value = tone.m_amplitude * za::sin(2 * za::pi * tone.m_frequency * tone.m_time);
                         break;
                     }
                     case Type::Square:
                     {
-                        value = tone.m_amplitude * (2 * (2 * zb::floor(tone.m_frequency * tone.m_time) -
-                                                         zb::floor(2 * tone.m_frequency * tone.m_time)) +
+                        value = tone.m_amplitude * (2 * (2 * za::floor(tone.m_frequency * tone.m_time) -
+                                                         za::floor(2 * tone.m_frequency * tone.m_time)) +
                                                     1);
                         break;
                     }
                     case Type::Triangle:
                     {
                         value = 4 * tone.m_amplitude / period *
-                                    zb::fabs(zb::fmod(((zb::fmod((tone.m_time - period / 4), period)) + period), period) -
+                                    za::fabs(za::fmod(((za::fmod((tone.m_time - period / 4), period)) + period), period) -
                                              period / 2) -
                                 tone.m_amplitude;
                         break;
                     }
                     case Type::Sawtooth:
                     {
-                        value = tone.m_amplitude * 2 * (tone.m_time / period - zb::floor(0.5f + tone.m_time / period));
+                        value = tone.m_amplitude * 2 * (tone.m_time / period - za::floor(0.5f + tone.m_time / period));
                         break;
                     }
                 }
 
-                outBuffer[i] = static_cast<zb::I16>(zb::lround(value * std::numeric_limits<zb::I16>::max()));
+                outBuffer[i] = static_cast<za::I16>(za::lround(value * std::numeric_limits<za::I16>::max()));
                 tone.m_time += timePerSample;
             }
 
@@ -450,14 +450,14 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_amplitude = zb::clamp(0.2f * (1.f - y), 0.f, 0.2f);
-        m_frequency = zb::clamp(500.f * x, 0.f, 500.f);
+        m_amplitude = za::clamp(0.2f * (1.f - y), 0.f, 0.2f);
+        m_frequency = za::clamp(500.f * x, 0.f, 500.f);
 
-        m_currentAmplitude.setString("Amplitude: " + zb::toString(m_amplitude));
-        m_currentFrequency.setString("Frequency: " + zb::toString(m_frequency) + " Hz");
+        m_currentAmplitude.setString("Amplitude: " + za::toString(m_amplitude));
+        m_currentFrequency.setString("Frequency: " + za::toString(m_frequency) + " Hz");
 
-        m_currentType.setString(zb::String{"Wave Type: "} +
-                                zb::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<zb::SizeT>(m_type)]);
+        m_currentType.setString(za::String{"Wave Type: "} +
+                                za::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<za::SizeT>(m_type)]);
     }
 
     void draw(za::RenderTarget& target, za::RenderStates states) const override
@@ -472,7 +472,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            zb::printErrLn("Failed to update listener");
+            za::printErrLn("Failed to update listener");
 
         m_toneSoundStream.emplace(playbackDevice, za::ChannelMap{za::SoundChannel::Mono}, sampleRate, *this).play();
     }
@@ -485,14 +485,14 @@ public:
     void handleKey(za::Keyboard::Key key) override
     {
         if (key == za::Keyboard::Key::Down)
-            m_type = static_cast<Type>((static_cast<zb::SizeT>(m_type) + 1) % 4u); // Forward
+            m_type = static_cast<Type>((static_cast<za::SizeT>(m_type) + 1) % 4u); // Forward
         else if (key == za::Keyboard::Key::Up)
-            m_type = static_cast<Type>((static_cast<zb::SizeT>(m_type) - 1) % 4u); // Reverse
+            m_type = static_cast<Type>((static_cast<za::SizeT>(m_type) - 1) % 4u); // Reverse
     }
 
 private:
     static constexpr unsigned int sampleRate{44'100};
-    static constexpr zb::SizeT    chunkSize{sampleRate / 100};
+    static constexpr za::SizeT    chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
     za::Listener& m_listener;
@@ -507,7 +507,7 @@ private:
     za::Text m_currentAmplitude;
     za::Text m_currentFrequency;
 
-    zb::Optional<za::SoundStream<ToneState>> m_toneSoundStream;
+    za::Optional<za::SoundStream<ToneState>> m_toneSoundStream;
 };
 
 
@@ -521,7 +521,7 @@ private:
     {
         Doppler& doppler;
 
-        bool onGetData(zb::Vector<zb::I16>& outBuffer)
+        bool onGetData(za::Vector<za::I16>& outBuffer)
         {
             const auto period = 1.f / doppler.m_frequency;
 
@@ -530,9 +530,9 @@ private:
             for (auto i = 0u; i < chunkSize; ++i)
             {
                 const auto value = doppler.m_amplitude * 2 *
-                                   (doppler.m_time / period - zb::floor(0.5f + doppler.m_time / period));
+                                   (doppler.m_time / period - za::floor(0.5f + doppler.m_time / period));
 
-                outBuffer[i] = static_cast<zb::I16>(zb::lround(value * std::numeric_limits<zb::I16>::max()));
+                outBuffer[i] = static_cast<za::I16>(za::lround(value * std::numeric_limits<za::I16>::max()));
                 doppler.m_time += timePerSample;
             }
 
@@ -562,13 +562,13 @@ public:
 
     void update(float time, float x, float y) override
     {
-        m_velocity = zb::clamp(150.f * (1.f - y), 0.f, 150.f);
-        m_factor   = zb::clamp(x, 0.f, 1.f);
+        m_velocity = za::clamp(150.f * (1.f - y), 0.f, 150.f);
+        m_factor   = za::clamp(x, 0.f, 1.f);
 
-        m_currentVelocity.setString("Velocity: " + zb::toString(m_velocity));
-        m_currentFactor.setString("Doppler Factor: " + zb::toString(m_factor));
+        m_currentVelocity.setString("Velocity: " + za::toString(m_velocity));
+        m_currentFactor.setString("Doppler Factor: " + za::toString(m_factor));
 
-        m_position.x = zb::fmod(time, 8.f) * windowWidth / 8.f;
+        m_position.x = za::fmod(time, 8.f) * windowWidth / 8.f;
 
         m_dopplerSoundStream->setPosition({m_position.x, m_position.y, 0.f});
         m_dopplerSoundStream->setVelocity({m_velocity, 0.f, 0.f});
@@ -594,7 +594,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            zb::printErrLn("Failed to update listener");
+            za::printErrLn("Failed to update listener");
 
         auto& stream = m_dopplerSoundStream.emplace(playbackDevice, za::ChannelMap{za::SoundChannel::Mono}, sampleRate, *this);
         stream.setAttenuation(0.05f);
@@ -608,7 +608,7 @@ public:
 
 private:
     static constexpr unsigned int sampleRate{44'100};
-    static constexpr zb::SizeT    chunkSize{sampleRate / 100};
+    static constexpr za::SizeT    chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
     za::Listener& m_listener;
@@ -626,7 +626,7 @@ private:
     za::Text        m_currentVelocity;
     za::Text        m_currentFactor;
 
-    zb::Optional<za::SoundStream<DopplerState>> m_dopplerSoundStream;
+    za::Optional<za::SoundStream<DopplerState>> m_dopplerSoundStream;
 };
 
 
@@ -660,7 +660,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.applyListener(m_listener))
-            zb::printErrLn("Failed to update listener");
+            za::printErrLn("Failed to update listener");
 
         m_music
             .emplace(playbackDevice,
@@ -678,8 +678,8 @@ public:
     }
 
 protected:
-    explicit Processing(za::Listener& listener, const za::Font& font, zb::String name) :
-        Effect(ZB_MOVE(name)),
+    explicit Processing(za::Listener& listener, const za::Font& font, za::String name) :
+        Effect(ZA_MOVE(name)),
         m_listener(listener),
         m_enabledText(font, {.string = "Processing: Enabled", .characterSize = 30u}),
         m_instructions(font, {.string = "Press Space to enable/disable processing", .characterSize = 30u})
@@ -696,7 +696,7 @@ protected:
     // Needs to be defined above `m_music` because it's used in the music's effect processor
     bool m_enabled{true};
 
-    zb::Optional<za::Music> m_music;
+    za::Optional<za::Music> m_music;
 
 private:
     void handleKey(za::Keyboard::Key key) override
@@ -750,7 +750,7 @@ protected:
         // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
         const bool success = m_music->setEffectProcessor(
-            [coefficients, &enabled = m_enabled, state = zb::Vector<State>()](const float*  inputFrames,
+            [coefficients, &enabled = m_enabled, state = za::Vector<State>()](const float*  inputFrames,
                                                                               unsigned int& inputFrameCount,
                                                                               float*        outputFrames,
                                                                               unsigned int& outputFrameCount,
@@ -792,8 +792,8 @@ protected:
 
         if (!success)
         {
-            zb::printErrLn("Failed to set effect processor");
-            zb::abort();
+            za::printErrLn("Failed to set effect processor");
+            za::abort();
         }
     }
 };
@@ -815,13 +815,13 @@ struct HighPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 2000.f;
 
-        const auto c = zb::tan(zb::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
+        const auto c = za::tan(za::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + zb::sqrt2 * c + zb::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + za::sqrt2 * c + za::pow(c, 2.f)),
                                   .a1 = -2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
-                                  .b1 = 2.f * coefficients.a0 * (zb::pow(c, 2.f) - 1.f),
-                                  .b2 = coefficients.a0 * (1.f - zb::sqrt2 * c + zb::pow(c, 2.f))};
+                                  .b1 = 2.f * coefficients.a0 * (za::pow(c, 2.f) - 1.f),
+                                  .b2 = coefficients.a0 * (1.f - za::sqrt2 * c + za::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -844,13 +844,13 @@ struct LowPassFilter : BiquadFilter
 
         static constexpr auto cutoffFrequency = 500.f;
 
-        const auto c = 1.f / zb::tan(zb::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
+        const auto c = 1.f / za::tan(za::pi * cutoffFrequency / static_cast<float>(playbackDevice.getSampleRate()));
 
-        Coefficients coefficients{.a0 = 1.f / (1.f + zb::sqrt2 * c + zb::pow(c, 2.f)),
+        Coefficients coefficients{.a0 = 1.f / (1.f + za::sqrt2 * c + za::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
                                   .a2 = coefficients.a0,
-                                  .b1 = 2.f * coefficients.a0 * (1.f - zb::pow(c, 2.f)),
-                                  .b2 = coefficients.a0 * (1.f - zb::sqrt2 * c + zb::pow(c, 2.f))};
+                                  .b1 = 2.f * coefficients.a0 * (1.f - za::pow(c, 2.f)),
+                                  .b2 = coefficients.a0 * (1.f - za::sqrt2 * c + za::pow(c, 2.f))};
 
         setCoefficients(coefficients);
     }
@@ -886,7 +886,7 @@ struct Echo : Processing
         const bool success = m_music->setEffectProcessor(
             [delayInFrames,
              &enabled = m_enabled,
-             buffer   = zb::Vector<float>(),
+             buffer   = za::Vector<float>(),
              cursor   = 0u](const float*  inputFrames,
                           unsigned int& inputFrameCount,
                           float*        outputFrames,
@@ -922,8 +922,8 @@ struct Echo : Processing
 
         if (!success)
         {
-            zb::printErrLn("Failed to set effect processor");
-            zb::abort();
+            za::printErrLn("Failed to set effect processor");
+            za::abort();
         }
     }
 };
@@ -952,7 +952,7 @@ public:
         // associated lambda are destroyed
         const bool success = m_music->setEffectProcessor(
             [sampleRate = playbackDevice.getSampleRate(),
-             filters    = zb::Vector<ReverbFilter<float>>(),
+             filters    = za::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
                                    unsigned int& inputFrameCount,
                                    float*        outputFrames,
@@ -984,8 +984,8 @@ public:
 
         if (!success)
         {
-            zb::printErrLn("Failed to set effect processor");
-            zb::abort();
+            za::printErrLn("Failed to set effect processor");
+            za::abort();
         }
     }
 
@@ -994,7 +994,7 @@ private:
     class AllPassFilter
     {
     public:
-        AllPassFilter(zb::SizeT delay, float theGain) : m_buffer(delay, {}), m_gain(theGain)
+        AllPassFilter(za::SizeT delay, float theGain) : m_buffer(delay, {}), m_gain(theGain)
         {
         }
 
@@ -1008,8 +1008,8 @@ private:
         }
 
     private:
-        zb::Vector<T> m_buffer;
-        zb::SizeT     m_cursor{};
+        za::Vector<T> m_buffer;
+        za::SizeT     m_cursor{};
         const float   m_gain{};
     };
 
@@ -1017,7 +1017,7 @@ private:
     class FIRFilter
     {
     public:
-        explicit FIRFilter(zb::Vector<float> taps) : m_taps(ZB_MOVE(taps))
+        explicit FIRFilter(za::Vector<float> taps) : m_taps(ZA_MOVE(taps))
         {
         }
 
@@ -1035,9 +1035,9 @@ private:
         }
 
     private:
-        const zb::Vector<float> m_taps;
-        zb::Vector<T>           m_buffer = zb::Vector<T>(m_taps.size(), {});
-        zb::SizeT               m_cursor{};
+        const za::Vector<float> m_taps;
+        za::Vector<T>           m_buffer = za::Vector<T>(m_taps.size(), {});
+        za::SizeT               m_cursor{};
     };
 
     template <typename T>
@@ -1081,9 +1081,9 @@ private:
     private:
         AllPassFilter<T> m_allPass[4];
         FIRFilter<T>     m_fir;
-        zb::Vector<T>    m_buffer;
-        zb::SizeT        m_cursor{};
-        const zb::SizeT  m_interval{m_buffer.size() / 3};
+        za::Vector<T>    m_buffer;
+        za::SizeT        m_cursor{};
+        const za::SizeT  m_interval{m_buffer.size() / 3};
         const float      m_feedbackGain{};
     };
 };
@@ -1121,7 +1121,7 @@ int main()
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
     if (!musicPath.exists())
     {
-        zb::printErrLn("Music file '{}' not found, aborting", musicPath);
+        za::printErrLn("Music file '{}' not found, aborting", musicPath);
         return 1;
     }
 
@@ -1130,9 +1130,9 @@ int main()
     auto audioContext          = za::AudioContext::create().value();
     auto playbackDeviceHandles = za::AudioContext::getAvailablePlaybackDeviceHandles();
 
-    zb::SizeT currentPlaybackDeviceIndex = 0;
+    za::SizeT currentPlaybackDeviceIndex = 0;
 
-    zb::InPlaceVector<za::PlaybackDevice, 8> playbackDevices;
+    za::InPlaceVector<za::PlaybackDevice, 8> playbackDevices;
     playbackDevices.reserve(playbackDeviceHandles.size());
 
     for (const za::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
@@ -1163,7 +1163,7 @@ int main()
     Echo           echoEffect(listener, font);
     Reverb         reverbEffect(listener, font);
 
-    const zb::Array<Effect*, 9> effects{&surroundEffect,
+    const za::Array<Effect*, 9> effects{&surroundEffect,
                                         &pitchVolumeEffect,
                                         &attenuationEffect,
                                         &toneEffect,
@@ -1173,7 +1173,7 @@ int main()
                                         &echoEffect,
                                         &reverbEffect};
 
-    zb::SizeT current = 0;
+    za::SizeT current = 0;
 
     effects[current]->start(getCurrentPlaybackDevice(), musicReader);
 
@@ -1195,7 +1195,7 @@ int main()
                                  .fillColor     = {80, 80, 80}});
 
     // Utility functions
-    const auto getCurrentDeviceName = [&] { return zb::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
+    const auto getCurrentDeviceName = [&] { return za::String{getCurrentPlaybackDevice().getDeviceHandle().getName()}; };
 
     // Create the playback device text
     za::Text playbackDeviceText(font,
@@ -1216,7 +1216,7 @@ int main()
     while (true)
     {
         // Process events
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -1263,7 +1263,7 @@ int main()
                     // F1 key: change playback device
                     case za::Keyboard::Key::F1:
                     {
-                        zb::SizeT newPlaybackDeviceIndex{};
+                        za::SizeT newPlaybackDeviceIndex{};
 
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
@@ -1288,7 +1288,7 @@ int main()
                             effects[current]->stop();
                             effects[current]->start(newPlaybackDevice, musicReader);
 
-                            playbackDeviceHandles = ZB_MOVE(newPlaybackDeviceHandles);
+                            playbackDeviceHandles = ZA_MOVE(newPlaybackDeviceHandles);
                         }
                         else
                         {

@@ -15,18 +15,18 @@
 #include "Zancle/Graphics/TextUtils.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Utf8StringCodepoints.hpp" // IWYU pragma: keep
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/String/Utf8StringCodepoints.hpp" // IWYU pragma: keep
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
 {
 ////////////////////////////////////////////////////////////
 template <typename Self>
-Vec2f TextBase::findCharacterPos(this const Self& self, zb::SizeT index)
+Vec2f TextBase::findCharacterPos(this const Self& self, za::SizeT index)
 {
     const auto& fontSource = self.getFontSource();
     const auto  charSize   = self.getCharacterSize();
@@ -38,7 +38,7 @@ Vec2f TextBase::findCharacterPos(this const Self& self, zb::SizeT index)
 
     Vec2f     characterPos;
     char32_t  prevChar = 0;
-    zb::SizeT i        = 0u;
+    za::SizeT i        = 0u;
 
     for (const char32_t curChar : self.m_string.codepoints())
     {
@@ -145,8 +145,8 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
     const auto fillQuadCount = TextUtils::precomputeTextQuadCount(self.m_string, self.m_underlined, self.m_strikeThrough);
     const auto outlineQuadCount = outlineThickness == 0.f ? 0u : fillQuadCount;
 
-    const zb::SizeT outlineVertexCount = outlineQuadCount * 4u;
-    const zb::SizeT fillVertexCount    = fillQuadCount * 4u;
+    const za::SizeT outlineVertexCount = outlineQuadCount * 4u;
+    const za::SizeT fillVertexCount    = fillQuadCount * 4u;
 
     self.m_vertices.resize(outlineVertexCount + fillVertexCount);
     self.m_fillVerticesStartIndex = outlineVertexCount;
@@ -168,7 +168,7 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
               self.m_string,
               layoutInputs,
               [&self] [[gnu::always_inline,
-                        gnu::flatten]] (zb::SizeT & idx,
+                        gnu::flatten]] (za::SizeT & idx,
                                         const float lineLength,
                                         const float lineTop,
                                         const float offset,
@@ -186,7 +186,7 @@ void TextBase::ensureGeometryUpdate(this const Self& self)
                                   outlineT);
     },
               [&self] [[gnu::always_inline,
-                        gnu::flatten]] (zb::SizeT & idx, const Vec2f pos, const Glyph& glyph, const float shear, const bool isOutline)
+                        gnu::flatten]] (za::SizeT & idx, const Vec2f pos, const Glyph& glyph, const float shear, const bool isOutline)
     {
         return TextUtils::addGlyphQuad(self.m_vertices.data(),
                                        idx,

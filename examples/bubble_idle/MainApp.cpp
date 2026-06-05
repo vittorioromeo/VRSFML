@@ -48,18 +48,18 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -267,9 +267,9 @@ void runBubbleIdleApp()
     steamMgr.runCallbacks();
 
     // Using a heap-allocation here because `Main` exceeds the stack size
-    zb::makeUnique<Main>(steamMgr)->run();
+    za::makeUnique<Main>(steamMgr)->run();
 #else
-    zb::makeUnique<Main>()->run();
+    za::makeUnique<Main>()->run();
 #endif
 }
 
@@ -358,7 +358,7 @@ Main::Main() :
     const auto suShrineBgEffectStrength     = bind(shaderShrineBackground, "u_effectStrength");
 
     return new MainShaders{
-        .shader                       = ZB_MOVE(shader),
+        .shader                       = ZA_MOVE(shader),
         .suBackgroundTexture          = suBackgroundTexture,
         .suTime                       = suTime,
         .suResolution                 = suResolution,
@@ -377,21 +377,21 @@ Main::Main() :
         .suRimShineFallRate           = suRimShineFallRate,
         .suRimShineTimeRate           = suRimShineTimeRate,
         .suRimShineArc                = suRimShineArc,
-        .shaderPostProcess            = ZB_MOVE(shaderPostProcess),
+        .shaderPostProcess            = ZA_MOVE(shaderPostProcess),
         .suPPVibrance                 = suPPVibrance,
         .suPPSaturation               = suPPSaturation,
         .suPPLightness                = suPPLightness,
         .suPPSharpness                = suPPSharpness,
         .suPPBlur                     = suPPBlur,
-        .shaderClouds                 = ZB_MOVE(shaderClouds),
+        .shaderClouds                 = ZA_MOVE(shaderClouds),
         .suCloudTime                  = suCloudTime,
         .suCloudResolution            = suCloudResolution,
-        .shaderHexed                  = ZB_MOVE(shaderHexed),
+        .shaderHexed                  = ZA_MOVE(shaderHexed),
         .suHexedTime                  = suHexedTime,
         .suHexedSeed                  = suHexedSeed,
         .suHexedDistortionStrength    = suHexedDistortionStrength,
         .suHexedShimmerStrength       = suHexedShimmerStrength,
-        .shaderShrineBackground       = ZB_MOVE(shaderShrineBackground),
+        .shaderShrineBackground       = ZA_MOVE(shaderShrineBackground),
         .suShrineBgTime               = suShrineBgTime,
         .suShrineBgViewOrigin         = suShrineBgViewOrigin,
         .suShrineBgCenter             = suShrineBgCenter,
@@ -406,7 +406,7 @@ Main::Main() :
     };
 }()),
     shaders(*shadersStorage),
-    aaLevel(zb::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel())),
+    aaLevel(za::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel())),
     gameStorage(new MainGameStorage{
         .profile =
             [&]
@@ -416,7 +416,7 @@ Main::Main() :
     if (za::Path{"userdata/profile.json"}.exists())
     {
         loadProfileFromFile(out);
-        zb::printLn("Loaded profile from file on startup");
+        za::printLn("Loaded profile from file on startup");
     }
 
     return out;
@@ -429,7 +429,7 @@ Main::Main() :
     if (za::Path{"resources/game_constants.json"}.exists())
     {
         loadGameConstantsFromFile(out);
-        zb::printLn("Loaded game constants from file on startup");
+        za::printLn("Loaded game constants from file on startup");
     }
 
     return out;
@@ -483,7 +483,7 @@ Main::Main() :
 
     // 3. Load FontAwesome into the SAME font object
     auto* res = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fa-solid-900.ttf", 16.0f, &iconConfig, iconRanges);
-    ZB_ASSERT(res != nullptr);
+    ZA_ASSERT(res != nullptr);
 
     ImGui::GetIO().Fonts->Build();
     return res;
@@ -519,7 +519,7 @@ Main::Main() :
     MainRenderTextureVector result;
     result.reserve(maxHexedCatRenderTextures);
 
-    for (zb::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
+    for (za::SizeT i = 0u; i < maxHexedCatRenderTextures; ++i)
         result.emplaceBack(
             za::RenderTexture::create(hexedCatRenderTextureSize, {.antiAliasingLevel = aaLevel, .smooth = true}).value());
 
@@ -730,7 +730,7 @@ Main::Main() :
     comboStateStorage(new ComboState{moneyTextInitialPosition}),
     comboState(*comboStateStorage),
     demoText(textStorage->demoText),
-    sweepAndPrune(zb::makeUnique<SweepAndPrune>()),
+    sweepAndPrune(za::makeUnique<SweepAndPrune>()),
     seed(static_cast<RNGSeedType>(za::Clock::now().asMicroseconds())),
     shuffledCatNamesPerType(makeShuffledCatNames(rng)),
     drawableBatchesStorage(new MainDrawableBatches{}),
@@ -780,7 +780,7 @@ Main::Main() :
         []
 {
     auto opt = za::OutFile::open("bubblebyte.log", za::FileOpenMode::out | za::FileOpenMode::app);
-    return opt.hasValue() ? MainOwnedPtr<za::OutFile>(new za::OutFile(ZB_MOVE(*opt))) : MainOwnedPtr<za::OutFile>{};
+    return opt.hasValue() ? MainOwnedPtr<za::OutFile>(new za::OutFile(ZA_MOVE(*opt))) : MainOwnedPtr<za::OutFile>{};
 }()),
     logFile(logFileStorage.get())
 {
@@ -800,7 +800,7 @@ Main::Main() :
     if (za::Path{"userdata/playthrough.json"}.exists())
     {
         loadPlaythroughFromFileAndReseed();
-        zb::printLn("Loaded playthrough from file on startup");
+        za::printLn("Loaded playthrough from file on startup");
     }
     else
     {
@@ -823,10 +823,10 @@ Main::Main() :
 ////////////////////////////////////////////////////////////
 Main::~Main()
 {
-    zb::printLn("Saving playthrough to file on exit");
+    za::printLn("Saving playthrough to file on exit");
     saveMainPlaythroughToFile();
 
-    zb::printLn("Saving profile to file on exit");
+    za::printLn("Saving profile to file on exit");
     saveProfileToFile(profile);
 }
 
@@ -843,7 +843,7 @@ void Main::run()
     // Background music
     auto& [entries, selectedIndex] = getBGMSelectorData();
     selectBGM(entries, selectedIndex);
-    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ true);
+    switchToBGM(static_cast<za::SizeT>(profile.selectedBGM), /* force */ true);
 
     //
     // Game loop

@@ -10,7 +10,7 @@
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
 
 namespace za

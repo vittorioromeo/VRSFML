@@ -13,47 +13,47 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/InputStream.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/InputStream.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline zb::I32 quantizeOutlineThickness(const float outlineThickness)
+[[nodiscard, gnu::always_inline, gnu::const]] inline za::I32 quantizeOutlineThickness(const float outlineThickness)
 {
-    return static_cast<zb::I32>(outlineThickness * float{1 << 6});
+    return static_cast<za::I32>(outlineThickness * float{1 << 6});
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline zb::U32 bitCastU32(const zb::I32 value)
+[[nodiscard, gnu::always_inline, gnu::const]] inline za::U32 bitCastU32(const za::I32 value)
 {
-    zb::U32 result; // NOLINT(cppcoreguidelines-init-variables)
-    ZB_MEMCPY(&result, &value, sizeof(value));
+    za::U32 result; // NOLINT(cppcoreguidelines-init-variables)
+    ZA_MEMCPY(&result, &value, sizeof(value));
     return result;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline zb::U64 combineGlyphTableKey(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline za::U64 combineGlyphTableKey(
     const float    outlineThickness,
     const bool     bold,
     const char32_t index)
 {
-    return (zb::U64{bitCastU32(quantizeOutlineThickness(outlineThickness))} << 32) | (zb::U64{bold} << 31) | index;
+    return (za::U64{bitCastU32(quantizeOutlineThickness(outlineThickness))} << 32) | (za::U64{bold} << 31) | index;
 }
 
 } // namespace
@@ -70,17 +70,17 @@ struct Font::Impl
 
 
     ////////////////////////////////////////////////////////////
-    using GlyphTable = MapType</* character size */ unsigned int, MapType</* combined key */ zb::U64, Glyph>>;
+    using GlyphTable = MapType</* character size */ unsigned int, MapType</* combined key */ za::U64, Glyph>>;
 
 
     ////////////////////////////////////////////////////////////
     explicit Impl(FontFace&& theFontFace, TextureAtlas* theTextureAtlasPtr) :
-        fontFace(ZB_MOVE(theFontFace)),
+        fontFace(ZA_MOVE(theFontFace)),
         textureAtlasPtr{theTextureAtlasPtr},
         fallbackTextureAtlas{
             theTextureAtlasPtr == nullptr
-                ? zb::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
-                : zb::nullOpt}
+                ? za::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
+                : za::nullOpt}
     {
     }
 
@@ -94,7 +94,7 @@ struct Font::Impl
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] auto loadGlyphImpl(auto&              glyphsByCharacterSize,
-                                     const zb::U64      key,
+                                     const za::U64      key,
                                      const char32_t     codePoint,
                                      const unsigned int characterSize,
                                      const bool         bold,
@@ -110,7 +110,7 @@ struct Font::Impl
                          bold,
                          outlineThickness);
 
-            zb::abort();
+            za::abort();
         }
 
         return glyphsByCharacterSize.try_emplace(key, *optGlyph);
@@ -120,7 +120,7 @@ struct Font::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] const Glyph& getGlyphImpl(
         auto&              glyphsByCharacterSize,
-        const zb::U64      key,
+        const za::U64      key,
         const char32_t     codePoint,
         const unsigned int characterSize,
         const bool         bold,
@@ -136,14 +136,14 @@ struct Font::Impl
     ////////////////////////////////////////////////////////////
     mutable FontFace                   fontFace;
     TextureAtlas*                      textureAtlasPtr;
-    mutable zb::Optional<TextureAtlas> fallbackTextureAtlas;
+    mutable za::Optional<TextureAtlas> fallbackTextureAtlas;
     mutable GlyphTable                 glyphs;
 };
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(zb::PassKey<Font>&&, FontFace&& fontFace, TextureAtlas* textureAtlas) :
-    m_impl{zb::makeUnique<Impl>(ZB_MOVE(fontFace), textureAtlas)}
+Font::Font(za::PassKey<Font>&&, FontFace&& fontFace, TextureAtlas* textureAtlas) :
+    m_impl{za::makeUnique<Impl>(ZA_MOVE(fontFace), textureAtlas)}
 {
     // m_impl is set by the factory methods after construction
 }
@@ -156,45 +156,45 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* textureAtlas)
+za::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* textureAtlas)
 {
     auto optFontFace = FontFace::openFromFile(filename);
     if (!optFontFace.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<Font>(zb::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
+    return za::makeOptional<Font>(za::PassKey<Font>{}, ZA_MOVE(*optFontFace), textureAtlas);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Font> Font::openFromMemory(const void* data, zb::SizeT sizeInBytes, TextureAtlas* textureAtlas)
+za::Optional<Font> Font::openFromMemory(const void* data, za::SizeT sizeInBytes, TextureAtlas* textureAtlas)
 {
     auto optFontFace = FontFace::openFromMemory(data, sizeInBytes);
     if (!optFontFace.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<Font>(zb::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
+    return za::makeOptional<Font>(za::PassKey<Font>{}, ZA_MOVE(*optFontFace), textureAtlas);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* /* type */)
+za::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* /* type */)
 {
     auto optFontFace = FontFace::openFromStream(stream);
     if (!optFontFace.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<Font>(zb::PassKey<Font>{}, ZB_MOVE(*optFontFace), textureAtlas);
+    return za::makeOptional<Font>(za::PassKey<Font>{}, ZA_MOVE(*optFontFace), textureAtlas);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
+za::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
 {
     if (!stream.seek(0).hasValue())
     {
         priv::errMsg("Failed to seek font stream");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     return openFromStreamImpl(stream, textureAtlas, "stream");
@@ -214,7 +214,7 @@ const Glyph& Font::getGlyph(const char32_t     codePoint,
                             const bool         bold,
                             const float        outlineThickness) const
 {
-    ZB_ASSERT(m_impl->fontFace.hasGlyph(codePoint));
+    ZA_ASSERT(m_impl->fontFace.hasGlyph(codePoint));
 
     return m_impl->getGlyphImpl(m_impl->glyphs[characterSize],
                                 combineGlyphTableKey(outlineThickness, bold, codePoint),
@@ -231,8 +231,8 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
                                              const bool         bold,
                                              const float        outlineThickness) const
 {
-    ZB_ASSERT(outlineThickness != 0.f);
-    ZB_ASSERT(m_impl->fontFace.hasGlyph(codePoint));
+    ZA_ASSERT(outlineThickness != 0.f);
+    ZA_ASSERT(m_impl->fontFace.hasGlyph(codePoint));
 
     auto& glyphsByCharacterSize = m_impl->glyphs[characterSize];
 
@@ -253,7 +253,7 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
                              .first;
 
         fillGlyphIt = glyphsByCharacterSize.find(fillGlyphKey);
-        ZB_ASSERT(fillGlyphIt != glyphsByCharacterSize.end());
+        ZA_ASSERT(fillGlyphIt != glyphsByCharacterSize.end());
     }
 
     return {.fillGlyph = fillGlyphIt->second, .outlineGlyph = outlineGlyphIt->second};

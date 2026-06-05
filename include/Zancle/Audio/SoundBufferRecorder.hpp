@@ -10,9 +10,9 @@
 
 #include "Zancle/Audio/SoundRecorder.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ protected:
     /// \return Always `true` (capture continues)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const zb::I16* samples, zb::SizeT sampleCount) override;
+    [[nodiscard]] bool onProcessSamples(const za::I16* samples, za::SizeT sampleCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Finalize the captured sound buffer
@@ -106,7 +106,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
 };
 
 } // namespace za

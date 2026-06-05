@@ -9,8 +9,8 @@
 #include "Perk.hpp"
 #include "World.hpp"
 
-#include "ZancleBase/Fmt/FmtToString.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Fmt/FmtToString.hpp"
+#include "Zancle/String/String.hpp"
 
 
 namespace tsurv
@@ -22,28 +22,28 @@ struct [[nodiscard]] PerkChainLightning : Perk
     static constexpr int chanceIncrease = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Chain Lightning";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::fmtToString("Each time lightning strikes, add a {}% chance to hit an additional block.",
+        return za::fmtToString("Each time lightning strikes, add a {}% chance to hit an additional block.",
                                world.perkChainLightning + chanceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{}% -> {}%", world.perkChainLightning, world.perkChainLightning + chanceIncrease);
+        return za::fmtToString("{}% -> {}%", world.perkChainLightning, world.perkChainLightning + chanceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("({}% chance)", world.perkChainLightning);
+        return za::fmtToString("({}% chance)", world.perkChainLightning);
     }
 
     /////////////////////////////////////////////////////////////
@@ -74,27 +74,27 @@ struct [[nodiscard]] PerkPeekNextTetraminos : Perk
     static constexpr int maxPeek      = 3;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Peek Next Tetraminos";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::fmtToString("See the next {} upcoming tetraminos.", world.perkNPeek + peekIncrease);
+        return za::fmtToString("See the next {} upcoming tetraminos.", world.perkNPeek + peekIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}", world.perkNPeek, world.perkNPeek + peekIncrease);
+        return za::fmtToString("{} -> {}", world.perkNPeek, world.perkNPeek + peekIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(see {} tetraminos)", world.perkNPeek);
+        return za::fmtToString("(see {} tetraminos)", world.perkNPeek);
     }
 
     /////////////////////////////////////////////////////////////
@@ -124,29 +124,29 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
     static constexpr int strikeIncrease = 1;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "On-Clear Lightning Strike";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::
+        return za::
             fmtToString("Each time you full-clear a line or more, randomly damage {} block(s) with a lightning strike.",
                         world.perkRndHitOnClear + strikeIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}", world.perkRndHitOnClear, world.perkRndHitOnClear + strikeIncrease);
+        return za::fmtToString("{} -> {}", world.perkRndHitOnClear, world.perkRndHitOnClear + strikeIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("({} tetraminos per clear)", world.perkRndHitOnClear);
+        return za::fmtToString("({} tetraminos per clear)", world.perkRndHitOnClear);
     }
 
     /////////////////////////////////////////////////////////////
@@ -173,27 +173,27 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
 struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Vertical Drill";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World&) const override
+    [[nodiscard]] za::String getDescription(const World&) const override
     {
         return "When hard dropping, automatically damage blocks directly connected below the tetramino's sharp edges.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World&) const override
+    [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return ""; // One-time unlock
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(penetration: {}, coverage: {})",
+        return za::fmtToString("(penetration: {}, coverage: {})",
                                world.perkDrill[DrillDirection::Down]->maxPenetration,
                                world.perkDrill[DrillDirection::Down]->coverage);
     }
@@ -226,28 +226,28 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
     static constexpr int maxPenetration      = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Hard-Drop Drill - Penetration";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::fmtToString("Increase the maximum number of blocks damaged to {}.",
+        return za::fmtToString("Increase the maximum number of blocks damaged to {}.",
                                world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}",
+        return za::fmtToString("{} -> {}",
                                world.perkDrill[DrillDirection::Down]->maxPenetration,
                                world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World&) const override
+    [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -278,25 +278,25 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
 struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Hard-Drop Drill - Blunt Force";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World&) const override
+    [[nodiscard]] za::String getDescription(const World&) const override
     {
         return "The entire surface of the tetramino acts as a drill when hard-dropping.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World&) const override
+    [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return ""; // One-time unlock
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World&) const override
+    [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -325,7 +325,7 @@ struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 struct [[nodiscard]] PerkHoldSkipTetramino : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         // This perk is a multi-stage upgrade. We assume it is only shown when available.
         // The first time (world.perkCanHoldTetramino == 0) it unlocks "Hold".
@@ -334,7 +334,7 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
         if (world.perkCanHoldTetramino == 0)
             return "Gain the ability to hold your current tetramino. Can be upgraded to skip a tetramino later.";
@@ -343,7 +343,7 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         if (world.perkCanHoldTetramino == 0)
             return "Unlock Hold";
@@ -355,9 +355,9 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("{}", (world.perkCanHoldTetramino == 0) ? "Hold" : "Skip");
+        return za::fmtToString("{}", (world.perkCanHoldTetramino == 0) ? "Hold" : "Skip");
     }
 
     /////////////////////////////////////////////////////////////
@@ -387,28 +387,28 @@ struct [[nodiscard]] PerkXpPerTetraminoPlaced : Perk
     static constexpr int xpIncrease = 3;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "XP per Tetramino Placed";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
         /////////////////////////////////////////////////////////////
-        return zb::fmtToString("Gain {} XP for each tetramino you place.", world.perkXPPerTetraminoPlaced + xpIncrease);
+        return za::fmtToString("Gain {} XP for each tetramino you place.", world.perkXPPerTetraminoPlaced + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}", world.perkXPPerTetraminoPlaced, world.perkXPPerTetraminoPlaced + xpIncrease);
+        return za::fmtToString("{} -> {}", world.perkXPPerTetraminoPlaced, world.perkXPPerTetraminoPlaced + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("({} XP)", world.perkXPPerTetraminoPlaced);
+        return za::fmtToString("({} XP)", world.perkXPPerTetraminoPlaced);
     }
 
     /////////////////////////////////////////////////////////////
@@ -437,28 +437,28 @@ struct [[nodiscard]] PerkXpPerBlockDamaged : Perk
     static constexpr int xpIncrease = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "XP per Block Damaged";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
         /////////////////////////////////////////////////////////////
-        return zb::fmtToString("Gain {} XP for each block you damage.", world.perkXPPerBlockDamaged + xpIncrease);
+        return za::fmtToString("Gain {} XP for each block you damage.", world.perkXPPerBlockDamaged + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}", world.perkXPPerBlockDamaged, world.perkXPPerBlockDamaged + xpIncrease);
+        return za::fmtToString("{} -> {}", world.perkXPPerBlockDamaged, world.perkXPPerBlockDamaged + xpIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("({} XP)", world.perkXPPerBlockDamaged);
+        return za::fmtToString("({} XP)", world.perkXPPerBlockDamaged);
     }
 
     /////////////////////////////////////////////////////////////
@@ -489,35 +489,35 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
     static constexpr int minThreshold     = 10;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Janitor";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
-            return zb::fmtToString("Every {} tetraminos you place, delete the bottom row of the grid.", initialThreshold);
+            return za::fmtToString("Every {} tetraminos you place, delete the bottom row of the grid.", initialThreshold);
 
         return "Decrease the number of tetraminos needed to trigger the Janitor effect.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
-            return zb::fmtToString("Activates at {}", initialThreshold);
+            return za::fmtToString("Activates at {}", initialThreshold);
 
-        return zb::fmtToString("{} -> {}",
+        return za::fmtToString("{} -> {}",
                                world.perkDeleteFloorPerNTetraminos->nTetraminos,
                                world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(every {} tetraminos)", world.perkDeleteFloorPerNTetraminos->nTetraminos);
+        return za::fmtToString("(every {} tetraminos)", world.perkDeleteFloorPerNTetraminos->nTetraminos);
     }
 
     /////////////////////////////////////////////////////////////
@@ -552,36 +552,36 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
     static constexpr int minThreshold     = 8;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "On-Placement Strike";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
-            return zb::fmtToString("Every {} tetraminos you place, randomly damage a block with a lightning strike.",
+            return za::fmtToString("Every {} tetraminos you place, randomly damage a block with a lightning strike.",
                                    initialThreshold);
 
         return "Decrease the number of tetraminos needed to trigger the On-Placement Strike.";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
-            return zb::fmtToString("Activates at {}", initialThreshold);
+            return za::fmtToString("Activates at {}", initialThreshold);
 
-        return zb::fmtToString("{} -> {}",
+        return za::fmtToString("{} -> {}",
                                world.perkRndHitPerNTetraminos->nTetraminos,
                                world.perkRndHitPerNTetraminos->nTetraminos - 1);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(every {} tetraminos)", world.perkRndHitPerNTetraminos->nTetraminos);
+        return za::fmtToString("(every {} tetraminos)", world.perkRndHitPerNTetraminos->nTetraminos);
     }
 
     /////////////////////////////////////////////////////////////
@@ -615,27 +615,27 @@ struct [[nodiscard]] PerkExtraLinePieces : Perk
     static constexpr int maxExtraPieces = 3;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         return "Extra Line Pieces";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World&) const override
+    [[nodiscard]] za::String getDescription(const World&) const override
     {
-        return zb::fmtToString("Increase the number of line pieces in the tetramino bag by {}.", pieceIncrease);
+        return za::fmtToString("Increase the number of line pieces in the tetramino bag by {}.", pieceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}", world.perkExtraLinePiecesInPool, world.perkExtraLinePiecesInPool + pieceIncrease);
+        return za::fmtToString("{} -> {}", world.perkExtraLinePiecesInPool, world.perkExtraLinePiecesInPool + pieceIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(+{})", world.perkExtraLinePiecesInPool);
+        return za::fmtToString("(+{})", world.perkExtraLinePiecesInPool);
     }
 
     /////////////////////////////////////////////////////////////
@@ -663,29 +663,29 @@ template <DrillDirection::Enum TDirection>
 struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
-        return zb::fmtToString("{} Horizontal Drill", upperCaseDirectionStr);
+        return za::fmtToString("{} Horizontal Drill", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World&) const override
+    [[nodiscard]] za::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == DrillDirection::Left) ? "left" : "right";
-        return zb::fmtToString("Damage blocks directly adjacent to the {} of the placed tetramino.", lowerCaseDirectionStr);
+        return za::fmtToString("Damage blocks directly adjacent to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World&) const override
+    [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(penetration: {}, coverage: {})",
+        return za::fmtToString("(penetration: {}, coverage: {})",
                                world.perkDrill[TDirection]->maxPenetration,
                                world.perkDrill[TDirection]->coverage);
     }
@@ -719,29 +719,29 @@ struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
     static constexpr int maxPenetration      = 4;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
-        return zb::fmtToString("{} Drill - Penetration", upperCaseDirectionStr);
+        return za::fmtToString("{} Drill - Penetration", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::fmtToString("Increase the maximum number of blocks damaged to {}.",
+        return za::fmtToString("Increase the maximum number of blocks damaged to {}.",
                                world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}",
+        return za::fmtToString("{} -> {}",
                                world.perkDrill[TDirection]->maxPenetration,
                                world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World&) const override
+    [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -775,29 +775,29 @@ struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
     static constexpr int maxLength      = 4;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
-        return zb::fmtToString("{} Drill - Coverage", upperCaseDirectionStr);
+        return za::fmtToString("{} Drill - Coverage", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::fmtToString("Increase the maximum length of the drill to {} blocks.",
+        return za::fmtToString("Increase the maximum length of the drill to {} blocks.",
                                world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}",
+        return za::fmtToString("{} -> {}",
                                world.perkDrill[TDirection]->coverage,
                                world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World&) const override
+    [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -842,29 +842,29 @@ template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
-        return zb::fmtToString("{} Diagonal Laser", upperCaseDirectionStr);
+        return za::fmtToString("{} Diagonal Laser", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World&) const override
+    [[nodiscard]] za::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
-        return zb::fmtToString("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
+        return za::fmtToString("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World&) const override
+    [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World& world) const override
+    [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
-        return zb::fmtToString("(penetration: {}, bounce: {})",
+        return za::fmtToString("(penetration: {}, bounce: {})",
                                world.perkLaser[TDirection]->maxPenetration,
                                world.perkLaser[TDirection]->bounce ? "yes" : "no");
     }
@@ -898,29 +898,29 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
     static constexpr int maxPenetration      = 4;
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
-        return zb::fmtToString("{} Diagonal - Penetration", upperCaseDirectionStr);
+        return za::fmtToString("{} Diagonal - Penetration", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World& world) const override
+    [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        return zb::fmtToString("Increase the maximum number of blocks damaged to {}.",
+        return za::fmtToString("Increase the maximum number of blocks damaged to {}.",
                                world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World& world) const override
+    [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
-        return zb::fmtToString("{} -> {}",
+        return za::fmtToString("{} -> {}",
                                world.perkLaser[TDirection]->maxPenetration,
                                world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World&) const override
+    [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
@@ -950,28 +950,28 @@ template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
 {
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getName() const override
+    [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
-        return zb::fmtToString("{} Diagonal - Bounce", upperCaseDirectionStr);
+        return za::fmtToString("{} Diagonal - Bounce", upperCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getDescription(const World&) const override
+    [[nodiscard]] za::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
 
-        return zb::fmtToString("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
+        return za::fmtToString("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getProgressionStr(const World&) const override
+    [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
     /////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::String getInventoryStr(const World&) const override
+    [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }

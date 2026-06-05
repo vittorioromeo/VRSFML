@@ -2,39 +2,39 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/AutoWrapAngle.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
-#include "Zancle/System/Vec2.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/AutoWrapAngle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToChars.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToChars.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-zb::String sysFloatToString(const float value, const int precision = 6)
+za::String sysFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
-    char*      end = zb::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<zb::SizeT>(end - buf);
-    return zb::String{buf, len};
+    char*      end = za::toChars(buf, buf + sizeof(buf), value, precision);
+    const auto len = static_cast<za::SizeT>(end - buf);
+    return za::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::String sysIntToString(const T value)
+za::String sysIntToString(const T value)
 {
     char       buf[32];
-    char*      end = zb::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<zb::SizeT>(end - buf);
-    return zb::String{buf, len};
+    char*      end = za::toChars(buf, buf + sizeof(buf), value);
+    const auto len = static_cast<za::SizeT>(end - buf);
+    return za::String{buf, len};
 }
 
 } // namespace
@@ -43,33 +43,33 @@ zb::String sysIntToString(const T value)
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Angle& angle) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Angle& angle) noexcept
 {
-    const zb::String s = sysFloatToString(angle.asDegrees()) + zb::String{" deg"};
+    const za::String s = sysFloatToString(angle.asDegrees()) + za::String{" deg"};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::AutoWrapAngle& angle) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::AutoWrapAngle& angle) noexcept
 {
-    const zb::String s = sysFloatToString(angle.asDegrees()) + zb::String{" deg"};
+    const za::String s = sysFloatToString(angle.asDegrees()) + za::String{" deg"};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Utf8String& string) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Utf8String& string) noexcept
 {
-    const zb::String s{string.data(), static_cast<zb::SizeT>(string.byteSize())};
+    const za::String s{string.data(), static_cast<za::SizeT>(string.byteSize())};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Time& time) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Time& time) noexcept
 {
-    const zb::String s = sysIntToString(time.asMicroseconds()) + zb::String{"us"};
+    const za::String s = sysIntToString(time.asMicroseconds()) + za::String{"us"};
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
@@ -83,9 +83,9 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Time& time) noexcep
 // render their value as "<?>" -- matching the prior behavior.
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const ::Approx<T>& approx) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const ::Approx<T>& approx) noexcept
 {
-    zb::SizeT len = ::tst::detail::copyInto(buf, cap, "Approx(", 7u);
+    za::SizeT len = ::tst::detail::copyInto(buf, cap, "Approx(", 7u);
     len += ::tst::detail::renderValue(buf + len, cap - len, approx.value);
 
     if (len < cap)
@@ -97,10 +97,10 @@ zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const ::Approx<T>& approx) no
 
 ////////////////////////////////////////////////////////////
 // Explicit instantiations for the wrapped types actually used by tests.
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<float>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Angle>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Vec2<float>>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Vec3<float>>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<float>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<za::Angle>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<za::Vec2<float>>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<za::Vec3<float>>&) noexcept;
 
 
 ////////////////////////////////////////////////////////////
@@ -116,9 +116,9 @@ template <typename>
 class Rect2;
 } // namespace za
 
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Color>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Transform>&) noexcept;
-template zb::SizeT stringifyValue(char*, zb::SizeT, const ::Approx<za::Rect2<float>>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<za::Color>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<za::Transform>&) noexcept;
+template za::SizeT stringifyValue(char*, za::SizeT, const ::Approx<za::Rect2<float>>&) noexcept;
 
 
 ////////////////////////////////////////////////////////////

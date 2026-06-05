@@ -6,24 +6,24 @@
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/Socket.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Network] za::UdpSocket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::UdpSocket));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::UdpSocket));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::UdpSocket));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::UdpSocket));
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::UdpSocket));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::UdpSocket));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::UdpSocket));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::UdpSocket));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::UdpSocket));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::UdpSocket));
     }
 
     SECTION("Constants")
@@ -83,8 +83,8 @@ TEST_CASE("[Network] za::UdpSocket")
 
         // Poll a few times to ride out loopback scheduling jitter.
         char                        buffer[sizeof(payload)]{};
-        zb::SizeT                   received{};
-        zb::Optional<za::IpAddress> sender;
+        za::SizeT                   received{};
+        za::Optional<za::IpAddress> sender;
         unsigned short              senderPort{};
 
         za::Socket::Status receiveStatus = za::Socket::Status::NotReady;
@@ -94,7 +94,7 @@ TEST_CASE("[Network] za::UdpSocket")
         REQUIRE(receiveStatus == za::Socket::Status::Done);
         CHECK(received == sizeof(payload));
 
-        for (zb::SizeT i = 0; i < sizeof(payload); ++i)
+        for (za::SizeT i = 0; i < sizeof(payload); ++i)
             CHECK(buffer[i] == payload[i]);
 
         REQUIRE(sender.hasValue());

@@ -11,14 +11,14 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -32,10 +32,10 @@ class Packet;
 class Utf8String;
 } // namespace za
 
-namespace zb
+namespace za
 {
 class String;
-} // namespace zb
+} // namespace za
 
 
 namespace za
@@ -74,10 +74,10 @@ public:
     ///
     /// \param isBlocking Desired blocking state
     ///
-    /// \return `TcpSocket` on success, `zb::nullOpt` on failure
+    /// \return `TcpSocket` on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<TcpSocket> create(bool isBlocking);
+    [[nodiscard]] static za::Optional<TcpSocket> create(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -132,7 +132,7 @@ public:
     /// \see `getRemotePort`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<IpAddress> getRemoteAddress() const;
+    [[nodiscard]] za::Optional<IpAddress> getRemoteAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port of the connected peer to which
@@ -282,7 +282,7 @@ public:
     ///
     /// This overload is provided to prevent a const char* argument
     /// resulting in the `bool verifyPeer` overload being called
-    /// instead of the `zb::StringView` overload.
+    /// instead of the `za::StringView` overload.
     ///
     /// \param hostname             Hostname of the remote peer, used for verification
     /// \param certificateChainData Null terminated string containing certificate chain data in PEM encoding
@@ -349,7 +349,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname,
                                            const Byte*           certificateChainData,
-                                           zb::SizeT             certificateChainSize);
+                                           za::SizeT             certificateChainSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a client
@@ -403,7 +403,7 @@ public:
     /// \see `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname, zb::StringView certificateChainData);
+    [[nodiscard]] TlsStatus setupTlsClient(const za::Utf8String& hostname, za::StringView certificateChainData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a server
@@ -454,11 +454,11 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TlsStatus setupTlsServer(
         const Byte* certificateChainData,
-        zb::SizeT   certificateChainSize,
+        za::SizeT   certificateChainSize,
         const Byte* privateKeyData,
-        zb::SizeT   privateKeySize,
+        za::SizeT   privateKeySize,
         const Byte* privateKeyPasswordData,
-        zb::SizeT   privateKeyPasswordSize);
+        za::SizeT   privateKeyPasswordSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set up transport layer security as a server
@@ -504,9 +504,9 @@ public:
     /// \see `setupTlsClient`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TlsStatus setupTlsServer(zb::StringView certificateChainData,
-                                           zb::StringView privateKeyData,
-                                           zb::StringView privateKeyPasswordData = "");
+    [[nodiscard]] TlsStatus setupTlsServer(za::StringView certificateChainData,
+                                           za::StringView privateKeyData,
+                                           za::StringView privateKeyPasswordData = "");
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the name of the TLS ciphersuite currently in use
@@ -516,13 +516,13 @@ public:
     /// \see `setupTlsClient`, `setupTlsServer`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<zb::String> getCurrentCiphersuiteName() const;
+    [[nodiscard]] za::Optional<za::String> getCurrentCiphersuiteName() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
     ///
     /// To be able to handle partial sends over non-blocking
-    /// sockets, use the `send(const void*, zb::SizeT, zb::SizeT&)`
+    /// sockets, use the `send(const void*, za::SizeT, za::SizeT&)`
     /// overload instead.
     /// This function will fail if the socket is not connected.
     ///
@@ -534,7 +534,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, zb::SizeT size);
+    [[nodiscard]] Status send(const void* data, za::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
@@ -550,7 +550,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, zb::SizeT size, zb::SizeT& sent);
+    [[nodiscard]] Status send(const void* data, za::SizeT size, za::SizeT& sent);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from the remote peer
@@ -568,7 +568,7 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void* data, zb::SizeT size, zb::SizeT& received);
+    [[nodiscard]] Status receive(void* data, za::SizeT size, za::SizeT& received);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to the remote peer
@@ -623,19 +623,19 @@ private:
     ////////////////////////////////////////////////////////////
     struct PendingPacket
     {
-        zb::U32          size{};         //!< Data of packet size
-        zb::SizeT        sizeReceived{}; //!< Number of size bytes received so far
-        zb::Vector<Byte> data;           //!< Data of the packet
+        za::U32          size{};         //!< Data of packet size
+        za::SizeT        sizeReceived{}; //!< Number of size bytes received so far
+        za::Vector<Byte> data;           //!< Data of the packet
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;                // TODO P1: review impl
-    zb::UniquePtr<Impl> m_impl; //!< Implementation details
+    za::UniquePtr<Impl> m_impl; //!< Implementation details
 
     PendingPacket    m_pendingPacket;     //!< Temporary data of the packet currently being received
-    zb::Vector<Byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
+    za::Vector<Byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 
 } // namespace za
@@ -689,7 +689,7 @@ private:
 ///
 /// // Receive an answer from the server
 /// char buffer[1024];
-/// zb::SizeT received = 0;
+/// za::SizeT received = 0;
 /// socket.receive(buffer, sizeof(buffer), received);
 /// std::cout << "The server said: " << buffer << '\n';
 ///
@@ -706,7 +706,7 @@ private:
 ///
 /// // Receive a message from the client
 /// char buffer[1024];
-/// zb::SizeT received = 0;
+/// za::SizeT received = 0;
 /// socket.receive(buffer, sizeof(buffer), received);
 /// std::cout << "The client said: " << buffer << '\n';
 ///

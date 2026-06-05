@@ -10,25 +10,25 @@
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowSwappable.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsNothrowSwappable.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
 
-const zb::Vector<char>& sharedLogoBytes()
+const za::Vector<char>& sharedLogoBytes()
 {
     static auto bytes = loadIntoMemory("zancle-logo-big.png");
     return bytes;
@@ -43,12 +43,12 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::Texture));
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Texture));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Texture));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Texture));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Texture));
-        STATIC_CHECK(ZB_IS_NOTHROW_SWAPPABLE(za::Texture));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::Texture));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Texture));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Texture));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Texture));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Texture));
+        STATIC_CHECK(ZA_IS_NOTHROW_SWAPPABLE(za::Texture));
     }
 
     SECTION("Move semantics")
@@ -56,7 +56,7 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
         SECTION("Construction")
         {
             za::Texture       movedTexture = za::Texture::create({64, 64}).value();
-            const za::Texture texture      = ZB_MOVE(movedTexture);
+            const za::Texture texture      = ZA_MOVE(movedTexture);
             CHECK(texture.getSize() == za::Vec2u{64, 64});
             CHECK(!texture.isSmooth());
             CHECK(!texture.isSrgb());
@@ -68,7 +68,7 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
         {
             za::Texture movedTexture = za::Texture::create({64, 64}).value();
             za::Texture texture      = za::Texture::create({128, 128}).value();
-            texture                  = ZB_MOVE(movedTexture);
+            texture                  = ZA_MOVE(movedTexture);
             CHECK(texture.getSize() == za::Vec2u{64, 64});
             CHECK(!texture.isSmooth());
             CHECK(!texture.isSrgb());
@@ -86,7 +86,7 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
             CHECK(rt1.hasValue());
             rt1->setSmooth(true);
 
-            *rt0 = ZB_MOVE(*rt1);
+            *rt0 = ZA_MOVE(*rt1);
             rt0->setSmooth(true);
         }
     }
@@ -177,7 +177,7 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
 
     SECTION("Copy semantics")
     {
-        constexpr zb::U8 red[]{0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF};
+        constexpr za::U8 red[]{0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF};
 
         auto texture = za::Texture::create({1, 2}).value();
         texture.update(red);
@@ -200,8 +200,8 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
 
     SECTION("update()")
     {
-        constexpr zb::U8 yellow[]{0xFF, 0xFF, 0x00, 0xFF};
-        constexpr zb::U8 cyan[]{0x00, 0xFF, 0xFF, 0xFF};
+        constexpr za::U8 yellow[]{0xFF, 0xFF, 0x00, 0xFF};
+        constexpr za::U8 cyan[]{0x00, 0xFF, 0xFF, 0xFF};
 
         SECTION("Pixels")
         {
@@ -296,8 +296,8 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
 
     SECTION("swap()")
     {
-        constexpr zb::U8 blue[]{0x00, 0x00, 0xFF, 0xFF};
-        constexpr zb::U8 green[]{0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
+        constexpr za::U8 blue[]{0x00, 0x00, 0xFF, 0xFF};
+        constexpr za::U8 green[]{0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
 
         auto texture1 = za::Texture::create(za::Vec2u{1, 1}, {.sRgb = true}).value();
         texture1.update(blue);

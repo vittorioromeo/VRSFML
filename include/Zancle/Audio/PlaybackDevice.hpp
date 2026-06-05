@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Export.hpp"
 
-#include "Zancle/System/LifetimeDependee.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -175,7 +175,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 7680> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 7680> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

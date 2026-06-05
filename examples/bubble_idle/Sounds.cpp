@@ -1,12 +1,12 @@
 #include "Sounds.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 ////////////////////////////////////////////////////////////
 void Sounds::setupSounds(const bool volumeOnly, const float volumeMult)
 {
-    ZB_ASSERT(volumeMult >= 0.f && volumeMult <= 1.f);
+    ZA_ASSERT(volumeMult >= 0.f && volumeMult <= 1.f);
 
     const auto setupWorldSound = [&](auto& sound, const float attenuationMult = 1.f)
     {

@@ -11,10 +11,10 @@
 #include "Zancle/GLUtils/GLPersistentRingBuffer.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -28,7 +28,7 @@ struct VBOHandle::Impl
     GLPersistentRingBuffer<GLVertexBufferObject> persistentRingBuffer;
 #endif
 
-    explicit Impl(GLVertexBufferObject&& theVbo) : vbo(ZB_MOVE(theVbo))
+    explicit Impl(GLVertexBufferObject&& theVbo) : vbo(ZA_MOVE(theVbo))
     {
     }
 
@@ -52,10 +52,10 @@ struct VBOHandle::Impl
         persistentRingBuffer.destroy(vbo);
 #endif
 
-        vbo = ZB_MOVE(rhs.vbo);
+        vbo = ZA_MOVE(rhs.vbo);
 
 #ifndef ZA_OPENGL_ES
-        persistentRingBuffer = ZB_MOVE(rhs.persistentRingBuffer);
+        persistentRingBuffer = ZA_MOVE(rhs.persistentRingBuffer);
 #endif
 
         return *this;
@@ -81,10 +81,10 @@ void VBOHandle::bind()
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT VBOHandle::uploadStreamingData(const void* const data, const zb::SizeT byteCount)
+za::SizeT VBOHandle::uploadStreamingData(const void* const data, const za::SizeT byteCount)
 {
-    ZB_ASSERT(data != nullptr);
-    ZB_ASSERT(byteCount > 0u);
+    ZA_ASSERT(data != nullptr);
+    ZA_ASSERT(byteCount > 0u);
 
 #ifdef ZA_OPENGL_ES
     bind();
@@ -93,7 +93,7 @@ zb::SizeT VBOHandle::uploadStreamingData(const void* const data, const zb::SizeT
 #else
     const auto byteOffset = m_impl->persistentRingBuffer.beginWrite(m_impl->vbo, byteCount);
 
-    ZB_MEMCPY(static_cast<char*>(m_impl->persistentRingBuffer.data()) + byteOffset, data, byteCount);
+    ZA_MEMCPY(static_cast<char*>(m_impl->persistentRingBuffer.data()) + byteOffset, data, byteCount);
     m_impl->persistentRingBuffer.flushBytesToGPU(m_impl->vbo, byteOffset, byteCount);
 
     return byteOffset;

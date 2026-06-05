@@ -4,17 +4,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 namespace tsurv
 {
 /////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::String wrapText(const zb::StringView text, const zb::SizeT maxLineLength)
+[[nodiscard]] inline za::String wrapText(const za::StringView text, const za::SizeT maxLineLength)
 {
-    zb::String result; // Use a single local variable for NRVO
+    za::String result; // Use a single local variable for NRVO
 
     // Handle trivial cases
     if (text.empty() || maxLineLength == 0)
@@ -22,31 +22,31 @@ namespace tsurv
 
     result.reserve(text.size());
 
-    zb::String currentLine;
-    zb::SizeT  currentPos = 0;
+    za::String currentLine;
+    za::SizeT  currentPos = 0;
 
     // Define our whitespace characters
-    constexpr zb::StringView whitespace = " \t\n\r";
+    constexpr za::StringView whitespace = " \t\n\r";
 
     while (currentPos < text.size())
     {
         // 1. Find the start of the next word (skip leading whitespace)
-        const zb::SizeT wordStart = text.findFirstNotOf(whitespace, currentPos);
+        const za::SizeT wordStart = text.findFirstNotOf(whitespace, currentPos);
 
         // If no more words are found, we're done
-        if (wordStart == zb::StringView::nPos)
+        if (wordStart == za::StringView::nPos)
             break;
 
         // 2. Find the end of the word
-        zb::SizeT wordEnd = text.findFirstOf(whitespace, wordStart);
-        if (wordEnd == zb::StringView::nPos)
+        za::SizeT wordEnd = text.findFirstOf(whitespace, wordStart);
+        if (wordEnd == za::StringView::nPos)
         {
             // This is the last word, so it extends to the end of the text
             wordEnd = text.size();
         }
 
         // 3. Extract the word as a string_view (no copy made here)
-        const zb::StringView word = text.substrByPosLen(wordStart, wordEnd - wordStart);
+        const za::StringView word = text.substrByPosLen(wordStart, wordEnd - wordStart);
 
         // 4. Decide where to place the word
         if (currentLine.empty())

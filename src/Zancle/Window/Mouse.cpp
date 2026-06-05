@@ -11,9 +11,9 @@
 #include "Zancle/Window/WindowBase.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 #include <SDL3/SDL_mouse.h>
 
@@ -40,7 +40,7 @@ bool Mouse::isButtonPressed(Button button)
     if (button == priv::getButtonFromSDLButton(SDL_BUTTON_X2))
         return (globalMouseState & SDL_BUTTON_X2MASK) != 0;
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return false;
 }
 

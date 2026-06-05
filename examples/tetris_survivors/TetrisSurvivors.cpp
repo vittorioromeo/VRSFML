@@ -76,45 +76,45 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/Algorithm/Sort.hpp"
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Unreachable.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Fmt/FmtToString.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Floor.hpp"
-#include "ZancleBase/Math/Fmod.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/OverloadSet.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Trait/IsConst.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Variant.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Unreachable.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Fmt/FmtToString.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Floor.hpp"
+#include "Zancle/Math/Fmod.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/OverloadSet.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Trait/IsConst.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
 //////////////////////////////////////////////////////////////
-constexpr zb::Array<zb::StringView, 7> glyphRows{"ABCDEFGHIJKLM",
+constexpr za::Array<za::StringView, 7> glyphRows{"ABCDEFGHIJKLM",
                                                  "NOPQRSTUVWXYZ",
                                                  "abcdefghijklm",
                                                  "nopqrstuvwxyz",
@@ -128,8 +128,8 @@ constexpr zb::Array<zb::StringView, 7> glyphRows{"ABCDEFGHIJKLM",
 {
     tsurv::BitmapFont result;
 
-    for (zb::SizeT iY = 0; iY < glyphRows.size(); ++iY)
-        for (zb::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+    for (za::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+        for (za::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
         {
             const char c = glyphRows[iY][iX];
             result.addGlyph(c, {iX * 6u, iY * 10u}, {6u, 10u});
@@ -144,11 +144,11 @@ constexpr zb::Array<zb::StringView, 7> glyphRows{"ABCDEFGHIJKLM",
 {
     tsurv::BitmapFont result;
 
-    zb::SizeT stepX = 15;
-    zb::SizeT stepY = 17;
+    za::SizeT stepX = 15;
+    za::SizeT stepY = 17;
 
-    for (zb::SizeT iY = 0; iY < glyphRows.size(); ++iY)
-        for (zb::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
+    for (za::SizeT iY = 0; iY < glyphRows.size(); ++iY)
+        for (za::SizeT iX = 0; iX < glyphRows[iY].size(); ++iX)
         {
             const char c = glyphRows[iY][iX];
             result.addGlyph(c, {4 + (stepX * iX), 7 + (stepY * iY)}, {6u, 8u});
@@ -331,7 +331,7 @@ struct [[nodiscard]] QuakeSinEffect
     ////////////////////////////////////////////////////////////
     void start(const float newMagnitude, const float newSpeed)
     {
-        magnitude = zb::max(magnitude, newMagnitude);
+        magnitude = za::max(magnitude, newMagnitude);
         speed     = newSpeed;
 
         timeRemaining = 1.f;
@@ -340,7 +340,7 @@ struct [[nodiscard]] QuakeSinEffect
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getValue() const
     {
-        return zb::sin(timeRemaining * zb::pi) * magnitude;
+        return za::sin(timeRemaining * za::pi) * magnitude;
     }
 };
 
@@ -382,11 +382,11 @@ struct [[nodiscard]] Sounds
 ////////////////////////////////////////////////////////////
 struct EveryNCounter
 {
-    zb::SizeT requiredCount;
-    zb::SizeT currentCount = 0u;
+    za::SizeT requiredCount;
+    za::SizeT currentCount = 0u;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool incrementAndCheck(const zb::SizeT n)
+    [[nodiscard]] bool incrementAndCheck(const za::SizeT n)
     {
         currentCount += n;
 
@@ -402,7 +402,7 @@ struct EveryNCounter
 ////////////////////////////////////////////////////////////
 struct TriggerTetraminoPlaced
 {
-    zb::Optional<TetraminoType> requiredType;
+    za::Optional<TetraminoType> requiredType;
 
     EveryNCounter counter;
 };
@@ -453,7 +453,7 @@ struct TriggerPowerUpCollected
 
 
 ////////////////////////////////////////////////////////////
-using DynamicPerkTrigger = zb::Variant< //
+using DynamicPerkTrigger = za::Variant< //
     TriggerTetraminoPlaced,
     TriggerLinesCleared,
     TriggerDrillHit,
@@ -466,13 +466,13 @@ using DynamicPerkTrigger = zb::Variant< //
 ////////////////////////////////////////////////////////////
 struct EffectGainXP
 {
-    zb::U64 amount;
+    za::U64 amount;
     // TODO: effect spawn position
 };
 
 
 ////////////////////////////////////////////////////////////
-using DynamicPerkEffect = zb::Variant< //
+using DynamicPerkEffect = za::Variant< //
     EffectGainXP>;
 
 
@@ -480,9 +480,9 @@ using DynamicPerkEffect = zb::Variant< //
 struct DynamicPerk
 {
     DynamicPerkTrigger            trigger;
-    zb::Vector<DynamicPerkEffect> effects;
+    za::Vector<DynamicPerkEffect> effects;
 
-    zb::Vector<DynamicPerkEffect> pendingEffects{};
+    za::Vector<DynamicPerkEffect> pendingEffects{};
 
     ////////////////////////////////////////////////////////////
     void onTetraminoPlaced(const Tetramino& tetramino)
@@ -502,7 +502,7 @@ struct DynamicPerk
     }
 
     ////////////////////////////////////////////////////////////
-    void onLinesCleared(const zb::SizeT nLinesCleared)
+    void onLinesCleared(const za::SizeT nLinesCleared)
     {
         auto* t = trigger.getIf<TriggerLinesCleared>();
 
@@ -594,7 +594,7 @@ struct DynamicPerk
 
 
 ////////////////////////////////////////////////////////////
-enum class TSpinType : zb::U8
+enum class TSpinType : za::U8
 {
     None,
     Mini,
@@ -751,7 +751,7 @@ private:
     SoundManager m_soundManager;
 
     ////////////////////////////////////////////////////////////
-    void playSound(const LoadedSound& ls, const zb::SizeT maxOverlap = 255u)
+    void playSound(const LoadedSound& ls, const za::SizeT maxOverlap = 255u)
     {
         (void)m_playbackDevice.applyListener({.volume = 0.5f});
         m_soundManager.playPooled(m_playbackDevice, ls, maxOverlap);
@@ -775,13 +775,13 @@ private:
     AnimationTimeline<AnimationCommandP0> m_animationTimelineP0;
     AnimationTimeline<AnimationCommandP1> m_animationTimelineP1;
     AnimationTimeline<AnimationCommandP2> m_animationTimelineP2;
-    zb::Vector<float>                     m_rowYOffsets;
+    za::Vector<float>                     m_rowYOffsets;
 
     ////////////////////////////////////////////////////////////
     bool      m_inLevelUpScreen      = false;
-    zb::SizeT m_selectedPerk         = 0u;
+    za::SizeT m_selectedPerk         = 0u;
     float     m_menuDelayProgress    = 0.f; // delay before accepting input in menus
-    zb::SizeT m_rerollsLeftThisLevel = 0u;
+    za::SizeT m_rerollsLeftThisLevel = 0u;
 
     ////////////////////////////////////////////////////////////
     PerkChainLightning                  m_perkChainLightning;
@@ -810,7 +810,7 @@ private:
     PerkDiagonalLaserRightBounce        m_perkDiagonalLaserRightBounce;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<const Perk*> m_perks{
+    za::Vector<const Perk*> m_perks{
         &m_perkChainLightning,
         &m_perkPeekNextTetraminos,
         &m_perkOnClearLightningStrike,
@@ -837,20 +837,20 @@ private:
         &m_perkDiagonalLaserRightBounce,
     };
 
-    zb::Vector<zb::SizeT> m_perkIndicesSelectedThisLevel;
+    za::Vector<za::SizeT> m_perkIndicesSelectedThisLevel;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<DynamicPerk> m_dynamicPerks; // TODO: to world
+    za::Vector<DynamicPerk> m_dynamicPerks; // TODO: to world
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<LightningBolt> m_lightningBolts;
+    za::Vector<LightningBolt> m_lightningBolts;
 
     ////////////////////////////////////////////////////////////
     QuakeSinEffect m_quakeSinEffectLineClear;
     QuakeSinEffect m_quakeSinEffectHardDrop;
 
     ////////////////////////////////////////////////////////////
-    zb::Optional<LaserBeam> m_optLaserBeam;
+    za::Optional<LaserBeam> m_optLaserBeam;
 
     ////////////////////////////////////////////////////////////
     // Screen shake effect state
@@ -867,10 +867,10 @@ private:
     ankerl::unordered_dense::map<BlockId, BlockEffect> m_blockEffects;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<EarnedXPParticle>   m_earnedXPParticles;
-    zb::Vector<CircleParticleData> m_hueColorCircleShapeParticles;
-    zb::Vector<CircleParticleData> m_fixedColorCircleShapeParticles;
-    zb::Vector<SpriteParticleData> m_fixedColorSpriteParticles;
+    za::Vector<EarnedXPParticle>   m_earnedXPParticles;
+    za::Vector<CircleParticleData> m_hueColorCircleShapeParticles;
+    za::Vector<CircleParticleData> m_fixedColorCircleShapeParticles;
+    za::Vector<SpriteParticleData> m_fixedColorSpriteParticles;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rngFast{static_cast<RNGFast::SeedType>(
@@ -911,15 +911,15 @@ private:
 
 
     //////////////////////////////////////////////////////////////
-    zb::Vector<za::Vertex>    m_textVerticesBuffer;
-    zb::Vector<za::IndexType> m_textIndicesBuffer;
+    za::Vector<za::Vertex>    m_textVerticesBuffer;
+    za::Vector<za::IndexType> m_textIndicesBuffer;
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline constexpr za::CircleShapeData particleToCircleData(const CircleParticleData& particle)
     {
-        ZB_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
-        const auto opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
+        ZA_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
+        const auto opacityAsAlpha = static_cast<za::U8>(particle.opacity * 255.f);
 
         return {
             .position    = particle.position.componentWiseFloor(),
@@ -936,8 +936,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline constexpr za::Sprite particleToSpriteData(const SpriteParticleData& particle)
     {
-        ZB_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
-        const auto opacityAsAlpha = static_cast<zb::U8>(particle.opacity * 255.f);
+        ZA_ASSERT(particle.opacity >= 0.f && particle.opacity <= 1.f);
+        const auto opacityAsAlpha = static_cast<za::U8>(particle.opacity * 255.f);
 
         return {
             .position    = particle.position.componentWiseFloor(),
@@ -960,7 +960,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] int calculateGhostY(const Tetramino& tetramino) const
     {
-        zb::Optional<Tetramino> finalHardDropState;
+        za::Optional<Tetramino> finalHardDropState;
 
         if (const auto* squish = m_animationTimelineP1.getIfPlaying<AnimSquish>())
             finalHardDropState.emplace(squish->tetramino);
@@ -1008,17 +1008,17 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] za::Color hueColorFromPaletteIdxRotated(
         const PaletteIdx paletteIdx,
-        const zb::U8     alpha,
+        const za::U8     alpha,
         const float      degrees)
     {
-        const auto hue = zb::positiveRemainder(blockPalette[paletteIdx].toHSL().hue + degrees, 360.f);
+        const auto hue = za::positiveRemainder(blockPalette[paletteIdx].toHSL().hue + degrees, 360.f);
         return hueColor(hue, 255u).withAlpha(alpha);
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] za::Color hueColorFromPaletteIdx(const PaletteIdx paletteIdx,
-                                                                                                 const zb::U8 alpha)
+                                                                                                 const za::U8 alpha)
     {
         return hueColorFromPaletteIdxRotated(paletteIdx, alpha, 0.f);
     }
@@ -1042,9 +1042,9 @@ private:
 
             const auto gridPos = toGridCoordinates(position);
 
-            if (gridPos.y >= 0 && static_cast<zb::SizeT>(gridPos.y) < m_rowYOffsets.size())
+            if (gridPos.y >= 0 && static_cast<za::SizeT>(gridPos.y) < m_rowYOffsets.size())
             {
-                const float initialOffset = m_rowYOffsets[static_cast<zb::SizeT>(gridPos.y)];
+                const float initialOffset = m_rowYOffsets[static_cast<za::SizeT>(gridPos.y)];
                 yOffset += initialOffset * (1.f - easeInBack(progress));
             }
         }
@@ -1054,7 +1054,7 @@ private:
             yOffset += -(m_quakeSinEffectHardDrop.getValue() + m_quakeSinEffectLineClear.getValue());
         }
 
-        const auto alpha = static_cast<zb::U8>(options.opacity * 255.f);
+        const auto alpha = static_cast<za::U8>(options.opacity * 255.f);
 
         float finalSquishMult = 1.f + options.squishMult;
         if (const auto* it = m_blockEffects.find(block.blockId); it != m_blockEffects.end())
@@ -1143,7 +1143,7 @@ private:
             za::Text text{m_fontMago2,
                           {
                               .origin        = (drawBlockSize / 2.f).componentWiseFloor(),
-                              .string        = zb::toString(static_cast<unsigned int>(block.health - 1u)),
+                              .string        = za::toString(static_cast<unsigned int>(block.health - 1u)),
                               .characterSize = 5u,
                               .fillColor     = za::Color::blackWithAlpha(alpha),
                           }};
@@ -1161,10 +1161,10 @@ private:
         {
             const bool timerDirection = block.powerup == BlockPowerup::None;
 
-            const float progress0 = zb::clamp(timerProgress * 4.f, 0.f, 1.f);
-            const float progress1 = zb::clamp((timerProgress - 0.25f) * 4.f, 0.f, 1.f);
-            const float progress2 = zb::clamp((timerProgress - 0.5f) * 4.f, 0.f, 1.f);
-            const float progress3 = zb::clamp((timerProgress - 0.75f) * 4.f, 0.f, 1.f);
+            const float progress0 = za::clamp(timerProgress * 4.f, 0.f, 1.f);
+            const float progress1 = za::clamp((timerProgress - 0.25f) * 4.f, 0.f, 1.f);
+            const float progress2 = za::clamp((timerProgress - 0.5f) * 4.f, 0.f, 1.f);
+            const float progress3 = za::clamp((timerProgress - 0.75f) * 4.f, 0.f, 1.f);
 
             const float p0 = timerDirection ? progress0 : (1.f - progress3);
             const float p1 = timerDirection ? progress1 : (1.f - progress2);
@@ -1245,10 +1245,10 @@ private:
         // This is the center of the 4x4 grid.
         const za::Vec2f localPivot = ((drawBlockSize * static_cast<float>(shapeDimension)) / 2.f).componentWiseFloor();
 
-        for (zb::SizeT y = 0u; y < shapeDimension; ++y)
-            for (zb::SizeT x = 0u; x < shapeDimension; ++x)
+        for (za::SizeT y = 0u; y < shapeDimension; ++y)
+            for (za::SizeT x = 0u; x < shapeDimension; ++x)
             {
-                const zb::Optional<Block>& optBlock = shape.at(x, y);
+                const za::Optional<Block>& optBlock = shape.at(x, y);
 
                 if (!optBlock.hasValue())
                     continue;
@@ -1282,10 +1282,10 @@ private:
                                                   .drawTimer        = options.drawTimer,
                                               });
 
-                mins.x = zb::min(mins.x, pos.x);
-                mins.y = zb::min(mins.y, pos.y);
-                maxs.x = zb::max(maxs.x, pos.x + size.x);
-                maxs.y = zb::max(maxs.y, pos.y + size.y);
+                mins.x = za::min(mins.x, pos.x);
+                mins.y = za::min(mins.y, pos.y);
+                maxs.x = za::max(maxs.x, pos.x + size.x);
+                maxs.y = za::max(maxs.y, pos.y + size.y);
             }
 
         return {mins, maxs - mins};
@@ -1310,7 +1310,7 @@ private:
     {
         const auto nextRotationState = static_cast<RotationState>((tetramino.rotationState + (clockwise ? 1u : 3u)) % 4u);
 
-        const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<zb::SizeT>(tetramino.tetraminoType)][nextRotationState];
+        const auto& targetShapeTemplate = srsTetraminoShapes[static_cast<za::SizeT>(tetramino.tetraminoType)][nextRotationState];
 
         // Create the new stateful shape by re-mapping the blocks
         const BlockMatrix rotatedShape = mapBlocksToNewShape(tetramino, targetShapeTemplate);
@@ -1320,7 +1320,7 @@ private:
         int kickTableIndex = clockwise ? tetramino.rotationState : nextRotationState;
         kickTableIndex     = kickTableIndex * 2 + (clockwise ? 0 : 1);
 
-        for (const za::Vec2i offset : kickTable[static_cast<zb::SizeT>(kickTableIndex)])
+        for (const za::Vec2i offset : kickTable[static_cast<za::SizeT>(kickTableIndex)])
         {
             const za::Vec2i testPosition = tetramino.position + offset;
 
@@ -1359,7 +1359,7 @@ private:
     ////////////////////////////////////////////////////////////
     void resetAndRedrawCurrentTetramino(const bool usedHold)
     {
-        ZB_ASSERT(m_world.currentTetramino.hasValue());
+        ZA_ASSERT(m_world.currentTetramino.hasValue());
 
         m_world.currentTetramino.reset();
         m_world.holdUsedThisTurn = usedHold;
@@ -1375,7 +1375,7 @@ private:
         if (m_world.holdUsedThisTurn)
             return;
 
-        ZB_ASSERT(m_world.currentTetramino.hasValue());
+        ZA_ASSERT(m_world.currentTetramino.hasValue());
 
         playSound(m_sounds.hold);
         resetAndRedrawCurrentTetramino(/* usedHold */ true);
@@ -1388,7 +1388,7 @@ private:
         if (m_world.holdUsedThisTurn)
             return;
 
-        ZB_ASSERT(m_world.currentTetramino.hasValue());
+        ZA_ASSERT(m_world.currentTetramino.hasValue());
 
         playSound(m_sounds.hold);
 
@@ -1414,11 +1414,11 @@ private:
     {
         AnimClearLines::RowVector fullRows;
 
-        for (zb::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
+        for (za::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
         {
             bool isFull = true;
 
-            for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+            for (za::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
                 if (!m_world.blockGrid.at(za::Vec2uz{x, y}).hasValue())
                 {
@@ -1448,14 +1448,14 @@ private:
             return downmostBlocksXY;
         }
 
-        return findHorizontalBlocks(tetramino.shape, static_cast<zb::SizeT>(m_world.perkDrill[direction]->coverage));
+        return findHorizontalBlocks(tetramino.shape, static_cast<za::SizeT>(m_world.perkDrill[direction]->coverage));
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] ShapeBlockPositionVector findLaserBlocks(const Tetramino& tetramino, const LaserDirection::Enum direction) const
     {
-        const auto outOfBoundsOrEmpty = [&](const zb::SizeT x, const zb::SizeT y) -> bool
+        const auto outOfBoundsOrEmpty = [&](const za::SizeT x, const za::SizeT y) -> bool
         { return !tetramino.shape.isInBounds(x, y) || !tetramino.shape.at(x, y).hasValue(); };
 
         ShapeBlockPositionVector result;
@@ -1508,17 +1508,17 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Vector<BlockAndPosition> findDrillTargetBlocks(const Tetramino&           tetramino,
+    [[nodiscard]] za::Vector<BlockAndPosition> findDrillTargetBlocks(const Tetramino&           tetramino,
                                                                      const DrillDirection::Enum direction)
     {
-        zb::Vector<BlockAndPosition> result;
+        za::Vector<BlockAndPosition> result;
 
         // 1. Guard Clause: Exit early if this drill perk isn't active.
         if (!m_world.perkDrill[direction].hasValue())
             return result;
 
         // 2. Get the number of blocks to penetrate.
-        auto nToHit = static_cast<zb::SizeT>(m_world.perkDrill[direction]->maxPenetration);
+        auto nToHit = static_cast<za::SizeT>(m_world.perkDrill[direction]->maxPenetration);
         if (nToHit == 0)
             return result;
 
@@ -1565,7 +1565,7 @@ private:
     ////////////////////////////////////////////////////////////
     void handleEffects()
     {
-        const auto visitor = zb::OverloadSet{
+        const auto visitor = za::OverloadSet{
             [&](const EffectGainXP& e) { addXP(e.amount); },
         };
 
@@ -1589,14 +1589,14 @@ private:
 
         if (m_world.perkXPPerTetraminoPlaced > 0)
         {
-            addXP(static_cast<zb::U64>(m_world.perkXPPerTetraminoPlaced));
+            addXP(static_cast<za::U64>(m_world.perkXPPerTetraminoPlaced));
 
             const auto downmostBlocksXY = findDownmostBlocks(tetramino.shape);
 
             for (const auto& bPos : downmostBlocksXY)
             {
-                const zb::Optional<Block>& optBlock = tetramino.shape.at(bPos.x, bPos.y);
-                ZB_ASSERT(optBlock.hasValue());
+                const za::Optional<Block>& optBlock = tetramino.shape.at(bPos.x, bPos.y);
+                ZA_ASSERT(optBlock.hasValue());
 
                 spawnXPEarnedParticle(toDrawCoordinates(tetramino.position + bPos.toVec2i()), optBlock->paletteIdx);
             }
@@ -1633,7 +1633,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    void handleTriggerLinesCleared(const zb::SizeT nLinesCleared)
+    void handleTriggerLinesCleared(const za::SizeT nLinesCleared)
     {
         for (auto& dp : m_dynamicPerks)
             dp.onLinesCleared(nLinesCleared);
@@ -1643,7 +1643,7 @@ private:
         if (m_world.perkRndHitOnClear > 0)
         {
             m_animationTimelineP0.addInstantaneous(
-                AnimLightningStrike{.numStrikes = static_cast<zb::SizeT>(m_world.perkRndHitOnClear)});
+                AnimLightningStrike{.numStrikes = static_cast<za::SizeT>(m_world.perkRndHitOnClear)});
         }
     }
 
@@ -1694,7 +1694,7 @@ private:
 
         if (m_world.perkXPPerBlockDamaged > 0)
         {
-            addXP(static_cast<zb::U64>(m_world.perkXPPerBlockDamaged));
+            addXP(static_cast<za::U64>(m_world.perkXPPerBlockDamaged));
             playSound(m_sounds.exp);
 
             spawnXPEarnedParticle(toDrawCoordinates(position) + drawBlockSize / 2.f, block.paletteIdx);
@@ -1761,7 +1761,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void addXP(const zb::U64 amount)
+    void addXP(const za::U64 amount)
     {
         m_world.currentXP += amount;
 
@@ -1797,7 +1797,7 @@ private:
     /////////////////////////////////////////////////////////////
     void handleMenuKeyPressedEvent(const za::Event::KeyPressed& eKeyPressed)
     {
-        ZB_ASSERT(m_inLevelUpScreen);
+        ZA_ASSERT(m_inLevelUpScreen);
 
         if (m_menuDelayProgress < 1.f)
             return;
@@ -1848,7 +1848,7 @@ private:
     /////////////////////////////////////////////////////////////
     void handleKeyPressedEvent(const za::Event::KeyPressed& eKeyPressed)
     {
-        ZB_ASSERT(!m_inLevelUpScreen);
+        ZA_ASSERT(!m_inLevelUpScreen);
 
         const bool isP0TimelineBusy = m_animationTimelineP0.anyAnimationPlaying() &&
                                       !m_animationTimelineP0.isPlaying<AnimFadeAttachments>(); // skippable
@@ -1993,7 +1993,7 @@ private:
             {
                 b->health          = 1u;
                 b->tickTimer       = 0u;
-                b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(10.f));
+                b->tickTimerTarget = static_cast<za::U32>(secondsToTicks(10.f));
                 b->powerup         = BlockPowerup::None;
             }
 
@@ -2031,8 +2031,8 @@ private:
     /////////////////////////////////////////////////////////////
     void initializeCurrentTetraminoFromBag()
     {
-        ZB_ASSERT(!m_world.currentTetramino.hasValue());
-        ZB_ASSERT(!m_world.blockMatrixBag.empty());
+        ZA_ASSERT(!m_world.currentTetramino.hasValue());
+        ZA_ASSERT(!m_world.blockMatrixBag.empty());
 
         const TaggedBlockMatrix taggedBlockMatrix = m_world.blockMatrixBag.front();
         m_world.blockMatrixBag.eraseAt(0u);
@@ -2052,7 +2052,7 @@ private:
     /////////////////////////////////////////////////////////////
     [[nodiscard]] ControlFlow eventStep()
     {
-        while (zb::Optional event = m_window.pollEvent())
+        while (za::Optional event = m_window.pollEvent())
         {
             m_imGuiContext.processEvent(m_window, *event);
 
@@ -2124,13 +2124,13 @@ private:
     {
         m_perkIndicesSelectedThisLevel.clear();
 
-        for (zb::SizeT i = 0u; i < m_perks.size(); ++i)
+        for (za::SizeT i = 0u; i < m_perks.size(); ++i)
             if (m_perks[i]->meetsPrerequisites(m_world))
                 m_perkIndicesSelectedThisLevel.pushBack(i);
 
         while (m_perkIndicesSelectedThisLevel.size() > m_world.nPerkChoicesPerLevel)
         {
-            const auto removeIdx = m_rngFast.getI<zb::SizeT>(0u, m_perkIndicesSelectedThisLevel.size() - 1u);
+            const auto removeIdx = m_rngFast.getI<za::SizeT>(0u, m_perkIndicesSelectedThisLevel.size() - 1u);
             m_perkIndicesSelectedThisLevel.eraseAt(removeIdx);
         }
 
@@ -2146,7 +2146,7 @@ private:
             .targetPosition = za::Vec2f{430.f, 64.f} + m_rngFast.getVec2f({-16.f, -16.f}, {16.f, 16.f}),
             .paletteIdx     = paletteIdx,
             .delay          = m_rngFast.getF(0.f, 0.2f),
-            .startRotation  = m_rngFast.getF(0.f, zb::tau),
+            .startRotation  = m_rngFast.getF(0.f, za::tau),
         });
     }
 
@@ -2169,7 +2169,7 @@ private:
     /////////////////////////////////////////////////////////////
     [[nodiscard]] Block* pickRandomBlockMatching(auto&& predicate)
     {
-        zb::SizeT count    = 0u;
+        za::SizeT count    = 0u;
         Block*    selected = nullptr;
 
         for (auto& optBlock : m_world.blockGrid.getBlocks())
@@ -2183,7 +2183,7 @@ private:
             ++count;
 
             // Select the current bubble with probability `1/count` (reservoir sampling)
-            if (m_rngFast.getI<zb::SizeT>(0, count - 1) == 0)
+            if (m_rngFast.getI<za::SizeT>(0, count - 1) == 0)
                 selected = optBlock.asPtr();
         }
 
@@ -2251,7 +2251,7 @@ private:
 
 
     /////////////////////////////////////////////////////////////
-    void updateStepInterpolateVisualTetraminoPosition(const zb::Optional<Tetramino>& optTetramino,
+    void updateStepInterpolateVisualTetraminoPosition(const za::Optional<Tetramino>& optTetramino,
                                                       za::Vec2f&                     visualCenter,
                                                       const za::Time                 deltaTime)
     {
@@ -2278,7 +2278,7 @@ private:
             auto& anim = timeline.commands.front();
 
             auto visitor = [&]<typename T>(T& innerAnim)
-                requires(!zb::isConst<T>) { return updateAnimation(timeline, innerAnim); };
+                requires(!za::isConst<T>) { return updateAnimation(timeline, innerAnim); };
 
             if (anim.data.linearVisit(visitor))
             {
@@ -2355,7 +2355,7 @@ private:
                 const auto startPos                   = tetramino.position + bPos.toVec2i();
                 const auto [nDrillableBlocks, endPos] = countDrillableBlocks(startPos, direction);
 
-                maxDrilledBlocks = zb::max(maxDrilledBlocks, nDrillableBlocks);
+                maxDrilledBlocks = za::max(maxDrilledBlocks, nDrillableBlocks);
             }
 
             m_animationTimelineP0.add(0.3f + (0.1f * static_cast<float>(maxDrilledBlocks)),
@@ -2370,7 +2370,7 @@ private:
             if (!m_world.perkLaser[direction].hasValue())
                 return;
 
-            const auto maxPenetration = static_cast<zb::SizeT>(m_world.perkLaser[direction]->maxPenetration);
+            const auto maxPenetration = static_cast<za::SizeT>(m_world.perkLaser[direction]->maxPenetration);
 
             for (const auto bPos : findLaserBlocks(tetramino, direction))
             {
@@ -2445,19 +2445,19 @@ private:
     {
         AnimClearLines::RowVector         trulyClearedRows;
         AnimFadeBlocks::FadingBlockVector fadingBlocks;
-        zb::Vector<za::Vec2uz>            columnClearPositions;
+        za::Vector<za::Vec2uz>            columnClearPositions;
 
-        const auto addRowIfNotExistent = [&](const zb::SizeT row)
+        const auto addRowIfNotExistent = [&](const za::SizeT row)
         {
-            if (zb::find(trulyClearedRows.begin(), trulyClearedRows.end(), row) == trulyClearedRows.end())
+            if (za::find(trulyClearedRows.begin(), trulyClearedRows.end(), row) == trulyClearedRows.end())
                 trulyClearedRows.pushBack(row);
         };
 
-        for (zb::SizeT y : clearLines.rows)
+        for (za::SizeT y : clearLines.rows)
         {
             bool rowIsFullyCleared = true;
 
-            for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+            for (za::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
                 if (auto& optBlock = m_world.blockGrid.at(za::Vec2uz{x, y}); optBlock.hasValue())
                 {
@@ -2518,13 +2518,13 @@ private:
         {
             playSound(m_sounds.single);
 
-            const zb::SizeT numCleared = trulyClearedRows.size();
+            const za::SizeT numCleared = trulyClearedRows.size();
 
             if (clearLines.awardXP)
             {
                 m_world.linesCleared += numCleared;
 
-                const zb::U64 amount = [&]
+                const za::U64 amount = [&]
                 {
                     if (numCleared == 1)
                         return 10u;
@@ -2546,7 +2546,7 @@ private:
                 addXP(amount);
                 playSound(m_sounds.exp);
 
-                for (zb::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
+                for (za::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
                 {
                     const auto& block = fadingBlocks[i % fadingBlocks.size()];
 
@@ -2557,24 +2557,24 @@ private:
                 }
             }
 
-            zb::quickSort(trulyClearedRows.begin(), trulyClearedRows.end(), [](const zb::SizeT a, const zb::SizeT b) {
+            za::quickSort(trulyClearedRows.begin(), trulyClearedRows.end(), [](const za::SizeT a, const za::SizeT b) {
                 return a < b;
             });
 
             const auto height = m_world.blockGrid.getHeight();
             m_rowYOffsets.resize(height);
 
-            for (zb::SizeT y = 0u; y < height; ++y)
+            for (za::SizeT y = 0u; y < height; ++y)
                 m_rowYOffsets[y] = 0.f;
 
-            zb::SizeT dropAmount = 0;
+            za::SizeT dropAmount = 0;
 
             // Iterate from the bottom of the grid upwards to calculate offsets.
             // This calculates the correct offset for each row's FINAL position.
             for (int y = static_cast<int>(height) - 1; y >= 0; --y)
             {
                 // Check if the current row 'y' (from the original grid) is being cleared.
-                const bool isCleared = zb::find(trulyClearedRows.begin(), trulyClearedRows.end(), static_cast<zb::SizeT>(y)) !=
+                const bool isCleared = za::find(trulyClearedRows.begin(), trulyClearedRows.end(), static_cast<za::SizeT>(y)) !=
                                        trulyClearedRows.end();
 
                 if (isCleared)
@@ -2586,7 +2586,7 @@ private:
                 {
                     // If this row is being kept, the row that lands at its *new* position
                     // (which is y + dropAmount) needs an initial offset.
-                    const zb::SizeT finalY = static_cast<zb::SizeT>(y) + dropAmount;
+                    const za::SizeT finalY = static_cast<za::SizeT>(y) + dropAmount;
                     if (finalY < height)
                         m_rowYOffsets[finalY] = -static_cast<float>(dropAmount) * drawBlockSize.y;
                 }
@@ -2604,7 +2604,7 @@ private:
         {
             const auto numPartiallyCleared = clearLines.rows.size();
 
-            const zb::U64 amount = [&]
+            const za::U64 amount = [&]
             {
                 if (numPartiallyCleared == 1)
                     return 4u;
@@ -2621,7 +2621,7 @@ private:
             addXP(amount);
             playSound(m_sounds.exp);
 
-            for (zb::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
+            for (za::U64 i = 0u; i < fadingBlocks.size() * 4u; ++i)
             {
                 const auto& block = fadingBlocks[i % fadingBlocks.size()];
 
@@ -2700,7 +2700,7 @@ private:
             const auto dir      = laserDirectionToVec2i(laser.direction).toVec2f();
             const auto startPos = toDrawCoordinates(laser.gridStartPos) + dir * 8.f + za::Vec2f{0, 2.f};
 
-            ZB_ASSERT(!m_optLaserBeam.hasValue());
+            ZA_ASSERT(!m_optLaserBeam.hasValue());
             m_optLaserBeam.emplace(startPos, startPos, blockPalette[getTetraminoPaletteIdx(laser.tetramino)]);
         }
 
@@ -2712,7 +2712,7 @@ private:
 
         if (!laser.onlyVisual)
         {
-            ZB_ASSERT(optBlock.hasValue());
+            ZA_ASSERT(optBlock.hasValue());
             damageBlock(laser.gridTargetPos.toVec2uz(), *optBlock);
 
             handleTriggerLaserHit();
@@ -2722,7 +2722,7 @@ private:
             playSound(m_sounds.bounce);
         }
 
-        ZB_ASSERT(m_optLaserBeam.hasValue());
+        ZA_ASSERT(m_optLaserBeam.hasValue());
         m_optLaserBeam.reset();
 
         return true;
@@ -2744,7 +2744,7 @@ private:
 
         AnimFadeBlocks::FadingBlockVector fadingBlocks;
 
-        for (zb::SizeT y = columnClear.position.y; y < m_world.blockGrid.getHeight(); ++y)
+        for (za::SizeT y = columnClear.position.y; y < m_world.blockGrid.getHeight(); ++y)
             if (auto& optBlock = m_world.blockGrid.at(za::Vec2uz{columnClear.position.x, y}); optBlock.hasValue())
             {
                 fadingBlocks.pushBack(AnimFadeBlocks::FadingBlock{
@@ -2768,7 +2768,7 @@ private:
         if (timeline.getProgress() < 1.f)
             return false;
 
-        zb::Vector<EligibleBlock> eligibleBlocks;
+        za::Vector<EligibleBlock> eligibleBlocks;
 
         m_world.blockGrid.forBlocks([&](Block& block, const za::Vec2uz position)
         {
@@ -2800,7 +2800,7 @@ private:
                 .accelerationY = 0.0004f,
                 .opacity       = 0.75f,
                 .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
-                .rotation      = m_rngFast.getF(0.f, zb::tau),
+                .rotation      = m_rngFast.getF(0.f, za::tau),
                 .torque        = m_rngFast.getF(-0.001f, 0.001f),
                 .color         = za::Color::White,
                 .radius        = m_rngFast.getF(9.f, 16.f),
@@ -2815,7 +2815,7 @@ private:
                 .accelerationY = 0.0004f,
                 .opacity       = 0.75f,
                 .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
-                .rotation      = m_rngFast.getF(0.f, zb::tau),
+                .rotation      = m_rngFast.getF(0.f, za::tau),
                 .torque        = m_rngFast.getF(-0.001f, 0.001f),
                 .color         = za::Color::LightYellow,
                 .radius        = m_rngFast.getF(8.f, 14.f),
@@ -2874,7 +2874,7 @@ private:
             (void)particle.progress.advance(deltaTimeMs * 0.0015f);
         }
 
-        zb::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
+        za::vectorEraseIf(m_earnedXPParticles, [&](const auto& p) { return p.progress.isAtEnd(); });
     }
 
 
@@ -2889,13 +2889,13 @@ private:
             p.position += p.velocity * deltaTimeMs;
 
             p.rotation += p.torque * deltaTimeMs;
-            p.rotation = zb::positiveRemainder(p.rotation, zb::tau);
+            p.rotation = za::positiveRemainder(p.rotation, za::tau);
 
-            p.opacity = zb::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-            p.scale   = zb::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
+            p.opacity = za::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+            p.scale   = za::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
         }
 
-        zb::vectorEraseIf(vec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
+        za::vectorEraseIf(vec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
     }
 
 
@@ -2907,7 +2907,7 @@ private:
 
         const auto oldBagSize = m_world.blockMatrixBag.size();
 
-        constexpr zb::SizeT bagMult = 2u;
+        constexpr za::SizeT bagMult = 2u;
 
         const auto addToBag = [&](const TetraminoType j)
         {
@@ -2923,21 +2923,21 @@ private:
             };
 
             auto& [blockMatrix, tetraminoType] = m_world.blockMatrixBag.pushBack({
-                .blockMatrix = shapeMatrixToBlockMatrix(srsTetraminoShapes[static_cast<zb::SizeT>(j) /* pieceType */][0], block),
+                .blockMatrix = shapeMatrixToBlockMatrix(srsTetraminoShapes[static_cast<za::SizeT>(j) /* pieceType */][0], block),
                 .tetraminoType = j,
             });
 
             const auto healthDist = generateTetraminoHealthDistribution(getDifficultyFactor(m_world.tick), m_rngFast);
-            zb::SizeT  nextHealthDistIdx = 0u;
+            za::SizeT  nextHealthDistIdx = 0u;
 
-            for (zb::Optional<Block>& b : blockMatrix.data)
+            for (za::Optional<Block>& b : blockMatrix.data)
             {
                 if (!b.hasValue())
                     continue;
 
                 b->blockId = m_world.nextBlockId++;
 
-                const auto blockType = static_cast<zb::U8>(healthDist[nextHealthDistIdx++]);
+                const auto blockType = static_cast<za::U8>(healthDist[nextHealthDistIdx++]);
 
                 if (blockType > 2)
                 {
@@ -2945,7 +2945,7 @@ private:
                 }
                 else if (blockType == 2)
                 {
-                    b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(20.f));
+                    b->tickTimerTarget = static_cast<za::U32>(secondsToTicks(20.f));
                 }
                 else if (roll100(1))
                 {
@@ -2954,19 +2954,19 @@ private:
                     if (roll100(25))
                     {
                         b->powerup         = BlockPowerup::ThreeRowDrill;
-                        b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(10.f));
+                        b->tickTimerTarget = static_cast<za::U32>(secondsToTicks(10.f));
                     }
                     else
                     {
                         b->powerup         = BlockPowerup::XPBonus;
-                        b->tickTimerTarget = static_cast<zb::U32>(secondsToTicks(20.f));
+                        b->tickTimerTarget = static_cast<za::U32>(secondsToTicks(20.f));
                     }
                 }
             }
         };
 
-        for (zb::SizeT i = 0u; i < bagMult; ++i)
-            for (zb::U8 j = 0u; j < static_cast<zb::U8>(tetraminoShapeCount); ++j)
+        for (za::SizeT i = 0u; i < bagMult; ++i)
+            for (za::U8 j = 0u; j < static_cast<za::U8>(tetraminoShapeCount); ++j)
                 addToBag(static_cast<TetraminoType>(j));
 
         for (int i = 0; i < m_world.perkExtraLinePiecesInPool; ++i)
@@ -2980,7 +2980,7 @@ private:
     /////////////////////////////////////////////////////////////
     void applyGravityToCurrentTetramino()
     {
-        ZB_ASSERT(m_world.currentTetramino.hasValue());
+        ZA_ASSERT(m_world.currentTetramino.hasValue());
 
         const auto newPosition = m_world.currentTetramino->position.addY(1);
 
@@ -3013,8 +3013,8 @@ private:
 
             ++m_world.tick;
 
-            ZB_ASSERT(m_world.dropTickAccumulator < m_world.dropTickTarget);
-            ZB_ASSERT(m_world.dropTickTarget > 0u);
+            ZA_ASSERT(m_world.dropTickAccumulator < m_world.dropTickTarget);
+            ZA_ASSERT(m_world.dropTickTarget > 0u);
 
             ++m_world.dropTickAccumulator;
 
@@ -3065,7 +3065,7 @@ private:
         for (auto& lb : m_lightningBolts)
             lb.update(deltaTime);
 
-        zb::vectorEraseIf(m_lightningBolts, [](const LightningBolt& lb) { return lb.isFinished(); });
+        za::vectorEraseIf(m_lightningBolts, [](const LightningBolt& lb) { return lb.isFinished(); });
     }
 
 
@@ -3103,7 +3103,7 @@ private:
         if (m_menuDelayProgress < 1.f)
         {
             m_menuDelayProgress += deltaTime.asSeconds();
-            m_menuDelayProgress = zb::min(m_menuDelayProgress, 1.f);
+            m_menuDelayProgress = za::min(m_menuDelayProgress, 1.f);
         }
     }
 
@@ -3148,9 +3148,9 @@ private:
         if (!m_inLevelUpScreen)
             return;
 
-        ZB_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
+        ZA_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
 
-        const auto darkenAlpha = static_cast<zb::U8>((0.65f * m_menuDelayProgress) * 255.f);
+        const auto darkenAlpha = static_cast<za::U8>((0.65f * m_menuDelayProgress) * 255.f);
 
         m_rtGame.draw(
             za::RectangleShapeData{
@@ -3188,10 +3188,10 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        zb::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
+        za::String levelUpString = "^bold[](^wobble[5,1.2,0.5](LEVEL UP)^)^";
 
         if (m_rerollsLeftThisLevel > 0u)
-            levelUpString += zb::fmtToString("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
+            levelUpString += za::fmtToString("^color[190,190,190]( - Press SHIFT to reroll ({} left))^",
                                              m_rerollsLeftThisLevel);
 
         const BitmapTextToVerticesOptions titleOpts = {
@@ -3234,17 +3234,17 @@ private:
 
         auto perkDrawPos = za::Vec2f{48.f, titleGlobalBounds.getBottom() + 8.f};
 
-        zb::SizeT iPerk = 0u;
+        za::SizeT iPerk = 0u;
 
-        for (const zb::SizeT psIndex : m_perkIndicesSelectedThisLevel)
+        for (const za::SizeT psIndex : m_perkIndicesSelectedThisLevel)
         {
             const Perk& perk = *(m_perks[psIndex]);
 
-            zb::String perkName        = perk.getName();
-            zb::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
-            zb::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
+            za::String perkName        = perk.getName();
+            za::String perkDescription = wrapText(perk.getDescription(m_world), 38u);
+            za::String perkProgression = wrapText(perk.getProgressionStr(m_world), 38u);
 
-            const auto perkStr = zb::fmtToString("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
+            const auto perkStr = za::fmtToString("^bold[]({})^\n^hspace[0](^color[190,190,190]({})^)^", perkName, perkDescription);
 
             const auto transform = za::Transform::fromPosition(perkDrawPos);
 
@@ -3270,7 +3270,7 @@ private:
             m_rtGame.draw(za::RectangleShapeData{.position  = globalBounds.position - za::Vec2f{1.f, 1.f},
                                                  .origin    = {0.f, 0.f},
                                                  .fillColor = za::Color::VeryDarkBrown.withAlpha(100),
-                                                 .size = globalBounds.size.withY(zb::max(40.f, globalBounds.size.y)) +
+                                                 .size = globalBounds.size.withY(za::max(40.f, globalBounds.size.y)) +
                                                          za::Vec2f{2.f, 2.f}},
                           {.transform = menuTransform, .view = m_worldView});
 
@@ -3283,7 +3283,7 @@ private:
                               {.transform = menuTransform, .view = m_worldView});
             }
 
-            perkDrawPos.y += zb::max(40.f, globalBounds.size.y) + 12.f;
+            perkDrawPos.y += za::max(40.f, globalBounds.size.y) + 12.f;
 
             ++iPerk;
         }
@@ -3371,7 +3371,7 @@ private:
 
         const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * scale / 2.f); };
 
-        const auto textCentered = [&](const zb::String& text)
+        const auto textCentered = [&](const za::String& text)
         {
             const auto windowWidth = ImGui::GetWindowSize().x;
             const auto textWidth   = ImGui::CalcTextSize(text.cStr()).x;
@@ -3382,7 +3382,7 @@ private:
 
         if (m_inLevelUpScreen)
         {
-            ZB_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
+            ZA_ASSERT(m_world.committedPlayerLevel < m_world.playerLevel);
 
             ImGui::SetNextWindowBgAlpha(0.95f);
             ImGui::PushFont(m_imguiFont);
@@ -3410,13 +3410,13 @@ private:
             static int  selectedPerk = -1;
             static bool sep          = false;
 
-            for (const zb::SizeT psIndex : m_perkIndicesSelectedThisLevel)
+            for (const za::SizeT psIndex : m_perkIndicesSelectedThisLevel)
             {
                 const Perk& perk = *(m_perks[psIndex]);
 
-                zb::String perkName        = perk.getName();
-                zb::String perkDescription = perk.getDescription(m_world);
-                zb::String perkProgression = perk.getProgressionStr(m_world);
+                za::String perkName        = perk.getName();
+                za::String perkDescription = perk.getDescription(m_world);
+                za::String perkProgression = perk.getProgressionStr(m_world);
 
                 if (sep)
                     ImGui::Separator();
@@ -3471,7 +3471,7 @@ private:
 
                     ++m_world.committedPlayerLevel;
 
-                    m_perks[static_cast<zb::SizeT>(selectedPerk)]->apply(m_world);
+                    m_perks[static_cast<za::SizeT>(selectedPerk)]->apply(m_world);
                 }
 
                 if (selectedPerk == -1)
@@ -3506,8 +3506,8 @@ private:
 
         const auto dividerStartPos = toDrawCoordinates(za::Vec2uz{0, gridGraceY});
 
-        for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth() + 1u; ++x)
-            for (zb::SizeT y = 0u; y < m_world.blockGrid.getHeight() - gridGraceY + 1u; ++y)
+        for (za::SizeT x = 0u; x < m_world.blockGrid.getWidth() + 1u; ++x)
+            for (za::SizeT y = 0u; y < m_world.blockGrid.getHeight() - gridGraceY + 1u; ++y)
             {
                 m_rtGame.draw(m_textureAtlas.getTexture(),
                               {
@@ -3550,8 +3550,8 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        for (zb::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
-            for (zb::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
+        for (za::SizeT y = gridGraceY; y < m_world.blockGrid.getHeight(); ++y)
+            for (za::SizeT x = 0u; x < m_world.blockGrid.getWidth(); ++x)
             {
                 const za::Vec2uz gridPosition{x, y};
                 const auto&      optBlock = m_world.blockGrid.at(gridPosition);
@@ -3603,7 +3603,7 @@ private:
             if (b.hasValue())
                 return b->paletteIdx;
 
-        ZB_UNREACHABLE();
+        ZA_UNREACHABLE();
     }
 
 
@@ -3643,7 +3643,7 @@ private:
 
         if (direction == DrillDirection::Left)
         {
-            info.endPos.x = zb::max(info.endPos.x, 0);
+            info.endPos.x = za::max(info.endPos.x, 0);
 
             for (int iX = info.endPos.x; iX >= 0; --iX)
                 if (horizontalIteration(iX) == ControlFlow::Break)
@@ -3652,7 +3652,7 @@ private:
         else if (direction == DrillDirection::Right)
         {
             const auto gridWidth = static_cast<int>(m_world.blockGrid.getWidth());
-            info.endPos.x        = zb::min(info.endPos.x, gridWidth - 1);
+            info.endPos.x        = za::min(info.endPos.x, gridWidth - 1);
 
             for (int iX = info.endPos.x; iX < gridWidth; ++iX)
                 if (horizontalIteration(iX) == ControlFlow::Break)
@@ -3661,7 +3661,7 @@ private:
         else if (direction == DrillDirection::Down)
         {
             const auto gridHeight = static_cast<int>(m_world.blockGrid.getHeight());
-            info.endPos.y         = zb::min(info.endPos.y, gridHeight - 1);
+            info.endPos.y         = za::min(info.endPos.y, gridHeight - 1);
 
             for (int iY = info.endPos.y; iY < gridHeight; ++iY)
             {
@@ -3755,8 +3755,8 @@ private:
             za::degrees(0.f),   // Down
         };
 
-        const auto drillDrawOffset = offsetByDirection[static_cast<zb::SizeT>(drillAnim->direction)];
-        const auto rotation        = arrayByDirection[static_cast<zb::SizeT>(drillAnim->direction)];
+        const auto drillDrawOffset = offsetByDirection[static_cast<za::SizeT>(drillAnim->direction)];
+        const auto rotation        = arrayByDirection[static_cast<za::SizeT>(drillAnim->direction)];
 
         const auto& tetramino = drillAnim->tetramino;
 
@@ -3811,7 +3811,7 @@ private:
                         .accelerationY = 0.0004f,
                         .opacity       = 0.95f,
                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.5f,
-                        .rotation      = m_rngFast.getF(0.f, zb::tau),
+                        .rotation      = m_rngFast.getF(0.f, za::tau),
                         .torque        = m_rngFast.getF(-0.001f, 0.001f),
                         .color         = hueColorFromPaletteIdx(optBlock->paletteIdx, 255u),
                         .radius        = m_rngFast.getF(6.f, 12.f),
@@ -3871,7 +3871,7 @@ private:
                 .accelerationY = 0.0004f,
                 .opacity       = 0.75f,
                 .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.7f,
-                .rotation      = m_rngFast.getF(0.f, zb::tau),
+                .rotation      = m_rngFast.getF(0.f, za::tau),
                 .torque        = m_rngFast.getF(-0.001f, 0.001f),
                 .color         = blockPalette[getTetraminoPaletteIdx(laserAnim->tetramino)],
                 .radius        = m_rngFast.getF(4.f, 7.f),
@@ -3966,14 +3966,14 @@ private:
             const za::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
             // Draw main spike
-            spike.position = (offset + mainBlockDrawPos.addX(zb::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
+            spike.position = (offset + mainBlockDrawPos.addX(za::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
             spike.color    = mainColor;
             m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
 
             // Draw ghost spike
             if (drawGhost)
             {
-                spike.position = (offset + ghostBlockDrawPos.addY(zb::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
+                spike.position = (offset + ghostBlockDrawPos.addY(za::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
                                  za::Vec2f{1.f, 1.f};
                 spike.color = ghostColor;
                 m_rtGame.draw(spike, {.view = m_worldView, .texture = &m_textureAtlas.getTexture(), .shader = &m_shader});
@@ -4015,7 +4015,7 @@ private:
                 {
                     const float y = startPos.y + tLeft * rayDirDraw.y;
                     if (y >= top && y <= bottom)
-                        minT = zb::min(minT, tLeft);
+                        minT = za::min(minT, tLeft);
                 }
             }
             else
@@ -4025,7 +4025,7 @@ private:
                 {
                     const float y = startPos.y + tRight * rayDirDraw.y;
                     if (y >= top && y <= bottom)
-                        minT = zb::min(minT, tRight);
+                        minT = za::min(minT, tRight);
                 }
             }
         }
@@ -4038,7 +4038,7 @@ private:
             {
                 const float x = startPos.x + tBottom * rayDirDraw.x;
                 if (x >= left && x <= right)
-                    minT = zb::min(minT, tBottom);
+                    minT = za::min(minT, tBottom);
             }
         }
 
@@ -4118,7 +4118,7 @@ private:
             const za::Vec2f mainBlockDrawPos  = getDrawPositionOfLocalBlock(bPos, mainTetraminoCenter);
             const za::Vec2f ghostBlockDrawPos = getDrawPositionOfLocalBlock(bPos, ghostTetraminoCenter);
 
-            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(zb::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
+            const auto mainSpikePos = (offset + mainBlockDrawPos.addX(za::floor(-drawBlockSize.x / 2.f))).componentWiseFloor();
 
             // Draw main spike
             spike.position = mainSpikePos + (laserDir * 4).toVec2f();
@@ -4128,7 +4128,7 @@ private:
             if (!drawGhost)
                 continue;
 
-            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(zb::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
+            const auto ghostSpikePos = (offset + ghostBlockDrawPos.addY(za::floor(drawBlockSize.y / 2.f))).componentWiseFloor() -
                                        za::Vec2f{1.f, 1.f};
 
             // Draw ghost spike
@@ -4304,7 +4304,7 @@ private:
     {
         SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-        const zb::SizeT nPeek = zb::min(static_cast<zb::SizeT>(m_world.perkNPeek), m_world.blockMatrixBag.size());
+        const za::SizeT nPeek = za::min(static_cast<za::SizeT>(m_world.perkNPeek), m_world.blockMatrixBag.size());
 
         constexpr float uiTetraminoScale = 9.f / drawBlockSize.x;
 
@@ -4312,7 +4312,7 @@ private:
 
         za::Vec2f uiBoxCenter = za::Vec2f{hudPos.x + 12.f, hudPos.y + 68.f + 24.f} + za::Vec2f{16.f, 16.f};
 
-        for (zb::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
+        for (za::SizeT iPeek = 0u; iPeek < nPeek; ++iPeek)
         {
             const auto& shape = m_world.blockMatrixBag[iPeek].blockMatrix;
 
@@ -4386,7 +4386,7 @@ private:
                                         particle.targetPosition,
                                         easeInOutBack(particle.progress.value));
 
-            const auto alpha = static_cast<zb::U8>((particle.progress.remapBouncedEased(easeInOutQuint, 64.f, 255.f)));
+            const auto alpha = static_cast<za::U8>((particle.progress.remapBouncedEased(easeInOutQuint, 64.f, 255.f)));
 
             m_rtGame.draw(
                 za::CircleShapeData{
@@ -4394,7 +4394,7 @@ private:
                     .scale    = za::Vec2f{0.25f, 0.25f} * particle.progress.remapBounced(0.6f, 2.f),
                     .origin   = {12.f, 12.f},
                     .rotation = za::radians(
-                        zb::fmod(particle.startRotation + particle.progress.remap(0.f, zb::tau * 2.f), zb::tau)),
+                        za::fmod(particle.startRotation + particle.progress.remap(0.f, za::tau * 2.f), za::tau)),
                     .textureRect = m_txrRedDot,
                     .fillColor   = hueColorFromPaletteIdx(particle.paletteIdx, alpha),
                     .radius      = 12.f,
@@ -4457,7 +4457,7 @@ private:
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
 
-        auto statsStr = zb::fmtToString(
+        auto statsStr = za::fmtToString(
             "^bold[](Level)^: {}\n"
             "^bold[](XP)^: {} / {}\n"
             "^bold[](Clock)^: {}s\n"
@@ -4512,11 +4512,11 @@ private:
 
         m_rtGame.draw(statsBorder, {.view = m_worldView});
 
-        zb::String perksStr;
+        za::String perksStr;
 
         for (const auto& perk : m_perks)
             if (perk->isActive(m_world))
-                perksStr += zb::fmtToString("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
+                perksStr += za::fmtToString("- {} {}\n", perk->getName(), perk->getInventoryStr(m_world));
 
         m_textVerticesBuffer.clear();
         m_textIndicesBuffer.clear();
@@ -4628,7 +4628,7 @@ private:
             const za::Vec2f windowSize = m_window.getSize().toVec2f();
             const za::Vec2f rtGameSize = m_rtGame.getSize().toVec2f();
 
-            scale = zb::floor(zb::min(windowSize.x / rtGameSize.x, windowSize.y / rtGameSize.y));
+            scale = za::floor(za::min(windowSize.x / rtGameSize.x, windowSize.y / rtGameSize.y));
         }
 
         // figure out position to center the rtGame texture in the window
@@ -4730,7 +4730,7 @@ int main()
     auto audioContext    = za::AudioContext::create().value();
     auto graphicsContext = za::GraphicsContext::create().value();
 
-    auto game = zb::makeUnique<tsurv::Game>();
+    auto game = za::makeUnique<tsurv::Game>();
 
     if (!game->run())
         return 1;

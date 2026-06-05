@@ -10,13 +10,13 @@
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundFileReader.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/InputStream.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/InputStream.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
@@ -29,10 +29,10 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-zb::SizeT read(void* ptr, zb::SizeT size, zb::SizeT nmemb, void* data)
+za::SizeT read(void* ptr, za::SizeT size, za::SizeT nmemb, void* data)
 {
     auto* stream = static_cast<za::InputStream*>(data);
-    return stream->read(ptr, size * nmemb).valueOr(static_cast<zb::SizeT>(-1));
+    return stream->read(ptr, size * nmemb).valueOr(static_cast<za::SizeT>(-1));
 }
 
 
@@ -40,22 +40,22 @@ zb::SizeT read(void* ptr, zb::SizeT size, zb::SizeT nmemb, void* data)
 int seek(void* data, ogg_int64_t signedOffset, int whence)
 {
     auto*     stream = static_cast<za::InputStream*>(data);
-    zb::SizeT offset{};
+    za::SizeT offset{};
 
     switch (whence)
     {
         case SEEK_SET:
-            offset = static_cast<zb::SizeT>(signedOffset);
+            offset = static_cast<za::SizeT>(signedOffset);
             break;
         case SEEK_CUR:
-            offset = static_cast<zb::SizeT>(static_cast<ogg_int64_t>(stream->tell().value()) + signedOffset);
+            offset = static_cast<za::SizeT>(static_cast<ogg_int64_t>(stream->tell().value()) + signedOffset);
             break;
         case SEEK_END:
-            offset = static_cast<zb::SizeT>(static_cast<ogg_int64_t>(stream->getSize().value()) + signedOffset);
+            offset = static_cast<za::SizeT>(static_cast<ogg_int64_t>(stream->getSize().value()) + signedOffset);
             break;
     }
 
-    const zb::Optional position = stream->seek(offset);
+    const za::Optional position = stream->seek(offset);
     return position.hasValue() ? static_cast<int>(*position) : -1;
 }
 
@@ -64,7 +64,7 @@ int seek(void* data, ogg_int64_t signedOffset, int whence)
 long tell(void* data)
 {
     auto*              stream   = static_cast<za::InputStream*>(data);
-    const zb::Optional position = stream->tell();
+    const za::Optional position = stream->tell();
     return position.hasValue() ? static_cast<long>(*position) : -1;
 }
 
@@ -116,9 +116,9 @@ SoundFileReaderOgg::~SoundFileReaderOgg()
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
+za::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream)
 {
-    zb::Optional<Info> result; // Use a single local variable for NRVO
+    za::Optional<Info> result; // Use a single local variable for NRVO
 
     // Open the Vorbis stream
     const int status = ov_open_callbacks(&stream, &m_impl->vorbis, nullptr, 0, callbacks);
@@ -147,7 +147,7 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
 
     Info& info       = result.emplace();
     info.sampleRate  = static_cast<unsigned int>(vorbisInfo->rate);
-    info.sampleCount = static_cast<zb::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
+    info.sampleCount = static_cast<za::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
 
     // For Vorbis channel mapping refer to: https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-810004.3.9
     switch (static_cast<unsigned int>(vorbisInfo->channels))
@@ -203,7 +203,7 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
             break;
         default:
             priv::errMsg("Vorbis files with more than 8 channels not supported");
-            ZB_ASSERT(false);
+            ZA_ASSERT(false);
             break;
     }
 
@@ -215,9 +215,9 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stream
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderOgg::seek(zb::U64 sampleOffset)
+void SoundFileReaderOgg::seek(za::U64 sampleOffset)
 {
-    ZB_ASSERT(m_impl->vorbis.datasource != nullptr &&
+    ZA_ASSERT(m_impl->vorbis.datasource != nullptr &&
               "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     ov_pcm_seek(&m_impl->vorbis, static_cast<ogg_int64_t>(sampleOffset / m_impl->channelCount));
@@ -225,21 +225,21 @@ void SoundFileReaderOgg::seek(zb::U64 sampleOffset)
 
 
 ////////////////////////////////////////////////////////////
-zb::U64 SoundFileReaderOgg::read(zb::I16* samples, zb::U64 maxCount)
+za::U64 SoundFileReaderOgg::read(za::I16* samples, za::U64 maxCount)
 {
-    ZB_ASSERT(m_impl->vorbis.datasource != nullptr &&
+    ZA_ASSERT(m_impl->vorbis.datasource != nullptr &&
               "Vorbis datasource is missing. Call SoundFileReaderOgg::open() to initialize it.");
 
     // Try to read the requested number of samples, stop only on error or end of file
-    zb::U64 count = 0;
+    za::U64 count = 0;
     while (count < maxCount)
     {
-        const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(zb::I16));
+        const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(za::I16));
         const long bytesRead = ov_read(&m_impl->vorbis, reinterpret_cast<char*>(samples), bytesToRead, ZA_IS_BIG_ENDIAN, 2, 1, nullptr);
         if (bytesRead > 0)
         {
-            const long samplesRead = bytesRead / static_cast<long>(sizeof(zb::I16));
-            count += static_cast<zb::U64>(samplesRead);
+            const long samplesRead = bytesRead / static_cast<long>(sizeof(za::I16));
+            count += static_cast<za::U64>(samplesRead);
             samples += samplesRead;
         }
         else

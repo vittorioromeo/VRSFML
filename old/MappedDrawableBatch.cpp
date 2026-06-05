@@ -7,7 +7,7 @@ MappedDrawableBatch::MappedDrawableBatch(RenderTarget& renderTarget) : m_renderT
 
 
 ////////////////////////////////////////////////////////////
-void* MappedDrawableBatch::mapBuffer(unsigned int type, zb::SizeT allocatedBytes) const
+void* MappedDrawableBatch::mapBuffer(unsigned int type, za::SizeT allocatedBytes) const
 {
     return glCheck(
         glMapBufferRange(type, 0u, allocatedBytes, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
@@ -19,15 +19,15 @@ void* MappedDrawableBatch::mapBuffer(unsigned int type, zb::SizeT allocatedBytes
 void MappedDrawableBatch::unmapBuffer(unsigned int type) const
 {
     [[maybe_unused]] const bool rc = glCheck(glUnmapBuffer(type));
-    ZB_ASSERT(rc);
+    ZA_ASSERT(rc);
 }
 
 
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::reallocAndRemapBufferIfNeeded(unsigned int type,
                                                         void*&       bufferPtr,
-                                                        zb::SizeT& allocatedBytes,
-                                                        zb::SizeT  targetBytes)
+                                                        za::SizeT& allocatedBytes,
+                                                        za::SizeT  targetBytes)
 {
     if (allocatedBytes >= targetBytes) [[likely]]
     {
@@ -43,7 +43,7 @@ void MappedDrawableBatch::reallocAndRemapBufferIfNeeded(unsigned int type,
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::reallocAndRemapVerticesIfNeeded(zb::SizeT moreCount)
+void MappedDrawableBatch::reallocAndRemapVerticesIfNeeded(za::SizeT moreCount)
 {
     reallocAndRemapBufferIfNeeded(GL_ARRAY_BUFFER,
                                   m_mappedVertices,
@@ -53,7 +53,7 @@ void MappedDrawableBatch::reallocAndRemapVerticesIfNeeded(zb::SizeT moreCount)
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::reallocAndRemapIndicesIfNeeded(zb::SizeT moreCount)
+void MappedDrawableBatch::reallocAndRemapIndicesIfNeeded(za::SizeT moreCount)
 {
     reallocAndRemapBufferIfNeeded(GL_ELEMENT_ARRAY_BUFFER,
                                   m_mappedIndices,
@@ -63,12 +63,12 @@ void MappedDrawableBatch::reallocAndRemapIndicesIfNeeded(zb::SizeT moreCount)
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::appendTransformedVertices(const Vertex* data, zb::SizeT count, const Transform& transform)
+void MappedDrawableBatch::appendTransformedVertices(const Vertex* data, za::SizeT count, const Transform& transform)
 {
     reallocAndRemapVerticesIfNeeded(count);
     auto* asVertexPtr = reinterpret_cast<Vertex*>(m_mappedVertices) + m_vertexCount;
 
-    for (zb::SizeT i = 0u; i < count; ++i)
+    for (za::SizeT i = 0u; i < count; ++i)
     {
         asVertexPtr[i].position  = transform.transformPoint(data[i].position);
         asVertexPtr[i].color     = data[i].color;
@@ -104,7 +104,7 @@ void MappedDrawableBatch::add(const Sprite& sprite)
 
 
 ////////////////////////////////////////////////////////////
-void MappedDrawableBatch::addSubsequentIndices(zb::SizeT count)
+void MappedDrawableBatch::addSubsequentIndices(za::SizeT count)
 {
     reallocAndRemapIndicesIfNeeded(count);
 
@@ -131,8 +131,8 @@ void MappedDrawableBatch::clear()
 ////////////////////////////////////////////////////////////
 void MappedDrawableBatch::draw(const RenderStates& renderStates)
 {
-    ZB_ASSERT(m_mappedVertices != nullptr);
-    ZB_ASSERT(m_mappedIndices != nullptr);
+    ZA_ASSERT(m_mappedVertices != nullptr);
+    ZA_ASSERT(m_mappedIndices != nullptr);
 
     unmapBuffer(GL_ARRAY_BUFFER);
     m_mappedVertices = nullptr;

@@ -18,7 +18,7 @@
 #include "Zancle/Graphics/VBOHandle.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
 // On Emscripten, WebGL contexts cannot share resources. Zancle's

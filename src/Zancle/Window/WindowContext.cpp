@@ -24,24 +24,24 @@
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
 
-#include "Zancle/System/Atomic.hpp"
-#include "Zancle/System/AtomicMutex.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/LockGuard.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/SignalErrHandler.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Concurrency/AtomicMutex.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Concurrency/LockGuard.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Err/SignalErrHandler.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <SDL3/SDL_hints.h> // TODO P0: move to SDLLayer
 
@@ -54,9 +54,9 @@ namespace
 /// \brief Load our extensions vector with the supported extensions
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Vector<zb::StringView> loadExtensions(priv::SDLGlContext& glContext)
+[[nodiscard]] za::Vector<za::StringView> loadExtensions(priv::SDLGlContext& glContext)
 {
-    zb::Vector<zb::StringView> result; // Use a single local variable for NRVO
+    za::Vector<za::StringView> result; // Use a single local variable for NRVO
 
     auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(glContext.getFunction("glGetError"));
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(glContext.getFunction("glGetIntegerv"));
@@ -254,7 +254,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getActiveContextId()
     {
-        ZB_ASSERT(za::WindowContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(za::WindowContext::hasActiveThreadLocalGlContext());
         return za::WindowContext::getActiveThreadLocalGlContextId();
     }
 
@@ -344,7 +344,7 @@ public:
         {
             priv::errMsg("TransferScratchManager destroyed with unreleased resources for {} contexts", m_byContext.size());
 
-            zb::abort();
+            za::abort();
         }
     }
 
@@ -475,7 +475,7 @@ void copyFlippedFramebufferViaTransferScratch(
     const za::Vec2u    srcPos,
     const za::Vec2u    dstPos)
 {
-    ZB_ASSERT(intermediateFBO != 0u);
+    ZA_ASSERT(intermediateFBO != 0u);
 
     // The intermediate FBO already has the scratch texture attached and verified
     // complete by `TransferScratchManager::ensureFlipFramebufferReady`, so we can
@@ -550,15 +550,15 @@ struct WindowContextImpl
     AtomicMutex        sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
-    zb::Vector<zb::StringView> extensions; //!< Supported OpenGL extensions
+    za::Vector<za::StringView> extensions; //!< Supported OpenGL extensions
 
     ////////////////////////////////////////////////////////////
-    zb::Optional<priv::JoystickManager> joystickManager;
-    zb::Optional<priv::SensorManager>   sensorManager;
+    za::Optional<priv::JoystickManager> joystickManager;
+    za::Optional<priv::SensorManager>   sensorManager;
 
     ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
-    explicit WindowContextImpl(SharedGlContextArgs&&... args) : sharedGlContext(ZB_FORWARD(args)...)
+    explicit WindowContextImpl(SharedGlContextArgs&&... args) : sharedGlContext(ZA_FORWARD(args)...)
     {
     }
 };
@@ -566,7 +566,7 @@ struct WindowContextImpl
 namespace
 {
 ////////////////////////////////////////////////////////////
-constinit zb::Optional<WindowContextImpl> installedWindowContext;
+constinit za::Optional<WindowContextImpl> installedWindowContext;
 constinit za::Atomic<unsigned int>        windowContextRC{0u};
 
 
@@ -576,7 +576,7 @@ WindowContextImpl& ensureInstalled()
     if (!installedWindowContext.hasValue()) [[unlikely]]
     {
         priv::errMsg("`za::WindowContext` not installed -- did you forget to create one in `main`?");
-        zb::abort();
+        za::abort();
     }
 
     return *installedWindowContext;
@@ -585,12 +585,12 @@ WindowContextImpl& ensureInstalled()
 } // namespace
 
 ////////////////////////////////////////////////////////////
-zb::Optional<WindowContext> WindowContext::create()
+za::Optional<WindowContext> WindowContext::create()
 {
     const auto fail = [](const char* what)
     {
         priv::errMsg("Error creating `za::WindowContext`: {}", what);
-        return zb::nullOpt;
+        return za::nullOpt;
     };
 
     //
@@ -612,7 +612,7 @@ zb::Optional<WindowContext> WindowContext::create()
 
     //
     // Enable shader GL context
-    ZB_ASSERT(!hasActiveThreadLocalGlContext());
+    ZA_ASSERT(!hasActiveThreadLocalGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext())
     {
@@ -620,7 +620,7 @@ zb::Optional<WindowContext> WindowContext::create()
         return fail("could not enable shared context");
     }
 
-    ZB_ASSERT(isActiveGlContextSharedContext());
+    ZA_ASSERT(isActiveGlContextSharedContext());
 
     //
     // Try to initialize shared GL context
@@ -632,7 +632,7 @@ zb::Optional<WindowContext> WindowContext::create()
 
     //
     // Load extensions and entrypoints
-    ZB_ASSERT(isActiveGlContextSharedContext());
+    ZA_ASSERT(isActiveGlContextSharedContext());
     wc.extensions = loadExtensions(wc.sharedGlContext);
     loadGLEntryPointsViaGLAD();
 
@@ -655,27 +655,27 @@ zb::Optional<WindowContext> WindowContext::create()
         ;
 #endif
 
-    ZB_ASSERT(glGetError() == GL_NO_ERROR);
+    ZA_ASSERT(glGetError() == GL_NO_ERROR);
 
-    return zb::makeOptional<WindowContext>(zb::PassKey<WindowContext>{});
+    return za::makeOptional<WindowContext>(za::PassKey<WindowContext>{});
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext(zb::PassKey<WindowContext>&&)
+WindowContext::WindowContext(za::PassKey<WindowContext>&&)
 {
     windowContextRC.fetchAddRelaxed(1u);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext(zb::PassKey<GraphicsContext>&&) : WindowContext(zb::PassKey<WindowContext>{})
+WindowContext::WindowContext(za::PassKey<GraphicsContext>&&) : WindowContext(za::PassKey<WindowContext>{})
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(zb::PassKey<WindowContext>{})
+WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(za::PassKey<WindowContext>{})
 {
 }
 
@@ -686,15 +686,15 @@ WindowContext::~WindowContext()
     if (windowContextRC.fetchSubRelaxed(1u) > 1u)
         return;
 
-    ZB_ASSERT(!ensureInstalled().unsharedContextResourcesManager.allNonSharedEmpty());
+    ZA_ASSERT(!ensureInstalled().unsharedContextResourcesManager.allNonSharedEmpty());
 
     // All the FBOs on shared context should be destroyed later
 
-    ZB_ASSERT(hasActiveThreadLocalGlContext());
-    ZB_ASSERT(isActiveGlContextSharedContext());
+    ZA_ASSERT(hasActiveThreadLocalGlContext());
+    ZA_ASSERT(isActiveGlContextSharedContext());
 
     disableSharedGlContext();
-    ZB_ASSERT(!hasActiveThreadLocalGlContext());
+    ZA_ASSERT(!hasActiveThreadLocalGlContext());
 
     installedWindowContext.reset();
 }
@@ -712,7 +712,7 @@ void WindowContext::registerUnsharedFrameBuffer(const unsigned int glContextId, 
 {
     auto& wc = ensureInstalled();
 
-    ZB_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+    ZA_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
     wc.unsharedContextResourcesManager.registerFrameBuffer(glContextId, frameBufferId);
 }
 
@@ -735,7 +735,7 @@ void WindowContext::registerUnsharedVAO(const unsigned int glContextId, const un
 {
     auto& wc = ensureInstalled();
 
-    ZB_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+    ZA_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
     wc.unsharedContextResourcesManager.registerVAO(glContextId, vaoId);
 }
 
@@ -772,7 +772,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
     if (&glContext == &wc.sharedGlContext)
     {
         doCleanup();
-        ZB_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
+        ZA_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
 
         disableSharedGlContext();
         return;
@@ -844,14 +844,14 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, co
     // If `glContext` is already the active one on this thread, don't do anything
     if (active && glContext.m_id == activeGlContext.id)
     {
-        ZB_ASSERT(activeGlContext.ptr == &glContext);
+        ZA_ASSERT(activeGlContext.ptr == &glContext);
         return true;
     }
 
     // If `glContext` is not the active one on this thread, don't do anything
     if (!active && glContext.m_id != activeGlContext.id)
     {
-        ZB_ASSERT(activeGlContext.ptr != &glContext);
+        ZA_ASSERT(activeGlContext.ptr != &glContext);
         return true;
     }
 
@@ -864,7 +864,7 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, co
 
     if (&glContext == &wc.sharedGlContext)
     {
-        ZB_ASSERT(active);
+        ZA_ASSERT(active);
 
         activeGlContext.id  = glContext.m_id;
         activeGlContext.ptr = &glContext;
@@ -901,7 +901,7 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
     if (!setActiveThreadLocalGlContextToSharedContext())
     {
         priv::errMsg("Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`");
-        ZB_ASSERT(false);
+        ZA_ASSERT(false);
     }
 }
 
@@ -927,8 +927,8 @@ void WindowContext::disableSharedGlContext()
 {
     auto& wc = ensureInstalled();
 
-    ZB_ASSERT(hasActiveThreadLocalGlContext());
-    ZB_ASSERT(isActiveGlContextSharedContext());
+    ZA_ASSERT(hasActiveThreadLocalGlContext());
+    ZA_ASSERT(isActiveGlContextSharedContext());
 
     if (!wc.sharedGlContext.makeCurrent(false))
     {
@@ -961,7 +961,7 @@ void WindowContext::loadGLEntryPointsViaGLAD()
 
 ////////////////////////////////////////////////////////////
 template <typename... GLContextArgs>
-zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings, GLContextArgs&&... args)
+za::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings, GLContextArgs&&... args)
 {
     auto& wc = ensureInstalled();
 
@@ -970,10 +970,10 @@ zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextS
     if (!setActiveThreadLocalGlContextToSharedContext())
         priv::errMsg("Error enabling shared GL context in WindowContext::createGlContext()");
 
-    auto glContext = zb::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
+    auto glContext = za::makeUnique<priv::SDLGlContext>(wc.nextThreadLocalGlContextId.fetchAddSeqCst(1u),
                                                         &wc.sharedGlContext,
                                                         contextSettings,
-                                                        ZB_FORWARD(args)...);
+                                                        ZA_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
@@ -996,14 +996,14 @@ zb::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextS
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings)
+za::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings)
 {
     return createGlContextImpl(contextSettings);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&     contextSettings,
+za::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&     contextSettings,
                                                               const priv::SDLWindowImpl& owner,
                                                               const unsigned int         bitsPerPixel)
 {
@@ -1015,7 +1015,7 @@ zb::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSetti
 bool WindowContext::isExtensionAvailable(const char* const name)
 {
     auto& wc = ensureInstalled();
-    return zb::find(wc.extensions.begin(), wc.extensions.end(), name) != wc.extensions.end();
+    return za::find(wc.extensions.begin(), wc.extensions.end(), name) != wc.extensions.end();
 }
 
 

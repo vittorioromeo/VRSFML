@@ -11,11 +11,11 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 #ifndef ZA_OPENGL_ES
@@ -40,10 +40,10 @@ TEST_CASE("[GLUtils] za::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplay
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!zb::isCopyConstructible<Fence>);
-        STATIC_CHECK(!zb::isCopyAssignable<Fence>);
-        STATIC_CHECK(zb::isNoThrowMoveConstructible<Fence>);
-        STATIC_CHECK(zb::isNoThrowMoveAssignable<Fence>);
+        STATIC_CHECK(!za::isCopyConstructible<Fence>);
+        STATIC_CHECK(!za::isCopyAssignable<Fence>);
+        STATIC_CHECK(za::isNoThrowMoveConstructible<Fence>);
+        STATIC_CHECK(za::isNoThrowMoveAssignable<Fence>);
     }
 
     SECTION("Default-constructed state has no native fence")
@@ -126,7 +126,7 @@ TEST_CASE("[GLUtils] za::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplay
         REQUIRE(static_cast<bool>(source));
 
         const void* const originalHandle = source.getNativeHandle();
-        Fence             dest{ZB_MOVE(source)};
+        Fence             dest{ZA_MOVE(source)};
 
         CHECK(!source);
         CHECK(static_cast<bool>(dest));
@@ -144,7 +144,7 @@ TEST_CASE("[GLUtils] za::priv::GLFenceSync / FenceUtils" * tst::skip(skipDisplay
         REQUIRE(static_cast<bool>(dest));
 
         const void* const sourceHandle = source.getNativeHandle();
-        dest                           = ZB_MOVE(source);
+        dest                           = ZA_MOVE(source);
 
         CHECK(!source);
         CHECK(static_cast<bool>(dest));

@@ -5,13 +5,13 @@
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Builtin/Strlen.hpp"
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/ToChars.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Strlen.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/ToChars.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,18 +24,18 @@
 namespace tst::detail
 {
 ////////////////////////////////////////////////////////////
-void MessageBuilder::appendRaw(const char* data, zb::SizeT n) noexcept
+void MessageBuilder::appendRaw(const char* data, za::SizeT n) noexcept
 {
     if (n == 0u)
         return;
 
-    const zb::SizeT room     = capacity - len;
-    const zb::SizeT toAppend = n < room ? n : room;
+    const za::SizeT room     = capacity - len;
+    const za::SizeT toAppend = n < room ? n : room;
 
     if (toAppend == 0u)
         return;
 
-    ZB_MEMCPY(buf + len, data, toAppend);
+    ZA_MEMCPY(buf + len, data, toAppend);
     len += toAppend;
 }
 
@@ -48,12 +48,12 @@ void appendCString(MessageBuilder& mb, const char* v) noexcept
     if (v == nullptr)
         return;
 
-    mb.appendRaw(v, ZB_STRLEN(v));
+    mb.appendRaw(v, ZA_STRLEN(v));
 }
 
 
 ////////////////////////////////////////////////////////////
-void appendStringView(MessageBuilder& mb, zb::StringView v) noexcept
+void appendStringView(MessageBuilder& mb, za::StringView v) noexcept
 {
     mb.appendRaw(v.data(), v.size());
 }
@@ -64,10 +64,10 @@ template <typename T>
 void appendNumeric(MessageBuilder& mb, T v) noexcept
 {
     char        tmp[64];
-    char* const end = zb::toChars(tmp, tmp + sizeof(tmp), v);
+    char* const end = za::toChars(tmp, tmp + sizeof(tmp), v);
     if (end == nullptr)
         return;
-    mb.appendRaw(tmp, static_cast<zb::SizeT>(end - tmp));
+    mb.appendRaw(tmp, static_cast<za::SizeT>(end - tmp));
 }
 
 
@@ -123,7 +123,7 @@ void appendChar(MessageBuilder& mb, char c) noexcept
     }
 
 ZA_TST_MSGB_DEF_PAIR(const char*, appendCString(*this, v))
-ZA_TST_MSGB_DEF_PAIR(zb::StringView, appendStringView(*this, v))
+ZA_TST_MSGB_DEF_PAIR(za::StringView, appendStringView(*this, v))
 ZA_TST_MSGB_DEF_PAIR(bool, appendBool(*this, v))
 ZA_TST_MSGB_DEF_PAIR(char, appendChar(*this, v))
 ZA_TST_MSGB_DEF_PAIR(short, appendNumeric(*this, v))
@@ -153,7 +153,7 @@ ZA_TST_MSGB_DEF_PAIR(double, appendNumeric(*this, v))
     }
 
 ZA_TST_MSGB_COMMA_DEF(const char*, appendCString(mb, v))
-ZA_TST_MSGB_COMMA_DEF(zb::StringView, appendStringView(mb, v))
+ZA_TST_MSGB_COMMA_DEF(za::StringView, appendStringView(mb, v))
 ZA_TST_MSGB_COMMA_DEF(bool, appendBool(mb, v))
 ZA_TST_MSGB_COMMA_DEF(char, appendChar(mb, v))
 ZA_TST_MSGB_COMMA_DEF(short, appendNumeric(mb, v))
@@ -172,7 +172,7 @@ ZA_TST_MSGB_COMMA_DEF(double, appendNumeric(mb, v))
 
 
 ////////////////////////////////////////////////////////////
-void emitInfoPushRaw(const char* /*file*/, int /*line*/, const char* data, zb::SizeT size) noexcept
+void emitInfoPushRaw(const char* /*file*/, int /*line*/, const char* data, za::SizeT size) noexcept
 {
     contextState().infoStack.emplaceBack(data, size);
 }
@@ -188,31 +188,31 @@ void emitInfoPop() noexcept
 
 
 ////////////////////////////////////////////////////////////
-void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, zb::SizeT size)
+void emitMessageRaw(AssertKind kind, const char* file, int line, const char* data, za::SizeT size)
 {
     auto& ctx = contextState();
 
-    const zb::StringView text{data, size};
+    const za::StringView text{data, size};
 
     switch (kind)
     {
         case AssertKind::Warn:
-            (void)zb::printErrLn("{}:{}: MESSAGE: {}", file, line, text);
+            (void)za::printErrLn("{}:{}: MESSAGE: {}", file, line, text);
             break;
         case AssertKind::Check:
             ++ctx.totalAssertions;
             ++ctx.failedAssertions;
             ctx.currentTestFailed = true;
-            (void)zb::printErrLn("{}:{}: FAIL_CHECK: {}", file, line, text);
+            (void)za::printErrLn("{}:{}: FAIL_CHECK: {}", file, line, text);
             break;
         case AssertKind::Require:
             ++ctx.totalAssertions;
             ++ctx.failedAssertions;
             ctx.currentTestFailed = true;
-            (void)zb::printErrLn("{}:{}: FAIL: {}", file, line, text);
+            (void)za::printErrLn("{}:{}: FAIL: {}", file, line, text);
             throw ContextState::RequireFailedException{};
         default:
-            (void)zb::printErrLn("{}:{}: {}", file, line, text);
+            (void)za::printErrLn("{}:{}: {}", file, line, text);
             break;
     }
 }
@@ -226,7 +226,7 @@ bool checkNothrowImpl(const char* file, int line, const char* exprStr) noexcept
     ++ctx.failedAssertions;
     ctx.currentTestFailed = true;
 
-    (void)zb::printErrLn("{}:{}: FAILED: CHECK_NOTHROW({}) -- exception thrown", file, line, exprStr);
+    (void)za::printErrLn("{}:{}: FAILED: CHECK_NOTHROW({}) -- exception thrown", file, line, exprStr);
     return false;
 }
 

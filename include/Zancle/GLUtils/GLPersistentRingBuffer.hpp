@@ -12,9 +12,9 @@
 #include "Zancle/GLUtils/GLFenceSync.hpp"
 #include "Zancle/GLUtils/GLPersistentBuffer.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/SmallVector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/SmallVector.hpp"
 
 
 namespace za
@@ -110,19 +110,19 @@ private:
     ////////////////////////////////////////////////////////////
     struct Marker // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
-        zb::SizeT         offset; //!< writeCursor position captured at commit time
+        za::SizeT         offset; //!< writeCursor position captured at commit time
         priv::GLFenceSync fence;  //!< fence that signals when the GPU has processed up to `offset`
     };
 
 
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer<TBufferObject> m_persistentBuffer;
-    zb::SizeT                         m_writeCursor{0u};      //!< next bump-allocation position
-    zb::SizeT                         m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
+    za::SizeT                         m_writeCursor{0u};      //!< next bump-allocation position
+    za::SizeT                         m_lastCommitCursor{0u}; //!< writeCursor at the last `commit()`
 
 
     ////////////////////////////////////////////////////////////
-    zb::SmallVector<Marker, 8> m_markers;
+    za::SmallVector<Marker, 8> m_markers;
 
 
     ////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void waitAndReclaimOldestMarker()
     {
-        ZB_ASSERT(!m_markers.empty());
+        ZA_ASSERT(!m_markers.empty());
 
         priv::waitOnFence(m_markers.front().fence);
         m_markers.erase(m_markers.begin());
@@ -183,7 +183,7 @@ private:
     ///                  the grow.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void growInternalStorage(TBufferObject& obj, const zb::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void growInternalStorage(TBufferObject& obj, const za::SizeT byteCount)
     {
         const auto currentCapacity = m_persistentBuffer.capacity();
         const auto targetCapacity  = currentCapacity == 0u ? byteCount : m_writeCursor + byteCount;
@@ -280,7 +280,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] zb::SizeT capacity() const
+    [[nodiscard, gnu::always_inline]] za::SizeT capacity() const
     {
         return m_persistentBuffer.capacity();
     }
@@ -290,7 +290,7 @@ public:
     /// \brief Flush a mapped byte range so the GPU can see the writes
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushBytesToGPU(const TBufferObject& obj, const zb::SizeT byteOffset, const zb::SizeT byteCount) const
+    [[gnu::always_inline]] void flushBytesToGPU(const TBufferObject& obj, const za::SizeT byteOffset, const za::SizeT byteCount) const
     {
         m_persistentBuffer.flushBytesToGPU(obj, byteOffset, byteCount);
     }
@@ -305,7 +305,7 @@ public:
     /// re-flushed so previously staged data stays visible to the GPU.
     ///
     ////////////////////////////////////////////////////////////
-    void reserveCapacity(TBufferObject& obj, const zb::SizeT byteCount)
+    void reserveCapacity(TBufferObject& obj, const za::SizeT byteCount)
     {
         reclaim();
 
@@ -332,7 +332,7 @@ public:
     /// and `commit()` after the writes are done.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] zb::SizeT beginWrite(TBufferObject& obj, const zb::SizeT byteCount)
+    [[nodiscard, gnu::always_inline]] za::SizeT beginWrite(TBufferObject& obj, const za::SizeT byteCount)
     {
         if (m_writeCursor + byteCount > m_persistentBuffer.capacity()) [[unlikely]]
             handleOverflow(obj, byteCount);
@@ -372,7 +372,7 @@ public:
     ///                  about to bump-allocate.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void handleOverflow(TBufferObject& obj, const zb::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void handleOverflow(TBufferObject& obj, const za::SizeT byteCount)
     {
         reclaim(); // free signaled markers
 

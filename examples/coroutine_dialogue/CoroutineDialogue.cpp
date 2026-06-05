@@ -16,14 +16,14 @@
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/String.hpp"
 
 
 namespace
@@ -48,7 +48,7 @@ struct World
     ////////////////////////////////////////////////////////////
     // dialogue box state
     const char* speaker = "";
-    zb::String  text;
+    za::String  text;
     bool        boxVisible = false;
 
     ////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ struct Cutscene : sfex::Coroutine
 
             while (t < 1.f) // smoothly move by 100px per step
             {
-                t                  = zb::min(t + world.dt * 3.f, 1.f);
+                t                  = za::min(t + world.dt * 3.f, 1.f);
                 world.villainPos.x = paceStartPos.x - 100.f * t;
 
                 SFEX_CO_YIELD(NextFrame{});
@@ -135,7 +135,7 @@ struct Cutscene : sfex::Coroutine
 
         while (t < 1.f)
         {
-            t               = zb::min(t + world.dt * 3.f, 1.f);
+            t               = za::min(t + world.dt * 3.f, 1.f);
             world.heroPos.x = paceStartPos.x - 60.f * t;
 
             SFEX_CO_YIELD(NextFrame{});
@@ -184,7 +184,7 @@ int main()
     {
         // -- event phase --
 
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
@@ -205,7 +205,7 @@ int main()
         }
         else if (waitTimer > 0.f)
         {
-            waitTimer = zb::max(waitTimer - world.dt, 0.f);
+            waitTimer = za::max(waitTimer - world.dt, 0.f);
         }
         else
         {

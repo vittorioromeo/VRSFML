@@ -11,16 +11,16 @@
 #include "Zancle/Audio/SoundBufferRecorder.hpp"
 #include "Zancle/Audio/SoundRecorder.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
-#include "ZancleBase/Scn/ScnString.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
+#include "Zancle/Scn/ScnString.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -38,42 +38,42 @@ int main()
     // Check if any device can capture audio
     if (deviceHandles.empty())
     {
-        zb::printErrLn("Sorry, audio capture is not supported by your system");
+        za::printErrLn("Sorry, audio capture is not supported by your system");
         return 1;
     }
 
     // List the available capture device handles
-    zb::printLn("Available capture devices:\n");
+    za::printLn("Available capture devices:\n");
 
-    for (zb::SizeT i = 0u; i < deviceHandles.size(); ++i)
-        zb::printLn("{}: {}", i, deviceHandles[i].getName());
+    for (za::SizeT i = 0u; i < deviceHandles.size(); ++i)
+        za::printLn("{}: {}", i, deviceHandles[i].getName());
 
-    zb::printLn("");
+    za::printLn("");
 
     // Choose the capture device
-    zb::SizeT deviceIndex = 0;
+    za::SizeT deviceIndex = 0;
 
     if (deviceHandles.size() > 1)
     {
         deviceIndex = deviceHandles.size();
-        zb::print("Please choose the capture device to use [0-{}]: ", deviceHandles.size() - 1);
+        za::print("Please choose the capture device to use [0-{}]: ", deviceHandles.size() - 1);
 
         do
         {
-            (void)zb::scnStdinInto(deviceIndex);
-            zb::scnStdinIgnoreLine();
+            (void)za::scnStdinInto(deviceIndex);
+            za::scnStdinIgnoreLine();
         } while (deviceIndex >= deviceHandles.size());
     }
 
     // Choose the sample rate
     unsigned int sampleRate = 0;
-    zb::print("Please choose the sample rate for sound capture (44100 is CD quality): ");
-    (void)zb::scnStdinInto(sampleRate);
-    zb::scnStdinIgnoreLine();
+    za::print("Please choose the sample rate for sound capture (44100 is CD quality): ");
+    (void)za::scnStdinInto(sampleRate);
+    za::scnStdinIgnoreLine();
 
     // Wait for user input...
-    zb::print("Press enter to start recording audio");
-    zb::scnStdinIgnoreLine();
+    za::print("Press enter to start recording audio");
+    za::scnStdinIgnoreLine();
 
     // Create the capture device
     za::CaptureDevice captureDevice(deviceHandles[deviceIndex]);
@@ -84,21 +84,21 @@ int main()
     // Audio capture is done in a separate thread, so we can block the main thread while it is capturing
     if (!recorder.start(captureDevice, sampleRate))
     {
-        zb::printErrLn("Failed to start recorder");
+        za::printErrLn("Failed to start recorder");
         return 1;
     }
 
-    zb::print("Recording... press enter to stop");
-    zb::scnStdinIgnoreLine();
+    za::print("Recording... press enter to stop");
+    za::scnStdinIgnoreLine();
 
     if (!recorder.stop())
-        zb::printErrLn("Failed to stop sound buffer recorder");
+        za::printErrLn("Failed to stop sound buffer recorder");
 
     // Get the buffer containing the captured data
     const za::SoundBuffer& buffer = recorder.getBuffer();
 
     // Display captured sound information
-    zb::printLn("Sound information:{} {} seconds{} {} samples / seconds{} {} channels",
+    za::printLn("Sound information:{} {} seconds{} {} samples / seconds{} {} channels",
                 '\n',
                 buffer.getDuration().asSeconds(),
                 '\n',
@@ -107,20 +107,20 @@ int main()
                 buffer.getChannelCount());
 
     // Choose what to do with the recorded sound data
-    zb::print("What do you want to do with captured sound (p = play, s = save) ? ");
-    const char choice = zb::scnStdin<char>().valueOr('p');
-    zb::scnStdinIgnoreLine();
+    za::print("What do you want to do with captured sound (p = play, s = save) ? ");
+    const char choice = za::scnStdin<char>().valueOr('p');
+    za::scnStdinIgnoreLine();
 
     if (choice == 's')
     {
         // Choose the filename
-        zb::String filename;
-        zb::print("Choose the file to create: ");
-        (void)zb::scnStdinReadLine(filename);
+        za::String filename;
+        za::print("Choose the file to create: ");
+        (void)za::scnStdinReadLine(filename);
 
         // Save the buffer
         if (!buffer.saveToFile(filename))
-            zb::printErrLn("Could not save sound buffer to file");
+            za::printErrLn("Could not save sound buffer to file");
     }
     else
     {
@@ -135,8 +135,8 @@ int main()
         while (sound.isPlaying())
         {
             // Display the playing position
-            zb::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
-            zb::print("");
+            za::print("\rPlaying... {} sec        ", sound.getPlayingOffset().asSeconds());
+            za::print("");
 
             // Leave some CPU time for other threads
             za::ThisThread::sleepFor(za::milliseconds(100));
@@ -144,9 +144,9 @@ int main()
     }
 
     // Finished!
-    zb::printLn("\nDone!");
+    za::printLn("\nDone!");
 
     // Wait until the user presses 'enter' key
-    zb::printLn("Press enter to exit...");
-    zb::scnStdinIgnoreLine();
+    za::printLn("Press enter to exit...");
+    za::scnStdinIgnoreLine();
 }

@@ -11,16 +11,16 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/FromChars.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/String/FromChars.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv
@@ -28,14 +28,14 @@ namespace tsurv
 //////////////////////////////////////////////////////////////
 struct [[nodiscard]] BitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    zb::Vector<za::Vertex>&    outVertices;
-    zb::Vector<za::IndexType>& outIndices;
+    za::Vector<za::Vertex>&    outVertices;
+    za::Vector<za::IndexType>& outIndices;
     const BitmapFont&          bitmapFont;
     za::Rect2f                 fontTextureRect;
     BitmapTextAlignment        alignment;
     za::Color                  baseColor;
     float                      time;
-    zb::StringView             string;
+    za::StringView             string;
 };
 
 
@@ -61,22 +61,22 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         float     vSpace;
     };
 
-    using zb::StringView::nPos;
+    using za::StringView::nPos;
 
-    const auto parseArg = [](zb::StringView& args, auto& outValue)
+    const auto parseArg = [](za::StringView& args, auto& outValue)
     {
         const auto delimiterPos = args.find(',');
         const auto segment      = (delimiterPos == nPos) ? args : args.substrByPosLen(0, delimiterPos);
 
-        [[maybe_unused]] const auto [ptr, ec] = zb::fromChars(segment.data(), segment.data() + segment.size(), outValue);
-        ZB_ASSERT(ec == zb::FromCharsError::None);
+        [[maybe_unused]] const auto [ptr, ec] = za::fromChars(segment.data(), segment.data() + segment.size(), outValue);
+        ZA_ASSERT(ec == za::FromCharsError::None);
 
         args.removePrefix((delimiterPos == nPos) ? args.size() : delimiterPos + 1);
     };
 
     const auto parseText = [&](auto&& onChar)
     {
-        zb::InPlaceVector<FormattingState, 16> formattingStack{{
+        za::InPlaceVector<FormattingState, 16> formattingStack{{
             .color  = baseColor,
             .wobble = {.frequency = 0.f, .amplitude = 0.f, .phase = 0.f},
             .bold   = false,
@@ -84,7 +84,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
             .vSpace = 0.f,
         }};
 
-        for (zb::SizeT i = 0u; i < str.size(); ++i)
+        for (za::SizeT i = 0u; i < str.size(); ++i)
         {
             if (str[i] == '^')
             {
@@ -155,7 +155,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
             }
             else if (str[i] == ')' && i + 1 < str.size() && str[i + 1] == '^') // Check for ")^"
             {
-                ZB_ASSERT(formattingStack.size() > 1);
+                ZA_ASSERT(formattingStack.size() > 1);
                 formattingStack.popBack();
 
                 i += 1; // Jump cursor past the ")^" sequence
@@ -169,20 +169,20 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
     // --- Pass 1: Measure line widths without allocating glyph structures ---
 
-    zb::InPlaceVector<zb::SizeT, 64> linePixelWidths;
+    za::InPlaceVector<za::SizeT, 64> linePixelWidths;
     linePixelWidths.emplaceBack(0u); // Width of the first line
 
-    zb::SizeT maxPixelWidth = 0;
+    za::SizeT maxPixelWidth = 0;
 
     za::Vec2f maxs;
 
     const auto [hSpacing, vSpacing] = bitmapFont.getGlyphSize('i');
 
-    parseText([&](const zb::SizeT /* charIdx */, const char c, const FormattingState& fs)
+    parseText([&](const za::SizeT /* charIdx */, const char c, const FormattingState& fs)
     {
         if (c == '\n')
         {
-            maxPixelWidth = zb::max(maxPixelWidth, linePixelWidths.back());
+            maxPixelWidth = za::max(maxPixelWidth, linePixelWidths.back());
             linePixelWidths.emplaceBack(0u);
             return;
         }
@@ -202,15 +202,15 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         linePixelWidths.back() += (fs.bold ? hSpacing + 1 : hSpacing);
     });
 
-    maxPixelWidth = zb::max(maxPixelWidth, linePixelWidths.back());
+    maxPixelWidth = za::max(maxPixelWidth, linePixelWidths.back());
 
 
     // --- Pass 2: Generate vertices directly ---
 
     za::Vec2f cursor         = {0.f, 0.f};
-    zb::SizeT currentLineIdx = 0u;
+    za::SizeT currentLineIdx = 0u;
 
-    const auto getAlignedX = [&](const zb::SizeT lineIdx)
+    const auto getAlignedX = [&](const za::SizeT lineIdx)
     {
         if (alignment == BitmapTextAlignment::Center)
             return (static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx])) / 2.f;
@@ -218,7 +218,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         if (alignment == BitmapTextAlignment::Right)
             return static_cast<float>(maxPixelWidth - linePixelWidths[lineIdx]);
 
-        ZB_ASSERT(alignment == BitmapTextAlignment::Left);
+        ZA_ASSERT(alignment == BitmapTextAlignment::Left);
         return 0.f;
     };
 
@@ -237,7 +237,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         outIndices.pushBackMultiple(baseIndex + 0u, baseIndex + 1u, baseIndex + 2u, baseIndex + 0u, baseIndex + 2u, baseIndex + 3u);
     };
 
-    parseText([&](const zb::SizeT charIdx, const char c, const FormattingState& fs)
+    parseText([&](const za::SizeT charIdx, const char c, const FormattingState& fs)
     {
         if (c == '\n')
         {
@@ -266,7 +266,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         const auto texRect = bitmapFont.getGlyphTextureRect(fontTextureRect, c);
 
         const auto wobbleAmount = fs.wobble.amplitude *
-                                  zb::sin(fs.wobble.frequency * time + static_cast<float>(charIdx) * fs.wobble.phase);
+                                  za::sin(fs.wobble.frequency * time + static_cast<float>(charIdx) * fs.wobble.phase);
 
         const auto fGlyphSize = bitmapFont.getGlyphSize(c).toVec2f();
 
@@ -282,8 +282,8 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
         cursor.x += fs.bold ? fGlyphSize.x + 1.f : fGlyphSize.x;
 
-        maxs.x = zb::max(maxs.x, cursor.x + fs.hSpace);
-        maxs.y = zb::max(maxs.y, cursor.y + fs.vSpace + fGlyphSize.y);
+        maxs.x = za::max(maxs.x, cursor.x + fs.hSpace);
+        maxs.y = za::max(maxs.y, cursor.y + fs.vSpace + fGlyphSize.y);
     });
 
     return maxs;
@@ -296,7 +296,7 @@ inline za::Rect2f bitmapTextToVerticesPretransformed(const BitmapTextToVerticesO
     const auto prevVerticesSize = options.outVertices.size();
     const auto localBoundsSize  = bitmapTextToVertices</* TBoundsOnly */ false>(options);
 
-    for (zb::SizeT i = prevVerticesSize; i < options.outVertices.size(); ++i)
+    for (za::SizeT i = prevVerticesSize; i < options.outVertices.size(); ++i)
         options.outVertices[i].position = transform.transformPoint(options.outVertices[i].position);
 
     return transform.transformRect({{0.f, 0.f}, localBoundsSize});

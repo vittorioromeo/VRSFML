@@ -11,9 +11,9 @@
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Shape.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -97,7 +97,7 @@ public:
     /// \return `index`-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2f getPoint(zb::SizeT index) const;
+    [[nodiscard]] Vec2f getPoint(za::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the circle

@@ -8,7 +8,7 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za
@@ -30,7 +30,7 @@ public:
         {
             const GLenum waitReturn = glCheck(glClientWaitSync(m_sync, GL_SYNC_FLUSH_COMMANDS_BIT, 1u));
 
-            ZB_ASSERT(waitReturn != GL_WAIT_FAILED);
+            ZA_ASSERT(waitReturn != GL_WAIT_FAILED);
 
             if (waitReturn == GL_ALREADY_SIGNALED || waitReturn == GL_CONDITION_SATISFIED)
                 return;

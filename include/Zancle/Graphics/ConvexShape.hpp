@@ -12,10 +12,10 @@
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/Shape.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace za
@@ -57,7 +57,7 @@ public:
         ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
         ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-        zb::SizeT pointCount{0u}; //!< Initial number of points of the polygon
+        za::SizeT pointCount{0u}; //!< Initial number of points of the polygon
     };
 
     ////////////////////////////////////////////////////////////
@@ -83,7 +83,7 @@ public:
     /// \see `getPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    void setPointCount(zb::SizeT count);
+    void setPointCount(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points of the polygon
@@ -93,7 +93,7 @@ public:
     /// \see `setPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::SizeT getPointCount() const;
+    [[nodiscard]] za::SizeT getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the position of a point
@@ -113,7 +113,7 @@ public:
     /// \see `getPoint`
     ///
     ////////////////////////////////////////////////////////////
-    void setPoint(zb::SizeT index, Vec2f point);
+    void setPoint(za::SizeT index, Vec2f point);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of a point
@@ -130,7 +130,7 @@ public:
     /// \see `setPoint`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vec2f getPoint(zb::SizeT index) const;
+    [[nodiscard]] Vec2f getPoint(za::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the convex shape
@@ -148,7 +148,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::Vector<Vec2f> m_points; //!< Points composing the convex polygon
+    za::Vector<Vec2f> m_points; //!< Points composing the convex polygon
 };
 
 } // namespace za

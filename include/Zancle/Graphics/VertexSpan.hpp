@@ -9,10 +9,10 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexUtils.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 namespace za::priv
@@ -22,9 +22,9 @@ namespace za::priv
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct VertexSpanImpl : zb::Span<T>
+struct VertexSpanImpl : za::Span<T>
 {
-    using zb::Span<T>::Span;
+    using za::Span<T>::Span;
 
     ////////////////////////////////////////////////////////////
     /// \brief Converts a mutable vertex span to an immutable vertex span
@@ -161,13 +161,13 @@ using ConstVertexSpan = priv::VertexSpanImpl<const Vertex>;
 /// \struct za::VertexSpan
 /// \ingroup graphics
 ///
-/// `za::VertexSpan` is a thin refinement of `zb::Span<Vertex>`
+/// `za::VertexSpan` is a thin refinement of `za::Span<Vertex>`
 /// that adds vertex-specific helpers such as bounding box and
 /// extrema queries (`getGlobalBounds`, `getTopLeft`,
 /// `getBottomRight`, ...).
 ///
 /// `za::ConstVertexSpan` is the immutable equivalent
-/// (`zb::Span<const Vertex>`) and exposes the same query API.
+/// (`za::Span<const Vertex>`) and exposes the same query API.
 /// A mutable `VertexSpan` implicitly converts to a
 /// `ConstVertexSpan`.
 ///
@@ -176,6 +176,6 @@ using ConstVertexSpan = priv::VertexSpanImpl<const Vertex>;
 /// for short-term use only -- the underlying storage may be
 /// invalidated by the next batch flush or vertex append.
 ///
-/// \see `za::Vertex`, `zb::Span`, `za::VertexUtils`
+/// \see `za::Vertex`, `za::Span`, `za::VertexUtils`
 ///
 ////////////////////////////////////////////////////////////

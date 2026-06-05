@@ -24,24 +24,24 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -69,8 +69,8 @@ class Pixelate : public Effect
 {
 public:
     explicit Pixelate(za::Texture&& texture, za::Shader&& shader) :
-        m_texture(ZB_MOVE(texture)),
-        m_shader(ZB_MOVE(shader)),
+        m_texture(ZA_MOVE(texture)),
+        m_shader(ZA_MOVE(shader)),
         m_ulTexture(m_shader.getUniformLocation("za_u_texture").value()),
         m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
     {
@@ -139,7 +139,7 @@ public:
                           "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
                           "laoreet.\n",
                 .characterSize = 22u}),
-        m_shader(ZB_MOVE(shader)),
+        m_shader(ZA_MOVE(shader)),
         m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
         m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
         m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
@@ -163,12 +163,12 @@ class StormBlink : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        const float radius = 200 + zb::cos(time) * 150;
+        const float radius = 200 + za::cos(time) * 150;
 
         m_shader.setUniform(m_ulStormPosition, za::Vec2f(x * 800, y * 600));
         m_shader.setUniform(m_ulStormInnerRadius, radius / 3);
         m_shader.setUniform(m_ulStormTotalRadius, radius);
-        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + zb::cos(time * 3) * 0.25f);
+        m_shader.setUniform(m_ulBlinkAlpha, 0.5f + za::cos(time * 3) * 0.25f);
     }
 
     void draw(za::RenderTarget& target, za::RenderStates states) const override
@@ -178,7 +178,7 @@ public:
     }
 
     explicit StormBlink(za::Shader&& shader) :
-        m_shader(ZB_MOVE(shader)),
+        m_shader(ZA_MOVE(shader)),
         m_ulStormPosition(m_shader.getUniformLocation("storm_position").value()),
         m_ulStormInnerRadius(m_shader.getUniformLocation("storm_inner_radius").value()),
         m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
@@ -190,16 +190,16 @@ public:
             const auto x = rng.getF(0.f, 800.f);
             const auto y = rng.getF(0.f, 600.f);
 
-            const auto r = rng.getI<zb::U8>(0u, 255u);
-            const auto g = rng.getI<zb::U8>(0u, 255u);
-            const auto b = rng.getI<zb::U8>(0u, 255u);
+            const auto r = rng.getI<za::U8>(0u, 255u);
+            const auto g = rng.getI<za::U8>(0u, 255u);
+            const auto b = rng.getI<za::U8>(0u, 255u);
 
             m_points.emplaceBack(za::Vec2f{x, y}, za::Color{r, g, b});
         }
     }
 
 private:
-    zb::Vector<za::Vertex>      m_points;
+    za::Vector<za::Vertex>      m_points;
     za::Shader                  m_shader;
     za::Shader::UniformLocation m_ulStormPosition;
     za::Shader::UniformLocation m_ulStormInnerRadius;
@@ -216,7 +216,7 @@ class Edge : public Effect
 public:
     void update(float time, float x, float y) override
     {
-        m_shader.setUniform(m_ulEdgeThreshold, zb::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
+        m_shader.setUniform(m_ulEdgeThreshold, za::clamp(1.f - (x + y) / 2.f, 0.f, 1.f));
 
         // Render the updated scene to the off-screen surface
         m_surface.clear(za::Color::White);
@@ -230,8 +230,8 @@ public:
             za::Sprite entity{.textureRect = {{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
 
             entity.position =
-                {zb::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
-                 zb::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
+                {za::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
+                 za::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
             m_surface.draw(entity, {.texture = &m_entityTexture});
         }
@@ -248,10 +248,10 @@ public:
     }
 
     explicit Edge(za::RenderTexture&& surface, za::Texture&& backgroundTexture, za::Texture&& entityTexture, za::Shader&& shader) :
-        m_surface(ZB_MOVE(surface)),
-        m_backgroundTexture(ZB_MOVE(backgroundTexture)),
-        m_entityTexture(ZB_MOVE(entityTexture)),
-        m_shader(ZB_MOVE(shader)),
+        m_surface(ZA_MOVE(surface)),
+        m_backgroundTexture(ZA_MOVE(backgroundTexture)),
+        m_entityTexture(ZA_MOVE(entityTexture)),
+        m_shader(ZA_MOVE(shader)),
         m_ulEdgeThreshold(m_shader.getUniformLocation("edge_threshold").value())
     {
     }
@@ -283,7 +283,7 @@ public:
         m_transform.rotate(za::degrees(x * 360.f));
 
         // Adjust billboard size to scale between 25 and 75
-        const float size = 25 + zb::fabs(y) * 50;
+        const float size = 25 + za::fabs(y) * 50;
 
         // Update the shader parameter
         m_shader.setUniform(m_ulSize, za::Vec2f{size, size});
@@ -301,13 +301,13 @@ public:
     }
 
     explicit Geometry(za::Texture&& logoTexture, za::Shader&& shader) :
-        m_logoTexture(ZB_MOVE(logoTexture)),
-        m_shader(ZB_MOVE(shader)),
+        m_logoTexture(ZA_MOVE(logoTexture)),
+        m_shader(ZA_MOVE(shader)),
         m_ulSize(m_shader.getUniformLocation("size").value()),
         m_pointCloud(10'000)
     {
         // Move the points in the point cloud to random positions
-        for (zb::SizeT i = 0; i < 10'000; ++i)
+        for (za::SizeT i = 0; i < 10'000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
             m_pointCloud[i].position = {rng.getF(-480.f, 480.f), rng.getF(-480.f, 480.f)};
@@ -319,83 +319,83 @@ private:
     za::Transform               m_transform;
     za::Shader                  m_shader;
     za::Shader::UniformLocation m_ulSize;
-    zb::Vector<za::Vertex>      m_pointCloud;
+    za::Vector<za::Vertex>      m_pointCloud;
 };
 
 
 ////////////////////////////////////////////////////////////
 // Effect loading factory functions
 ////////////////////////////////////////////////////////////
-zb::Optional<Pixelate> tryLoadPixelate()
+za::Optional<Pixelate> tryLoadPixelate()
 {
     auto texture = za::Texture::loadFromFile("resources/background.jpg");
     if (!texture.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     auto shader = za::Shader::loadFromFile(
         {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/pixelate.frag"});
     if (!shader.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<Pixelate>(ZB_MOVE(*texture), ZB_MOVE(*shader));
+    return za::makeOptional<Pixelate>(ZA_MOVE(*texture), ZA_MOVE(*shader));
 }
 
-zb::Optional<WaveBlur> tryLoadWaveBlur(const za::Font& font)
+za::Optional<WaveBlur> tryLoadWaveBlur(const za::Font& font)
 {
     auto shader = za::Shader::loadFromFile({.vertexPath = "resources/wave.vert", .fragmentPath = "resources/blur.frag"});
     if (!shader.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<WaveBlur>(font, ZB_MOVE(*shader));
+    return za::makeOptional<WaveBlur>(font, ZA_MOVE(*shader));
 }
 
-zb::Optional<StormBlink> tryLoadStormBlink()
+za::Optional<StormBlink> tryLoadStormBlink()
 {
     auto shader = za::Shader::loadFromFile({.vertexPath = "resources/storm.vert", .fragmentPath = "resources/blink.frag"});
     if (!shader.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptional<StormBlink>(ZB_MOVE(*shader));
+    return za::makeOptional<StormBlink>(ZA_MOVE(*shader));
 }
 
-zb::Optional<Edge> tryLoadEdge()
+za::Optional<Edge> tryLoadEdge()
 {
     // Create the off-screen surface
     auto surface = za::RenderTexture::create({800, 600}, {.smooth = true});
     if (!surface.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Load the background texture
     auto backgroundTexture = za::Texture::loadFromFile("resources/zancle.png", {.smooth = true});
     if (!backgroundTexture.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Load the entity texture
     auto entityTexture = za::Texture::loadFromFile("resources/devices.png", {.smooth = true});
     if (!entityTexture.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Load the shader
     auto shader = za::Shader::loadFromFile(
         {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/edge.frag"});
     if (!shader.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     shader->setUniform(shader->getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
 
-    return zb::makeOptional<Edge>(ZB_MOVE(*surface), ZB_MOVE(*backgroundTexture), ZB_MOVE(*entityTexture), ZB_MOVE(*shader));
+    return za::makeOptional<Edge>(ZA_MOVE(*surface), ZA_MOVE(*backgroundTexture), ZA_MOVE(*entityTexture), ZA_MOVE(*shader));
 }
 
-zb::Optional<Geometry> tryLoadGeometry()
+za::Optional<Geometry> tryLoadGeometry()
 {
     // Check if geometry shaders are supported
     if (!za::Shader::isGeometryAvailable())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Load the logo texture
     auto logoTexture = za::Texture::loadFromFile("resources/logo.png");
     if (!logoTexture.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     logoTexture->setSmooth(true);
 
@@ -404,14 +404,14 @@ zb::Optional<Geometry> tryLoadGeometry()
                                             .fragmentPath = "resources/billboard.frag",
                                             .geometryPath = "resources/billboard.geom"});
     if (!shader.hasValue())
-        return zb::nullOpt;
+        return za::nullOpt;
 
     shader->setUniform(shader->getUniformLocation("za_u_texture").value(), za::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
     shader->setUniform(shader->getUniformLocation("resolution").value(), za::Vec2f{800, 600});
 
-    return zb::makeOptional<Geometry>(ZB_MOVE(*logoTexture), ZB_MOVE(*shader));
+    return za::makeOptional<Geometry>(ZA_MOVE(*logoTexture), ZA_MOVE(*shader));
 }
 
 } // namespace
@@ -430,23 +430,23 @@ int main()
     const auto font = za::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the effects
-    zb::Optional pixelateEffect   = tryLoadPixelate();
-    zb::Optional waveBlurEffect   = tryLoadWaveBlur(font);
-    zb::Optional stormBlinkEffect = tryLoadStormBlink();
-    zb::Optional edgeEffect       = tryLoadEdge();
-    zb::Optional geometryEffect   = tryLoadGeometry();
+    za::Optional pixelateEffect   = tryLoadPixelate();
+    za::Optional waveBlurEffect   = tryLoadWaveBlur(font);
+    za::Optional stormBlinkEffect = tryLoadStormBlink();
+    za::Optional edgeEffect       = tryLoadEdge();
+    za::Optional geometryEffect   = tryLoadGeometry();
 
-    const zb::Array<Effect*, 5> effects{pixelateEffect.asPtr(),
+    const za::Array<Effect*, 5> effects{pixelateEffect.asPtr(),
                                         waveBlurEffect.asPtr(),
                                         stormBlinkEffect.asPtr(),
                                         edgeEffect.asPtr(),
                                         geometryEffect.asPtr()};
 
-    const zb::Array<zb::String, 5>
+    const za::Array<za::String, 5>
         effectNames{"Pixelate", "Wave + Blur", "Storm + Blink", "Edge Post-effect", "Geometry Shader Billboards"};
 
     // Index of currently selected effect
-    zb::SizeT current = 0u;
+    za::SizeT current = 0u;
 
     // Create the messages background
     const auto textBackgroundTexture = za::Texture::loadFromFile("resources/text-background.png").value();
@@ -490,7 +490,7 @@ int main()
     while (true)
     {
         // Process events
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

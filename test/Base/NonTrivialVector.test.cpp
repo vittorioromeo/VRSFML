@@ -1,19 +1,19 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -100,28 +100,28 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_TRIVIAL(Obj));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(Obj));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(Obj));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(Obj));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(Obj));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(zb::Vector<Obj>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(zb::Vector<Obj>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(zb::Vector<Obj>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(zb::Vector<Obj>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(zb::Vector<Obj>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(zb::Vector<Obj>));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(zb::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(za::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vector<Obj>));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vector<Obj>));
 
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(zb::Vector<Obj>));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(zb::Vector<Obj>));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(zb::Vector<Obj>));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(zb::Vector<Obj>));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Vector<Obj>));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Vector<Obj>));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(za::Vector<Obj>));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(za::Vector<Obj>));
 
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(zb::Vector<Obj>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::Vector<Obj>));
     }
 
     SECTION("Empty")
@@ -140,7 +140,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
         resetCounters();
 
-        zb::Vector<Obj> tv;
+        za::Vector<Obj> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -148,21 +148,21 @@ TEST_CASE("[Base] Base/Vector.hpp")
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
-        zb::Vector<Obj> tv2 = tv;
+        za::Vector<Obj> tv2 = tv;
         DO_EMPTY_CHECKS(tv2);
         CHECK(tv2.capacity() == 0u);
 
-        zb::Vector<Obj> tv3 = ZB_MOVE(tv);
+        za::Vector<Obj> tv3 = ZA_MOVE(tv);
         DO_EMPTY_CHECKS(tv3);
         CHECK(tv3.capacity() == 0u);
 
-        zb::Vector<Obj> tv4;
+        za::Vector<Obj> tv4;
         tv4 = tv;
         DO_EMPTY_CHECKS(tv4);
         CHECK(tv4.capacity() == 0u);
 
-        zb::Vector<Obj> tv5;
-        tv5 = ZB_MOVE(tv4);
+        za::Vector<Obj> tv5;
+        tv5 = ZA_MOVE(tv4);
         DO_EMPTY_CHECKS(tv5);
         CHECK(tv5.capacity() == 0u);
 
@@ -180,7 +180,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         resetCounters();
 
         {
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             DO_EMPTY_CHECKS(tv);
             CHECK(tv.capacity() == 0u);
 
@@ -257,7 +257,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
             CHECK(tv.capacity() >= 100u);
             CHECK(tv[0].value == 42);
 
-            for (zb::SizeT i = 1; i < 100; ++i)
+            for (za::SizeT i = 1; i < 100; ++i)
                 CHECK(tv[i].value == 0);
         }
 
@@ -275,7 +275,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         resetCounters();
 
         {
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             DO_EMPTY_CHECKS(tv);
             CHECK(tv.capacity() == 0u);
 
@@ -338,7 +338,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
     SECTION("erase")
     {
         resetCounters();
-        zb::Vector<Obj> tv;
+        za::Vector<Obj> tv;
 
         // Populate the vector: 10, 20, 30, 40, 50
         tv.emplaceBack(10);
@@ -440,7 +440,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
         // --- Edge case: Erase from single-element vector ---
         resetCounters();
-        zb::Vector<Obj> tvSingle;
+        za::Vector<Obj> tvSingle;
         tvSingle.emplaceBack(100); // int:1, move:0 (initially no alloc)
         REQUIRE(tvSingle.size() == 1);
         resetCounters();
@@ -458,7 +458,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace into empty vector")
         {
             resetCounters();
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             tv.reserve(5);
             resetCounters();
 
@@ -477,7 +477,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace at the end with capacity")
         {
             resetCounters();
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(20);
             tv.reserve(5);
@@ -501,7 +501,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace in the middle with capacity")
         {
             resetCounters();
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(30);
             tv.emplaceBack(40);
@@ -534,7 +534,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace at the beginning with capacity")
         {
             resetCounters();
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             tv.emplaceBack(20);
             tv.emplaceBack(30);
             tv.reserve(5);
@@ -565,7 +565,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace in the middle with reallocation")
         {
             resetCounters();
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(30);
             tv.shrinkToFit(); // size == 2, capacity == 2
@@ -595,7 +595,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
         SUBCASE("Emplace at the end with reallocation")
         {
             resetCounters();
-            zb::Vector<Obj> tv;
+            za::Vector<Obj> tv;
             tv.emplaceBack(10);
             tv.emplaceBack(20);
             tv.shrinkToFit(); // size == 2, capacity == 2
@@ -625,7 +625,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element without reallocation")
     {
-        zb::Vector<Obj> v;
+        za::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -642,7 +642,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: pushBack from own element with reallocation")
     {
-        zb::Vector<Obj> v;
+        za::Vector<Obj> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);
@@ -660,7 +660,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: insert at begin from last element")
     {
-        zb::Vector<Obj> v;
+        za::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -677,7 +677,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: insert at middle from element that gets shifted")
     {
-        zb::Vector<Obj> v;
+        za::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -694,7 +694,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: emplace at begin from back()")
     {
-        zb::Vector<Obj> v;
+        za::Vector<Obj> v;
         v.reserve(10);
         v.emplaceBack(10);
         v.emplaceBack(20);
@@ -712,7 +712,7 @@ TEST_CASE("[Base] Base/Vector.hpp")
 
     SECTION("Self-aliasing: emplaceBack from own element with reallocation")
     {
-        zb::Vector<Obj> v;
+        za::Vector<Obj> v;
         v.emplaceBack(10);
         v.emplaceBack(20);
         v.emplaceBack(30);

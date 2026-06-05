@@ -1,7 +1,7 @@
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <cstddef>
 
 
-static_assert(sizeof(zb::SizeT) == sizeof(std::size_t));
-static_assert(alignof(zb::SizeT) == alignof(std::size_t));
+static_assert(sizeof(za::SizeT) == sizeof(std::size_t));
+static_assert(alignof(za::SizeT) == alignof(std::size_t));

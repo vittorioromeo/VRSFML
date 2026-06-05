@@ -32,22 +32,22 @@
 
 #include "Zancle/Audio/SoundFileReaderMp3.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/InputStream.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/InputStream.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcmp.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/MinMax.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::SizeT readCallback(void* ptr, zb::SizeT size, void* data)
+[[nodiscard]] za::SizeT readCallback(void* ptr, za::SizeT size, void* data)
 {
     auto* stream = static_cast<za::InputStream*>(data);
-    return stream->read(ptr, size).valueOr(static_cast<zb::SizeT>(-1));
+    return stream->read(ptr, size).valueOr(static_cast<za::SizeT>(-1));
 }
 
 
@@ -55,15 +55,15 @@ namespace
 [[nodiscard]] int seekCallback(uint64_t offset, void* data) // cannot use base here due to mismatch on unix
 {
     auto*              stream   = static_cast<za::InputStream*>(data);
-    const zb::Optional position = stream->seek(static_cast<zb::SizeT>(offset));
+    const za::Optional position = stream->seek(static_cast<za::SizeT>(offset));
     return position.hasValue() ? 0 : -1;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool hasValidId3Tag(const zb::U8* header)
+[[nodiscard]] bool hasValidId3Tag(const za::U8* header)
 {
-    return ZB_MEMCMP(header, "ID3", 3) == 0 &&
+    return ZA_MEMCMP(header, "ID3", 3) == 0 &&
            !((header[5] & 15) || (header[6] & 0x80) || (header[7] & 0x80) || (header[8] & 0x80) || (header[9] & 0x80));
 }
 
@@ -77,17 +77,17 @@ struct SoundFileReaderMp3::Impl
 {
     mp3dec_io_t io{};
     mp3dec_ex_t decoder{};
-    zb::U64     numSamples{}; // Decompressed audio storage size
-    zb::U64     position{};   // Position in decompressed audio buffer
+    za::U64     numSamples{}; // Decompressed audio storage size
+    za::U64     position{};   // Position in decompressed audio buffer
 };
 
 
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderMp3::check(InputStream& stream)
 {
-    zb::U8 header[10];
+    za::U8 header[10];
 
-    if (zb::Optional readResult = stream.read(header, sizeof(header));
+    if (za::Optional readResult = stream.read(header, sizeof(header));
         !readResult.hasValue() || *readResult != sizeof(header))
         return false;
 
@@ -111,13 +111,13 @@ SoundFileReaderMp3::~SoundFileReaderMp3()
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
+za::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream)
 {
     // Init IO callbacks
     m_impl->io.read_data = &stream;
     m_impl->io.seek_data = &stream;
 
-    zb::Optional<Info> result; // Use a single local variable for NRVO
+    za::Optional<Info> result; // Use a single local variable for NRVO
 
     // Init mp3 decoder
     mp3dec_ex_open_cb(&m_impl->decoder, &m_impl->io, MP3D_SEEK_TO_SAMPLE);
@@ -143,7 +143,7 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream
             break;
         default:
             priv::errMsg("MP3 files with more than 2 channels not supported");
-            ZB_ASSERT(false);
+            ZA_ASSERT(false);
             break;
     }
 
@@ -153,18 +153,18 @@ zb::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stream
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileReaderMp3::seek(zb::U64 sampleOffset)
+void SoundFileReaderMp3::seek(za::U64 sampleOffset)
 {
-    m_impl->position = zb::min(sampleOffset, m_impl->numSamples);
+    m_impl->position = za::min(sampleOffset, m_impl->numSamples);
     mp3dec_ex_seek(&m_impl->decoder, m_impl->position);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::U64 SoundFileReaderMp3::read(zb::I16* samples, zb::U64 maxCount)
+za::U64 SoundFileReaderMp3::read(za::I16* samples, za::U64 maxCount)
 {
-    zb::U64 toRead = zb::min(maxCount, m_impl->numSamples - m_impl->position);
-    toRead         = zb::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<zb::SizeT>(toRead))};
+    za::U64 toRead = za::min(maxCount, m_impl->numSamples - m_impl->position);
+    toRead         = za::U64{mp3dec_ex_read(&m_impl->decoder, samples, static_cast<za::SizeT>(toRead))};
     m_impl->position += toRead;
     return toRead;
 }

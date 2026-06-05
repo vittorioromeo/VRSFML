@@ -4,37 +4,37 @@
 
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::View")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::View));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::View));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::View));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::View));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::View));
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::View));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::View));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::View));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::View));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::View, za::View));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::View));
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::View));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::View));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::View, za::View));
     }
 
     SECTION("Construction")

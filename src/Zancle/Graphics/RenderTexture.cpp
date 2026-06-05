@@ -21,14 +21,14 @@
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 namespace
@@ -45,7 +45,7 @@ namespace
     if (depth)
         return GL_DEPTH_COMPONENT16;
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return {};
 }
 
@@ -64,13 +64,13 @@ namespace
     if (depth)
         return multisample ? "multisample depth buffer" : "depth buffer";
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return {};
 }
 
 
 ////////////////////////////////////////////////////////////
-void linkStencilDepthBuffer(const zb::Optional<za::GLRenderBufferObject>& stencilDepthBuffer, const bool stencil, const bool depth)
+void linkStencilDepthBuffer(const za::Optional<za::GLRenderBufferObject>& stencilDepthBuffer, const bool stencil, const bool depth)
 {
     if (!stencilDepthBuffer.hasValue())
         return;
@@ -103,13 +103,13 @@ struct RenderTexture::Impl
     using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
 
     Texture               texture;    //!< Target texture to draw on
-    zb::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
+    za::Optional<Texture> tmpTexture; //!< Temporary texture used for Y-axis flipping fallback or non multisample FBOs
 
     FramebufferIdMap framebuffers;    //!< Per-context OpenGL FBOs
     FramebufferIdMap auxFramebuffers; //!< Per-context auxiliary OpenGL FBOs (either multisample or temp for Y-flipping)
 
-    zb::Optional<GLRenderBufferObject> stencilDepthBuffer; //!< Optional depth/stencil buffer attached to the framebuffer
-    zb::Optional<GLRenderBufferObject> colorBuffer; //!< Optional multisample color buffer attached to the framebuffer
+    za::Optional<GLRenderBufferObject> stencilDepthBuffer; //!< Optional depth/stencil buffer attached to the framebuffer
+    za::Optional<GLRenderBufferObject> colorBuffer; //!< Optional multisample color buffer attached to the framebuffer
 
     bool multisample{}; //!< Must create a multisample framebuffer as well
     bool stencil{};     //!< Has stencil attachment
@@ -117,7 +117,7 @@ struct RenderTexture::Impl
     bool sRgb{};        //!< Must encode drawn pixels into sRGB color space
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Impl(Texture&& theTexture) : texture(ZB_MOVE(theTexture))
+    [[nodiscard]] explicit Impl(Texture&& theTexture) : texture(ZA_MOVE(theTexture))
     {
     }
 
@@ -130,7 +130,7 @@ struct RenderTexture::Impl
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
         stencilDepthBuffer.reset();
         colorBuffer.reset();
@@ -217,7 +217,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createAuxMultisampleFramebuffer()
     {
-        ZB_ASSERT(multisample);
+        ZA_ASSERT(multisample);
 
         // Create the multisample framebuffer object
         const GLuint multisampleFramebufferId = priv::generateAndBindFramebuffer();
@@ -234,7 +234,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createAuxTempFramebuffer()
     {
-        ZB_ASSERT(!multisample);
+        ZA_ASSERT(!multisample);
 
         // Create the framebuffer object
         const GLuint tempFramebufferId = priv::generateAndBindFramebuffer();
@@ -299,7 +299,7 @@ public:
             return false;
         };
 
-        ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
         const auto size = texture.getSize();
 
@@ -374,7 +374,7 @@ public:
             return true;
         }
 
-        ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
         // Lookup the FBO corresponding to the currently active context
@@ -449,24 +449,24 @@ RenderTexture& RenderTexture::operator=(RenderTexture&& rhs) noexcept
 
     m_impl->cleanup();
 
-    RenderTarget::operator=(ZB_MOVE(rhs));
-    m_impl = ZB_MOVE(rhs.m_impl);
+    RenderTarget::operator=(ZA_MOVE(rhs));
+    m_impl = ZA_MOVE(rhs.m_impl);
 
     return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
+za::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
 {
     return create(size, {});
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureCreateSettings& rtCreateSettings)
+za::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const RenderTextureCreateSettings& rtCreateSettings)
 {
-    zb::Optional<RenderTexture> result; // Use a single local variable for NRVO
+    za::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
     auto texture = za::Texture::create(size, {.sRgb = rtCreateSettings.sRgbCapable});
@@ -477,7 +477,7 @@ zb::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Render
     }
 
     // Use frame-buffer object (FBO)
-    result.emplace(zb::PassKey<RenderTexture>{}, ZB_MOVE(*texture));
+    result.emplace(za::PassKey<RenderTexture>{}, ZA_MOVE(*texture));
 
     // Mark the texture as being a framebuffer object attachment
     result->m_impl->texture.m_fboAttachment = true;
@@ -501,7 +501,7 @@ zb::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Render
 ////////////////////////////////////////////////////////////
 unsigned int RenderTexture::getMaximumAntiAliasingLevel()
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     return static_cast<unsigned int>(priv::getGLInteger(GL_MAX_SAMPLES));
 }
 
@@ -593,9 +593,9 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(zb::PassKey<RenderTexture>&&, Texture&& texture) :
+RenderTexture::RenderTexture(za::PassKey<RenderTexture>&&, Texture&& texture) :
     RenderTarget{texture.isSrgb()},
-    m_impl(ZB_MOVE(texture))
+    m_impl(ZA_MOVE(texture))
 {
 }
 

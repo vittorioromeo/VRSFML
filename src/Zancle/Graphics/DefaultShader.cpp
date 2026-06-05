@@ -9,19 +9,19 @@
 
 #include "Zancle/Graphics/Shader.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Optional<Shader> DefaultShader::create()
+[[nodiscard]] za::Optional<Shader> DefaultShader::create()
 {
     auto result = Shader::loadFromMemory({.vertexCode = srcVertex, .fragmentCode = srcFragment});
 
     if (result)
     {
-        if (const zb::Optional ulTexture = result->getUniformLocation("za_u_texture"))
+        if (const za::Optional ulTexture = result->getUniformLocation("za_u_texture"))
             result->setUniform(*ulTexture, Shader::CurrentTexture);
     }
 

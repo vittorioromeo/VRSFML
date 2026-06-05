@@ -10,7 +10,7 @@
 
 #include "Zancle/Audio/ChannelMap.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    virtual void write(const zb::I16* samples, zb::U64 count) = 0;
+    virtual void write(const za::I16* samples, za::U64 count) = 0;
 };
 
 } // namespace za
@@ -107,7 +107,7 @@ public:
 ///         // return true on success
 ///     }
 ///
-///     void write(const zb::I16* samples, zb::U64 count) override
+///     void write(const za::I16* samples, za::U64 count) override
 ///     {
 ///         // write 'count' samples stored at address 'samples',
 ///         // convert them (for example to normalized float) if the format requires it

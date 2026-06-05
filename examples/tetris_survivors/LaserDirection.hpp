@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Builtin/Unreachable.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/Unreachable.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tsurv
@@ -16,7 +16,7 @@ namespace tsurv
 /////////////////////////////////////////////////////////////
 struct LaserDirection
 {
-    enum [[nodiscard]] Enum : zb::U8
+    enum [[nodiscard]] Enum : za::U8
     {
         Left  = 0u,
         Right = 1u,
@@ -25,7 +25,7 @@ struct LaserDirection
 
 
 /////////////////////////////////////////////////////////////
-inline constexpr zb::SizeT laserDirectionCount = 2u;
+inline constexpr za::SizeT laserDirectionCount = 2u;
 
 
 /////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ inline constexpr zb::SizeT laserDirectionCount = 2u;
         case LaserDirection::Right:
             return {1, 1};
         default:
-            ZB_UNREACHABLE();
+            ZA_UNREACHABLE();
     }
 }
 

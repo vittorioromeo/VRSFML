@@ -10,10 +10,10 @@
 
 #include "Zancle/Audio/Listener.hpp"
 
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -669,7 +669,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 288> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 288> m_impl; //!< Implementation details
 };
 
 } // namespace za::priv

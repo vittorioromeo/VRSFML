@@ -12,25 +12,25 @@
 #include "Zancle/Graphics/GlyphMapping.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/InputStream.hpp"
-#include "Zancle/System/MemoryInputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathUtils.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/InputStream.hpp"
+#include "Zancle/IO/MemoryInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathUtils.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Floor.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/ScopeGuard.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Floor.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Vocabulary/ScopeGuard.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 //
 #include <ft2build.h>
@@ -48,7 +48,7 @@
 #include <freetype/fttypes.h>
 
 #ifdef ZA_SYSTEM_ANDROID
-    #include "Zancle/System/Android/ResourceStream.hpp"
+    #include "Zancle/Window/Android/ResourceStream.hpp"
 #endif
 
 
@@ -59,7 +59,7 @@ namespace
 {
     auto* stream = static_cast<za::InputStream*>(rec->descriptor.pointer);
 
-    if (zb::Optional seekResult = stream->seek(offset); seekResult.hasValue() && *seekResult == offset)
+    if (za::Optional seekResult = stream->seek(offset); seekResult.hasValue() && *seekResult == offset)
         return count == 0ul ? 0ul
                             : static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count).value());
 
@@ -68,9 +68,9 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline zb::I32 fontFaceQuantizeOutlineThickness(const float outlineThickness)
+[[nodiscard, gnu::always_inline, gnu::const]] inline za::I32 fontFaceQuantizeOutlineThickness(const float outlineThickness)
 {
-    return static_cast<zb::I32>(outlineThickness * float{1 << 6});
+    return static_cast<za::I32>(outlineThickness * float{1 << 6});
 }
 
 
@@ -89,15 +89,15 @@ struct KerningKey
 ////////////////////////////////////////////////////////////
 struct KerningKeyHash
 {
-    [[nodiscard, gnu::always_inline]] zb::U64 operator()(const KerningKey& k) const noexcept
+    [[nodiscard, gnu::always_inline]] za::U64 operator()(const KerningKey& k) const noexcept
     {
         // FNV-1a style mixing of the fields
-        auto h = zb::U64{14'695'981'039'346'656'037ull};
+        auto h = za::U64{14'695'981'039'346'656'037ull};
 
-        const auto mix = [&](zb::U64 v)
+        const auto mix = [&](za::U64 v)
         {
             h ^= v;
-            h *= zb::U64{1'099'511'628'211ull};
+            h *= za::U64{1'099'511'628'211ull};
         };
 
         mix(k.first);
@@ -189,9 +189,9 @@ struct FontFace::Impl
 
 
     ////////////////////////////////////////////////////////////
-    void setOwnedStream(zb::UniquePtr<InputStream>&& ownedStream)
+    void setOwnedStream(za::UniquePtr<InputStream>&& ownedStream)
     {
-        m_stream = ZB_MOVE(ownedStream);
+        m_stream = ZA_MOVE(ownedStream);
     }
 
 
@@ -224,7 +224,7 @@ struct FontFace::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getKerning(const char32_t first, const char32_t second, const unsigned int characterSize, const bool bold) const
     {
-        ZB_ASSERT(m_ftLibrary != nullptr);
+        ZA_ASSERT(m_ftLibrary != nullptr);
 
         if (first == 0 || second == 0)
             return 0.f;
@@ -262,7 +262,7 @@ struct FontFace::Impl
 
         const float calculatedKerning = //
             (FT_IS_SCALABLE(m_ftFace))
-                ? ZB_MATH_FLOORF((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6})
+                ? ZA_MATH_FLOORF((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6})
                 : static_cast<float>(kerning.x);
 
         m_kerningCache[key] = calculatedKerning;
@@ -365,7 +365,7 @@ struct FontFace::Impl
 
         FT_Glyph glyphDesc = nullptr;
 
-        ZB_SCOPE_GUARD({
+        ZA_SCOPE_GUARD({
             if (glyphDesc)
                 FT_Done_Glyph(glyphDesc);
         });
@@ -420,8 +420,8 @@ struct FontFace::Impl
         result.glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16) +
                                (bold ? static_cast<float>(weight) / float{1 << 6} : 0.f);
 
-        result.glyph.lsbDelta = static_cast<zb::I16>(m_ftFace->glyph->lsb_delta);
-        result.glyph.rsbDelta = static_cast<zb::I16>(m_ftFace->glyph->rsb_delta);
+        result.glyph.lsbDelta = static_cast<za::I16>(m_ftFace->glyph->lsb_delta);
+        result.glyph.rsbDelta = static_cast<za::I16>(m_ftFace->glyph->rsb_delta);
 
         if (bitmap.width == 0u || bitmap.rows == 0u)
             return result;
@@ -438,10 +438,10 @@ struct FontFace::Impl
 
         result.bufferSize = size;
 
-        m_pixelBuffer.resize(static_cast<zb::SizeT>(size.x * size.y * 4u));
+        m_pixelBuffer.resize(static_cast<za::SizeT>(size.x * size.y * 4u));
 
-        zb::U8* current = m_pixelBuffer.data();
-        zb::U8* end     = current + size.x * size.y * 4u;
+        za::U8* current = m_pixelBuffer.data();
+        za::U8* end     = current + size.x * size.y * 4u;
 
         while (current != end)
         {
@@ -451,7 +451,7 @@ struct FontFace::Impl
             (*current++) = 0u;
         }
 
-        const zb::U8* pixels = bitmap.buffer;
+        const za::U8* pixels = bitmap.buffer;
 
         if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
         {
@@ -459,7 +459,7 @@ struct FontFace::Impl
             {
                 for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
-                    const zb::SizeT index = x + y * size.x;
+                    const za::SizeT index = x + y * size.x;
                     m_pixelBuffer[index * 4 + 3] = ((pixels[(x - padding) / 8]) & (1 << (7 - ((x - padding) % 8)))) ? 255 : 0;
                 }
 
@@ -472,7 +472,7 @@ struct FontFace::Impl
             {
                 for (unsigned int x = padding; x < size.x - padding; ++x)
                 {
-                    const zb::SizeT index        = x + y * size.x;
+                    const za::SizeT index        = x + y * size.x;
                     m_pixelBuffer[index * 4 + 3] = pixels[x - padding];
                 }
 
@@ -485,7 +485,7 @@ struct FontFace::Impl
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U8* getPixelBufferData()
+    [[nodiscard]] za::U8* getPixelBufferData()
     {
         return m_pixelBuffer.data();
     }
@@ -534,14 +534,14 @@ private:
     mutable ankerl::unordered_dense::map<KerningKey, float, KerningKeyHash> m_kerningCache;
     mutable ankerl::unordered_dense::map<char32_t, unsigned int>            m_charIndexCache;
 
-    zb::UniquePtr<InputStream> m_stream;
+    za::UniquePtr<InputStream> m_stream;
 
-    mutable zb::Vector<zb::U8> m_pixelBuffer;
+    mutable za::Vector<za::U8> m_pixelBuffer;
 };
 
 
 ////////////////////////////////////////////////////////////
-FontFace::FontFace(zb::PassKey<FontFace>&&) : m_impl(zb::makeUnique<Impl>())
+FontFace::FontFace(za::PassKey<FontFace>&&) : m_impl(za::makeUnique<Impl>())
 {
 }
 
@@ -553,9 +553,9 @@ FontFace& FontFace::operator=(FontFace&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<FontFace> FontFace::openFromFile(const Path& filename)
+za::Optional<FontFace> FontFace::openFromFile(const Path& filename)
 {
-    zb::Optional<FontFace> result;
+    za::Optional<FontFace> result;
 
 #ifndef ZA_SYSTEM_ANDROID
     auto optStream = FileInputStream::open(filename);
@@ -565,7 +565,7 @@ zb::Optional<FontFace> FontFace::openFromFile(const Path& filename)
         return result;
     }
 
-    auto                  stream = zb::makeUnique<FileInputStream>(ZB_MOVE(*optStream));
+    auto                  stream = za::makeUnique<FileInputStream>(ZA_MOVE(*optStream));
     constexpr const char* type   = "file";
 #else
     auto optStream = ResourceStream::open(filename);
@@ -575,13 +575,13 @@ zb::Optional<FontFace> FontFace::openFromFile(const Path& filename)
         return result;
     }
 
-    auto                  stream = zb::makeUnique<priv::ResourceStream>(ZB_MOVE(*optStream));
+    auto                  stream = za::makeUnique<priv::ResourceStream>(ZA_MOVE(*optStream));
     constexpr const char* type   = "Android resource stream";
 #endif
 
     result = openFromStreamImpl(*stream, type);
     if (result.hasValue())
-        result->m_impl->setOwnedStream(ZB_MOVE(stream));
+        result->m_impl->setOwnedStream(ZA_MOVE(stream));
     else
         priv::errMsg("{}", priv::PathDebugFormatter{filename});
 
@@ -590,9 +590,9 @@ zb::Optional<FontFace> FontFace::openFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<FontFace> FontFace::openFromMemory(const void* data, zb::SizeT sizeInBytes)
+za::Optional<FontFace> FontFace::openFromMemory(const void* data, za::SizeT sizeInBytes)
 {
-    zb::Optional<FontFace> result;
+    za::Optional<FontFace> result;
 
     if (!data)
     {
@@ -600,21 +600,21 @@ zb::Optional<FontFace> FontFace::openFromMemory(const void* data, zb::SizeT size
         return result;
     }
 
-    auto memoryStream = zb::makeUnique<MemoryInputStream>(data, sizeInBytes);
+    auto memoryStream = za::makeUnique<MemoryInputStream>(data, sizeInBytes);
     result            = openFromStreamImpl(*memoryStream, "memory");
 
     if (result.hasValue())
-        result->m_impl->setOwnedStream(ZB_MOVE(memoryStream));
+        result->m_impl->setOwnedStream(ZA_MOVE(memoryStream));
 
     return result;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<FontFace> FontFace::openFromStreamImpl(InputStream& stream, const char* const type)
+za::Optional<FontFace> FontFace::openFromStreamImpl(InputStream& stream, const char* const type)
 {
-    zb::Optional<FontFace> result;
-    result.emplace(zb::PassKey<FontFace>{});
+    za::Optional<FontFace> result;
+    result.emplace(za::PassKey<FontFace>{});
 
     if (!result->m_impl->openFromStream(stream, type))
         result.reset();
@@ -624,12 +624,12 @@ zb::Optional<FontFace> FontFace::openFromStreamImpl(InputStream& stream, const c
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<FontFace> FontFace::openFromStream(InputStream& stream)
+za::Optional<FontFace> FontFace::openFromStream(InputStream& stream)
 {
     if (!stream.seek(0).hasValue())
     {
         priv::errMsg("Failed to seek font face stream");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     return openFromStreamImpl(stream, "stream");
@@ -693,7 +693,7 @@ float FontFace::getUnderlineThickness(const unsigned int characterSize) const
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
+za::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
     TextureAtlas&      atlas,
     const char32_t     codePoint,
     const unsigned int characterSize,
@@ -709,18 +709,18 @@ zb::Optional<Glyph> FontFace::rasterizeAndPackGlyph(
         if (!optRect.hasValue())
         {
             priv::errMsg("Failed to add glyph to the atlas (code point: {})", static_cast<unsigned int>(codePoint));
-            return zb::nullOpt;
+            return za::nullOpt;
         }
 
         result.glyph.textureRect.position += optRect->position;
     }
 
-    return zb::makeOptional<Glyph>(result.glyph);
+    return za::makeOptional<Glyph>(result.glyph);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const GlyphLoadSettings& settings) const
+za::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const GlyphLoadSettings& settings) const
 {
     GlyphMapping result{
         .fillGlyphs{},
@@ -737,14 +737,14 @@ zb::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Glyph
         .cachedUnderlineThickness = m_impl->getUnderlineThickness(settings.characterSize),
     };
 
-    for (zb::SizeT i = 0u; i < settings.codePointCount; ++i)
+    for (za::SizeT i = 0u; i < settings.codePointCount; ++i)
     {
         const char32_t codePoint = settings.codePoints[i];
 
         const auto optFillGlyph = rasterizeAndPackGlyph(atlas, codePoint, settings.characterSize, settings.bold, 0.f);
 
         if (!optFillGlyph.hasValue())
-            return zb::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
+            return za::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
 
         result.fillGlyphs[codePoint] = *optFillGlyph;
 
@@ -758,12 +758,12 @@ zb::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Glyph
                                                            settings.outlineThickness);
 
         if (!optOutlineGlyph.hasValue())
-            return zb::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
+            return za::nullOpt; // Error already logged in `rasterizeAndPackGlyph`
 
         result.outlineGlyphs[codePoint] = *optOutlineGlyph;
     }
 
-    return zb::makeOptional(ZB_MOVE(result));
+    return za::makeOptional(ZA_MOVE(result));
 }
 
 } // namespace za

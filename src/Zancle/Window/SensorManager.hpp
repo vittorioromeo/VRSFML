@@ -9,7 +9,7 @@
 #include "Zancle/Window/Sensor.hpp"
 #include "Zancle/Window/SensorImpl.hpp"
 
-#include "ZancleBase/EnumArray.hpp"
+#include "Zancle/Container/EnumArray.hpp"
 
 
 namespace za::priv
@@ -106,7 +106,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::EnumArray<Sensor::Type, Item, Sensor::Count> m_sensors; //!< Sensors information and state
+    za::EnumArray<Sensor::Type, Item, Sensor::Count> m_sensors; //!< Sensors information and state
 };
 
 } // namespace za::priv

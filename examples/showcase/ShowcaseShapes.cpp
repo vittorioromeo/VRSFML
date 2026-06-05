@@ -21,12 +21,12 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TrapezoidShapeData.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Fmod.hpp"
-#include "ZancleBase/Math/Sin.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Fmod.hpp"
+#include "Zancle/Math/Sin.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ auto ExampleShapes::applyCommonSettings(const za::Vec2f currentOffset, auto shap
 
     shapeData.fillColor        = fillColor;
     shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
-    shapeData.outlineThickness = zb::fabs(4.f * zb::sin(m_time * 0.05f + m_phase));
+    shapeData.outlineThickness = za::fabs(4.f * za::sin(m_time * 0.05f + m_phase));
 
-    shapeData.rotation = za::degrees(zb::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
+    shapeData.rotation = za::degrees(za::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
 
     shapeData.textureRect = {
         .position = {0.f, 0.f},
@@ -78,7 +78,7 @@ za::BatchedGeometry ExampleShapes::drawShape(const char* label, const auto& shap
 ////////////////////////////////////////////////////////////
 float ExampleShapes::getPhasedValue(const float timeMultiplier, const float phaseMultiplier) const
 {
-    return zb::fabs(zb::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
+    return za::fabs(za::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
 }
 
 

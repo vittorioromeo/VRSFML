@@ -10,9 +10,9 @@
 
 #include "Zancle/Audio/Priv/MiniaudioSoundSource.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 1896> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 1896> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

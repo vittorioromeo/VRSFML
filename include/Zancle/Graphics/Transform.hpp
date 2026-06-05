@@ -6,13 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za
@@ -84,7 +84,7 @@ struct [[nodiscard]] Transform
     /// This is the fully general form: it produces the same matrix
     /// as the equivalent `Transformable`, but skips the trigonometry
     /// by accepting `sine` and `cosine` directly. Pass values from
-    /// `zb::sinCosLookup` (or any equivalent source) when you
+    /// `za::sinCosLookup` (or any equivalent source) when you
     /// already have them, to avoid recomputing them per object.
     ///
     /// \param position World-space position
@@ -103,8 +103,8 @@ struct [[nodiscard]] Transform
         const float sine,
         const float cosine)
     {
-        ZB_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
-        ZB_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+        ZA_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+        ZA_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
         const float sxc = scale.x * cosine;
         const float syc = scale.y * cosine;
@@ -144,7 +144,7 @@ struct [[nodiscard]] Transform
         const Vec2f origin,
         const Angle rotation)
     {
-        const auto [sine, cosine] = zb::sinCosLookup(rotation.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = za::sinCosLookup(rotation.wrapUnsigned().asRadians());
         return fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
     }
 
@@ -276,7 +276,7 @@ struct [[nodiscard]] Transform
         const float minY = p0.y + (e0y < 0.f ? e0y : 0.f) + (e1y < 0.f ? e1y : 0.f);
 
         // The size is the sum of the absolute edge contributions
-        return Rect2f{{minX, minY}, {ZB_MATH_FABSF(e0x) + ZB_MATH_FABSF(e1x), ZB_MATH_FABSF(e0y) + ZB_MATH_FABSF(e1y)}};
+        return Rect2f{{minX, minY}, {ZA_MATH_FABSF(e0x) + ZA_MATH_FABSF(e1x), ZA_MATH_FABSF(e0y) + ZA_MATH_FABSF(e1y)}};
     }
 
 
@@ -411,7 +411,7 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle)
     {
-        const auto [sine, cosine] = zb::sinCosLookup(angle.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = za::sinCosLookup(angle.wrapUnsigned().asRadians());
 
         const float m00 = a00;
         const float m01 = a01;
@@ -452,7 +452,7 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr Transform& rotate(const Angle angle, const Vec2f center)
     {
-        const auto [sine, cosine] = zb::sinCosLookup(angle.wrapUnsigned().asRadians());
+        const auto [sine, cosine] = za::sinCosLookup(angle.wrapUnsigned().asRadians());
 
         // Precompute the translation components of the rotation matrix
         const float tx = center.x * (1.f - cosine) + center.y * sine;

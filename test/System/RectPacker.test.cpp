@@ -1,11 +1,11 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/RectPacker.hpp"
+#include "Zancle/Geometry/RectPacker.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace
@@ -79,11 +79,11 @@ TEST_CASE("[System] za::RectPacker", "")
         za::RectPacker rectPacker({128u, 128u});
         CHECK(rectPacker.packMultiple(positions, sizes));
 
-        zb::Optional<za::Vec2u> toMatch[4] = {
-            zb::Optional<za::Vec2u>(zb::inPlace, 0u, 0u),
-            zb::Optional<za::Vec2u>(zb::inPlace, 64u, 0u),
-            zb::Optional<za::Vec2u>(zb::inPlace, 0u, 64u),
-            zb::Optional<za::Vec2u>(zb::inPlace, 64u, 64u),
+        za::Optional<za::Vec2u> toMatch[4] = {
+            za::Optional<za::Vec2u>(za::inPlace, 0u, 0u),
+            za::Optional<za::Vec2u>(za::inPlace, 64u, 0u),
+            za::Optional<za::Vec2u>(za::inPlace, 0u, 64u),
+            za::Optional<za::Vec2u>(za::inPlace, 64u, 64u),
         };
 
         const auto findAndErase = [&](const za::Vec2u& pos)
@@ -91,7 +91,7 @@ TEST_CASE("[System] za::RectPacker", "")
             for (auto& i : toMatch)
                 if (i.hasValue() && *i == pos)
                 {
-                    i = zb::nullOpt;
+                    i = za::nullOpt;
                     return true;
                 }
 

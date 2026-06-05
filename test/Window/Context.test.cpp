@@ -7,14 +7,14 @@
 
 #include "Zancle/Window/ContextSettings.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)
     #define GLAPI __stdcall
@@ -99,10 +99,10 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
 
         SECTION("Type traits")
         {
-            STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(TestContext));
-            STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(TestContext));
-            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
-            STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
+            STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(TestContext));
+            STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(TestContext));
+            STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
+            STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
         }
 
         SECTION("Construction")
@@ -125,7 +125,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
                 SECTION("From active context")
                 {
                     TestContext       movedContext;
-                    const TestContext context(ZB_MOVE(movedContext));
+                    const TestContext context(ZA_MOVE(movedContext));
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
                     CHECK(TestContext::hasActiveThreadLocalGlContext());
@@ -138,7 +138,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
                     CHECK(TestContext::isActiveGlContextSharedContext());
 
-                    const TestContext context(ZB_MOVE(movedContext));
+                    const TestContext context(ZA_MOVE(movedContext));
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
                     CHECK(TestContext::isActiveGlContextSharedContext());
@@ -155,7 +155,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == movedContext.glContext->getId());
                     CHECK(TestContext::hasActiveThreadLocalGlContext());
 
-                    context = ZB_MOVE(movedContext);
+                    context = ZA_MOVE(movedContext);
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
                     CHECK(TestContext::hasActiveThreadLocalGlContext());
@@ -169,7 +169,7 @@ TEST_CASE("[Window] TestContext" * tst::skip(skipDisplayTests))
 
                     TestContext context;
                     CHECK(context.setActive(false));
-                    context = ZB_MOVE(movedContext);
+                    context = ZA_MOVE(movedContext);
                     CHECK(context.getSettings().majorVersion > 0);
                     CHECK(TestContext::isActiveGlContextSharedContext());
                 }

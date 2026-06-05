@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Export.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -21,7 +21,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ZA_WINDOW_API VideoMode
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the video mode is valid

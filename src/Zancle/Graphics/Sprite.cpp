@@ -7,9 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Sprite.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Math/Fabs.hpp"
+#include "Zancle/Math/Fabs.hpp"
 
 
 namespace za
@@ -17,7 +17,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 Rect2f Sprite::getLocalBounds() const
 {
-    return {{0.f, 0.f}, {ZB_MATH_FABSF(textureRect.size.x), ZB_MATH_FABSF(textureRect.size.y)}};
+    return {{0.f, 0.f}, {ZA_MATH_FABSF(textureRect.size.x), ZA_MATH_FABSF(textureRect.size.y)}};
 }
 
 

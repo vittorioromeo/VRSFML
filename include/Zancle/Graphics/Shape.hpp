@@ -15,13 +15,13 @@
 #include "Zancle/Graphics/VertexSpan.hpp"
 #include "Zancle/Graphics/VertexUtils.hpp"
 
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
-#include "Zancle/System/LocalAnchorPointMixin.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -319,7 +319,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const za::Vec2f* points, zb::SizeT pointCount); // TODO P1: make public?
+    void update(const za::Vec2f* points, za::SizeT pointCount); // TODO P1: make public?
 
     ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape
@@ -329,7 +329,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void updateFromFunc(auto&& getPointFunc, const zb::SizeT pointCount) // TODO P1: make public?
+    void updateFromFunc(auto&& getPointFunc, const za::SizeT pointCount) // TODO P1: make public?
     {
         if (pointCount < 3u)
         {
@@ -345,7 +345,7 @@ protected:
         m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
         m_verticesEndIndex = pointCount + 2u;
 
-        for (zb::SizeT i = 0u; i < pointCount; ++i)
+        for (za::SizeT i = 0u; i < pointCount; ++i)
             m_vertices[i + 1u].position = getPointFunc(i);
 
         m_vertices[pointCount + 1u].position = m_vertices[1].position; // repeated first point
@@ -403,8 +403,8 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
-    zb::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
-    zb::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
+    za::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
+    za::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
 
     Rect2f m_textureRect{};        //!< Area of the source texture to display for the fill
     Rect2f m_outlineTextureRect{}; //!< Area of the source texture to display for the outline

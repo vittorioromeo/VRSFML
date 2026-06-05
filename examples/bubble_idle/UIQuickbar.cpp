@@ -19,12 +19,12 @@
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/FloatMax.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/FloatMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <cstdio>
 
@@ -43,8 +43,8 @@ void Main::uiDrawCloudWindowBackground()
         .size      = pMax - pMin,
     });
 
-    const int xSteps = zb::clamp(static_cast<int>(winSize.x / 28.f), 3, 24);
-    const int ySteps = zb::clamp(static_cast<int>(winSize.y / 28.f), 3, 24);
+    const int xSteps = za::clamp(static_cast<int>(winSize.x / 28.f), 3, 24);
+    const int ySteps = za::clamp(static_cast<int>(winSize.y / 28.f), 3, 24);
 
     drawCloudFrame({
         .time              = shaderTime,
@@ -154,7 +154,7 @@ void Main::uiDrawQuickbarCopyCat(const za::Vec2f quickBarPos, Cat& copyCat)
                     sounds.smokebomb.settings.position = {copyCat.position.x, copyCat.position.y};
                     playSound(sounds.smokebomb);
 
-                    for (zb::SizeT iP = 0u; iP < 8u; ++iP)
+                    for (za::SizeT iP = 0u; iP < 8u; ++iP)
                         spawnParticle(ParticleData{.position   = copyCat.position,
                                                    .velocity   = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
                                                    .scale      = rngFast.getF(0.75f, 1.f),
@@ -162,7 +162,7 @@ void Main::uiDrawQuickbarCopyCat(const za::Vec2f quickBarPos, Cat& copyCat)
                                                    .accelerationY = -0.00017f,
                                                    .opacity       = 1.f,
                                                    .opacityDecay  = rngFast.getF(0.00065f, 0.00075f),
-                                                   .rotation      = rngFast.getF(0.f, zb::tau),
+                                                   .rotation      = rngFast.getF(0.f, za::tau),
                                                    .torque        = rngFast.getF(-0.002f, 0.002f)},
                                       0.f,
                                       ParticleType::Smoke);
@@ -211,7 +211,7 @@ void Main::uiDrawQuickbarBackgroundSelector(const za::Vec2f quickBarPos)
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
 
-        if (ImGui::BeginCombo("##backgroundsel", entries[static_cast<zb::SizeT>(selectedIndex)].name))
+        if (ImGui::BeginCombo("##backgroundsel", entries[static_cast<za::SizeT>(selectedIndex)].name))
         {
             for (SizeT i = 0u; i < entries.size(); ++i)
             {
@@ -264,7 +264,7 @@ void Main::uiDrawQuickbarBGMSelector(const za::Vec2f quickBarPos)
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
 
-        if (ImGui::BeginCombo("##musicsel", entries[static_cast<zb::SizeT>(selectedIndex)].name))
+        if (ImGui::BeginCombo("##musicsel", entries[static_cast<za::SizeT>(selectedIndex)].name))
         {
             for (SizeT i = 0u; i < entries.size(); ++i)
             {
@@ -274,7 +274,7 @@ void Main::uiDrawQuickbarBGMSelector(const za::Vec2f quickBarPos)
                     selectedIndex = static_cast<int>(i);
 
                     selectBGM(entries, static_cast<int>(i));
-                    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ false);
+                    switchToBGM(static_cast<za::SizeT>(profile.selectedBGM), /* force */ false);
 
                     playSound(sounds.uitab);
                     ImGui::CloseCurrentPopup();
@@ -457,7 +457,7 @@ void Main::uiDrawMinimapZoomButtons()
     }
 
     ImGui::SetNextWindowPos({2.f, 14.f}, 0, {0.f, 0.f});
-    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(ZB_FLOAT_MAX, ZB_FLOAT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(ZA_FLOAT_MAX, ZA_FLOAT_MAX));
 
     ImGui::Begin("##minimapzoom",
                  nullptr,
@@ -468,7 +468,7 @@ void Main::uiDrawMinimapZoomButtons()
 
     if (uiDrawQuickbarIconButton(ICON_FA_MAGNIFYING_GLASS_PLUS "##700", false, zoomBtnScale))
     {
-        profile.minimapScale = zb::clamp(profile.minimapScale - 2.5f, 5.f, 40.f);
+        profile.minimapScale = za::clamp(profile.minimapScale - 2.5f, 5.f, 40.f);
         playSound(sounds.uitab);
     }
 
@@ -479,7 +479,7 @@ void Main::uiDrawMinimapZoomButtons()
 
     if (uiDrawQuickbarIconButton(ICON_FA_MAGNIFYING_GLASS_MINUS "##701", false, zoomBtnScale))
     {
-        profile.minimapScale = zb::clamp(profile.minimapScale + 2.5f, 5.f, 40.f);
+        profile.minimapScale = za::clamp(profile.minimapScale + 2.5f, 5.f, 40.f);
         playSound(sounds.uitab);
     }
 
@@ -500,7 +500,7 @@ void Main::uiDrawQuickbar()
     const za::Vec2f quickBarPos{10.f, getResolution().y - 15.f};
 
     ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {0.f, 1.f});
-    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(ZB_FLOAT_MAX, ZB_FLOAT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(ZA_FLOAT_MAX, ZA_FLOAT_MAX));
 
     ImGui::Begin("##quickmenu",
                  nullptr,

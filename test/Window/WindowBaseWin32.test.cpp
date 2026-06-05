@@ -8,10 +8,10 @@
     #include "Zancle/Window/WindowBase.hpp"
     #include "Zancle/Window/WindowContext.hpp"
 
-    #include "Zancle/System/WindowsHeader.hpp" // IWYU pragma: keep
+    #include "Zancle/Base/WindowsHeader.hpp" // IWYU pragma: keep
 
-    #include "ZancleBase/Assert.hpp"
-    #include "ZancleBase/Optional.hpp"
+    #include "Zancle/Diagnostic/Assert.hpp"
+    #include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace
@@ -26,7 +26,7 @@ public:
         m_classInfo.lpszClassName = L"zancle_WindowBaseTests";
 
         m_winClassId = RegisterClassW(&m_classInfo);
-        ZB_ASSERT(m_winClassId);
+        ZA_ASSERT(m_winClassId);
 
         // Create the window already visible. The SDL-backed WindowBase wraps a
         // borrowed handle without altering its visibility, so the test exercises
@@ -42,7 +42,7 @@ public:
                                  nullptr,
                                  m_classInfo.hInstance,
                                  nullptr);
-        ZB_ASSERT(m_handle);
+        ZA_ASSERT(m_handle);
     }
 
     ~NativeWindow()
@@ -77,8 +77,8 @@ TEST_CASE("[Window] za::WindowBase (Win32)")
 {
     auto windowContext = za::WindowContext::create().value();
 
-    zb::Optional<NativeWindow>   nativeWindow(zb::inPlace);
-    zb::Optional<za::WindowBase> windowBase;
+    za::Optional<NativeWindow>   nativeWindow(za::inPlace);
+    za::Optional<za::WindowBase> windowBase;
 
     const HWND handle = nativeWindow->getHandle();
 

@@ -11,7 +11,7 @@
 
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 ////////////////////////////////////////////////////////////
 void Main::uiTabBar()
@@ -57,7 +57,7 @@ void Main::uiTabBar()
         keyboardSelectedTab(za::Keyboard::Key::Apostrophe) || keyboardSelectedTab(za::Keyboard::Key::Backslash))
         selectTab(0);
 
-    zb::SizeT nextTabKeyIndex = 0u;
+    za::SizeT nextTabKeyIndex = 0u;
 
     constexpr za::Keyboard::Key tabKeys[] = {
         za::Keyboard::Key::Num1,

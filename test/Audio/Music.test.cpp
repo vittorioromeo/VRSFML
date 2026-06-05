@@ -11,20 +11,20 @@
 
 #include "Zancle/Audio/MusicReader.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/LifetimeDependee.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Builtin/Memset.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Memset.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 TEST_CASE("[Audio] za::Music" * tst::skip(skipAudioDeviceTests))
@@ -34,11 +34,11 @@ TEST_CASE("[Audio] za::Music" * tst::skip(skipAudioDeviceTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Music));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Music));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Music));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Music));
-        STATIC_CHECK(ZB_HAS_VIRTUAL_DESTRUCTOR(za::Music));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Music));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Music));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Music));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Music));
+        STATIC_CHECK(ZA_HAS_VIRTUAL_DESTRUCTOR(za::Music));
     }
 
     SECTION("Span")
@@ -85,8 +85,8 @@ TEST_CASE("[Audio] za::Music" * tst::skip(skipAudioDeviceTests))
 
     SECTION("openFromMemory()")
     {
-        zb::Vector<char> memory(10);
-        ZB_MEMSET(memory.data(), 0xCA, 10);
+        za::Vector<char> memory(10);
+        ZA_MEMSET(memory.data(), 0xCA, 10);
 
         SECTION("Invalid buffer")
         {
@@ -237,7 +237,7 @@ TEST_CASE("[Audio] za::Music" * tst::skip(skipAudioDeviceTests))
             const za::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            zb::Optional<BadStruct> badStruct0;
+            za::Optional<BadStruct> badStruct0;
             badStruct0.emplace(playbackDevice);
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 

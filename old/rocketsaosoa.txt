@@ -24,18 +24,18 @@
 
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/IO/Path.hpp"
 #include "Zancle/System/Rect.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
 #include "ZancleBase/Algorithm.hpp"
 #include "ZancleBase/Builtins/OffsetOf.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -235,7 +235,7 @@ struct World
         auto  newEntity = zb::makeUnique<T>();
         auto& result    = *newEntity;
 
-        entities.emplaceBack(ZB_MOVE(newEntity));
+        entities.emplaceBack(ZA_MOVE(newEntity));
 
         result.world = this;
         return result;
@@ -592,10 +592,10 @@ struct World
 
                 constexpr auto stride = sizeof(ParticleInstanceData);
 
-                binder.setup(3, 2, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, IAB::Type::Float, true, stride, ZB_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setup(3, 2, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, IAB::Type::Float, true, stride, ZA_OFFSETOF(ParticleInstanceData, opacity));
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
@@ -835,10 +835,10 @@ struct World
 
                 constexpr auto stride = sizeof(ParticleInstanceData);
 
-                binder.setup(3, 2, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, IAB::Type::Float, true, stride, ZB_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setup(3, 2, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, IAB::Type::Float, true, stride, ZA_OFFSETOF(ParticleInstanceData, opacity));
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
@@ -1072,7 +1072,7 @@ struct World
 
                 // Swap the current element with the last one, then reduce the container size.
                 --n;
-                soa.forEachVector([&](auto& vec) { vec[i] = ZB_MOVE(vec[n]); });
+                soa.forEachVector([&](auto& vec) { vec[i] = ZA_MOVE(vec[n]); });
 
                 // Do not increment `i`; check the new element at `i`.
             }
@@ -1487,7 +1487,7 @@ public:
 
     void popBack()
     {
-        ZB_ASSERT(m_size > 0);
+        ZA_ASSERT(m_size > 0);
 
         m_size--;
 
@@ -1497,12 +1497,12 @@ public:
 
     void swapWithLast(const zb::SizeT index)
     {
-        ZB_ASSERT(index < m_size);
-        ZB_ASSERT(m_size > 1);
+        ZA_ASSERT(index < m_size);
+        ZA_ASSERT(m_size > 1);
 
         const auto lastIndex = m_size - 1;
 
-        ZB_ASSERT(index != lastIndex);
+        ZA_ASSERT(index != lastIndex);
 
         const auto srcChunkIdx = lastIndex / ChunkSize;
         const auto srcElemIdx  = lastIndex % ChunkSize;
@@ -1789,10 +1789,10 @@ struct World
 
                 constexpr auto stride = sizeof(ParticleInstanceData);
 
-                binder.setup(3, 2, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, IAB::Type::Float, false, stride, ZB_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, IAB::Type::Float, true, stride, ZB_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setup(3, 2, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, IAB::Type::Float, false, stride, ZA_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, IAB::Type::Float, true, stride, ZA_OFFSETOF(ParticleInstanceData, opacity));
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,

@@ -8,9 +8,9 @@
 #include "Zancle/Window/iOS/SFAppDelegate.hpp"
 #include "Zancle/Window/iOS/SFView.hpp"
 
-#include "Zancle/System/Utf.hpp"
+#include "Zancle/String/Utf.hpp"
 
-#include "ZancleBase/Builtin/Strlen.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <QuartzCore/CAEAGLLayer.h>
 
@@ -57,7 +57,7 @@
     const char* utf8 = [text UTF8String];
 
     // Then convert to UTF-32 and notify the application delegate of each new character
-    const char* end = utf8 + ZB_STRLEN(utf8);
+    const char* end = utf8 + ZA_STRLEN(utf8);
     while (utf8 < end)
     {
         char32_t character = 0;

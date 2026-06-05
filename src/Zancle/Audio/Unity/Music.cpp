@@ -14,18 +14,18 @@
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 #include "Zancle/Audio/SoundStreamState.hpp"
 
-#include "Zancle/System/AtomicMutex.hpp"
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/LifetimeDependant.hpp"
-#include "Zancle/System/LockGuard.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/AtomicMutex.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
+#include "Zancle/Concurrency/LockGuard.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -34,17 +34,17 @@ namespace
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr za::Time samplesToTime(
     const unsigned int sampleRate,
     const unsigned int channelCount,
-    const zb::U64      samples)
+    const za::U64      samples)
 {
-    ZB_ASSERT(sampleRate > 0u);
-    ZB_ASSERT(channelCount > 0u);
+    ZA_ASSERT(sampleRate > 0u);
+    ZA_ASSERT(channelCount > 0u);
 
-    return za::microseconds(static_cast<zb::I64>((samples * 1'000'000u) / (channelCount * sampleRate)));
+    return za::microseconds(static_cast<za::I64>((samples * 1'000'000u) / (channelCount * sampleRate)));
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr zb::U64 timeToSamples(
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr za::U64 timeToSamples(
     const unsigned int sampleRate,
     const unsigned int channelCount,
     const za::Time     position)
@@ -52,8 +52,8 @@ namespace
     // Always ROUND, no unchecked truncation, hence the addition in the numerator.
     // This avoids most precision errors arising from "samples => Time => samples" conversions
     // Original rounding calculation is ((Micros * Freq * Channels) / 1'000'000) + 0.5
-    // We refactor it to keep zb::I64 as the data type throughout the whole operation.
-    return ((static_cast<zb::U64>(position.asMicroseconds()) * sampleRate * channelCount) + 500'000u) / 1'000'000u;
+    // We refactor it to keep za::I64 as the data type throughout the whole operation.
+    return ((static_cast<za::U64>(position.asMicroseconds()) * sampleRate * channelCount) + 500'000u) / 1'000'000u;
 }
 
 } // namespace
@@ -77,13 +77,13 @@ struct Music::Impl
     {
         ////////////////////////////////////////////////////////////
         mutable AtomicMutex               loopMutex;      //!< Protects `loopSpan` and `sampleOffset`
-        Music::Span<zb::U64>              loopSpan;       //!< Loop range Specifier
+        Music::Span<za::U64>              loopSpan;       //!< Loop range Specifier
         MusicReader&                      musicReader;    //!< The music reader
         const priv::MiniaudioSoundSource& source;         //!< Back-ref to the owning `Music` for `isLooping()`
-        zb::U64                           sampleOffset{}; //!< Current offset in the stream
+        za::U64                           sampleOffset{}; //!< Current offset in the stream
 
         ////////////////////////////////////////////////////////////
-        explicit MusicState(MusicReader& theMusicReader, const priv::MiniaudioSoundSource& theSource, zb::U64 sampleCount) :
+        explicit MusicState(MusicReader& theMusicReader, const priv::MiniaudioSoundSource& theSource, za::U64 sampleCount) :
             loopSpan{0u, sampleCount},
             musicReader(theMusicReader),
             source(theSource)
@@ -91,25 +91,25 @@ struct Music::Impl
         }
 
         ////////////////////////////////////////////////////////////
-        bool onGetData(zb::Vector<zb::I16>& outBuffer)
+        bool onGetData(za::Vector<za::I16>& outBuffer)
         {
             const LockGuard lock(loopMutex);
 
             // Size the output buffer to hold up to 1 second of audio samples
             outBuffer.resize(musicReader.getSampleRate() * musicReader.getChannelCount());
 
-            zb::SizeT     toFill  = outBuffer.size();
-            const zb::U64 loopEnd = loopSpan.offset + loopSpan.length;
+            za::SizeT     toFill  = outBuffer.size();
+            const za::U64 loopEnd = loopSpan.offset + loopSpan.length;
 
             // If the loop end is enabled and imminent, request less data so we trip an `onLoop()`.
             if (source.isLooping() && (loopSpan.length != 0) && (sampleOffset <= loopEnd) &&
                 (sampleOffset + toFill > loopEnd))
-                toFill = static_cast<zb::SizeT>(loopEnd - sampleOffset);
+                toFill = static_cast<za::SizeT>(loopEnd - sampleOffset);
 
             // `seekAndRead` is thread-safe
             const auto [sampleOffsetAfter, samplesRead] = musicReader.seekAndRead(sampleOffset, outBuffer.data(), toFill);
 
-            outBuffer.resize(static_cast<zb::SizeT>(samplesRead));
+            outBuffer.resize(static_cast<za::SizeT>(samplesRead));
             sampleOffset = sampleOffsetAfter + samplesRead;
 
             return (samplesRead != 0) && (sampleOffset < musicReader.getSampleCount()) &&
@@ -124,26 +124,26 @@ struct Music::Impl
         }
 
         ////////////////////////////////////////////////////////////
-        zb::Optional<zb::U64> onLoop()
+        za::Optional<za::U64> onLoop()
         {
             const LockGuard lock(loopMutex);
 
             if (!source.isLooping())
-                return zb::nullOpt;
+                return za::nullOpt;
 
             if ((loopSpan.length != 0) && (sampleOffset == loopSpan.offset + loopSpan.length))
             {
                 sampleOffset = loopSpan.offset;
-                return zb::makeOptional(sampleOffset);
+                return za::makeOptional(sampleOffset);
             }
 
             if (sampleOffset >= musicReader.getSampleCount())
             {
                 sampleOffset = 0u;
-                return zb::makeOptional(sampleOffset);
+                return za::makeOptional(sampleOffset);
             }
 
-            return zb::nullOpt;
+            return za::nullOpt;
         }
     };
 
@@ -223,12 +223,12 @@ void Music::setLoopPoints(const TimeSpan timePoints)
     const auto sampleRate   = state.musicReader.getSampleRate();
     const auto channelCount = state.musicReader.getChannelCount();
 
-    ZB_ASSERT(channelCount > 0u);
-    ZB_ASSERT(sampleRate > 0u);
+    ZA_ASSERT(channelCount > 0u);
+    ZA_ASSERT(sampleRate > 0u);
 
     const auto fileSampleCount = state.musicReader.getSampleCount();
 
-    Span<zb::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
+    Span<za::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
                                timeToSamples(sampleRate, channelCount, timePoints.length)};
 
     if (fileSampleCount == 0u)
@@ -257,7 +257,7 @@ void Music::setLoopPoints(const TimeSpan timePoints)
         return;
     }
 
-    samplePoints.length = zb::min(samplePoints.length, fileSampleCount - samplePoints.offset);
+    samplePoints.length = za::min(samplePoints.length, fileSampleCount - samplePoints.offset);
 
     if (samplePoints.offset == state.loopSpan.offset && samplePoints.length == state.loopSpan.length)
         return;

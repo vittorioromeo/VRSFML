@@ -10,10 +10,10 @@
 #include "Zancle/Graphics/Shape.hpp"
 #include "Zancle/Graphics/ShapeUtils.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za
@@ -26,7 +26,7 @@ ConvexShape::ConvexShape(const Data& data) : Shape(priv::toShapeData(data))
 
 
 ////////////////////////////////////////////////////////////
-void ConvexShape::setPointCount(const zb::SizeT count)
+void ConvexShape::setPointCount(const za::SizeT count)
 {
     m_points.resize(count);
     update(m_points.data(), m_points.size());
@@ -34,25 +34,25 @@ void ConvexShape::setPointCount(const zb::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT ConvexShape::getPointCount() const
+za::SizeT ConvexShape::getPointCount() const
 {
     return m_points.size();
 }
 
 
 ////////////////////////////////////////////////////////////
-void ConvexShape::setPoint(const zb::SizeT index, const Vec2f point)
+void ConvexShape::setPoint(const za::SizeT index, const Vec2f point)
 {
-    ZB_ASSERT(index < m_points.size() && "Index is out of bounds");
+    ZA_ASSERT(index < m_points.size() && "Index is out of bounds");
     m_points[index] = point;
     update(m_points.data(), m_points.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vec2f ConvexShape::getPoint(const zb::SizeT index) const
+Vec2f ConvexShape::getPoint(const za::SizeT index) const
 {
-    ZB_ASSERT(index < m_points.size() && "Index is out of bounds");
+    ZA_ASSERT(index < m_points.size() && "Index is out of bounds");
     return m_points[index];
 }
 

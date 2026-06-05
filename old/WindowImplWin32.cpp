@@ -11,15 +11,15 @@
 #include "Zancle/Window/WindowImpl.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 #include "Zancle/System/String.hpp"
-#include "Zancle/System/Utf.hpp"
+#include "Zancle/String/Utf.hpp"
 #include "Zancle/System/Win32/WindowsHeader.hpp"
 
 // dbt.h is lowercase here, as a cross-compile on linux with mingw-w64
 // expects lowercase, and a native compile on windows, whether via msvc
 // or mingw-w64 addresses files in a case insensitive manner.
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 #include "ZancleBase/TrivialVector.hpp"
 
 #include <_mingw_stat64.h>
@@ -451,15 +451,15 @@ void WindowImplWin32::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplWin32::setIcon(Vector2u size, const zb::U8* pixels)
+void WindowImplWin32::setIcon(Vector2u size, const za::U8* pixels)
 {
     // First destroy the previous one
     if (m_icon)
         DestroyIcon(m_icon);
 
     // Windows wants BGRA pixels: swap red and blue channels
-    zb::TrivialVector<zb::U8> iconPixels(size.x * size.y * 4);
-    for (zb::SizeT i = 0; i < iconPixels.size() / 4; ++i)
+    za::TrivialVector<za::U8> iconPixels(size.x * size.y * 4);
+    for (za::SizeT i = 0; i < iconPixels.size() / 4; ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
@@ -1014,11 +1014,11 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             // Mouse position is in screen coordinates, convert it to window coordinates
             POINT position;
-            position.x = static_cast<zb::I16>(LOWORD(lParam));
-            position.y = static_cast<zb::I16>(HIWORD(lParam));
+            position.x = static_cast<za::I16>(LOWORD(lParam));
+            position.y = static_cast<za::I16>(HIWORD(lParam));
             ScreenToClient(m_handle, &position);
 
-            auto delta = static_cast<zb::I16>(HIWORD(wParam));
+            auto delta = static_cast<za::I16>(HIWORD(wParam));
 
             Event::MouseWheelScrolled event;
             event.wheel    = Mouse::Wheel::Vertical;
@@ -1033,11 +1033,11 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             // Mouse position is in screen coordinates, convert it to window coordinates
             POINT position;
-            position.x = static_cast<zb::I16>(LOWORD(lParam));
-            position.y = static_cast<zb::I16>(HIWORD(lParam));
+            position.x = static_cast<za::I16>(LOWORD(lParam));
+            position.y = static_cast<za::I16>(HIWORD(lParam));
             ScreenToClient(m_handle, &position);
 
-            auto delta = static_cast<zb::I16>(HIWORD(wParam));
+            auto delta = static_cast<za::I16>(HIWORD(wParam));
 
             Event::MouseWheelScrolled event;
             event.wheel    = Mouse::Wheel::Horizontal;
@@ -1052,7 +1052,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = Mouse::Button::Left;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1062,7 +1062,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = Mouse::Button::Left;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1072,7 +1072,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = Mouse::Button::Right;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1082,7 +1082,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = Mouse::Button::Right;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1092,7 +1092,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = Mouse::Button::Middle;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1102,7 +1102,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = Mouse::Button::Middle;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1112,7 +1112,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonPressed event;
             event.button   = HIWORD(wParam) == XBUTTON1 ? Mouse::Button::Extra1 : Mouse::Button::Extra2;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1122,7 +1122,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         {
             Event::MouseButtonReleased event;
             event.button   = HIWORD(wParam) == XBUTTON1 ? Mouse::Button::Extra1 : Mouse::Button::Extra2;
-            event.position = {static_cast<zb::I16>(LOWORD(lParam)), static_cast<zb::I16>(HIWORD(lParam))};
+            event.position = {static_cast<za::I16>(LOWORD(lParam)), static_cast<za::I16>(HIWORD(lParam))};
             pushEvent(event);
             break;
         }
@@ -1146,7 +1146,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     // Get normalized index
                     const auto findFirstNormalizedIndex = [&]
                     {
-                        for (zb::SizeT i = 0; i < 10; ++i)
+                        for (za::SizeT i = 0; i < 10; ++i)
                             if (!touchIndexPool[i])
                                 return static_cast<int>(i);
 
@@ -1158,7 +1158,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     {
                         case WM_POINTERDOWN:
                         {
-                            ZB_ASSERT(!touchMap.contains(pointerId));
+                            ZA_ASSERT(!touchMap.contains(pointerId));
 
                             const int normalizedIndex = findFirstNormalizedIndex();
                             if (normalizedIndex == -1)
@@ -1174,7 +1174,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                         }
                         case WM_POINTERUPDATE:
                         {
-                            ZB_ASSERT(touchMap.contains(pointerId));
+                            ZA_ASSERT(touchMap.contains(pointerId));
                             const auto [fingerIdx, pos, handle] = touchMap[pointerId];
 
                             pushEvent(za::Event::TouchMoved{fingerIdx, touchPos});
@@ -1182,7 +1182,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                         }
                         case WM_POINTERUP:
                         {
-                            ZB_ASSERT(touchMap.contains(pointerId));
+                            ZA_ASSERT(touchMap.contains(pointerId));
                             const auto [fingerIdx, pos, handle] = touchMap[pointerId];
 
                             touchIndexPool[fingerIdx] = false;
@@ -1215,8 +1215,8 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
         case WM_MOUSEMOVE:
         {
             // Extract the mouse local coordinates
-            const int x = static_cast<zb::I16>(LOWORD(lParam));
-            const int y = static_cast<zb::I16>(HIWORD(lParam));
+            const int x = static_cast<za::I16>(LOWORD(lParam));
+            const int y = static_cast<za::I16>(HIWORD(lParam));
 
             // Get the client area of the window
             RECT area;

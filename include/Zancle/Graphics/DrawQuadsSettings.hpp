@@ -9,8 +9,8 @@
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
-#include "ZancleBase/Span.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
 
 
 namespace za
@@ -26,9 +26,9 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
-    zb::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
+    za::Span<const Vertex> vertexSpan;    //!< Range of vertices laid out as groups of 4 corners
     PrimitiveType          primitiveType; //!< Primitive type used for the expanded triangles
 };
 

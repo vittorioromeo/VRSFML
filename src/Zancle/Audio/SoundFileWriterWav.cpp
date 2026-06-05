@@ -7,21 +7,21 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/SoundFileWriterWav.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathUtils.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathUtils.hpp"
 
-#include "ZancleBase/Algorithm/AdjacentFind.hpp"
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/Algorithm/Sort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/AdjacentFind.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -30,19 +30,19 @@ namespace
 // to a stream as little endian. Each returns `false` on write failure so
 // callers can short-circuit further work on the file.
 
-[[nodiscard]] bool encode(za::OutFile& stream, zb::I16 value)
+[[nodiscard]] bool encode(za::OutFile& stream, za::I16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    return stream.write(bytes, zb::getArraySize(bytes));
+    return stream.write(bytes, za::getArraySize(bytes));
 }
 
-[[nodiscard]] bool encode(za::OutFile& stream, zb::U16 value)
+[[nodiscard]] bool encode(za::OutFile& stream, za::U16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    return stream.write(bytes, zb::getArraySize(bytes));
+    return stream.write(bytes, za::getArraySize(bytes));
 }
 
-[[nodiscard]] bool encode(za::OutFile& stream, zb::U32 value)
+[[nodiscard]] bool encode(za::OutFile& stream, za::U32 value)
 {
     const char bytes[]{
         static_cast<char>((value & 0x00'00'00'FF) >> 0),
@@ -50,7 +50,7 @@ namespace
         static_cast<char>((value & 0x00'FF'00'00) >> 16),
         static_cast<char>((value & 0xFF'00'00'00) >> 24),
     };
-    return stream.write(bytes, zb::getArraySize(bytes));
+    return stream.write(bytes, za::getArraySize(bytes));
 }
 } // namespace
 
@@ -60,9 +60,9 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileWriterWav::Impl
 {
-    zb::Optional<za::OutFile> file;             //!< Output file handle (empty before `open()`)
+    za::Optional<za::OutFile> file;             //!< Output file handle (empty before `open()`)
     unsigned int              channelCount{};   //!< Channel count of the sound being written
-    zb::SizeT                 remapTable[18]{}; //!< Table we use to remap source to target channel order
+    za::SizeT                 remapTable[18]{}; //!< Table we use to remap source to target channel order
 };
 
 
@@ -93,11 +93,11 @@ SoundFileWriterWav::~SoundFileWriterWav()
     if (!file.flush())
         reportFailure("flush");
 
-    zb::PtrDiffT fileSizeRaw = 0;
+    za::PtrDiffT fileSizeRaw = 0;
     if (!file.tellPos(fileSizeRaw))
         reportFailure("tellPos");
 
-    const auto fileSize = static_cast<zb::U32>(fileSizeRaw);
+    const auto fileSize = static_cast<za::U32>(fileSizeRaw);
 
     if (!file.seekPos(4) || !encode(file, fileSize - 8)) // 8 bytes RIFF header
         reportFailure("RIFF chunk-size patch");
@@ -155,11 +155,11 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
         struct SupportedChannel
         {
-            zb::U32      bit;
+            za::U32      bit;
             SoundChannel channel;
         };
 
-        zb::Vector<SupportedChannel>
+        za::Vector<SupportedChannel>
             targetChannelMap{{speakerFrontLeft, SoundChannel::FrontLeft},
                              SupportedChannel{speakerFrontRight, SoundChannel::FrontRight},
                              SupportedChannel{speakerFrontCenter, SoundChannel::FrontCenter},
@@ -183,9 +183,9 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Check for duplicate channel entries
         {
             auto sortedChannelMap = channelMap;
-            zb::quickSort(sortedChannelMap.begin(), sortedChannelMap.end());
+            za::quickSort(sortedChannelMap.begin(), sortedChannelMap.end());
 
-            if (zb::adjacentFind(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
+            if (za::adjacentFind(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
             {
                 priv::errMsg("Duplicate channels in channel map");
                 return false;
@@ -195,7 +195,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Construct the target channel map by removing unused channels
         for (auto* iter = targetChannelMap.begin(); iter != targetChannelMap.end();)
         {
-            if (zb::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
+            if (za::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
                 iter = targetChannelMap.erase(iter);
             else
                 ++iter;
@@ -204,7 +204,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Verify that all the input channels exist in the target channel map
         for (const SoundChannel channel : channelMap)
         {
-            if (zb::findIf(targetChannelMap.begin(), targetChannelMap.end(), [channel](const SupportedChannel& c) {
+            if (za::findIf(targetChannelMap.begin(), targetChannelMap.end(), [channel](const SupportedChannel& c) {
                 return c.channel == channel;
             }) == targetChannelMap.end())
             {
@@ -215,8 +215,8 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
         // Build the remap table
         for (auto i = 0u; i < channelCount; ++i)
-            m_impl->remapTable[i] = static_cast<zb::SizeT>(
-                zb::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
+            m_impl->remapTable[i] = static_cast<za::SizeT>(
+                za::find(channelMap.begin(), channelMap.end(), targetChannelMap[i].channel) - channelMap.begin());
 
         // Generate the channel mask
         for (const auto& channel : targetChannelMap)
@@ -242,10 +242,10 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 
 
 ////////////////////////////////////////////////////////////
-void SoundFileWriterWav::write(const zb::I16* samples, zb::U64 count)
+void SoundFileWriterWav::write(const za::I16* samples, za::U64 count)
 {
-    ZB_ASSERT(count % m_impl->channelCount == 0);
-    ZB_ASSERT(m_impl->file.hasValue() && "WAV writer: `write` called before `open`");
+    ZA_ASSERT(count % m_impl->channelCount == 0);
+    ZA_ASSERT(m_impl->file.hasValue() && "WAV writer: `write` called before `open`");
 
     if (count % m_impl->channelCount != 0)
         priv::errMsg("Writing samples to WAV sound file requires writing full frames at a time");
@@ -273,7 +273,7 @@ void SoundFileWriterWav::write(const zb::I16* samples, zb::U64 count)
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int channelCount, unsigned int channelMask)
 {
-    ZB_ASSERT(m_impl->file.hasValue() && "WAV writer: `writeHeader` called before `open`");
+    ZA_ASSERT(m_impl->file.hasValue() && "WAV writer: `writeHeader` called before `open`");
 
     auto& file = *m_impl->file;
 
@@ -284,21 +284,21 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     };
 
     constexpr const char mainChunkId[]{'R', 'I', 'F', 'F'};
-    if (!file.write(mainChunkId, zb::getArraySize(mainChunkId)))
+    if (!file.write(mainChunkId, za::getArraySize(mainChunkId)))
     {
         (void)fail();
         return;
     }
 
     // Placeholder; main chunk size will be patched in the destructor.
-    if (!encode(file, zb::U32{0}))
+    if (!encode(file, za::U32{0}))
     {
         (void)fail();
         return;
     }
 
     constexpr const char mainChunkFormat[]{'W', 'A', 'V', 'E'};
-    if (!file.write(mainChunkFormat, zb::getArraySize(mainChunkFormat)))
+    if (!file.write(mainChunkFormat, za::getArraySize(mainChunkFormat)))
     {
         (void)fail();
         return;
@@ -306,7 +306,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     // Sub-chunk 1 ("format") id and size
     constexpr const char fmtChunkId[]{'f', 'm', 't', ' '};
-    if (!file.write(fmtChunkId, zb::getArraySize(fmtChunkId)))
+    if (!file.write(fmtChunkId, za::getArraySize(fmtChunkId)))
     {
         (void)fail();
         return;
@@ -314,12 +314,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     if (channelCount > 2)
     {
-        if (!encode(file, zb::U32{40}))
+        if (!encode(file, za::U32{40}))
         {
             (void)fail();
             return;
         }
-        if (!encode(file, zb::U16{65'534}))
+        if (!encode(file, za::U16{65'534}))
         {
             (void)fail();
             return;
@@ -327,12 +327,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     }
     else
     {
-        if (!encode(file, zb::U32{16}))
+        if (!encode(file, za::U32{16}))
         {
             (void)fail();
             return;
         }
-        if (!encode(file, zb::U16{1}))
+        if (!encode(file, za::U16{1}))
         {
             (void)fail();
             return;
@@ -340,7 +340,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     }
 
     // Sound attributes
-    if (!encode(file, static_cast<zb::U16>(channelCount)))
+    if (!encode(file, static_cast<za::U16>(channelCount)))
     {
         (void)fail();
         return;
@@ -350,18 +350,18 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         (void)fail();
         return;
     }
-    if (!encode(file, zb::U32{sampleRate * channelCount * 2}))
+    if (!encode(file, za::U32{sampleRate * channelCount * 2}))
     {
         (void)fail();
         return;
     } // byteRate
-    if (!encode(file, static_cast<zb::U16>(channelCount * 2)))
+    if (!encode(file, static_cast<za::U16>(channelCount * 2)))
     {
         (void)fail();
         return;
     } // blockAlign
 
-    constexpr zb::U16 bitsPerSample = 16;
+    constexpr za::U16 bitsPerSample = 16;
     if (!encode(file, bitsPerSample))
     {
         (void)fail();
@@ -370,7 +370,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     if (channelCount > 2)
     {
-        if (!encode(file, zb::U16{16}))
+        if (!encode(file, za::U16{16}))
         {
             (void)fail();
             return;
@@ -389,7 +389,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         // PCM subformat
         constexpr char subformat[] =
             {'\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x10', '\x00', '\x80', '\x00', '\x00', '\xAA', '\x00', '\x38', '\x9B', '\x71'};
-        if (!file.write(subformat, zb::getArraySize(subformat)))
+        if (!file.write(subformat, za::getArraySize(subformat)))
         {
             (void)fail();
             return;
@@ -398,12 +398,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     // Sub-chunk 2 ("data") id and placeholder size (patched in the destructor)
     constexpr const char dataChunkId[]{'d', 'a', 't', 'a'};
-    if (!file.write(dataChunkId, zb::getArraySize(dataChunkId)))
+    if (!file.write(dataChunkId, za::getArraySize(dataChunkId)))
     {
         (void)fail();
         return;
     }
-    if (!encode(file, zb::U32{0}))
+    if (!encode(file, za::U32{0}))
     {
         (void)fail();
         return;

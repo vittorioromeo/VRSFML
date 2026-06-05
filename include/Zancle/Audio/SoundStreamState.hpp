@@ -8,12 +8,12 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Priv/SoundStreamStateImpl.hpp"
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -41,9 +41,9 @@ namespace za
 /// expose:
 ///
 /// \code
-/// bool                      onGetData(zb::Vector<zb::I16>& outBuffer);
+/// bool                      onGetData(za::Vector<za::I16>& outBuffer);
 /// void                      onSeek(Time timeOffset);  // optional -- omit for generators that can't seek
-/// zb::Optional<zb::U64> onLoop();                 // optional -- omit if the source never loops
+/// za::Optional<za::U64> onLoop();                 // optional -- omit if the source never loops
 /// \endcode
 ///
 /// `onSeek` and `onLoop` are detected via `requires` and
@@ -97,7 +97,7 @@ public:
         // callback before `play()` is called, and by that point
         // `m_state` is fully constructed.
         m_impl(playbackDevice, channelMap, sampleRate, &m_state, makeCallbacks()),
-        m_state(ZB_FORWARD(stateArgs)...)
+        m_state(ZA_FORWARD(stateArgs)...)
     {
     }
 
@@ -220,7 +220,7 @@ private:
     [[nodiscard]] static priv::SoundStreamStateImplCallbacks makeCallbacks()
     {
         return {
-            .onGetData = [](void* const s, zb::Vector<zb::I16>& outBuffer) -> bool
+            .onGetData = [](void* const s, za::Vector<za::I16>& outBuffer) -> bool
         { return static_cast<State*>(s)->onGetData(outBuffer); },
 
             .onSeek = [](void* const s, const Time t) -> void
@@ -229,12 +229,12 @@ private:
                 static_cast<State*>(s)->onSeek(t);
         },
 
-            .onLoop = [](void* const s) -> zb::Optional<zb::U64>
+            .onLoop = [](void* const s) -> za::Optional<za::U64>
         {
             if constexpr (requires { static_cast<State*>(s)->onLoop(); })
                 return static_cast<State*>(s)->onLoop();
             else
-                return zb::nullOpt;
+                return za::nullOpt;
         },
         };
     }

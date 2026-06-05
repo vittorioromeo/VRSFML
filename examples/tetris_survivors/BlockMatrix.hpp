@@ -8,9 +8,9 @@
 #include "IndexUtils.hpp"
 #include "ShapeDimension.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace tsurv
@@ -19,48 +19,48 @@ namespace tsurv
 struct [[nodiscard]] BlockMatrix
 {
     ////////////////////////////////////////////////////////////
-    zb::Array<zb::Optional<Block>, shapeDimension * shapeDimension> data;
+    za::Array<za::Optional<Block>, shapeDimension * shapeDimension> data;
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Block>& at(const zb::SizeT x, const zb::SizeT y)
+    [[nodiscard]] za::Optional<Block>& at(const za::SizeT x, const za::SizeT y)
     {
-        ZB_ASSERT(x < shapeDimension);
-        ZB_ASSERT(y < shapeDimension);
+        ZA_ASSERT(x < shapeDimension);
+        ZA_ASSERT(y < shapeDimension);
 
         const auto index = getIndex2Dto1D(za::Vec2uz{x, y}, shapeDimension);
-        ZB_ASSERT(index < data.size());
+        ZA_ASSERT(index < data.size());
 
         return data[index];
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const zb::Optional<Block>& at(const zb::SizeT x, const zb::SizeT y) const
+    [[nodiscard]] const za::Optional<Block>& at(const za::SizeT x, const za::SizeT y) const
     {
         return const_cast<BlockMatrix*>(this)->at(x, y);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Block>& at(const int x, const int y)
+    [[nodiscard]] za::Optional<Block>& at(const int x, const int y)
     {
-        ZB_ASSERT(x >= 0);
-        ZB_ASSERT(y >= 0);
+        ZA_ASSERT(x >= 0);
+        ZA_ASSERT(y >= 0);
 
-        return at(static_cast<zb::SizeT>(x), static_cast<zb::SizeT>(y));
+        return at(static_cast<za::SizeT>(x), static_cast<za::SizeT>(y));
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const zb::Optional<Block>& at(const int x, const int y) const
+    [[nodiscard]] const za::Optional<Block>& at(const int x, const int y) const
     {
         return const_cast<BlockMatrix*>(this)->at(x, y);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isInBounds(const zb::SizeT x, const zb::SizeT y) const
+    [[nodiscard]] bool isInBounds(const za::SizeT x, const za::SizeT y) const
     {
         return x < shapeDimension && y < shapeDimension;
     }
@@ -79,7 +79,7 @@ struct [[nodiscard]] BlockMatrix
 {
     BlockMatrix blockMatrix;
 
-    for (zb::SizeT i = 0u; i < shapeMatrix.size(); ++i)
+    for (za::SizeT i = 0u; i < shapeMatrix.size(); ++i)
         if (const auto shapeBlockSequence = shapeMatrix[i]; shapeBlockSequence != ShapeBlockSequence::_)
             blockMatrix.data[i].emplace(block).shapeBlockSequence = shapeBlockSequence;
 
@@ -88,7 +88,7 @@ struct [[nodiscard]] BlockMatrix
 
 
 ////////////////////////////////////////////////////////////
-using ShapeBlockPositionVector = zb::InPlaceVector<za::Vec2uz, shapeDimension>;
+using ShapeBlockPositionVector = za::InPlaceVector<za::Vec2uz, shapeDimension>;
 
 
 ////////////////////////////////////////////////////////////
@@ -98,9 +98,9 @@ inline ShapeBlockPositionVector findDownmostBlocks(const BlockMatrix& shape)
 
     bool foundLastRow = false;
 
-    for (zb::SizeT y = shapeDimension; y-- > 0;)
+    for (za::SizeT y = shapeDimension; y-- > 0;)
     {
-        for (zb::SizeT x = 0; x < shapeDimension; ++x)
+        for (za::SizeT x = 0; x < shapeDimension; ++x)
         {
             if (shape.at(x, y).hasValue())
             {
@@ -124,9 +124,9 @@ inline ShapeBlockPositionVector findDownmostBlocks(const BlockMatrix& shape)
 
     bool foundFirstRow = false;
 
-    for (zb::SizeT y = 0; y < shapeDimension; ++y)
+    for (za::SizeT y = 0; y < shapeDimension; ++y)
     {
-        for (zb::SizeT x = 0; x < shapeDimension; ++x)
+        for (za::SizeT x = 0; x < shapeDimension; ++x)
         {
             if (shape.at(x, y).hasValue())
             {
@@ -144,17 +144,17 @@ inline ShapeBlockPositionVector findDownmostBlocks(const BlockMatrix& shape)
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline ShapeBlockPositionVector findHorizontalBlocks(const BlockMatrix& shape, const zb::SizeT maxDepth)
+[[nodiscard]] inline ShapeBlockPositionVector findHorizontalBlocks(const BlockMatrix& shape, const za::SizeT maxDepth)
 {
     ShapeBlockPositionVector result;
 
-    zb::SizeT foundY = 0u;
+    za::SizeT foundY = 0u;
 
-    for (zb::SizeT y = shapeDimension; y-- > 0;)
+    for (za::SizeT y = shapeDimension; y-- > 0;)
     {
-        zb::SizeT xCount = 0u;
+        za::SizeT xCount = 0u;
 
-        for (zb::SizeT x = 0; x < shapeDimension; ++x)
+        for (za::SizeT x = 0; x < shapeDimension; ++x)
         {
             const bool leftEmpty  = (x == 0) || !shape.at(x - 1, y).hasValue();
             const bool rightEmpty = (x == shapeDimension - 1) || !shape.at(x + 1, y).hasValue();
@@ -184,16 +184,16 @@ inline ShapeBlockPositionVector findDownmostBlocks(const BlockMatrix& shape)
     const BlockMatrix& shape2,
     const za::Vec2i    pos2)
 {
-    for (zb::SizeT y1 = 0; y1 < shapeDimension; ++y1)
-        for (zb::SizeT x1 = 0; x1 < shapeDimension; ++x1)
+    for (za::SizeT y1 = 0; y1 < shapeDimension; ++y1)
+        for (za::SizeT x1 = 0; x1 < shapeDimension; ++x1)
         {
             if (!shape1.at(x1, y1).hasValue())
                 continue;
 
             const za::Vec2i worldPos1 = pos1 + za::Vec2uz{x1, y1}.toVec2i();
 
-            for (zb::SizeT y2 = 0; y2 < shapeDimension; ++y2)
-                for (zb::SizeT x2 = 0; x2 < shapeDimension; ++x2)
+            for (za::SizeT y2 = 0; y2 < shapeDimension; ++y2)
+                for (za::SizeT x2 = 0; x2 < shapeDimension; ++x2)
                 {
                     if (!shape2.at(x2, y2).hasValue())
                         continue;

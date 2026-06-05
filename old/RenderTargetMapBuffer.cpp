@@ -1,9 +1,9 @@
     [[gnu::always_inline]] void objectReallocAndMemcpy(
         GLenum          type,
         auto&           object,
-        zb::SizeT&    capacity,
+        za::SizeT&    capacity,
         const void*     data,
-        zb::SizeT byteCount)
+        za::SizeT byteCount)
     {
         reallocObjectIfNeeded(type, object, capacity, byteCount);
 #if 1
@@ -15,7 +15,7 @@
                                      GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT |
                                          GL_MAP_UNSYNCHRONIZED_BIT);
 
-        ZB_MEMCPY(ptr, data, byteCount);
+        ZA_MEMCPY(ptr, data, byteCount);
         glUnmapBuffer(type);
 #endif
     }

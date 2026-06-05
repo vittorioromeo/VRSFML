@@ -15,10 +15,10 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -55,10 +55,10 @@ public:
     ///
     /// \param windowSettings Window creation parameters
     ///
-    /// \return Render window on success, `zb::nullOpt` on failure
+    /// \return Render window on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<RenderWindow> create(const Settings& windowSettings);
+    [[nodiscard]] static za::Optional<RenderWindow> create(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -76,7 +76,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<RenderWindow> create(WindowHandle handle, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static za::Optional<RenderWindow> create(WindowHandle handle, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -173,7 +173,7 @@ public:
     /// \brief Construct a new window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(zb::PassKey<RenderWindow>&&, Window&& window);
+    [[nodiscard]] explicit RenderWindow(za::PassKey<RenderWindow>&&, Window&& window);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ private:
 /// while (true)
 /// {
 ///     // Event processing.
-///     while (const zb::Optional event = window.pollEvent())
+///     while (const za::Optional event = window.pollEvent())
 ///     {
 ///         // Request for closing the window.
 ///         if (event->is<za::Event::Closed>())

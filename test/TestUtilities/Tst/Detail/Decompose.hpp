@@ -9,8 +9,8 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/TstFwd.hpp"
 
-#include "ZancleBase/Builtin/Pragma.hpp"
-#include "ZancleBase/Trait/IsArray.hpp"
+#include "Zancle/Base/Pragma.hpp"
+#include "Zancle/Trait/IsArray.hpp"
 
 
 namespace tst::detail
@@ -110,16 +110,16 @@ struct ExpressionLhs
 // token, not a concatenation expression.)
 #define ZA_TST_DECL_CMP_OP(op)                                                                           \
                                                                                                          \
-    ZB_PRAGMA(GCC diagnostic push);                                                                      \
+    ZA_PRAGMA(GCC diagnostic push);                                                                      \
     /* Suppress the unknown-pragma warning before mentioning Clang-only options below. */                \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                       \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                        \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                  \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                               \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wimplicit-int-float-conversion");                                 \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wdouble-promotion");                                              \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wfloat-equal");                                                   \
-    ZB_PRAGMA(GCC diagnostic ignored "-Wconversion");                                                    \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wpragmas");                                                       \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wunknown-warning-option");                                        \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wsign-compare");                                                  \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wsign-conversion");                                               \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wimplicit-int-float-conversion");                                 \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wdouble-promotion");                                              \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wfloat-equal");                                                   \
+    ZA_PRAGMA(GCC diagnostic ignored "-Wconversion");                                                    \
                                                                                                          \
     template <typename R>                                                                                \
     auto operator op(const R& rhs)                                                                       \
@@ -133,7 +133,7 @@ struct ExpressionLhs
         return Result{res};                                                                              \
     }                                                                                                    \
                                                                                                          \
-    ZB_PRAGMA(GCC diagnostic pop);
+    ZA_PRAGMA(GCC diagnostic pop);
 
     ZA_TST_DECL_CMP_OP(==)
     ZA_TST_DECL_CMP_OP(!=)
@@ -199,7 +199,7 @@ struct ExpressionLhs
     // ill-formed, so SFINAE-guard the function for non-array L only.
     template <typename U = L>
     operator U() const noexcept // NOLINT(google-explicit-constructor)
-        requires(!::zb::isArray<U>)
+        requires(!::za::isArray<U>)
     {
         return lhs;
     }

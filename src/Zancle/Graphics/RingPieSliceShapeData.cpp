@@ -11,13 +11,13 @@
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/Transform.hpp"
 
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za
@@ -28,7 +28,7 @@ Rect2f RingPieSliceShapeData::getLocalBounds() const noexcept
     if (!hasVisibleGeometry()) [[unlikely]]
         return {};
 
-    const float absSweep = ZB_MATH_FABSF(sweepAngle.asRadians());
+    const float absSweep = ZA_MATH_FABSF(sweepAngle.asRadians());
     const float startRad = (sweepAngle.asRadians() < 0.f) ? startAngle.asRadians() + sweepAngle.asRadians()
                                                           : startAngle.asRadians();
 
@@ -87,10 +87,10 @@ Vec2f RingPieSliceShapeData::getCentroid() const noexcept
         return center;
 
     const float sweepRad = sweepAngle.asRadians();
-    const float absSweep = ZB_MATH_FABSF(sweepRad);
+    const float absSweep = ZA_MATH_FABSF(sweepRad);
     const float halfSwp  = absSweep * 0.5f;
 
-    const auto [sinHalf, cosHalf] = zb::sinCosLookup(zb::positiveRemainder(halfSwp, zb::tau));
+    const auto [sinHalf, cosHalf] = za::sinCosLookup(za::positiveRemainder(halfSwp, za::tau));
 
     const float d = priv::annulusSectorCentroidDistance(outerRadius, innerRadius, absSweep, sinHalf);
 
@@ -101,7 +101,7 @@ Vec2f RingPieSliceShapeData::getCentroid() const noexcept
     // (Works for negative sweep too: the bisector is always the angular midpoint of the sector.)
     const float bisector = startAngle.asRadians() + sweepRad * 0.5f;
 
-    const auto [sinB, cosB] = zb::sinCosLookup(zb::positiveRemainder(bisector, zb::tau));
+    const auto [sinB, cosB] = za::sinCosLookup(za::positiveRemainder(bisector, za::tau));
 
     return {center.x + d * cosB, center.y + d * sinB};
 }

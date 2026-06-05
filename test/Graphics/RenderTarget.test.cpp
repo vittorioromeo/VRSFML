@@ -7,15 +7,15 @@
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 namespace
@@ -39,11 +39,11 @@ TEST_CASE("[Graphics] za::RenderTarget")
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::RenderTarget));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::RenderTarget));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::RenderTarget));
-        STATIC_CHECK(!ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderTarget));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderTarget));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::RenderTarget));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::RenderTarget));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::RenderTarget));
+        STATIC_CHECK(!ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderTarget));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderTarget));
     }
 
     SECTION("Construction")
@@ -64,7 +64,7 @@ TEST_CASE("[Graphics] za::RenderTarget")
         TestRenderTarget renderTarget0;
         TestRenderTarget renderTarget1;
 
-        renderTarget1 = ZB_MOVE(renderTarget0);
+        renderTarget1 = ZA_MOVE(renderTarget0);
     }
 
     SECTION("setActive()")

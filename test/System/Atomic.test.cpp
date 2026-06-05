@@ -1,15 +1,15 @@
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Atomic.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
 
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
@@ -20,40 +20,40 @@ namespace
 ////////////////////////////////////////////////////////////
 // Compile-time properties
 ////////////////////////////////////////////////////////////
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<bool>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<char>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<int>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<zb::U64>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<float>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<double>));
-static_assert(ZB_IS_TRIVIALLY_RELOCATABLE(za::Atomic<int*>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<bool>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<char>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<int>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<za::U64>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<float>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<double>));
+static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(za::Atomic<int*>));
 
 
 ////////////////////////////////////////////////////////////
 static_assert(sizeof(za::Atomic<bool>) == 1u);
 static_assert(sizeof(za::Atomic<char>) == 1u);
-static_assert(sizeof(za::Atomic<zb::I8>) == 1u);
-static_assert(sizeof(za::Atomic<zb::U8>) == 1u);
-static_assert(sizeof(za::Atomic<zb::I16>) == 2u);
-static_assert(sizeof(za::Atomic<zb::U16>) == 2u);
-static_assert(sizeof(za::Atomic<zb::I32>) == 4u);
-static_assert(sizeof(za::Atomic<zb::U32>) == 4u);
-static_assert(sizeof(za::Atomic<zb::I64>) == 8u);
-static_assert(sizeof(za::Atomic<zb::U64>) == 8u);
+static_assert(sizeof(za::Atomic<za::I8>) == 1u);
+static_assert(sizeof(za::Atomic<za::U8>) == 1u);
+static_assert(sizeof(za::Atomic<za::I16>) == 2u);
+static_assert(sizeof(za::Atomic<za::U16>) == 2u);
+static_assert(sizeof(za::Atomic<za::I32>) == 4u);
+static_assert(sizeof(za::Atomic<za::U32>) == 4u);
+static_assert(sizeof(za::Atomic<za::I64>) == 8u);
+static_assert(sizeof(za::Atomic<za::U64>) == 8u);
 static_assert(sizeof(za::Atomic<float>) == 4u);
 static_assert(sizeof(za::Atomic<double>) == 8u);
 static_assert(sizeof(za::Atomic<int*>) == sizeof(int*));
 
 
 ////////////////////////////////////////////////////////////
-static_assert(alignof(za::Atomic<zb::I64>) >= 8u);
-static_assert(alignof(za::Atomic<zb::U64>) >= 8u);
+static_assert(alignof(za::Atomic<za::I64>) >= 8u);
+static_assert(alignof(za::Atomic<za::U64>) >= 8u);
 static_assert(alignof(za::Atomic<double>) >= 8u);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(!ZB_IS_CONSTRUCTIBLE(za::Atomic<int>, const za::Atomic<int>&));
-static_assert(!ZB_IS_CONSTRUCTIBLE(za::Atomic<int>, za::Atomic<int>&&));
+static_assert(!ZA_IS_CONSTRUCTIBLE(za::Atomic<int>, const za::Atomic<int>&));
+static_assert(!ZA_IS_CONSTRUCTIBLE(za::Atomic<int>, za::Atomic<int>&&));
 
 
 ////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ template <typename A, typename T>
 concept HasFetchAnd = requires(A& a, T v) { a.fetchAndRelaxed(v); };
 
 static_assert(HasFetchAnd<za::Atomic<int>, int>);
-static_assert(HasFetchAnd<za::Atomic<zb::U64>, zb::U64>);
+static_assert(HasFetchAnd<za::Atomic<za::U64>, za::U64>);
 static_assert(!HasFetchAnd<za::Atomic<float>, float>);
 static_assert(!HasFetchAnd<za::Atomic<double>, double>);
 static_assert(!HasFetchAnd<za::Atomic<int*>, int*>);
@@ -75,7 +75,7 @@ template <typename A, typename T>
 concept HasFetchAddT = requires(A& a, T v) { a.fetchAddRelaxed(v); };
 
 static_assert(HasFetchAddT<za::Atomic<int>, int>);
-static_assert(HasFetchAddT<za::Atomic<int*>, zb::PtrDiffT>); // pointer takes ptrdiff_t
+static_assert(HasFetchAddT<za::Atomic<int*>, za::PtrDiffT>); // pointer takes ptrdiff_t
 static_assert(!HasFetchAddT<za::Atomic<float>, float>);      // floats have no fetchAdd
 static_assert(!HasFetchAddT<za::Atomic<double>, double>);
 
@@ -100,10 +100,10 @@ namespace
 {
     int dummy = 0;
 
-    za::Atomic<zb::U32> a32{0u};
+    za::Atomic<za::U32> a32{0u};
     a32.waitOnceAcquire(0u);
 
-    za::Atomic<zb::U64> a64{0u};
+    za::Atomic<za::U64> a64{0u};
     a64.waitOnceAcquire(0u);
 
     za::Atomic<float> af{0.0f};
@@ -186,22 +186,22 @@ namespace
     (void)ap2.fetchSubSeqCst(1);
 
     // wait / waitUntil (4-byte) -- 3 orders x 2 ops
-    za::Atomic<zb::U32> w32{0u};
+    za::Atomic<za::U32> w32{0u};
     w32.waitOnceRelaxed(0u);
     w32.waitOnceAcquire(0u);
     w32.waitOnceSeqCst(0u);
-    w32.waitUntilRelaxed([](zb::U32) { return true; });
-    w32.waitUntilAcquire([](zb::U32) { return true; });
-    w32.waitUntilSeqCst([](zb::U32) { return true; });
+    w32.waitUntilRelaxed([](za::U32) { return true; });
+    w32.waitUntilAcquire([](za::U32) { return true; });
+    w32.waitUntilSeqCst([](za::U32) { return true; });
 
     // wait / waitUntil (8-byte) -- 3 orders x 2 ops
-    za::Atomic<zb::U64> w64{0u};
+    za::Atomic<za::U64> w64{0u};
     w64.waitOnceRelaxed(0u);
     w64.waitOnceAcquire(0u);
     w64.waitOnceSeqCst(0u);
-    w64.waitUntilRelaxed([](zb::U64) { return true; });
-    w64.waitUntilAcquire([](zb::U64) { return true; });
-    w64.waitUntilSeqCst([](zb::U64) { return true; });
+    w64.waitUntilRelaxed([](za::U64) { return true; });
+    w64.waitUntilAcquire([](za::U64) { return true; });
+    w64.waitUntilSeqCst([](za::U64) { return true; });
 }
 } // namespace
 
@@ -341,14 +341,14 @@ void integralFetchOps(const T zero, const T one, const T mask)
 }
 } // namespace
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - bool")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - bool")
 {
     singleThreadedRoundTrip<bool>(false, true);
     exchangeRoundTrip<bool>(false, true);
     casRoundTrip<bool>(false, true, false);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - char")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - char")
 {
     singleThreadedRoundTrip<char>('a', 'z');
     exchangeRoundTrip<char>('a', 'z');
@@ -356,57 +356,57 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - char")
     integralFetchOps<char>(static_cast<char>(0x00), static_cast<char>(0x01), static_cast<char>(0x55));
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - signed/unsigned 8-bit")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - signed/unsigned 8-bit")
 {
-    singleThreadedRoundTrip<zb::I8>(-3, 7);
-    exchangeRoundTrip<zb::U8>(0u, 0xFFu);
-    casRoundTrip<zb::I8>(0, 1, 2);
-    integralFetchOps<zb::U8>(0u, 1u, 0x55u);
-    integralFetchOps<zb::I8>(0, 1, 0x55);
+    singleThreadedRoundTrip<za::I8>(-3, 7);
+    exchangeRoundTrip<za::U8>(0u, 0xFFu);
+    casRoundTrip<za::I8>(0, 1, 2);
+    integralFetchOps<za::U8>(0u, 1u, 0x55u);
+    integralFetchOps<za::I8>(0, 1, 0x55);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - 16-bit")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - 16-bit")
 {
-    singleThreadedRoundTrip<zb::I16>(-1234, 5678);
-    exchangeRoundTrip<zb::U16>(0u, 0xFF'FFu);
-    casRoundTrip<zb::U16>(0u, 1u, 2u);
-    integralFetchOps<zb::U16>(0u, 1u, 0x55'55u);
-    integralFetchOps<zb::I16>(0, 1, 0x55'55);
+    singleThreadedRoundTrip<za::I16>(-1234, 5678);
+    exchangeRoundTrip<za::U16>(0u, 0xFF'FFu);
+    casRoundTrip<za::U16>(0u, 1u, 2u);
+    integralFetchOps<za::U16>(0u, 1u, 0x55'55u);
+    integralFetchOps<za::I16>(0, 1, 0x55'55);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - 32-bit")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - 32-bit")
 {
-    singleThreadedRoundTrip<zb::I32>(-100'000, 200'000);
-    exchangeRoundTrip<zb::U32>(0u, 0xDE'AD'BE'EFu);
-    casRoundTrip<zb::U32>(1u, 2u, 3u);
-    integralFetchOps<zb::U32>(0u, 1u, 0x55'55'55'55u);
-    integralFetchOps<zb::I32>(0, 1, 0x55'55'55'55);
+    singleThreadedRoundTrip<za::I32>(-100'000, 200'000);
+    exchangeRoundTrip<za::U32>(0u, 0xDE'AD'BE'EFu);
+    casRoundTrip<za::U32>(1u, 2u, 3u);
+    integralFetchOps<za::U32>(0u, 1u, 0x55'55'55'55u);
+    integralFetchOps<za::I32>(0, 1, 0x55'55'55'55);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - 64-bit")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - 64-bit")
 {
-    singleThreadedRoundTrip<zb::I64>(-(static_cast<zb::I64>(1) << 40), static_cast<zb::I64>(1) << 50);
-    exchangeRoundTrip<zb::U64>(0u, 0xDE'AD'BE'EF'CA'FE'BA'BEu);
-    casRoundTrip<zb::U64>(1u, 2u, 3u);
-    integralFetchOps<zb::U64>(0u, 1u, 0x55'55'55'55'55'55'55'55u);
-    integralFetchOps<zb::I64>(0, 1, 0x55'55'55'55'55'55'55'55);
+    singleThreadedRoundTrip<za::I64>(-(static_cast<za::I64>(1) << 40), static_cast<za::I64>(1) << 50);
+    exchangeRoundTrip<za::U64>(0u, 0xDE'AD'BE'EF'CA'FE'BA'BEu);
+    casRoundTrip<za::U64>(1u, 2u, 3u);
+    integralFetchOps<za::U64>(0u, 1u, 0x55'55'55'55'55'55'55'55u);
+    integralFetchOps<za::I64>(0, 1, 0x55'55'55'55'55'55'55'55);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - float")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - float")
 {
     singleThreadedRoundTrip<float>(1.5f, -2.5f);
     exchangeRoundTrip<float>(0.0f, 3.14f);
     casRoundTrip<float>(1.0f, 2.0f, 3.0f);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - double")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - double")
 {
     singleThreadedRoundTrip<double>(1.5, -2.5);
     exchangeRoundTrip<double>(0.0, 3.14159);
     casRoundTrip<double>(1.0, 2.0, 3.0);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - pointer")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - pointer")
 {
     int storage[8]{};
 
@@ -428,7 +428,7 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - pointer")
     }
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - default-constructed and value-constructed")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - default-constructed and value-constructed")
 {
     za::Atomic<int> defaulted{0};
     CHECK(defaulted.loadRelaxed() == 0);
@@ -439,7 +439,7 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - default-constructed and value-con
     CHECK(valueCtor.loadRelaxed() == 42);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - thread fences (smoke)")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - thread fences (smoke)")
 {
     za::Atomic<int> a{0};
     za::Atomic<int> b{0};
@@ -456,13 +456,13 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - thread fences (smoke)")
     za::atomicSignalFence<za::MemoryOrder::SeqCst>();
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - concurrent fetchAdd is consistent")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - concurrent fetchAdd is consistent")
 {
     constexpr int       threadCount         = 8;
     constexpr int       incrementsPerThread = 50'000;
-    za::Atomic<zb::I64> counter{0};
+    za::Atomic<za::I64> counter{0};
 
-    zb::Vector<za::Thread> threads;
+    za::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int t = 0; t < threadCount; ++t)
@@ -475,10 +475,10 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - concurrent fetchAdd is consistent
     for (auto& th : threads)
         th.join();
 
-    CHECK(counter.loadSeqCst() == static_cast<zb::I64>(threadCount) * static_cast<zb::I64>(incrementsPerThread));
+    CHECK(counter.loadSeqCst() == static_cast<za::I64>(threadCount) * static_cast<za::I64>(incrementsPerThread));
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - producer/consumer release-acquire handoff")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - producer/consumer release-acquire handoff")
 {
     za::Atomic<int> data{0};
     za::Atomic<int> ready{0};
@@ -501,7 +501,7 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - producer/consumer release-acquire
     consumer.join();
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - CAS-loop float increment (no fetchAdd for floats)")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - CAS-loop float increment (no fetchAdd for floats)")
 {
     za::Atomic<float> total{0.0f};
 
@@ -509,7 +509,7 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - CAS-loop float increment (no fetc
     constexpr int   incrementsPerThread = 25'000;
     constexpr float perStep             = 0.25f;
 
-    zb::Vector<za::Thread> threads;
+    za::Vector<za::Thread> threads;
     threads.reserve(threadCount);
 
     for (int t = 0; t < threadCount; ++t)
@@ -541,21 +541,21 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - CAS-loop float increment (no fetc
 template <typename A, typename T>
 concept HasWait = requires(A& a, T v) { a.waitOnceAcquire(v); };
 
-static_assert(HasWait<za::Atomic<zb::U32>, zb::U32>);
-static_assert(HasWait<za::Atomic<zb::U64>, zb::U64>);
+static_assert(HasWait<za::Atomic<za::U32>, za::U32>);
+static_assert(HasWait<za::Atomic<za::U64>, za::U64>);
 static_assert(HasWait<za::Atomic<float>, float>);
 static_assert(HasWait<za::Atomic<double>, double>);
 static_assert(HasWait<za::Atomic<int*>, int*>);
 static_assert(!HasWait<za::Atomic<bool>, bool>);
 static_assert(!HasWait<za::Atomic<char>, char>);
-static_assert(!HasWait<za::Atomic<zb::U16>, zb::U16>);
+static_assert(!HasWait<za::Atomic<za::U16>, za::U16>);
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - waitUntil / notifyOne (latch pattern)")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - waitUntil / notifyOne (latch pattern)")
 {
     constexpr int       workerCount = 6;
-    za::Atomic<zb::U32> nRemaining{static_cast<zb::U32>(workerCount)};
+    za::Atomic<za::U32> nRemaining{static_cast<za::U32>(workerCount)};
 
-    zb::Vector<za::Thread> workers;
+    za::Vector<za::Thread> workers;
     workers.reserve(workerCount);
 
     for (int i = 0; i < workerCount; ++i)
@@ -569,7 +569,7 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - waitUntil / notifyOne (latch patt
                 nRemaining.notifyOne();
         });
 
-    nRemaining.waitUntilAcquire([](const zb::U32 v) { return v == 0u; });
+    nRemaining.waitUntilAcquire([](const za::U32 v) { return v == 0u; });
 
     CHECK(nRemaining.loadRelaxed() == 0u);
 
@@ -577,18 +577,18 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - waitUntil / notifyOne (latch patt
         th.join();
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - notifyAll wakes multiple waiters")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - notifyAll wakes multiple waiters")
 {
-    za::Atomic<zb::U32>    gate{0u};
-    za::Atomic<zb::U32>    woken{0u};
+    za::Atomic<za::U32>    gate{0u};
+    za::Atomic<za::U32>    woken{0u};
     constexpr int          waiterCount = 4;
-    zb::Vector<za::Thread> waiters;
+    za::Vector<za::Thread> waiters;
     waiters.reserve(waiterCount);
 
     for (int i = 0; i < waiterCount; ++i)
         waiters.emplaceBack([&]
         {
-            gate.waitUntilAcquire([](const zb::U32 v) { return v != 0u; });
+            gate.waitUntilAcquire([](const za::U32 v) { return v != 0u; });
             woken.fetchAddRelaxed(1u);
         });
 
@@ -601,21 +601,21 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - notifyAll wakes multiple waiters"
     for (auto& th : waiters)
         th.join();
 
-    CHECK(woken.loadRelaxed() == static_cast<zb::U32>(waiterCount));
+    CHECK(woken.loadRelaxed() == static_cast<za::U32>(waiterCount));
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - waitUntil predicate already true returns immediately")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - waitUntil predicate already true returns immediately")
 {
-    za::Atomic<zb::U32> a{42u};
+    za::Atomic<za::U32> a{42u};
 
-    a.waitUntilAcquire([](const zb::U32 v) { return v == 42u; });
+    a.waitUntilAcquire([](const za::U32 v) { return v == 42u; });
 
     CHECK(a.loadRelaxed() == 42u);
 }
 
-TEST_CASE("[System] Zancle/System/Atomic.hpp - 64-bit waitUntil")
+TEST_CASE("[System] Zancle/Concurrency/Atomic.hpp - 64-bit waitUntil")
 {
-    za::Atomic<zb::U64> counter{3u};
+    za::Atomic<za::U64> counter{3u};
 
     za::Thread decrementer([&]
     {
@@ -624,7 +624,7 @@ TEST_CASE("[System] Zancle/System/Atomic.hpp - 64-bit waitUntil")
         counter.notifyAll();
     });
 
-    counter.waitUntilAcquire([](const zb::U64 v) { return v == 0u; });
+    counter.waitUntilAcquire([](const za::U64 v) { return v == 0u; });
     CHECK(counter.loadRelaxed() == 0u);
 
     decrementer.join();

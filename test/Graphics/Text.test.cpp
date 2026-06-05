@@ -14,20 +14,20 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/TextUtils.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/LifetimeDependee.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Lifetime/LifetimeDependee.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/IsConstructible.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/IsConstructible.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::Text" * tst::skip(skipDisplayTests))
@@ -36,12 +36,12 @@ TEST_CASE("[Graphics] za::Text" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Text, za::Font&&, za::Utf8String, unsigned int));
-        STATIC_CHECK(!ZB_IS_CONSTRUCTIBLE(za::Text, const za::Font&&, za::Utf8String, unsigned int));
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::Text));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::Text));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Text));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Text));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Text, za::Font&&, za::Utf8String, unsigned int));
+        STATIC_CHECK(!ZA_IS_CONSTRUCTIBLE(za::Text, const za::Font&&, za::Utf8String, unsigned int));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::Text));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::Text));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Text));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Text));
     }
 
     const auto font = za::Font::openFromFile("tuffy.ttf").value();
@@ -420,11 +420,11 @@ TEST_CASE("[Graphics] za::Text" * tst::skip(skipDisplayTests))
             const za::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            zb::Optional<BadStruct> badStruct0;
+            za::Optional<BadStruct> badStruct0;
             badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            const BadStruct badStruct1 = ZB_MOVE(badStruct0.value());
+            const BadStruct badStruct1 = ZA_MOVE(badStruct0.value());
             CHECK(!guard.fatalErrorTriggered("Font"));
 
             badStruct0.reset();
@@ -433,13 +433,13 @@ TEST_CASE("[Graphics] za::Text" * tst::skip(skipDisplayTests))
 
         SECTION("Optionals and move")
         {
-            zb::Optional<za::Text> t0;
-            zb::Optional<za::Text> t1;
+            za::Optional<za::Text> t0;
+            za::Optional<za::Text> t1;
 
             t0.emplace(za::Text{font, {}});
             t1.emplace(za::Text{font, {}});
 
-            t1 = ZB_MOVE(t0);
+            t1 = ZA_MOVE(t0);
             t0.reset();
         }
 

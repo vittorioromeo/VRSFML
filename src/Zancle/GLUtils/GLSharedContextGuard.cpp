@@ -9,9 +9,9 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -19,7 +19,7 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 GLSharedContextGuard::GLSharedContextGuard() : m_glContext(WindowContext::getActiveThreadLocalGlContextPtr())
 {
-    ZB_ASSERT(m_glContext != nullptr);
+    ZA_ASSERT(m_glContext != nullptr);
 
     if (!WindowContext::setActiveThreadLocalGlContextToSharedContext())
         errMsg("Could not enable shared GL context in `GLSharedContextGuard::GLSharedContextGuard()`");
@@ -29,7 +29,7 @@ GLSharedContextGuard::GLSharedContextGuard() : m_glContext(WindowContext::getAct
 ////////////////////////////////////////////////////////////
 GLSharedContextGuard::~GLSharedContextGuard()
 {
-    ZB_ASSERT(m_glContext != nullptr);
+    ZA_ASSERT(m_glContext != nullptr);
 
     if (!WindowContext::setActiveThreadLocalGlContext(*m_glContext, true))
         errMsg("Could not restore context in `GLSharedContextGuard::~GLSharedContextGuard()`");

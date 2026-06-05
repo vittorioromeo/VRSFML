@@ -8,13 +8,13 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Remainder.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Math/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,8 +24,8 @@ struct [[nodiscard]] Shrine
 
     float wobbleRadians = 0.f;
 
-    zb::Optional<TimedCountdown> tcActivation;
-    zb::Optional<TimedCountdown> tcDeath;
+    za::Optional<TimedCountdown> tcActivation;
+    za::Optional<TimedCountdown> tcDeath;
 
     TextShakeEffect textStatusShakeEffect;
 
@@ -55,14 +55,14 @@ struct [[nodiscard]] Shrine
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {
         textStatusShakeEffect.update(deltaTime);
-        wobbleRadians = zb::remainder(wobbleRadians + deltaTime * 0.002f + getDeathProgress() * 0.2f, zb::tau);
+        wobbleRadians = za::remainder(wobbleRadians + deltaTime * 0.002f + getDeathProgress() * 0.2f, za::tau);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline za::Vec2f getDrawPosition() const
     {
-        const za::Vec2f wobbleOffset{zb::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
-                                     zb::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
+        const za::Vec2f wobbleOffset{za::cos(wobbleRadians) * (7.5f + getDeathProgress() * 128.f),
+                                     za::sin(wobbleRadians) * (14.f + getDeathProgress() * 128.f)};
 
         return position + getActivationProgress() * wobbleOffset;
     }

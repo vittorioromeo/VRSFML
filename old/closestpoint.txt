@@ -2,7 +2,7 @@
     [[nodiscard]] static za::Vec2f findClosestPoint(const za::Vec2f target, const zb::Vector<za::Vec2f>& points)
     {
         za::Vec2f closestPoint  = target;
-        float     minDistanceSq = ZB_FLOAT_MAX;
+        float     minDistanceSq = ZA_FLOAT_MAX;
 
         for (const auto& p : points)
         {

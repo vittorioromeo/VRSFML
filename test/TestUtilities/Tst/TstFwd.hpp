@@ -3,12 +3,12 @@
 // https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
-namespace zb
+namespace za
 {
 class FmtSink;
 class String;
 class StringView;
-} // namespace zb
+} // namespace za
 
 
 namespace tst

@@ -1,25 +1,25 @@
 #include "CatNames.hpp"
 #include "CatType.hpp"
 
-#include "ZancleBase/Algorithm/Shuffle.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Shuffle.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Vector<zb::StringView> getShuffledCatNames(const CatType catType, RNGFast& rng)
+[[nodiscard]] za::Vector<za::StringView> getShuffledCatNames(const CatType catType, RNGFast& rng)
 {
     const auto span = catNamesPerType[asIdx(catType)];
 
-    zb::Vector<zb::StringView> names;
+    za::Vector<za::StringView> names;
     names.reserve(span.size());
 
     for (const char* str : span)
         names.emplaceBack(str);
 
-    zb::shuffle(names.begin(), names.end(), [&](const zb::SizeT min, const zb::SizeT max) {
-        return rng.getI<zb::SizeT>(min, max);
+    za::shuffle(names.begin(), names.end(), [&](const za::SizeT min, const za::SizeT max) {
+        return rng.getI<za::SizeT>(min, max);
     });
 
     return names;

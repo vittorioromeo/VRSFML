@@ -12,11 +12,11 @@
 
 #include "Zancle/Window/Joystick.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -658,7 +658,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::UniquePtr<Impl> m_impl; //!< Implementation details
+    za::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace za
@@ -702,7 +702,7 @@ private:
 ///
 /// while (true)
 /// {
-///     while (const zb::Optional event = window.pollEvent())
+///     while (const za::Optional event = window.pollEvent())
 ///     {
 ///         imGuiContext.processEvent(window, *event);
 ///

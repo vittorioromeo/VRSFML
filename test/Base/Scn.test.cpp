@@ -2,24 +2,24 @@
 #include "StringifyZbStringUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/Scn/Scn.hpp"
+#include "Zancle/Scn/Scn.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Radix.hpp"
-#include "ZancleBase/Scn/ScnNumeric.hpp"
-#include "ZancleBase/Scn/ScnString.hpp"
-#include "ZancleBase/Scn/ScnStringSource.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/Radix.hpp"
+#include "Zancle/Scn/ScnNumeric.hpp"
+#include "Zancle/Scn/ScnString.hpp"
+#include "Zancle/Scn/ScnStringSource.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
 
 
 ////////////////////////////////////////////////////////////
 namespace
 {
-[[nodiscard]] zb::ScnStringSource stringSource(zb::StringView v)
+[[nodiscard]] za::ScnStringSource stringSource(za::StringView v)
 {
-    return zb::ScnStringSource{v};
+    return za::ScnStringSource{v};
 }
 
 
@@ -30,11 +30,11 @@ namespace
 class NonContiguousSource
 {
 public:
-    explicit NonContiguousSource(zb::StringView v) noexcept : m_inner{v}
+    explicit NonContiguousSource(za::StringView v) noexcept : m_inner{v}
     {
     }
 
-    [[nodiscard]] zb::Optional<char> peek() const noexcept
+    [[nodiscard]] za::Optional<char> peek() const noexcept
     {
         return m_inner.peek();
     }
@@ -45,14 +45,14 @@ public:
     }
 
 private:
-    zb::ScnStringSource m_inner;
+    za::ScnStringSource m_inner;
 };
 
-static_assert(zb::ScnSource<NonContiguousSource>);
-static_assert(!zb::ContiguousScnSource<NonContiguousSource>);
+static_assert(za::ScnSource<NonContiguousSource>);
+static_assert(!za::ContiguousScnSource<NonContiguousSource>);
 
-static_assert(zb::ScnSource<zb::ScnStringSource>);
-static_assert(zb::ContiguousScnSource<zb::ScnStringSource>);
+static_assert(za::ScnSource<za::ScnStringSource>);
+static_assert(za::ContiguousScnSource<za::ScnStringSource>);
 
 namespace customscn
 {
@@ -62,10 +62,10 @@ struct MyVec2
     int y = 0;
 };
 
-inline bool scnArg(zb::ScnStringSource& src, MyVec2& out)
+inline bool scnArg(za::ScnStringSource& src, MyVec2& out)
 {
     // Format: `x,y`
-    if (!zb::scnInto(src, out.x))
+    if (!za::scnInto(src, out.x))
         return false;
 
     auto c = src.peek();
@@ -73,7 +73,7 @@ inline bool scnArg(zb::ScnStringSource& src, MyVec2& out)
         return false;
 
     src.consume();
-    return zb::scnInto(src, out.y);
+    return za::scnInto(src, out.y);
 }
 
 struct BaseValue
@@ -85,9 +85,9 @@ struct DerivedValue : BaseValue
 {
 };
 
-inline bool scnArg(zb::ScnStringSource& src, BaseValue& out)
+inline bool scnArg(za::ScnStringSource& src, BaseValue& out)
 {
-    return zb::scnInto(src, out.value);
+    return za::scnInto(src, out.value);
 }
 } // namespace customscn
 
@@ -99,23 +99,23 @@ TEST_CASE("[Base] Scn - empty input")
 {
     auto src = stringSource({});
 
-    CHECK(zb::scnAtEnd(src));
+    CHECK(za::scnAtEnd(src));
     CHECK(src.bytesConsumed() == 0u);
 
     char c = 0;
-    CHECK_FALSE(zb::scnInto(src, c));
+    CHECK_FALSE(za::scnInto(src, c));
 
-    zb::String s;
-    CHECK_FALSE(zb::scnInto(src, s));
+    za::String s;
+    CHECK_FALSE(za::scnInto(src, s));
 
     int n = 0;
-    CHECK_FALSE(zb::scnInto(src, n));
+    CHECK_FALSE(za::scnInto(src, n));
 
     bool b = true;
-    CHECK_FALSE(zb::scnInto(src, b));
+    CHECK_FALSE(za::scnInto(src, b));
 
-    CHECK_FALSE(zb::scn<int>(src).hasValue());
-    CHECK_FALSE(zb::scn<zb::String>(src).hasValue());
+    CHECK_FALSE(za::scn<int>(src).hasValue());
+    CHECK_FALSE(za::scn<za::String>(src).hasValue());
 }
 
 
@@ -125,20 +125,20 @@ TEST_CASE("[Base] Scn - scnArg<char> does NOT skip whitespace")
     auto src = stringSource("  ab");
 
     char c = 0;
-    CHECK(zb::scnInto(src, c));
+    CHECK(za::scnInto(src, c));
     CHECK(c == ' ');
 
-    CHECK(zb::scnInto(src, c));
+    CHECK(za::scnInto(src, c));
     CHECK(c == ' ');
 
-    CHECK(zb::scnInto(src, c));
+    CHECK(za::scnInto(src, c));
     CHECK(c == 'a');
 
-    CHECK(zb::scnInto(src, c));
+    CHECK(za::scnInto(src, c));
     CHECK(c == 'b');
 
-    CHECK_FALSE(zb::scnInto(src, c));
-    CHECK(zb::scnAtEnd(src));
+    CHECK_FALSE(za::scnInto(src, c));
+    CHECK(za::scnAtEnd(src));
 }
 
 
@@ -149,45 +149,45 @@ TEST_CASE("[Base] Scn - scnArg<String> reads whitespace-delimited token")
     {
         auto src = stringSource("foo bar baz");
 
-        const auto a = zb::scn<zb::String>(src);
+        const auto a = za::scn<za::String>(src);
         REQUIRE(a.hasValue());
-        CHECK(*a == zb::String{"foo"});
+        CHECK(*a == za::String{"foo"});
 
-        const auto b = zb::scn<zb::String>(src);
+        const auto b = za::scn<za::String>(src);
         REQUIRE(b.hasValue());
-        CHECK(*b == zb::String{"bar"});
+        CHECK(*b == za::String{"bar"});
 
-        const auto c = zb::scn<zb::String>(src);
+        const auto c = za::scn<za::String>(src);
         REQUIRE(c.hasValue());
-        CHECK(*c == zb::String{"baz"});
+        CHECK(*c == za::String{"baz"});
 
-        CHECK_FALSE(zb::scn<zb::String>(src).hasValue());
+        CHECK_FALSE(za::scn<za::String>(src).hasValue());
     }
 
     SUBCASE("leading whitespace is skipped")
     {
         auto src = stringSource("   hello\tworld\n");
 
-        const auto a = zb::scn<zb::String>(src);
+        const auto a = za::scn<za::String>(src);
         REQUIRE(a.hasValue());
-        CHECK(*a == zb::String{"hello"});
+        CHECK(*a == za::String{"hello"});
 
-        const auto b = zb::scn<zb::String>(src);
+        const auto b = za::scn<za::String>(src);
         REQUIRE(b.hasValue());
-        CHECK(*b == zb::String{"world"});
+        CHECK(*b == za::String{"world"});
 
-        CHECK_FALSE(zb::scn<zb::String>(src).hasValue());
+        CHECK_FALSE(za::scn<za::String>(src).hasValue());
     }
 
     SUBCASE("trailing whitespace produces a final token then EOF")
     {
         auto src = stringSource("only   ");
 
-        const auto a = zb::scn<zb::String>(src);
+        const auto a = za::scn<za::String>(src);
         REQUIRE(a.hasValue());
-        CHECK(*a == zb::String{"only"});
+        CHECK(*a == za::String{"only"});
 
-        CHECK_FALSE(zb::scn<zb::String>(src).hasValue());
+        CHECK_FALSE(za::scn<za::String>(src).hasValue());
     }
 }
 
@@ -195,21 +195,21 @@ TEST_CASE("[Base] Scn - scnArg<String> reads whitespace-delimited token")
 ////////////////////////////////////////////////////////////
 TEST_CASE("[Base] Scn - scnReadLine")
 {
-    using zb::scnReadLine;
+    using za::scnReadLine;
 
     SUBCASE("multiple lines, LF endings")
     {
         auto src = stringSource("alpha\nbeta\ngamma\n");
 
-        zb::String line;
+        za::String line;
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"alpha"});
+        CHECK(line == za::String{"alpha"});
 
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"beta"});
+        CHECK(line == za::String{"beta"});
 
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"gamma"});
+        CHECK(line == za::String{"gamma"});
 
         CHECK_FALSE(scnReadLine(src, line));
     }
@@ -218,24 +218,24 @@ TEST_CASE("[Base] Scn - scnReadLine")
     {
         auto src = stringSource("alpha\r\nbeta\r\n");
 
-        zb::String line;
+        za::String line;
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"alpha\r"});
+        CHECK(line == za::String{"alpha\r"});
 
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"beta\r"});
+        CHECK(line == za::String{"beta\r"});
     }
 
     SUBCASE("missing trailing newline still returns the last line")
     {
         auto src = stringSource("first\nlast-no-newline");
 
-        zb::String line;
+        za::String line;
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"first"});
+        CHECK(line == za::String{"first"});
 
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"last-no-newline"});
+        CHECK(line == za::String{"last-no-newline"});
 
         CHECK_FALSE(scnReadLine(src, line));
     }
@@ -244,7 +244,7 @@ TEST_CASE("[Base] Scn - scnReadLine")
     {
         auto src = stringSource("\n\nx\n");
 
-        zb::String line;
+        za::String line;
         CHECK(scnReadLine(src, line));
         CHECK(line.empty());
 
@@ -252,7 +252,7 @@ TEST_CASE("[Base] Scn - scnReadLine")
         CHECK(line.empty());
 
         CHECK(scnReadLine(src, line));
-        CHECK(line == zb::String{"x"});
+        CHECK(line == za::String{"x"});
 
         CHECK_FALSE(scnReadLine(src, line));
     }
@@ -266,41 +266,41 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
     {
         auto src = stringSource("42 -7 100");
 
-        CHECK(*zb::scn<int>(src) == 42);
-        CHECK(*zb::scn<int>(src) == -7);
-        CHECK(*zb::scn<int>(src) == 100);
+        CHECK(*za::scn<int>(src) == 42);
+        CHECK(*za::scn<int>(src) == -7);
+        CHECK(*za::scn<int>(src) == 100);
 
-        CHECK_FALSE(zb::scn<int>(src).hasValue());
+        CHECK_FALSE(za::scn<int>(src).hasValue());
     }
 
     SUBCASE("stops at first non-digit")
     {
         auto src = stringSource("123.45");
 
-        const auto a = zb::scn<int>(src);
+        const auto a = za::scn<int>(src);
         REQUIRE(a.hasValue());
         CHECK(*a == 123);
 
         // The '.' is still on the source -- it is not a valid int byte.
-        CHECK_FALSE(zb::scn<int>(src).hasValue());
+        CHECK_FALSE(za::scn<int>(src).hasValue());
     }
 
     SUBCASE("non-numeric input fails")
     {
         auto src = stringSource("hello");
 
-        CHECK_FALSE(zb::scn<int>(src).hasValue());
+        CHECK_FALSE(za::scn<int>(src).hasValue());
     }
 
     SUBCASE("unsigned rejects negative")
     {
         auto src = stringSource("-1x");
 
-        CHECK_FALSE(zb::scn<unsigned int>(src).hasValue());
+        CHECK_FALSE(za::scn<unsigned int>(src).hasValue());
         CHECK(src.bytesConsumed() == 2u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'x');
     }
 
@@ -308,7 +308,7 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
     {
         auto src = stringSource("-2147483648");
 
-        const auto v = zb::scn<int>(src);
+        const auto v = za::scn<int>(src);
         REQUIRE(v.hasValue());
         CHECK(*v == -2'147'483'648);
     }
@@ -318,31 +318,31 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
         auto src = stringSource("-2147483649x");
 
         int v = 123;
-        CHECK_FALSE(zb::scnInto(src, v));
+        CHECK_FALSE(za::scnInto(src, v));
         CHECK(v == 123);
         CHECK(src.bytesConsumed() == 11u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'x');
     }
 
     SUBCASE("many leading zeroes are accepted")
     {
-        zb::String input;
-        for (zb::SizeT i = 0u; i < 32u; ++i)
+        za::String input;
+        for (za::SizeT i = 0u; i < 32u; ++i)
             input.append('0');
         input.append("1x");
 
         auto src = stringSource(input.toStringView());
 
         unsigned v = 123u;
-        CHECK(zb::scnInto(src, v));
+        CHECK(za::scnInto(src, v));
         CHECK(v == 1u);
         CHECK(src.bytesConsumed() == 33u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'x');
     }
 
@@ -351,12 +351,12 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
         auto src = stringSource("99999999999999999999999999999999x");
 
         unsigned v = 123u;
-        CHECK_FALSE(zb::scnInto(src, v));
+        CHECK_FALSE(za::scnInto(src, v));
         CHECK(v == 123u);
         CHECK(src.bytesConsumed() == 32u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'x');
     }
 }
@@ -365,13 +365,13 @@ TEST_CASE("[Base] Scn - integer parsing skips whitespace")
 ////////////////////////////////////////////////////////////
 TEST_CASE("[Base] Scn - scnRadix")
 {
-    using zb::Radix;
-    using zb::scnRadix;
+    using za::Radix;
+    using za::scnRadix;
 
     SUBCASE("hex lowercase")
     {
         auto      src = stringSource("abcd");
-        zb::SizeT v   = 0u;
+        za::SizeT v   = 0u;
         CHECK(scnRadix(src, v, Radix::Hex));
         CHECK(v == 0xab'cdu);
     }
@@ -380,11 +380,11 @@ TEST_CASE("[Base] Scn - scnRadix")
     {
         auto src = stringSource("ff\n0\n");
 
-        zb::SizeT v = 0u;
+        za::SizeT v = 0u;
         CHECK(scnRadix(src, v, Radix::Hex));
         CHECK(v == 0xffu);
 
-        zb::scnSkipWhitespace(src);
+        za::scnSkipWhitespace(src);
 
         CHECK(scnRadix(src, v, Radix::Hex));
         CHECK(v == 0u);
@@ -408,8 +408,8 @@ TEST_CASE("[Base] Scn - scnRadix")
 
     SUBCASE("overlong radix digit run is consumed and rejected")
     {
-        zb::String input;
-        for (zb::SizeT i = 0u; i < 70u; ++i)
+        za::String input;
+        for (za::SizeT i = 0u; i < 70u; ++i)
             input.append('f');
         input.append('z');
 
@@ -421,7 +421,7 @@ TEST_CASE("[Base] Scn - scnRadix")
         CHECK(src.bytesConsumed() == 70u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'z');
     }
 
@@ -431,8 +431,8 @@ TEST_CASE("[Base] Scn - scnRadix")
         // since the accumulated value stays in range. The previous
         // scratch-buffer impl rejected this once the run exceeded
         // `scnNumericScratchSize`.
-        zb::String input;
-        for (zb::SizeT i = 0u; i < 200u; ++i)
+        za::String input;
+        for (za::SizeT i = 0u; i < 200u; ++i)
             input.append('0');
         input.append("ff");
 
@@ -446,8 +446,8 @@ TEST_CASE("[Base] Scn - scnRadix")
 
     SUBCASE("octal with leading zeroes")
     {
-        zb::String input;
-        for (zb::SizeT i = 0u; i < 100u; ++i)
+        za::String input;
+        for (za::SizeT i = 0u; i < 100u; ++i)
             input.append('0');
         input.append("17");
 
@@ -460,8 +460,8 @@ TEST_CASE("[Base] Scn - scnRadix")
 
     SUBCASE("binary with leading zeroes")
     {
-        zb::String input;
-        for (zb::SizeT i = 0u; i < 100u; ++i)
+        za::String input;
+        for (za::SizeT i = 0u; i < 100u; ++i)
             input.append('0');
         input.append("1011");
 
@@ -481,34 +481,34 @@ TEST_CASE("[Base] Scn - float parsing")
     {
         auto src = stringSource("3.14 -2.5 0.0");
 
-        CHECK(*zb::scn<double>(src) == tst::Approx(3.14));
-        CHECK(*zb::scn<double>(src) == tst::Approx(-2.5));
-        CHECK(*zb::scn<double>(src) == tst::Approx(0.0));
+        CHECK(*za::scn<double>(src) == tst::Approx(3.14));
+        CHECK(*za::scn<double>(src) == tst::Approx(-2.5));
+        CHECK(*za::scn<double>(src) == tst::Approx(0.0));
     }
 
     SUBCASE("integer-only is accepted")
     {
         auto src = stringSource("42");
 
-        CHECK(*zb::scn<float>(src) == tst::Approx(42.0));
+        CHECK(*za::scn<float>(src) == tst::Approx(42.0));
     }
 
     SUBCASE("overlong float token is consumed and rejected")
     {
-        zb::String input;
-        for (zb::SizeT i = 0u; i < 45u; ++i)
+        za::String input;
+        for (za::SizeT i = 0u; i < 45u; ++i)
             input.append('1');
         input.append(".25x");
 
         auto src = stringSource(input.toStringView());
 
         double v = 12.0;
-        CHECK_FALSE(zb::scnInto(src, v));
+        CHECK_FALSE(za::scnInto(src, v));
         CHECK(v == tst::Approx(12.0));
         CHECK(src.bytesConsumed() == 48u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'x');
     }
 }
@@ -521,36 +521,36 @@ TEST_CASE("[Base] Scn - bool parsing")
     {
         auto src = stringSource("true false true");
 
-        CHECK(*zb::scn<bool>(src) == true);
-        CHECK(*zb::scn<bool>(src) == false);
-        CHECK(*zb::scn<bool>(src) == true);
+        CHECK(*za::scn<bool>(src) == true);
+        CHECK(*za::scn<bool>(src) == false);
+        CHECK(*za::scn<bool>(src) == true);
     }
 
     SUBCASE("digit form")
     {
         auto src = stringSource("0 1 0");
 
-        CHECK(*zb::scn<bool>(src) == false);
-        CHECK(*zb::scn<bool>(src) == true);
-        CHECK(*zb::scn<bool>(src) == false);
+        CHECK(*za::scn<bool>(src) == false);
+        CHECK(*za::scn<bool>(src) == true);
+        CHECK(*za::scn<bool>(src) == false);
     }
 
     SUBCASE("garbage rejected")
     {
         auto src = stringSource("hello");
 
-        CHECK_FALSE(zb::scn<bool>(src).hasValue());
+        CHECK_FALSE(za::scn<bool>(src).hasValue());
     }
 
     SUBCASE("'truncated' literal fails")
     {
         auto src = stringSource("trux");
 
-        CHECK_FALSE(zb::scn<bool>(src).hasValue());
+        CHECK_FALSE(za::scn<bool>(src).hasValue());
         CHECK(src.bytesConsumed() == 3u);
 
         char c = '\0';
-        CHECK(zb::scnInto(src, c));
+        CHECK(za::scnInto(src, c));
         CHECK(c == 'x');
     }
 }
@@ -563,20 +563,20 @@ TEST_CASE("[Base] Scn - scnSkipPast")
     {
         auto src = stringSource("garbage:value");
 
-        zb::scnSkipPast(src, ':');
+        za::scnSkipPast(src, ':');
 
-        const auto tok = zb::scn<zb::String>(src);
+        const auto tok = za::scn<za::String>(src);
         REQUIRE(tok.hasValue());
-        CHECK(*tok == zb::String{"value"});
+        CHECK(*tok == za::String{"value"});
     }
 
     SUBCASE("delimiter not present: drain the source")
     {
         auto src = stringSource("no-delim");
 
-        zb::scnSkipPast(src, ':');
+        za::scnSkipPast(src, ':');
 
-        CHECK(zb::scnAtEnd(src));
+        CHECK(za::scnAtEnd(src));
     }
 }
 
@@ -586,20 +586,20 @@ TEST_CASE("[Base] Scn - mixed value types in one source")
 {
     auto src = stringSource("42 hello 3.14 true x");
 
-    CHECK(*zb::scn<int>(src) == 42);
+    CHECK(*za::scn<int>(src) == 42);
 
-    const auto tok = zb::scn<zb::String>(src);
+    const auto tok = za::scn<za::String>(src);
     REQUIRE(tok.hasValue());
-    CHECK(*tok == zb::String{"hello"});
+    CHECK(*tok == za::String{"hello"});
 
-    CHECK(*zb::scn<double>(src) == tst::Approx(3.14));
-    CHECK(*zb::scn<bool>(src) == true);
+    CHECK(*za::scn<double>(src) == tst::Approx(3.14));
+    CHECK(*za::scn<bool>(src) == true);
 
     // `scnArg<char>` does not skip leading whitespace.
-    zb::scnSkipWhitespace(src);
+    za::scnSkipWhitespace(src);
 
     char c = 0;
-    CHECK(zb::scnInto(src, c));
+    CHECK(za::scnInto(src, c));
     CHECK(c == 'x');
 }
 
@@ -609,23 +609,23 @@ TEST_CASE("[Base] Scn - non-contiguous source takes the fallback path")
 {
     NonContiguousSource src{"hello world\nline2"};
 
-    zb::String tok;
-    CHECK(zb::scnInto(src, tok));
-    CHECK(tok == zb::String{"hello"});
+    za::String tok;
+    CHECK(za::scnInto(src, tok));
+    CHECK(tok == za::String{"hello"});
 
-    CHECK(zb::scnInto(src, tok));
-    CHECK(tok == zb::String{"world"});
+    CHECK(za::scnInto(src, tok));
+    CHECK(tok == za::String{"world"});
 
-    zb::String line;
-    CHECK(zb::scnReadLine(src, line));
+    za::String line;
+    CHECK(za::scnReadLine(src, line));
     // The next byte after "world" is '\n', so the line is empty -- but
     // `scnArg<String>` left the source positioned at the '\n' itself
     // since the trailing whitespace check stopped there. `scnReadLine`
     // therefore consumes the '\n' and returns an empty `line`.
     CHECK(line.empty());
 
-    CHECK(zb::scnReadLine(src, line));
-    CHECK(line == zb::String{"line2"});
+    CHECK(za::scnReadLine(src, line));
+    CHECK(line == za::String{"line2"});
 }
 
 
@@ -633,21 +633,21 @@ TEST_CASE("[Base] Scn - non-contiguous source takes the fallback path")
 TEST_CASE("[Base] Scn - long inputs (contiguous fast path)")
 {
     // Push a 4 KiB token through to exercise the bulk-append branch.
-    zb::String payload;
+    za::String payload;
     payload.reserve(4096u + 8u);
-    for (zb::SizeT i = 0u; i < 4096u; ++i)
+    for (za::SizeT i = 0u; i < 4096u; ++i)
         payload.append('a');
     payload.append(" tail");
 
-    auto src = zb::ScnStringSource{payload.toStringView()};
+    auto src = za::ScnStringSource{payload.toStringView()};
 
-    const auto tok = zb::scn<zb::String>(src);
+    const auto tok = za::scn<za::String>(src);
     REQUIRE(tok.hasValue());
     CHECK(tok->size() == 4096u);
 
-    const auto tail = zb::scn<zb::String>(src);
+    const auto tail = za::scn<za::String>(src);
     REQUIRE(tail.hasValue());
-    CHECK(*tail == zb::String{"tail"});
+    CHECK(*tail == za::String{"tail"});
 }
 
 
@@ -657,12 +657,12 @@ TEST_CASE("[Base] Scn - ScnStringSource bytesConsumed tracks position")
     auto src = stringSource("42 hello");
 
     CHECK(src.bytesConsumed() == 0u);
-    CHECK(*zb::scn<int>(src) == 42);
+    CHECK(*za::scn<int>(src) == 42);
     CHECK(src.bytesConsumed() == 2u);
 
-    zb::String tok;
-    CHECK(zb::scnInto(src, tok));
-    CHECK(tok == zb::String{"hello"});
+    za::String tok;
+    CHECK(za::scnInto(src, tok));
+    CHECK(tok == za::String{"hello"});
     CHECK(src.bytesConsumed() == 8u);
 }
 
@@ -674,7 +674,7 @@ TEST_CASE("[Base] Scn - ScnStringSource advance covers full range without overfl
     // which could wrap for huge `n`. The non-overflowing form
     // `n <= size() - m_pos` is exercised below at the boundary
     // (advance exactly to end, advance zero, advance after partial).
-    zb::ScnStringSource src{"abcdef"};
+    za::ScnStringSource src{"abcdef"};
 
     src.advance(0u);
     CHECK(src.bytesConsumed() == 0u);
@@ -682,13 +682,13 @@ TEST_CASE("[Base] Scn - ScnStringSource advance covers full range without overfl
 
     src.advance(3u);
     CHECK(src.bytesConsumed() == 3u);
-    CHECK(src.remaining() == zb::StringView{"def"});
+    CHECK(src.remaining() == za::StringView{"def"});
 
     // Boundary: advance exactly to end.
     src.advance(3u);
     CHECK(src.bytesConsumed() == 6u);
     CHECK(src.remaining().empty());
-    CHECK(zb::scnAtEnd(src));
+    CHECK(za::scnAtEnd(src));
 
     // Zero-advance at end is still valid.
     src.advance(0u);
@@ -701,7 +701,7 @@ TEST_CASE("[Base] Scn - ADL on a user-defined type via custom scnArg")
 {
     auto              src = stringSource("3,7");
     customscn::MyVec2 v{};
-    CHECK(zb::scnInto(src, v));
+    CHECK(za::scnInto(src, v));
     CHECK(v.x == 3);
     CHECK(v.y == 7);
 }
@@ -713,6 +713,6 @@ TEST_CASE("[Base] Scn - base-class ADL customization remains viable")
     auto src = stringSource("42");
 
     customscn::DerivedValue v{};
-    CHECK(zb::scnInto(src, v));
+    CHECK(za::scnInto(src, v));
     CHECK(v.value == 42);
 }

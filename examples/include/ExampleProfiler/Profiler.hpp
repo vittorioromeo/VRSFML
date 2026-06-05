@@ -6,50 +6,50 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #ifdef SFEX_PROFILER_ENABLED
-    #include "Zancle/System/Clock.hpp"
-    #include "Zancle/System/IO.hpp"
-    #include "Zancle/System/Time.hpp"
+    #include "Zancle/Chrono/Clock.hpp"
+    #include "Zancle/IO/IO.hpp"
+    #include "Zancle/Chrono/Time.hpp"
 
-    #include "ZancleBase/Abort.hpp"
-    #include "ZancleBase/Fmt/Fmt.hpp"
-    #include "ZancleBase/Fmt/FmtNumeric.hpp"
+    #include "Zancle/Diagnostic/Abort.hpp"
+    #include "Zancle/Fmt/Fmt.hpp"
+    #include "Zancle/Fmt/FmtNumeric.hpp"
 #endif
 
 
 namespace sfex
 {
 ////////////////////////////////////////////////////////////
-using NodeId = zb::SizeT;
+using NodeId = za::SizeT;
 
 
 ////////////////////////////////////////////////////////////
 inline constexpr auto    nullNode = static_cast<NodeId>(-1u);
 inline constexpr NodeId  maxNodes = 512u;
-inline constexpr zb::I64 nullTime = -1;
+inline constexpr za::I64 nullTime = -1;
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ScopeInfo // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    zb::StringView label;
-    zb::StringView file;
-    zb::StringView func;
+    za::StringView label;
+    za::StringView file;
+    za::StringView func;
 
     int line;
 
-    zb::I64 timeUs;
+    za::I64 timeUs;
 
     NodeId nodeId;
     NodeId parentNodeId;
 
-    zb::SizeT depth;
+    za::SizeT depth;
 };
 
 } // namespace sfex
@@ -68,16 +68,16 @@ struct [[nodiscard]] Database
     NodeId nextNodeId    = 0u;
     NodeId currentNodeId = nullNode;
 
-    zb::SizeT currentDepth = 0u;
+    za::SizeT currentDepth = 0u;
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ScopeInfo& initNode(const zb::StringView label, const zb::StringView file, const zb::StringView func, const int line)
+    [[nodiscard]] ScopeInfo& initNode(const za::StringView label, const za::StringView file, const za::StringView func, const int line)
     {
         if (nextNodeId >= maxNodes) [[unlikely]]
         {
-            zb::printErrLn("SFEX Profiler: exceeded maximum number of nodes ({})", maxNodes);
-            zb::abort();
+            za::printErrLn("SFEX Profiler: exceeded maximum number of nodes ({})", maxNodes);
+            za::abort();
         }
 
         const NodeId id = nextNodeId++;
@@ -143,10 +143,10 @@ struct [[nodiscard]] ScopeGuard
 namespace sfex
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline zb::Span<const ScopeInfo> getScopeInfos()
+[[nodiscard, gnu::always_inline]] inline za::Span<const ScopeInfo> getScopeInfos()
 {
 #ifdef SFEX_PROFILER_ENABLED
-    return zb::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
+    return za::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
 #else
     return {};
 #endif
@@ -195,9 +195,9 @@ namespace sfex
 
 ////////////////////////////////////////////////////////////
 // TODO P1: nicer interface?
-inline void populateNodes([[maybe_unused]] zb::Span<const ScopeInfo>       scopeInfos,
-                          [[maybe_unused]] zb::Vector<zb::Vector<NodeId>>& childrenMap,
-                          [[maybe_unused]] zb::Vector<NodeId>&             rootNodes)
+inline void populateNodes([[maybe_unused]] za::Span<const ScopeInfo>       scopeInfos,
+                          [[maybe_unused]] za::Vector<za::Vector<NodeId>>& childrenMap,
+                          [[maybe_unused]] za::Vector<NodeId>&             rootNodes)
 {
 #ifdef SFEX_PROFILER_ENABLED
     childrenMap.resize(maxNodes);

@@ -15,9 +15,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp"
 
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Math/Pow.hpp"
+#include "Zancle/Math/Pow.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -57,5 +57,5 @@ inline constexpr auto mouseCatComboDecay    = 0.995f; // higher decay for mousec
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline constexpr float getComboValueMult(const int n, const float decay)
 {
-    return (1.f - zb::pow(decay, static_cast<float>(n))) / (1.f - decay);
+    return (1.f - za::pow(decay, static_cast<float>(n))) / (1.f - decay);
 }

@@ -1,35 +1,35 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsSame.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 
 TEMPLATE_TEST_CASE("[System] za::Vec3", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(za::Vec3<TestType>));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(za::Vec3<TestType>)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_AGGREGATE(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(za::Vec3<TestType>));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(za::Vec3<TestType>, za::Vec3<TestType>));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(za::Vec3<TestType>)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_AGGREGATE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(za::Vec3<TestType>));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(za::Vec3<TestType>, za::Vec3<TestType>));
     }
 
     SECTION("Construction")
@@ -188,7 +188,7 @@ TEMPLATE_TEST_CASE("[System] za::Vec3", "", int, float)
             CHECK(y == 2);
             CHECK(z == 3);
 
-            STATIC_CHECK(ZB_IS_SAME(decltype(x), decltype(vec.x)));
+            STATIC_CHECK(ZA_IS_SAME(decltype(x), decltype(vec.x)));
 
             x = 3;
 
@@ -204,7 +204,7 @@ TEMPLATE_TEST_CASE("[System] za::Vec3", "", int, float)
             CHECK(y == 2);
             CHECK(z == 3);
 
-            STATIC_CHECK(ZB_IS_SAME(decltype(x), decltype(vec.x)));
+            STATIC_CHECK(ZA_IS_SAME(decltype(x), decltype(vec.x)));
 
             x = 3;
 

@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/SoundFileReader.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za::priv
@@ -49,10 +49,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Properties of the loaded sound on success, `zb::nullOpt` otherwise
+    /// \return Properties of the loaded sound on success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<Info> open(InputStream& stream) override;
+    [[nodiscard]] za::Optional<Info> open(InputStream& stream) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -67,7 +67,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    void seek(zb::U64 sampleOffset) override;
+    void seek(za::U64 sampleOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -78,14 +78,14 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::U64 read(zb::I16* samples, zb::U64 maxCount) override;
+    [[nodiscard]] za::U64 read(za::I16* samples, za::U64 maxCount) override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 12'288> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 12'288> m_impl; //!< Implementation details
 };
 
 } // namespace za::priv

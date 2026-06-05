@@ -11,20 +11,20 @@
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #ifdef ZA_OPENGL_ES
-    #include "Zancle/System/Err.hpp"
+    #include "Zancle/Err/Err.hpp"
 
-    #include "ZancleBase/Abort.hpp"
+    #include "Zancle/Diagnostic/Abort.hpp"
 #else
     #include "Zancle/GLUtils/GLCheck.hpp"
     #include "Zancle/GLUtils/Glad.hpp"
 
-    #include "ZancleBase/Assert.hpp"
-    #include "ZancleBase/Builtin/Memcpy.hpp"
-    #include "ZancleBase/Macros.hpp"
-    #include "ZancleBase/MinMaxMacros.hpp"
+    #include "Zancle/Diagnostic/Assert.hpp"
+    #include "Zancle/Base/Memcpy.hpp"
+    #include "Zancle/Base/Macros.hpp"
+    #include "Zancle/Math/MinMaxMacros.hpp"
 #endif
 
 
@@ -151,7 +151,7 @@ public:
     ///         existing storage was already large enough
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const zb::SizeT byteCount, const bool preserveExistingData)
+    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const za::SizeT byteCount, const bool preserveExistingData)
     {
         if (m_capacity >= byteCount) [[likely]]
             return false;
@@ -191,7 +191,7 @@ public:
     /// \brief Get the currently allocated capacity in bytes
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] zb::SizeT capacity() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] za::SizeT capacity() const
     {
         return m_capacity;
     }
@@ -213,7 +213,7 @@ public:
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-        zb::abort();
+        za::abort();
 #else
         if (m_mappedPtr == nullptr)
             return;
@@ -223,7 +223,7 @@ public:
         obj.bind();
 
         [[maybe_unused]] const bool rc = glCheck(glUnmapNamedBuffer(obj.getId()));
-        ZB_ASSERT(rc);
+        ZA_ASSERT(rc);
 #endif
     }
 
@@ -248,17 +248,17 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushBytesToGPU([[maybe_unused]] const TBufferObject& obj,
-                                                [[maybe_unused]] const zb::SizeT      byteOffset,
-                                                [[maybe_unused]] const zb::SizeT      byteCount) const
+                                                [[maybe_unused]] const za::SizeT      byteOffset,
+                                                [[maybe_unused]] const za::SizeT      byteCount) const
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-        zb::abort();
+        za::abort();
 #else
         const auto objId = obj.getId();
 
-        ZB_ASSERT(objId != 0u);
-        ZB_ASSERT(m_mappedPtr != nullptr);
+        ZA_ASSERT(objId != 0u);
+        ZA_ASSERT(m_mappedPtr != nullptr);
 
         glCheck(glFlushMappedNamedBufferRange(objId, static_cast<GLintptr>(byteOffset), static_cast<GLsizeiptr>(byteCount)));
 #endif
@@ -268,17 +268,17 @@ public:
 private:
     ////////////////////////////////////////////////////////////
     [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] TBufferObject&  obj,
-                                                  [[maybe_unused]] const zb::SizeT byteCount,
+                                                  [[maybe_unused]] const za::SizeT byteCount,
                                                   [[maybe_unused]] const bool      preserveExistingData)
     {
 #ifdef ZA_OPENGL_ES
         priv::errMsg("FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES");
-        zb::abort();
+        za::abort();
 #else
-        ZB_ASSERT(m_capacity < byteCount);
+        ZA_ASSERT(m_capacity < byteCount);
 
         const auto geometricGrowthTarget = m_capacity + (m_capacity / 2u); // Equivalent to `capacity * 1.5`
-        const auto newCapacity           = ZB_MAX(byteCount, geometricGrowthTarget);
+        const auto newCapacity           = ZA_MAX(byteCount, geometricGrowthTarget);
 
         auto newObj = tryCreateGLUniqueResource<TBufferObject>().value();
         newObj.bind();
@@ -299,17 +299,17 @@ private:
                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
                                       GL_MAP_FLUSH_EXPLICIT_BIT));
 
-        ZB_ASSERT(newMappedPtr != nullptr);
+        ZA_ASSERT(newMappedPtr != nullptr);
 
         if (m_mappedPtr != nullptr)
         {
             if (preserveExistingData)
-                ZB_MEMCPY(newMappedPtr, m_mappedPtr, m_capacity);
+                ZA_MEMCPY(newMappedPtr, m_mappedPtr, m_capacity);
 
             unmapIfNeeded(obj);
         }
 
-        obj = ZB_MOVE(newObj);
+        obj = ZA_MOVE(newObj);
         obj.bind();
 
         m_mappedPtr = newMappedPtr;
@@ -321,7 +321,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     void*     m_mappedPtr{nullptr}; //!< Write-only mapped pointer
-    zb::SizeT m_capacity{0u};       //!< Currently allocated capacity of the buffer
+    za::SizeT m_capacity{0u};       //!< Currently allocated capacity of the buffer
 };
 
 

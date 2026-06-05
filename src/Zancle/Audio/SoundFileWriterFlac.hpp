@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/SoundFileWriter.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -75,14 +75,14 @@ public:
     /// \param count   Number of samples to write
     ///
     ////////////////////////////////////////////////////////////
-    void write(const zb::I16* samples, zb::U64 count) override;
+    void write(const za::I16* samples, za::U64 count) override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace za::priv

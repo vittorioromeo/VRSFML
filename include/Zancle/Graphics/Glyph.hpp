@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace za
@@ -24,8 +24,8 @@ struct [[nodiscard]] ZA_GRAPHICS_API Glyph
     float   advance{};   //!< Offset to move horizontally to the next character
     Rect2f  bounds;      //!< Bounding rectangle of the glyph, in coordinates relative to the baseline
     Rect2f  textureRect; //!< Texture coordinates of the glyph inside the font's texture
-    zb::I16 lsbDelta{};  //!< Left offset after forced autohint. Internally used by `getKerning`
-    zb::I16 rsbDelta{};  //!< Right offset after forced autohint. Internally used by `getKerning`
+    za::I16 lsbDelta{};  //!< Left offset after forced autohint. Internally used by `getKerning`
+    za::I16 rsbDelta{};  //!< Right offset after forced autohint. Internally used by `getKerning`
 };
 
 } // namespace za

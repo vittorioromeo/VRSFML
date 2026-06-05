@@ -8,15 +8,15 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Transform.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Rect2.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Sqrt.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Sqrt.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
 
 
 namespace za::priv
@@ -42,18 +42,18 @@ namespace za::priv
     const Vec2f origin,
     const Angle rotation) noexcept
 {
-    const auto [sine, cosine] = zb::sinCosLookup(zb::positiveRemainder(rotation.asRadians(), zb::tau));
+    const auto [sine, cosine] = za::sinCosLookup(za::positiveRemainder(rotation.asRadians(), za::tau));
 
-    const float a = localSemiAxes.x * ZB_MATH_FABSF(scale.x);
-    const float b = localSemiAxes.y * ZB_MATH_FABSF(scale.y);
+    const float a = localSemiAxes.x * ZA_MATH_FABSF(scale.x);
+    const float b = localSemiAxes.y * ZA_MATH_FABSF(scale.y);
 
     const float a2 = a * a;
     const float b2 = b * b;
     const float c2 = cosine * cosine;
     const float s2 = sine * sine;
 
-    const float hw = ZB_MATH_SQRTF(a2 * c2 + b2 * s2);
-    const float hh = ZB_MATH_SQRTF(a2 * s2 + b2 * c2);
+    const float hw = ZA_MATH_SQRTF(a2 * c2 + b2 * s2);
+    const float hh = ZA_MATH_SQRTF(a2 * s2 + b2 * c2);
 
     const auto  transform   = Transform::fromPositionScaleOriginSinCos(position, scale, origin, sine, cosine);
     const Vec2f worldCenter = transform.transformPoint(localCenter);

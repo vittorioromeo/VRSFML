@@ -11,10 +11,10 @@
 
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za::priv
@@ -32,7 +32,7 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
             expression);
 
 #ifdef ZA_FATAL_OPENGL_ERRORS
-        ZB_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
+        ZA_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
 #endif
     }
 
@@ -47,11 +47,11 @@ void glCheckError(const unsigned int openGlError, const char* const file, const 
                '\n');
 
 #ifdef ZA_FATAL_OPENGL_ERRORS
-        ZB_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
+        ZA_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
 #endif
     };
 
-    ZB_ASSERT(openGlError != GL_NO_ERROR);
+    ZA_ASSERT(openGlError != GL_NO_ERROR);
 
     switch (openGlError)
     {

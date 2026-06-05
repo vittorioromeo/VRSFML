@@ -13,15 +13,15 @@
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/LifetimeDependant.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 
@@ -63,7 +63,7 @@ struct Sound::Impl
         *framesRead = 0u;
 
         const ma_uint32 channelCount = impl.buffer.getChannelCount();
-        ZB_ASSERT(channelCount > 0u);
+        ZA_ASSERT(channelCount > 0u);
 
         const ma_uint64 totalBufferSamples = impl.buffer.getSampleCount();
         const ma_uint64 totalBufferFrames  = totalBufferSamples / channelCount;
@@ -78,14 +78,14 @@ struct Sound::Impl
         }
 
         // Determine how many frames we can read
-        *framesRead = zb::min(frameCount, static_cast<ma_uint64>(totalBufferFrames - impl.cursor));
+        *framesRead = za::min(frameCount, static_cast<ma_uint64>(totalBufferFrames - impl.cursor));
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * impl.buffer.getChannelCount();
 
-        ZB_MEMCPY(framesOut,
+        ZA_MEMCPY(framesOut,
                   impl.buffer.getSamples() + impl.cursor * impl.buffer.getChannelCount(),
-                  static_cast<zb::SizeT>(sampleCount) * sizeof(impl.buffer.getSamples()[0]));
+                  static_cast<za::SizeT>(sampleCount) * sizeof(impl.buffer.getSamples()[0]));
 
         impl.cursor += *framesRead;
 
@@ -99,7 +99,7 @@ struct Sound::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static ma_result seek(ma_data_source* const dataSource, const ma_uint64 frameIndex)
     {
-        static_cast<Impl*>(dataSource)->cursor = static_cast<zb::SizeT>(frameIndex);
+        static_cast<Impl*>(dataSource)->cursor = static_cast<za::SizeT>(frameIndex);
         return MA_SUCCESS;
     }
 
@@ -110,7 +110,7 @@ struct Sound::Impl
         ma_uint32* const      channels,
         ma_uint32* const      sampleRate,
         ma_channel* const,
-        const zb::SizeT)
+        const za::SizeT)
     {
         const auto& impl = *static_cast<const Impl*>(dataSource);
 
@@ -152,7 +152,7 @@ struct Sound::Impl
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
     Sound&             owner;    //!< Owning `Sound` object
-    zb::U64            cursor{}; //!< The current playing position (in frames)
+    za::U64            cursor{}; //!< The current playing position (in frames)
     const SoundBuffer& buffer;   //!< Sound buffer bound to the source
 };
 
@@ -189,8 +189,8 @@ void Sound::setPlayingOffset(const Time playingOffset)
 {
     auto& sound = m_impl->soundBase.getSound();
 
-    ZB_ASSERT(sound.pDataSource != nullptr);
-    ZB_ASSERT(sound.engineNode.pEngine != nullptr);
+    ZA_ASSERT(sound.pDataSource != nullptr);
+    ZA_ASSERT(sound.engineNode.pEngine != nullptr);
 
     m_impl->cursor = priv::MiniaudioUtils::getFrameIndex(sound, playingOffset).value();
 }

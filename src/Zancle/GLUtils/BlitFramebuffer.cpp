@@ -10,10 +10,10 @@
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Swap.hpp"
+#include "Zancle/Base/Swap.hpp"
 
 
 namespace za::priv
@@ -25,7 +25,7 @@ void blitFramebuffer(const bool invertYAxis, const Rect2u src, const Rect2u dst)
     auto srcY1 = static_cast<GLint>(src.position.y + src.size.y);
 
     if (invertYAxis)
-        zb::genericSwap(srcY0, srcY1);
+        za::genericSwap(srcY0, srcY1);
 
     glCheck(glBlitFramebuffer(static_cast<GLint>(src.position.x),
                               srcY0,

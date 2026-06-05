@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ struct WindowSettings;
 /// \return The created render window, or empty on failure.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Optional<za::RenderWindow> makeDPIScaledRenderWindow(const za::WindowSettings& windowSettings);
+[[nodiscard]] za::Optional<za::RenderWindow> makeDPIScaledRenderWindow(const za::WindowSettings& windowSettings);
 
 ////////////////////////////////////////////////////////////
 /// \brief Create a render texture, clamping anti-aliasing to the supported maximum.
@@ -200,5 +200,5 @@ struct WindowSettings;
 /// \return The created render texture, or empty on failure.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Optional<za::RenderTexture> makeAARenderTexture(za::Vec2u                       resolution,
+[[nodiscard]] za::Optional<za::RenderTexture> makeAARenderTexture(za::Vec2u                       resolution,
                                                                   za::RenderTextureCreateSettings rtCreateSettings);

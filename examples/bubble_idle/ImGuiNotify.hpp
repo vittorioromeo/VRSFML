@@ -13,9 +13,9 @@
 
 #pragma GCC system_header
 
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 
 #include <cstdarg>
 
@@ -51,7 +51,7 @@ typedef int ImGuiWindowFlags;
 extern const ImGuiWindowFlags NOTIFY_DEFAULT_TOAST_FLAGS;
 
 
-enum class ImGuiToastType : zb::U8
+enum class ImGuiToastType : za::U8
 {
     None,
     Success,
@@ -61,7 +61,7 @@ enum class ImGuiToastType : zb::U8
     COUNT
 };
 
-enum class ImGuiToastPhase : zb::U8
+enum class ImGuiToastPhase : za::U8
 {
     FadeIn,
     Wait,
@@ -70,7 +70,7 @@ enum class ImGuiToastPhase : zb::U8
     COUNT
 };
 
-enum class ImGuiToastPos : zb::U8
+enum class ImGuiToastPos : za::U8
 {
     TopLeft,
     TopCenter,

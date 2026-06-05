@@ -17,10 +17,10 @@
 #include "Zancle/GLUtils/GlFuncTypesImpl.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Strstr.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Strstr.hpp"
 
 
 namespace za::priv
@@ -55,7 +55,7 @@ GlContext::GlContext(unsigned int id, const ContextSettings& contextSettings) : 
 ////////////////////////////////////////////////////////////
 bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings)
 {
-    ZB_ASSERT(WindowContext::getActiveThreadLocalGlContextPtr() == this);
+    ZA_ASSERT(WindowContext::getActiveThreadLocalGlContextPtr() == this);
 
     const auto& derivedSharedGlContext = static_cast<const SDLGlContext&>(sharedGlContext);
 
@@ -120,7 +120,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
             {
                 const auto* extensionString = reinterpret_cast<const char*>(glGetStringiFunc(GL_EXTENSIONS, i));
 
-                if (ZB_STRSTR(extensionString, "GL_ARB_compatibility"))
+                if (ZA_STRSTR(extensionString, "GL_ARB_compatibility"))
                 {
                     m_settings.attributeFlags &= ~ContextSettings::Attribute::Core;
                     break;

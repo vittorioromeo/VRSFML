@@ -28,10 +28,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Color.hpp" // IWYU pragma: keep
 
-#include "Zancle/System/Priv/Vec2Base.hpp" // IWYU pragma: keep
+#include "Zancle/Geometry/Priv/Vec2Base.hpp" // IWYU pragma: keep
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp" // IWYU pragma: keep
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp" // IWYU pragma: keep
 
 
 ////////////////////////////////////////////////////////////
@@ -94,4 +94,4 @@
 ////////////////////////////////////////////////////////////
 // Route Dear ImGui assertions through Zancle's assertion macro
 ////////////////////////////////////////////////////////////
-#define IM_ASSERT ZB_ASSERT
+#define IM_ASSERT ZA_ASSERT

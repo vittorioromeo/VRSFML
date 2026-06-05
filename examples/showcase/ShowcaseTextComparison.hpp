@@ -9,8 +9,8 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
 
 ////////////////////////////////////////////////////////////

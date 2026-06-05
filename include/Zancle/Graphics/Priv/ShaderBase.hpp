@@ -10,10 +10,10 @@
 
 #include "Zancle/Graphics/Priv/GlslFwd.hpp"
 
-#include "ZancleBase/InPlacePImpl.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Vocabulary/InPlacePImpl.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -26,13 +26,13 @@ class RenderTarget;
 class Texture;
 } // namespace za
 
-namespace zb
+namespace za
 {
 template <typename>
 class Optional;
 
 class StringView;
-} // namespace zb
+} // namespace za
 
 
 namespace za
@@ -141,7 +141,7 @@ public:
     ///
     /// This function loads the vertex, geometry and fragment
     /// shaders specified by `settings`. If one of them fails to
-    /// load, this function returns `zb::nullOpt`. Any stage
+    /// load, this function returns `za::nullOpt`. Any stage
     /// whose path is left empty is replaced by the corresponding
     /// default shader.
     ///
@@ -160,12 +160,12 @@ public:
     ///
     /// \param settings Paths of the shader stages to load
     ///
-    /// \return Shader if loading succeeded, `zb::nullOpt` if it failed
+    /// \return Shader if loading succeeded, `za::nullOpt` if it failed
     ///
     /// \see `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Shader> loadFromFile(const LoadFromFileSettings& settings);
+    [[nodiscard]] static za::Optional<Shader> loadFromFile(const LoadFromFileSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Settings for `loadFromMemory`
@@ -184,7 +184,7 @@ public:
     ///
     /// This function loads the vertex, geometry and fragment
     /// shaders specified by `settings`. If one of them fails to
-    /// load, this function returns `zb::nullOpt`. Any stage
+    /// load, this function returns `za::nullOpt`. Any stage
     /// whose source code is left empty is replaced by the
     /// corresponding default shader.
     ///
@@ -195,12 +195,12 @@ public:
     ///
     /// \param settings Source code of the shader stages to load
     ///
-    /// \return Shader if loading succeeded, `zb::nullOpt` if it failed
+    /// \return Shader if loading succeeded, `za::nullOpt` if it failed
     ///
     /// \see `loadFromFile`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Shader> loadFromMemory(const LoadFromMemorySettings& settings);
+    [[nodiscard]] static za::Optional<Shader> loadFromMemory(const LoadFromMemorySettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Settings for `loadFromStream`
@@ -225,7 +225,7 @@ public:
     ///
     /// This function loads the vertex, geometry and fragment
     /// shaders specified by `settings`. If one of them fails to
-    /// load, this function returns `zb::nullOpt`. Any stage
+    /// load, this function returns `za::nullOpt`. Any stage
     /// whose stream is `nullptr` is replaced by the corresponding
     /// default shader.
     ///
@@ -236,12 +236,12 @@ public:
     ///
     /// \param settings Streams of the shader stages to load
     ///
-    /// \return Shader if loading succeeded, `zb::nullOpt` if it failed
+    /// \return Shader if loading succeeded, `za::nullOpt` if it failed
     ///
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Shader> loadFromStream(const LoadFromStreamSettings& settings);
+    [[nodiscard]] static za::Optional<Shader> loadFromStream(const LoadFromStreamSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the location of a shader uniform
@@ -252,10 +252,10 @@ public:
     ///
     /// \param uniformName Name of the uniform variable to search
     ///
-    /// \return Location of the uniform, or `zb::nullOpt` if not found
+    /// \return Location of the uniform, or `za::nullOpt` if not found
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Optional<UniformLocation> getUniformLocation(zb::StringView uniformName) const;
+    [[nodiscard]] za::Optional<UniformLocation> getUniformLocation(za::StringView uniformName) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p float uniform
@@ -475,7 +475,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const float* scalarArray, zb::SizeT length);
+    void setUniformArray(UniformLocation location, const float* scalarArray, za::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec2[] array uniform
@@ -485,7 +485,7 @@ public:
     /// \param length   Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, zb::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, za::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec3[] array uniform
@@ -495,7 +495,7 @@ public:
     /// \param length   Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, zb::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, za::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec4[] array uniform
@@ -505,7 +505,7 @@ public:
     /// \param length   Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, zb::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, za::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat3[] array uniform
@@ -515,7 +515,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, zb::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, za::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat4[] array uniform
@@ -525,7 +525,7 @@ public:
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, zb::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, za::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the shader.
@@ -594,7 +594,7 @@ public:
     /// \brief Construct from shader program
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Shader(zb::PassKey<Shader>&&, unsigned int shaderProgram);
+    [[nodiscard]] explicit Shader(za::PassKey<Shader>&&, unsigned int shaderProgram);
 
 private:
     friend RenderTarget;
@@ -615,12 +615,12 @@ private:
     /// \param geometryShaderCode Source code of the geometry shader
     /// \param fragmentShaderCode Source code of the fragment shader
     ///
-    /// \return Shader on success, `zb::nullOpt` if any error happened
+    /// \return Shader on success, `za::nullOpt` if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Shader> compile(zb::StringView vertexShaderCode,
-                                                      zb::StringView geometryShaderCode,
-                                                      zb::StringView fragmentShaderCode);
+    [[nodiscard]] static za::Optional<Shader> compile(za::StringView vertexShaderCode,
+                                                      za::StringView geometryShaderCode,
+                                                      za::StringView fragmentShaderCode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind all the textures used by the shader
@@ -644,9 +644,9 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    zb::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+    za::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
 
-    mutable zb::U32 m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
+    mutable za::U32 m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
 
     bool m_hasBuiltInUniformMVPRow0;        //!< Whether the shader has the built-in `za_u_mvpRow0` uniform
     bool m_hasBuiltInUniformMVPRow1;        //!< Whether the shader has the built-in `za_u_mvpRow1` uniform

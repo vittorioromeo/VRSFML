@@ -12,15 +12,15 @@
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Ceil.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SinCosLookup.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/SinCosLookup.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv
@@ -87,7 +87,7 @@ public:
         if (beamLength == 0.f)
             return;
 
-        const auto numSegments = static_cast<zb::SizeT>(zb::ceil(beamLength / pixelsPerSegment));
+        const auto numSegments = static_cast<za::SizeT>(za::ceil(beamLength / pixelsPerSegment));
 
         if (numSegments == 0u)
             return;
@@ -104,18 +104,18 @@ public:
         const float timeOffset1 = m_lifetime.asSeconds() * wobbleSpeed1;
         const float timeOffset2 = m_lifetime.asSeconds() * wobbleSpeed2;
 
-        for (zb::SizeT i = 0u; i < nBasePoints; ++i)
+        for (za::SizeT i = 0u; i < nBasePoints; ++i)
         {
             const float progress = static_cast<float>(i) / static_cast<float>(numSegments);
             const float distance = beamLength * progress;
 
             // Calculate the displacement from the first (primary) wave
-            const float sineInput1    = zb::positiveRemainder(timeOffset1 + distance * spatialFrequency1, zb::tau);
-            const float displacement1 = zb::sinLookup(sineInput1) * wobbleAmplitude1;
+            const float sineInput1    = za::positiveRemainder(timeOffset1 + distance * spatialFrequency1, za::tau);
+            const float displacement1 = za::sinLookup(sineInput1) * wobbleAmplitude1;
 
             // Calculate the displacement from the second (detail) wave
-            const float sineInput2    = zb::positiveRemainder(timeOffset2 + distance * spatialFrequency2, zb::tau);
-            const float displacement2 = zb::sinLookup(sineInput2) * wobbleAmplitude2;
+            const float sineInput2    = za::positiveRemainder(timeOffset2 + distance * spatialFrequency2, za::tau);
+            const float displacement2 = za::sinLookup(sineInput2) * wobbleAmplitude2;
 
             // The final displacement is the sum of both waves
             const float totalDisplacement = displacement1 + displacement2;
@@ -138,7 +138,7 @@ public:
     ////////////////////////////////////////////////////////////
     void draw(za::RenderTarget& target, const za::RenderStates states) const
     {
-        const auto drawVertices = [&](const zb::Vector<za::Vertex>& vertices)
+        const auto drawVertices = [&](const za::Vector<za::Vertex>& vertices)
         {
             target.drawIndexedVertices(
                 za::DrawIndexedVerticesSettings{
@@ -165,12 +165,12 @@ private:
     /// called by the update loop every frame.
     ///
     ////////////////////////////////////////////////////////////
-    void updateVertexGeometry(const zb::Vector<za::Vec2f>& points)
+    void updateVertexGeometry(const za::Vector<za::Vec2f>& points)
     {
         if (points.size() < 2)
             return;
 
-        const auto numQuads    = static_cast<zb::SizeT>(points.size() - 1u);
+        const auto numQuads    = static_cast<za::SizeT>(points.size() - 1u);
         const auto vertexCount = numQuads * 4u;
         const auto indexCount  = numQuads * 6u;
 
@@ -181,7 +181,7 @@ private:
             m_indices.resize(indexCount);
         }
 
-        for (zb::SizeT i = 0u; i < numQuads; ++i)
+        for (za::SizeT i = 0u; i < numQuads; ++i)
         {
             const auto baseIndex = static_cast<za::IndexType>(i * 4u);
             const auto idxOffset = i * 6u;
@@ -196,7 +196,7 @@ private:
 
         const auto glowColor = m_color.withAlpha(m_color.a / 4u);
 
-        for (zb::SizeT i = 0u; i < points.size() - 1u; ++i)
+        for (za::SizeT i = 0u; i < points.size() - 1u; ++i)
         {
             const za::Vec2f p1 = points[i];
             const za::Vec2f p2 = points[i + 1];
@@ -244,11 +244,11 @@ private:
     float     m_glowThickness;
     za::Time  m_lifetime;
 
-    zb::Vector<za::Vec2f> m_currentPoints;
+    za::Vector<za::Vec2f> m_currentPoints;
 
-    zb::Vector<za::Vertex>    m_verticesCore;
-    zb::Vector<za::Vertex>    m_verticesGlow;
-    zb::Vector<za::IndexType> m_indices;
+    za::Vector<za::Vertex>    m_verticesCore;
+    za::Vector<za::Vertex>    m_verticesGlow;
+    za::Vector<za::IndexType> m_indices;
 };
 
 } // namespace tsurv

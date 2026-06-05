@@ -15,12 +15,12 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TransformableMixin.hpp"
 
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
-#include "Zancle/System/LocalAnchorPointMixin.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -80,9 +80,9 @@ struct [[nodiscard]] NinePatchRect : za::TransformableMixin, za::GlobalAnchorPoi
 
         states.transform *= getTransform();
 
-        for (zb::SizeT iy = 0; iy < 3u; ++iy)
+        for (za::SizeT iy = 0; iy < 3u; ++iy)
         {
-            for (zb::SizeT ix = 0; ix < 3u; ++ix)
+            for (za::SizeT ix = 0; ix < 3u; ++ix)
             {
                 drawPatch(target,
                           texture,

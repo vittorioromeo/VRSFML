@@ -12,11 +12,11 @@
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
 
 #include <miniaudio.h>
 
@@ -58,7 +58,7 @@ void MiniaudioSoundSource::setPan(const float pan)
 ////////////////////////////////////////////////////////////
 void MiniaudioSoundSource::setVolume(const float volume)
 {
-    ZB_ASSERT(volume >= 0.f && volume <= 1.f);
+    ZA_ASSERT(volume >= 0.f && volume <= 1.f);
     m_impl->audioSettings.volume = volume;
     ma_sound_set_volume(&getSoundBase().getSound(), volume);
 }
@@ -94,8 +94,8 @@ void MiniaudioSoundSource::setCone(const Cone& cone)
     m_impl->audioSettings.cone = cone;
 
     ma_sound_set_cone(&getSoundBase().getSound(),
-                      zb::clamp(cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
-                      zb::clamp(cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
+                      za::clamp(cone.innerAngle, Angle::Zero, Angle::Full).asRadians(),
+                      za::clamp(cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
                       cone.outerGain);
 }
 
@@ -208,7 +208,7 @@ float MiniaudioSoundSource::getPan() const
 float MiniaudioSoundSource::getVolume() const
 {
     const float result = m_impl->audioSettings.volume;
-    ZB_ASSERT(result >= 0.f && result <= 1.f);
+    ZA_ASSERT(result >= 0.f && result <= 1.f);
     return result;
 }
 

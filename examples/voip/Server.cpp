@@ -14,24 +14,24 @@
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp" // IWYU pragma: keep
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp" // IWYU pragma: keep
+#include "Zancle/Container/Vector.hpp"
 
 #include <mutex>
 
 
-constexpr zb::U8 serverAudioData   = 1;
-constexpr zb::U8 serverEndOfStream = 2;
+constexpr za::U8 serverAudioData   = 1;
+constexpr za::U8 serverEndOfStream = 2;
 
 
 namespace
@@ -46,12 +46,12 @@ namespace
 struct NetworkState
 {
     mutable std::recursive_mutex mutex;
-    zb::Vector<zb::I16>          samples;
-    zb::SizeT                    offset{};
+    za::Vector<za::I16>          samples;
+    za::SizeT                    offset{};
     bool                         hasFinished{};
 
     ////////////////////////////////////////////////////////////
-    bool onGetData(zb::Vector<zb::I16>& outBuffer)
+    bool onGetData(za::Vector<za::I16>& outBuffer)
     {
         if ((offset >= samples.size()) && hasFinished)
             return false;
@@ -62,7 +62,7 @@ struct NetworkState
 
         {
             const std::lock_guard lock(mutex);
-            outBuffer.assignRange(samples.begin() + static_cast<zb::Vector<zb::I16>::difference_type>(offset),
+            outBuffer.assignRange(samples.begin() + static_cast<za::Vector<za::I16>::difference_type>(offset),
                                   samples.end());
         }
 
@@ -73,7 +73,7 @@ struct NetworkState
     ////////////////////////////////////////////////////////////
     void onSeek(za::Time timeOffset)
     {
-        offset = static_cast<zb::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
+        offset = static_cast<za::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
     }
 };
 
@@ -105,14 +105,14 @@ public:
             m_listener = za::TcpListener::create(port, /* isBlocking */ true);
             if (!m_listener.hasValue())
                 return;
-            zb::printLn("Server is listening to port {}, waiting for connections... ", port);
+            za::printLn("Server is listening to port {}, waiting for connections... ", port);
 
             // Wait for a connection
             auto acceptResult = m_listener->accept();
             if (acceptResult.status != za::Socket::Status::Done)
                 return;
-            m_client = ZB_MOVE(acceptResult.socket);
-            zb::printLn("Client connected: {}", za::IpAddressUtils::toString(m_client->getRemoteAddress().value()));
+            m_client = ZA_MOVE(acceptResult.socket);
+            za::printLn("Client connected: {}", za::IpAddressUtils::toString(m_client->getRemoteAddress().value()));
 
             play();
             receiveLoop();
@@ -137,16 +137,16 @@ private:
             if (m_client->receive(packet) != za::Socket::Status::Done)
                 break;
 
-            zb::U8 id = 0;
+            za::U8 id = 0;
             packet >> id;
 
             if (id == serverAudioData)
             {
-                const zb::SizeT sampleCount = (packet.getDataSize() - 1) / sizeof(zb::I16);
+                const za::SizeT sampleCount = (packet.getDataSize() - 1) / sizeof(za::I16);
                 {
                     const std::lock_guard lock(s.mutex);
                     const auto*           begin = static_cast<const char*>(packet.getData()) + 1;
-                    const auto*           end   = begin + sampleCount * sizeof(zb::I16);
+                    const auto*           end   = begin + sampleCount * sizeof(za::I16);
 
                     for (const auto* it = begin; it != end; ++it)
                         s.samples.emplaceBack(*it);
@@ -154,12 +154,12 @@ private:
             }
             else if (id == serverEndOfStream)
             {
-                zb::printLn("Audio data has been 100% received!");
+                za::printLn("Audio data has been 100% received!");
                 s.hasFinished = true;
             }
             else
             {
-                zb::printLn("Invalid packet received...");
+                za::printLn("Invalid packet received...");
                 s.hasFinished = true;
             }
         }
@@ -168,8 +168,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data (network-only; audio-thread state lives in `state()`)
     ////////////////////////////////////////////////////////////
-    zb::Optional<za::TcpListener> m_listener;
-    zb::Optional<za::TcpSocket>   m_client;
+    za::Optional<za::TcpListener> m_listener;
+    za::Optional<za::TcpSocket>   m_client;
 };
 
 } // namespace
@@ -193,11 +193,11 @@ void doServer(za::PlaybackDevice& playbackDevice, unsigned short port)
         za::ThisThread::sleepFor(za::milliseconds(100));
     }
 
-    zb::scnStdinIgnoreLine();
+    za::scnStdinIgnoreLine();
 
     // Wait until the user presses 'enter' key
-    zb::printLn("Press enter to replay the sound...");
-    zb::scnStdinIgnoreLine();
+    za::printLn("Press enter to replay the sound...");
+    za::scnStdinIgnoreLine();
 
     // Replay the sound (just to make sure replaying the received data is OK)
     audioStream.play();

@@ -10,8 +10,8 @@
 
 #include "Zancle/Audio/ChannelMap.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        zb::U64      sampleCount{}; //!< Total number of samples in the file
+        za::U64      sampleCount{}; //!< Total number of samples in the file
         unsigned int sampleRate{};  //!< Samples rate of the sound, in samples per second
         ChannelMap   channelMap;    //!< Map of position in sample frame to sound channel
     };
@@ -58,10 +58,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Properties of the loaded sound on success, `zb::nullOpt` otherwise
+    /// \return Properties of the loaded sound on success, `za::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual zb::Optional<Info> open(InputStream& stream) = 0;
+    [[nodiscard]] virtual za::Optional<Info> open(InputStream& stream) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -76,7 +76,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    virtual void seek(zb::U64 sampleOffset) = 0;
+    virtual void seek(za::U64 sampleOffset) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -87,7 +87,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual zb::U64 read(zb::I16* samples, zb::U64 maxCount) = 0;
+    [[nodiscard]] virtual za::U64 read(za::I16* samples, za::U64 maxCount) = 0;
 };
 
 } // namespace za
@@ -126,20 +126,20 @@ public:
 ///         // return true if the reader can handle the format
 ///     }
 ///
-///     [[nodiscard]] zb::Optional<za::SoundFileReader::Info> open(za::InputStream& stream) override
+///     [[nodiscard]] za::Optional<za::SoundFileReader::Info> open(za::InputStream& stream) override
 ///     {
 ///         // read the sound file header and fill the sound attributes
 ///         // (channel count, sample count and sample rate)
 ///         // return true on success
 ///     }
 ///
-///     void seek(zb::U64 sampleOffset) override
+///     void seek(za::U64 sampleOffset) override
 ///     {
 ///         // advance to the sampleOffset-th sample from the beginning of the
 ///         sound
 ///     }
 ///
-///     zb::U64 read(zb::I16* samples, zb::U64 maxCount) override
+///     za::U64 read(za::I16* samples, za::U64 maxCount) override
 ///     {
 ///         // read up to 'maxCount' samples into the 'samples' array,
 ///         // convert them (for example from normalized float) if they are not stored

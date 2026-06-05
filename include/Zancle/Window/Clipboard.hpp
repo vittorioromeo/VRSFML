@@ -78,7 +78,7 @@ struct ZA_WINDOW_API Clipboard
 /// za::Utf8String string = za::Clipboard::getString();
 ///
 /// // or use it in the event loop
-/// while (const zb::Optional event = window.pollEvent())
+/// while (const za::Optional event = window.pollEvent())
 /// {
 ///     if (event->is<za::Event::Closed>())
 ///         return 0; // break out of both event and main loops

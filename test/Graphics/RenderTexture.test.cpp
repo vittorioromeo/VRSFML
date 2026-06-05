@@ -14,14 +14,14 @@
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
@@ -30,11 +30,11 @@ TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::RenderTexture));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::RenderTexture));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::RenderTexture));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderTexture));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderTexture));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::RenderTexture));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::RenderTexture));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::RenderTexture));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::RenderTexture));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::RenderTexture));
     }
 
     SECTION("create()")
@@ -257,6 +257,6 @@ TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
         auto rt1 = za::RenderTexture::create({100, 100}, {.depthBits = 8, .stencilBits = 8});
         CHECK(rt1.hasValue());
 
-        *rt0 = ZB_MOVE(*rt1);
+        *rt0 = ZA_MOVE(*rt1);
     }
 }

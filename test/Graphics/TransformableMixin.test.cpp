@@ -6,19 +6,19 @@
 
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Trait/IsAggregate.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsStandardLayout.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsAggregate.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Trait/IsStandardLayout.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 
 struct TestTransformable : za::TransformableMixin
@@ -31,17 +31,17 @@ TEST_CASE("[Graphics] za::Transformable")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(TestTransformable));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(TestTransformable));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestTransformable));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(TestTransformable));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(TestTransformable));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(TestTransformable));
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(TestTransformable)); // because of member initializers
-        STATIC_CHECK(ZB_IS_STANDARD_LAYOUT(TestTransformable));
-        STATIC_CHECK(ZB_IS_AGGREGATE(TestTransformable));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_COPYABLE(TestTransformable));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_DESTRUCTIBLE(TestTransformable));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_ASSIGNABLE(TestTransformable, TestTransformable));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(TestTransformable)); // because of member initializers
+        STATIC_CHECK(ZA_IS_STANDARD_LAYOUT(TestTransformable));
+        STATIC_CHECK(ZA_IS_AGGREGATE(TestTransformable));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_COPYABLE(TestTransformable));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_DESTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_ASSIGNABLE(TestTransformable, TestTransformable));
     }
 
     SECTION("Construction")

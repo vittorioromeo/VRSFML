@@ -8,12 +8,12 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/MinMaxMacros.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/MinMaxMacros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za::VertexUtils
@@ -30,10 +30,10 @@ namespace za::VertexUtils
 /// \return A rect representing the bounding rectangle.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::pure]] inline constexpr Rect2f getVertexRangeBounds(const Vertex* const data, const zb::SizeT nVertices) noexcept
+[[nodiscard, gnu::pure]] inline constexpr Rect2f getVertexRangeBounds(const Vertex* const data, const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     float left   = data[0].position.x;
@@ -43,10 +43,10 @@ namespace za::VertexUtils
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
-        left   = ZB_MIN(left, v->position.x);
-        right  = ZB_MAX(right, v->position.x);
-        top    = ZB_MIN(top, v->position.y);
-        bottom = ZB_MAX(bottom, v->position.y);
+        left   = ZA_MIN(left, v->position.x);
+        right  = ZA_MAX(right, v->position.x);
+        top    = ZA_MIN(top, v->position.y);
+        bottom = ZA_MAX(bottom, v->position.y);
     }
 
     return {{left, top}, {right - left, bottom - top}};
@@ -62,16 +62,16 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLeft(const Vertex* const data,
-                                                                                          const zb::SizeT nVertices) noexcept
+                                                                                          const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     float result = data[0].position.x;
 
     for (const Vertex* v = data + 1; v < end; ++v)
-        result = ZB_MIN(result, v->position.x);
+        result = ZA_MIN(result, v->position.x);
 
     return result;
 }
@@ -86,16 +86,16 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getRight(const Vertex* const data,
-                                                                                           const zb::SizeT nVertices) noexcept
+                                                                                           const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     float result = data[0].position.x;
 
     for (const Vertex* v = data + 1; v < end; ++v)
-        result = ZB_MAX(result, v->position.x);
+        result = ZA_MAX(result, v->position.x);
 
     return result;
 }
@@ -110,16 +110,16 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getTop(const Vertex* const data,
-                                                                                         const zb::SizeT nVertices) noexcept
+                                                                                         const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     float result = data[0].position.y;
 
     for (const Vertex* v = data + 1; v < end; ++v)
-        result = ZB_MIN(result, v->position.y);
+        result = ZA_MIN(result, v->position.y);
 
     return result;
 }
@@ -135,16 +135,16 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getBottom(const Vertex* const data,
-                                                                                            const zb::SizeT nVertices) noexcept
+                                                                                            const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     float result = data[0].position.y;
 
     for (const Vertex* v = data + 1; v < end; ++v)
-        result = ZB_MAX(result, v->position.y);
+        result = ZA_MAX(result, v->position.y);
 
     return result;
 }
@@ -159,18 +159,18 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopLeft(const Vertex* const data,
-                                                                                             const zb::SizeT nVertices) noexcept
+                                                                                             const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
-        result.x = ZB_MIN(result.x, v->position.x);
-        result.y = ZB_MIN(result.y, v->position.y);
+        result.x = ZA_MIN(result.x, v->position.x);
+        result.y = ZA_MIN(result.y, v->position.y);
     }
 
     return result;
@@ -186,18 +186,18 @@ namespace za::VertexUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopRight(const Vertex* const data,
-                                                                                              const zb::SizeT nVertices) noexcept
+                                                                                              const za::SizeT nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
-        result.x = ZB_MAX(result.x, v->position.x);
-        result.y = ZB_MIN(result.y, v->position.y);
+        result.x = ZA_MAX(result.x, v->position.x);
+        result.y = ZA_MIN(result.y, v->position.y);
     }
 
     return result;
@@ -214,18 +214,18 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomLeft(
     const Vertex* const data,
-    const zb::SizeT     nVertices) noexcept
+    const za::SizeT     nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
-        result.x = ZB_MIN(result.x, v->position.x);
-        result.y = ZB_MAX(result.y, v->position.y);
+        result.x = ZA_MIN(result.x, v->position.x);
+        result.y = ZA_MAX(result.y, v->position.y);
     }
 
     return result;
@@ -242,18 +242,18 @@ namespace za::VertexUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomRight(
     const Vertex* const data,
-    const zb::SizeT     nVertices) noexcept
+    const za::SizeT     nVertices) noexcept
 {
-    ZB_ASSERT_AND_ASSUME(data != nullptr);
-    ZB_ASSERT_AND_ASSUME(nVertices > 0u);
+    ZA_ASSERT_AND_ASSUME(data != nullptr);
+    ZA_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
     Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
-        result.x = ZB_MAX(result.x, v->position.x);
-        result.y = ZB_MAX(result.y, v->position.y);
+        result.x = ZA_MAX(result.x, v->position.x);
+        result.y = ZA_MAX(result.y, v->position.y);
     }
 
     return result;

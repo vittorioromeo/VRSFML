@@ -9,27 +9,27 @@
 #include "Zancle/Network/TcpListener.hpp"
 #include "Zancle/Network/TcpSocket.hpp"
 
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Time.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr zb::StringView commonName = "Zancle TLS Example"; // Part of certificate
+constexpr za::StringView commonName = "Zancle TLS Example"; // Part of certificate
 
 
 ////////////////////////////////////////////////////////////
 // Generated with: openssl ecparam -out key.pem -name secp384r1 -genkey
-constexpr zb::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
+constexpr za::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
 BgUrgQQAIg==
 -----END EC PARAMETERS-----
 -----BEGIN EC PRIVATE KEY-----
@@ -49,7 +49,7 @@ ztTSrGCF1rJynnEoGJrIh3trvRAKD0E=
 // Organizational Unit Name (eg, section) []:.
 // Common Name (e.g. server FQDN or YOUR name) []:Zancle TLS Example
 // Email Address []:.
-constexpr zb::StringView certificate = R"(-----BEGIN CERTIFICATE-----
+constexpr za::StringView certificate = R"(-----BEGIN CERTIFICATE-----
 MIIByTCCAVCgAwIBAgIUKT3iSj7kJlvzxEGvfK1/yAYzRPcwCgYIKoZIzj0EAwMw
 GzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTAgFw0yNTA4MjMxMjI4MDJaGA8y
 MTI1MDczMDEyMjgwMlowGzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTB2MBAG
@@ -82,15 +82,15 @@ TEST_CASE("[Network] za::Tcp Loopback")
 {
     using Byte = unsigned char;
 
-    constexpr zb::SizeT nTestDataBytes = 1024 * 1024;
-    zb::Vector<Byte>    testData(nTestDataBytes);
+    constexpr za::SizeT nTestDataBytes = 1024 * 1024;
+    za::Vector<Byte>    testData(nTestDataBytes);
 
-    for (zb::SizeT i = 0u; i < nTestDataBytes; ++i)
+    for (za::SizeT i = 0u; i < nTestDataBytes; ++i)
         testData[i] = static_cast<Byte>(i % 256u);
 
     const auto* sendEnd = testData.data() + testData.size();
 
-    zb::Vector<Byte> buffer(testData.size());
+    za::Vector<Byte> buffer(testData.size());
     const auto*      recvEnd = buffer.data() + buffer.size();
 
     auto tcpListenerOpt = za::TcpListener::create(za::Socket::AnyPort, /* isBlocking */ false);
@@ -113,7 +113,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
 
         auto start = za::Clock::now();
 
-        zb::Optional<za::TcpSocket> serverSocketOpt;
+        za::Optional<za::TcpSocket> serverSocketOpt;
         while (true)
         {
             auto result = tcpListener.accept();
@@ -123,7 +123,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
 
             if (result.status == za::TcpListener::Status::Done)
             {
-                serverSocketOpt = ZB_MOVE(result.socket);
+                serverSocketOpt = ZA_MOVE(result.socket);
                 break;
             }
 
@@ -153,8 +153,8 @@ TEST_CASE("[Network] za::Tcp Loopback")
         {
             if (sendPtr != sendEnd)
             {
-                zb::SizeT  sent{};
-                const auto status = serverSocket.send(sendPtr, static_cast<zb::SizeT>(sendEnd - sendPtr), sent);
+                za::SizeT  sent{};
+                const auto status = serverSocket.send(sendPtr, static_cast<za::SizeT>(sendEnd - sendPtr), sent);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
                 sendPtr += sent;
@@ -165,8 +165,8 @@ TEST_CASE("[Network] za::Tcp Loopback")
             }
 
             {
-                zb::SizeT  received{};
-                const auto status = clientSocket.receive(recvPtr, static_cast<zb::SizeT>(recvEnd - recvPtr), received);
+                za::SizeT  received{};
+                const auto status = clientSocket.receive(recvPtr, static_cast<za::SizeT>(recvEnd - recvPtr), received);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 if (received > 0)
                     REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
@@ -196,7 +196,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
 
         auto start = za::Clock::now();
 
-        zb::Optional<za::TcpSocket> serverSocketOpt;
+        za::Optional<za::TcpSocket> serverSocketOpt;
         while (true)
         {
             auto result = tcpListener.accept();
@@ -206,7 +206,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
 
             if (result.status == za::TcpListener::Status::Done)
             {
-                serverSocketOpt = ZB_MOVE(result.socket);
+                serverSocketOpt = ZA_MOVE(result.socket);
                 break;
             }
 
@@ -236,7 +236,7 @@ TEST_CASE("[Network] za::Tcp Loopback")
             REQUIRE_FALSE(serverStatus == za::TcpSocket::TlsStatus::Error);
             REQUIRE_FALSE(serverStatus == za::TcpSocket::TlsStatus::NotConnected);
 
-            const auto clientStatus = clientSocket.setupTlsClient(commonName.to<zb::String>(), certificate);
+            const auto clientStatus = clientSocket.setupTlsClient(commonName.to<za::String>(), certificate);
 
             REQUIRE_FALSE(clientStatus == za::TcpSocket::TlsStatus::Error);
             REQUIRE_FALSE(clientStatus == za::TcpSocket::TlsStatus::NotConnected);
@@ -258,8 +258,8 @@ TEST_CASE("[Network] za::Tcp Loopback")
         {
             if (sendPtr != sendEnd)
             {
-                zb::SizeT  sent{};
-                const auto status = serverSocket.send(sendPtr, static_cast<zb::SizeT>(sendEnd - sendPtr), sent);
+                za::SizeT  sent{};
+                const auto status = serverSocket.send(sendPtr, static_cast<za::SizeT>(sendEnd - sendPtr), sent);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);
                 sendPtr += sent;
@@ -270,8 +270,8 @@ TEST_CASE("[Network] za::Tcp Loopback")
             }
 
             {
-                zb::SizeT  received{};
-                const auto status = clientSocket.receive(recvPtr, static_cast<zb::SizeT>(recvEnd - recvPtr), received);
+                za::SizeT  received{};
+                const auto status = clientSocket.receive(recvPtr, static_cast<za::SizeT>(recvEnd - recvPtr), received);
                 REQUIRE_FALSE(status == za::TcpSocket::Status::Error);
                 if (received > 0)
                     REQUIRE_FALSE(status == za::TcpSocket::Status::Disconnected);

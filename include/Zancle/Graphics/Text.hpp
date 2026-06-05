@@ -11,7 +11,7 @@
 #include "Zancle/Graphics/TextBase.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 
-#include "Zancle/System/LifetimeDependant.hpp"
+#include "Zancle/Lifetime/LifetimeDependant.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -8,12 +8,12 @@
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 
-#include "Zancle/System/Angle.hpp"
+#include "Zancle/Geometry/Angle.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/GetArraySize.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
 
 
 namespace
@@ -64,8 +64,8 @@ decltype(auto) ExampleIndividualShape::callWithActiveShape(auto&& f)
     }
     // clang-format on
 
-    ZB_ASSERT(false);
-    zb::abort();
+    ZA_ASSERT(false);
+    za::abort();
 }
 
 
@@ -146,7 +146,7 @@ void ExampleIndividualShape::imgui()
     ImGui::TextUnformatted("Drag LMB to move, drag RMB horizontally to rotate, mouse wheel to scale.");
 
     ImGui::SetNextItemWidth(120.f);
-    ImGui::Combo("Shape", &m_shapeIndex, shapeNames, zb::getArraySize(shapeNames));
+    ImGui::Combo("Shape", &m_shapeIndex, shapeNames, za::getArraySize(shapeNames));
 
 #define SLIDERFLOAT(obj, member, min, max) \
     ImGui::SliderFloat(#member "##" #obj, &(obj).member, min, max, "%.3f", ImGuiSliderFlags_NoRoundToFormat)
@@ -158,7 +158,7 @@ void ExampleIndividualShape::imgui()
     SLIDERFLOAT(*this, m_position.y, -128.f, resolution.y);
     SLIDERFLOAT(*this, m_origin.x, -256.f, 256.f);
     SLIDERFLOAT(*this, m_origin.y, -256.f, 256.f);
-    SLIDERFLOAT(*this, m_rotation.radians, 0.f, zb::tau);
+    SLIDERFLOAT(*this, m_rotation.radians, 0.f, za::tau);
     SLIDERFLOAT(*this, m_scale.x, 0.f, 10.f);
     SLIDERFLOAT(*this, m_scale.y, 0.f, 10.f);
     SLIDERFLOAT(*this, m_outlineThickness, -50.f, 50.f);
@@ -181,7 +181,7 @@ void ExampleIndividualShape::imgui()
 
         case 2:
             SLIDERFLOAT(m_sdCircle, radius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdCircle, startAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdCircle, startAngle.radians, 0.f, za::tau);
             SLIDERUINT(m_sdCircle, pointCount, 3u, 100u);
             break;
 
@@ -201,8 +201,8 @@ void ExampleIndividualShape::imgui()
         case 5:
             SLIDERFLOAT(m_sdCurvedArrow, outerRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdCurvedArrow, innerRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdCurvedArrow, startAngle.radians, 0.f, zb::tau);
-            SLIDERFLOAT(m_sdCurvedArrow, sweepAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdCurvedArrow, startAngle.radians, 0.f, za::tau);
+            SLIDERFLOAT(m_sdCurvedArrow, sweepAngle.radians, 0.f, za::tau);
             SLIDERFLOAT(m_sdCurvedArrow, headLength, 0.f, 100.f);
             SLIDERFLOAT(m_sdCurvedArrow, headWidth, 0.f, 100.f);
             SLIDERUINT(m_sdCurvedArrow, pointCount, 3u, 100u);
@@ -211,7 +211,7 @@ void ExampleIndividualShape::imgui()
         case 6:
             SLIDERFLOAT(m_sdEllipse, horizontalRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdEllipse, verticalRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdEllipse, startAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdEllipse, startAngle.radians, 0.f, za::tau);
             SLIDERUINT(m_sdEllipse, pointCount, 3u, 100u);
             break;
 
@@ -223,8 +223,8 @@ void ExampleIndividualShape::imgui()
 
         case 8:
             SLIDERFLOAT(m_sdPieSlice, radius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdPieSlice, startAngle.radians, 0.f, zb::tau);
-            SLIDERFLOAT(m_sdPieSlice, sweepAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdPieSlice, startAngle.radians, 0.f, za::tau);
+            SLIDERFLOAT(m_sdPieSlice, sweepAngle.radians, 0.f, za::tau);
             SLIDERUINT(m_sdPieSlice, pointCount, 3u, 100u);
             break;
 
@@ -236,15 +236,15 @@ void ExampleIndividualShape::imgui()
         case 10:
             SLIDERFLOAT(m_sdRingShape, outerRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdRingShape, innerRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdRingShape, startAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdRingShape, startAngle.radians, 0.f, za::tau);
             SLIDERUINT(m_sdRingShape, pointCount, 3u, 100u);
             break;
 
         case 11:
             SLIDERFLOAT(m_sdRingPieSlice, outerRadius, 0.f, 100.f);
             SLIDERFLOAT(m_sdRingPieSlice, innerRadius, 0.f, 100.f);
-            SLIDERFLOAT(m_sdRingPieSlice, startAngle.radians, 0.f, zb::tau);
-            SLIDERFLOAT(m_sdRingPieSlice, sweepAngle.radians, 0.f, zb::tau);
+            SLIDERFLOAT(m_sdRingPieSlice, startAngle.radians, 0.f, za::tau);
+            SLIDERFLOAT(m_sdRingPieSlice, sweepAngle.radians, 0.f, za::tau);
             SLIDERUINT(m_sdRingPieSlice, pointCount, 3u, 100u);
             break;
 

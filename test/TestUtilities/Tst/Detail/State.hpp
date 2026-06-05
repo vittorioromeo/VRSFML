@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace tst::detail
@@ -42,8 +42,8 @@ struct DecisionPoint
     // The list of distinct subcases discovered at this decision depth in
     // the current TEST_CASE body. `branchCount` mirrors `subcases.size()`
     // but kept separate for clarity with the doctest algorithm.
-    zb::Vector<SubcaseSignature> subcases;
-    zb::SizeT                    branchCount = 0u;
+    za::Vector<SubcaseSignature> subcases;
+    za::SizeT                    branchCount = 0u;
 };
 
 
@@ -52,21 +52,21 @@ struct TraversalState
 {
     // The currently-chosen path through the subcase tree on this run.
     // `decisionPath[d]` is the sibling index picked at decision depth `d`.
-    zb::Vector<zb::SizeT> decisionPath;
+    za::Vector<za::SizeT> decisionPath;
 
     // What we've actually discovered while running -- one entry per
     // decision depth, holding all sibling subcases observed.
-    zb::Vector<DecisionPoint> discoveredDecisionPath;
+    za::Vector<DecisionPoint> discoveredDecisionPath;
 
     // Stack of decision depths corresponding to the currently active
     // (entered) subcases. Used to restore `decisionDepth` on unwind.
-    zb::Vector<zb::SizeT> enteredSubcaseDepths;
+    za::Vector<za::SizeT> enteredSubcaseDepths;
 
     // Active subcase path, used only for doctest-style diagnostics.
-    zb::Vector<SubcaseSignature> activeSubcases;
+    za::Vector<SubcaseSignature> activeSubcases;
 
-    zb::SizeT activeSubcaseDepth = 0u;
-    zb::SizeT decisionDepth      = 0u;
+    za::SizeT activeSubcaseDepth = 0u;
+    za::SizeT decisionDepth      = 0u;
 
     void resetForTestCase() noexcept;
     void resetForRun() noexcept;
@@ -82,14 +82,14 @@ struct ContextState
     TraversalState traversal;
 
     // Active INFO messages (scoped). Most-recent at the back.
-    zb::Vector<zb::String> infoStack;
+    za::Vector<za::String> infoStack;
 
     // Total stats across the whole run.
-    zb::SizeT totalAssertions  = 0u;
-    zb::SizeT failedAssertions = 0u;
-    zb::SizeT totalTestCases   = 0u;
-    zb::SizeT failedTestCases  = 0u;
-    zb::SizeT skippedTestCases = 0u;
+    za::SizeT totalAssertions  = 0u;
+    za::SizeT failedAssertions = 0u;
+    za::SizeT totalTestCases   = 0u;
+    za::SizeT failedTestCases  = 0u;
+    za::SizeT skippedTestCases = 0u;
 
     // Per-test-case state.
     bool        currentTestFailed = false;
@@ -99,7 +99,7 @@ struct ContextState
 
     // Rendered operands of the most recent failed assertion (cold path).
     char      decompBuf[512];
-    zb::SizeT decompLen = 0u;
+    za::SizeT decompLen = 0u;
     bool      hasDecomp = false;
 
     // Sentinel thrown by `REQUIRE` failure to unwind the test body.
@@ -111,8 +111,8 @@ struct ContextState
     bool listOnly = false;
 
     // Filter substrings. Tests with a name *containing* one of these run.
-    zb::Vector<zb::String> filterInclude;
-    zb::Vector<zb::String> filterExclude;
+    za::Vector<za::String> filterInclude;
+    za::Vector<za::String> filterExclude;
 };
 
 
@@ -121,7 +121,7 @@ struct ContextState
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Vector<TestCaseInfo>& registeredTestCases() noexcept;
+[[nodiscard]] za::Vector<TestCaseInfo>& registeredTestCases() noexcept;
 
 } // namespace tst::detail
 

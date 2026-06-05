@@ -10,15 +10,15 @@
 
 #include "Zancle/Graphics/Color.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -61,10 +61,10 @@ public:
     /// \param size  Width and height of the image, in pixels
     /// \param color Fill color (defaults to opaque black)
     ///
-    /// \return Image on success, `zb::nullOpt` on failure (e.g. zero size)
+    /// \return Image on success, `za::nullOpt` on failure (e.g. zero size)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Image> create(Vec2u size, Color color = Color::Black);
+    [[nodiscard]] static za::Optional<Image> create(Vec2u size, Color color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create an image from an existing array of pixels
@@ -73,15 +73,15 @@ public:
     /// RGBA pixels. The data is copied into the image; the source
     /// array can be freed after the call.
     ///
-    /// If `pixels` is `nullptr`, the function returns `zb::nullOpt`.
+    /// If `pixels` is `nullptr`, the function returns `za::nullOpt`.
     ///
     /// \param size   Width and height of the image, in pixels
     /// \param pixels Source pixel array (RGBA, 8 bits per channel)
     ///
-    /// \return Image on success, `zb::nullOpt` on failure
+    /// \return Image on success, `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Image> create(Vec2u size, const zb::U8* pixels);
+    [[nodiscard]] static za::Optional<Image> create(Vec2u size, const za::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load an image from a file on disk
@@ -92,12 +92,12 @@ public:
     ///
     /// \param filename Path of the image file to load
     ///
-    /// \return Image on success, `zb::nullOpt` on failure
+    /// \return Image on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Image> loadFromFile(const Path& filename);
+    [[nodiscard]] static za::Optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load an image from an encoded buffer in memory
@@ -109,12 +109,12 @@ public:
     /// \param data Pointer to the encoded file bytes in memory
     /// \param size Size of the data, in bytes
     ///
-    /// \return Image on success, `zb::nullOpt` on failure
+    /// \return Image on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Image> loadFromMemory(const void* data, zb::SizeT size);
+    [[nodiscard]] static za::Optional<Image> loadFromMemory(const void* data, za::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load an image from a custom input stream
@@ -124,12 +124,12 @@ public:
     ///
     /// \param stream Source stream to read encoded image data from
     ///
-    /// \return Image on success, `zb::nullOpt` on failure
+    /// \return Image on success, `za::nullOpt` on failure
     ///
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<Image> loadFromStream(InputStream& stream);
+    [[nodiscard]] static za::Optional<Image> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image
@@ -150,7 +150,7 @@ public:
     /// \param alpha Alpha value to assign to transparent pixels
     ///
     ////////////////////////////////////////////////////////////
-    void createMaskFromColor(Color color, zb::U8 alpha = 0);
+    void createMaskFromColor(Color color, za::U8 alpha = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy pixels from another image onto this one
@@ -230,7 +230,7 @@ public:
     /// \return Read-only pointer to the array of pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const zb::U8* getPixelsPtr() const;
+    [[nodiscard]] const za::U8* getPixelsPtr() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Flip the image horizontally (left <-> right)
@@ -264,9 +264,9 @@ public:
     template <typename Func>
     void applyTransformation(Func&& f)
     {
-        ZB_ASSERT(!m_pixels.empty());
+        ZA_ASSERT(!m_pixels.empty());
 
-        zb::U8* ptr = m_pixels.data();
+        za::U8* ptr = m_pixels.data();
 
         for (unsigned int y = 0u; y < m_size.y; ++y)
             for (unsigned int x = 0u; x < m_size.x; ++x)
@@ -329,7 +329,7 @@ public:
     /// \see `SaveFormat`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] zb::Vector<zb::U8> saveToMemory(SaveFormat format) const;
+    [[nodiscard]] za::Vector<za::U8> saveToMemory(SaveFormat format) const;
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -337,15 +337,15 @@ public:
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Image(zb::PassKey<Image>&&, Vec2u size, zb::SizeT pixelCount);
-    [[nodiscard]] explicit Image(zb::PassKey<Image>&&, Vec2u size, const zb::U8* itBegin, const zb::U8* itEnd);
+    [[nodiscard]] explicit Image(za::PassKey<Image>&&, Vec2u size, za::SizeT pixelCount);
+    [[nodiscard]] explicit Image(za::PassKey<Image>&&, Vec2u size, const za::U8* itBegin, const za::U8* itEnd);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     Vec2u              m_size;   //!< Image size
-    zb::Vector<zb::U8> m_pixels; //!< Pixels of the image
+    za::Vector<za::U8> m_pixels; //!< Pixels of the image
 };
 
 } // namespace za

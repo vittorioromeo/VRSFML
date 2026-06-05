@@ -45,40 +45,40 @@
 
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Clock.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/Algorithm/AllOf.hpp"
-#include "ZancleBase/Algorithm/AnyOf.hpp"
-#include "ZancleBase/Algorithm/Count.hpp"
-#include "ZancleBase/Algorithm/Erase.hpp"
-#include "ZancleBase/Algorithm/MaxElement.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/GetArraySize.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Math/Ceil.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Math/Sqrt.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/OverloadSet.hpp"
-#include "ZancleBase/Remainder.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/AllOf.hpp"
+#include "Zancle/Algorithm/AnyOf.hpp"
+#include "Zancle/Algorithm/Count.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Algorithm/MaxElement.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/Sqrt.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/OverloadSet.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #include <utility>
 
 #include <cstdio>
 
 ////////////////////////////////////////////////////////////
-void Main::gameLoopUpdateScrolling(const float deltaTimeMs, const zb::Vector<za::Vec2f>& downFingers)
+void Main::gameLoopUpdateScrolling(const float deltaTimeMs, const za::Vector<za::Vec2f>& downFingers)
 {
     // Reset map scrolling
     if (keyDown(za::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(getRMB(), /* penetrateUI */ true)))
@@ -86,10 +86,10 @@ void Main::gameLoopUpdateScrolling(const float deltaTimeMs, const zb::Vector<za:
 
     //
     // Scrolling
-    playerInputState.scroll = zb::clamp(playerInputState.scroll,
+    playerInputState.scroll = za::clamp(playerInputState.scroll,
                                         0.f,
-                                        zb::max(0.f,
-                                                zb::min(pt->getMapLimit() / 2.f - getCurrentGameViewSize().x / 2.f,
+                                        za::max(0.f,
+                                                za::min(pt->getMapLimit() / 2.f - getCurrentGameViewSize().x / 2.f,
                                                         (boundaries.x - getCurrentGameViewSize().x) / 2.f)));
 
     playerInputState.actualScroll = exponentialApproach(playerInputState.actualScroll, playerInputState.scroll, deltaTimeMs, 75.f);
@@ -134,7 +134,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         // The bubble cap only governs regular (non-ephemeral) bubbles. Event
         // bubbles like Bubblefall and the invincible Combo bubble are bonuses
         // that don't count toward the cap and are never trimmed.
-        const SizeT nonEphemeralCount = zb::countIf(pt->bubbles.begin(), pt->bubbles.end(), [](const Bubble& b) {
+        const SizeT nonEphemeralCount = za::countIf(pt->bubbles.begin(), pt->bubbles.end(), [](const Bubble& b) {
             return !b.ephemeral;
         });
 
@@ -198,7 +198,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
         return;
     }
 
-    ZB_ASSERT(inPrestigeTransition);
+    ZA_ASSERT(inPrestigeTransition);
 
     // Despawn cats, dolls, copydolls, and shrines
     if (catRemoveTimer.tickLooping(deltaTimeMs) == LoopResult::Looped)
@@ -212,7 +212,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
             }
 
             // Find rightmost cat
-            auto* const rightmostIt = zb::maxElement(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
+            auto* const rightmostIt = za::maxElement(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
                 return a.position.x < b.position.x;
             });
 
@@ -250,7 +250,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
             playReversePopAt(cPos);
         }
 
-        const auto popOneDollOrSession = [&](zb::Vector<HexSession>& sessions)
+        const auto popOneDollOrSession = [&](za::Vector<HexSession>& sessions)
         {
             while (!sessions.empty() && sessions.back().dolls.empty())
                 sessions.popBack();
@@ -293,7 +293,7 @@ void Main::gameLoopUpdateTransitions(const float deltaTimeMs)
 
         playerInputState.scroll = 0.f;
 
-        zb::vectorEraseIf(pt->bubbles, [&](const Bubble& b) { return b.position.x > pt->getMapLimit() + 128.f; });
+        za::vectorEraseIf(pt->bubbles, [&](const Bubble& b) { return b.position.x > pt->getMapLimit() + 128.f; });
     }
 
     // Despawn bubbles after other things
@@ -374,8 +374,8 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
                     // during the freeze window.
                     if (creditCatIdx != 0xFF'FFu)
                     {
-                        const auto bubbleIdx                    = static_cast<zb::SizeT>(&bubble - pt->bubbles.data());
-                        bombStorage->bombIdxToCatIdx[bubbleIdx] = static_cast<zb::SizeT>(creditCatIdx);
+                        const auto bubbleIdx                    = static_cast<za::SizeT>(&bubble - pt->bubbles.data());
+                        bombStorage->bombIdxToCatIdx[bubbleIdx] = static_cast<za::SizeT>(creditCatIdx);
                     }
                 }
                 else
@@ -439,7 +439,7 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
                     if (distSq <= 0.0001f || distSq > repelRSq)
                         continue;
 
-                    const float dist    = zb::sqrt(distSq);
+                    const float dist    = za::sqrt(distSq);
                     const float falloff = 1.f - (dist / repelR);
                     other.velocity += (diff / dist) * (cfg.ambientRepelStrength * falloff * deltaTimeMs);
                 }
@@ -492,7 +492,7 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
 
             bubble.velocity.y = windStartVelocityY[pt->windStrength];
 
-            if (zb::fabs(bubble.velocity.x) > 0.04f)
+            if (za::fabs(bubble.velocity.x) > 0.04f)
                 bubble.velocity.x = 0.04f;
 
             const bool uniBuffEnabled       = pt->buffCountdownsPerType[asIdx(CatType::Uni)].time > 0.f;
@@ -543,7 +543,7 @@ void Main::gameLoopUpdateBubbles(const float deltaTimeMs)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopReapEphemeralBubbles()
 {
-    zb::vectorEraseIf(pt->bubbles,
+    za::vectorEraseIf(pt->bubbles,
                       [&](const Bubble& b) { return b.ephemeral && (b.position.y - b.radius > boundaries.y); });
 }
 
@@ -551,7 +551,7 @@ void Main::gameLoopReapEphemeralBubbles()
 ////////////////////////////////////////////////////////////
 void Main::popComboBubble(Bubble& bubble)
 {
-    ZB_ASSERT(bubble.type == BubbleType::Combo);
+    ZA_ASSERT(bubble.type == BubbleType::Combo);
 
     // Idempotency: a bubble can be popped from multiple paths (timer, max
     // clicks, bottom-despawn). Skip if we've already paid out.
@@ -571,7 +571,7 @@ void Main::popComboBubble(Bubble& bubble)
 
     // Reward scales super-linearly with click count and tracks the prestige
     // bubble value so it stays meaningful late game.
-    const float baseReward = cfg.rewardScalePerClick * zb::pow(static_cast<float>(clicks), cfg.rewardClickExponent);
+    const float baseReward = cfg.rewardScalePerClick * za::pow(static_cast<float>(clicks), cfg.rewardClickExponent);
     const auto reward = static_cast<MoneyType>(baseReward) * static_cast<MoneyType>(pt->psvBubbleValue.currentValue() + 1.f);
 
     addMoney(reward);
@@ -614,14 +614,14 @@ void Main::popComboBubble(Bubble& bubble)
             if (distSq <= 0.0001f || distSq > popRSq)
                 continue;
 
-            const float dist    = zb::sqrt(distSq);
+            const float dist    = za::sqrt(distSq);
             const float falloff = 1.f - (dist / popR);
             other.velocity += (diff / dist) * (cfg.popRepelImpulse * falloff);
         }
     }
 
     // Queue the burst-then-collect coin spew. Capped to avoid pathological cases.
-    const SizeT coinCount = zb::min(static_cast<SizeT>(cfg.payoutMaxCoins),
+    const SizeT coinCount = za::min(static_cast<SizeT>(cfg.payoutMaxCoins),
                                     static_cast<SizeT>(clicks) * static_cast<SizeT>(cfg.payoutCoinsPerClick));
 
     PendingComboBubblePayout payout{
@@ -636,17 +636,17 @@ void Main::popComboBubble(Bubble& bubble)
     {
         // Spread coins evenly around a circle (with jitter) and give them a
         // randomized outward speed so the explosion looks organic.
-        const float angle = static_cast<float>(i) * (zb::tau / static_cast<float>(coinCount)) + rngFast.getF(-0.25f, 0.25f);
+        const float angle = static_cast<float>(i) * (za::tau / static_cast<float>(coinCount)) + rngFast.getF(-0.25f, 0.25f);
         const float speed = rngFast.getF(cfg.burstSpeedMin, cfg.burstSpeedMax);
 
         payout.coins.pushBack(BurstingComboCoin{
             .position  = bubble.position,
-            .velocity  = {zb::cos(angle) * speed, zb::sin(angle) * speed},
+            .velocity  = {za::cos(angle) * speed, za::sin(angle) * speed},
             .collected = false,
         });
     }
 
-    pendingComboBubblePayouts.pushBack(ZB_MOVE(payout));
+    pendingComboBubblePayouts.pushBack(ZA_MOVE(payout));
 
     // Despawn: push past the bottom and zero the radius so the ephemeral
     // reaper takes it next frame, and so re-entering this function is a no-op.
@@ -668,8 +668,8 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
     const float coinDelayMs = cfg.payoutCoinDelayMs <= 0.f ? 35.f : cfg.payoutCoinDelayMs;
 
     // Per-frame velocity multiplier from the per-second damping factor.
-    const float dampingPerSec = zb::clamp(cfg.burstDampingPerSec, 0.f, 1.f);
-    const float dampingFrame  = zb::pow(dampingPerSec, deltaTimeMs * 0.001f);
+    const float dampingPerSec = za::clamp(cfg.burstDampingPerSec, 0.f, 1.f);
+    const float dampingFrame  = za::pow(dampingPerSec, deltaTimeMs * 0.001f);
 
     for (PendingComboBubblePayout& p : pendingComboBubblePayouts)
     {
@@ -724,7 +724,7 @@ void Main::gameLoopUpdateComboBubblePayouts(const float deltaTimeMs)
         ++p.coinsCollected;
     }
 
-    zb::vectorEraseIf(pendingComboBubblePayouts,
+    za::vectorEraseIf(pendingComboBubblePayouts,
                       [](const PendingComboBubblePayout& p)
     {
         for (const BurstingComboCoin& c : p.coins)
@@ -770,9 +770,9 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
         return;
 
     const auto sqAttractoRange = pt->getComputedSquaredRangeByCatType(CatType::Attracto);
-    const auto attractoRange   = ZB_MATH_SQRTF(sqAttractoRange);
+    const auto attractoRange   = ZA_MATH_SQRTF(sqAttractoRange);
 
-    static thread_local zb::Vector<Bubble*> bombs;
+    static thread_local za::Vector<Bubble*> bombs;
     bombs.clear();
 
     for (Bubble& bubble : pt->bubbles)
@@ -787,12 +787,12 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
         if (sqLength > sqAttractoRange)
             return;
 
-        const float length = ZB_MATH_SQRTF(sqLength);
+        const float length = ZA_MATH_SQRTF(sqLength);
 
         const auto strength = (attractoRange - length) * 0.000017f;
         bubble.velocity += (diff / length * strength * getWindAttractionMult()) * 1.f * deltaTimeMs;
 
-        bubble.attractedCountdown.time = zb::max(bubble.attractedCountdown.time, 750.f);
+        bubble.attractedCountdown.time = za::max(bubble.attractedCountdown.time, 750.f);
     };
 
     for (Bubble& bubble : pt->bubbles)
@@ -810,7 +810,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Main::gameLoopUpdateBubbleClick(zb::Optional<za::Vec2f>& clickPosition)
+[[nodiscard]] bool Main::gameLoopUpdateBubbleClick(za::Optional<za::Vec2f>& clickPosition)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
@@ -878,7 +878,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
             const auto& cfg = gameConstants.events.invincibleBubble;
 
             ++firstClickedBubble->comboClickCount;
-            firstClickedBubble->comboTimerMs = zb::max(cfg.comboTimerMaxMs -
+            firstClickedBubble->comboTimerMs = za::max(cfg.comboTimerMaxMs -
                                                            static_cast<float>(firstClickedBubble->comboClickCount) * 25.f,
                                                        100.f);
 
@@ -886,8 +886,8 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
             // "fattens" as the player builds the combo.
             const float currentGrowth = firstClickedBubble->radius - cfg.maxRadius;
             if (currentGrowth < cfg.radiusGrowthMax)
-                firstClickedBubble->radius += zb::min(cfg.radiusGrowthPerClick,
-                                                      cfg.radiusGrowthMax - zb::max(0.f, currentGrowth));
+                firstClickedBubble->radius += za::min(cfg.radiusGrowthPerClick,
+                                                      cfg.radiusGrowthMax - za::max(0.f, currentGrowth));
 
             sounds.pop.settings.position = {firstClickedBubble->position.x, firstClickedBubble->position.y};
             sounds.pop.settings.pitch = remap(static_cast<float>(firstClickedBubble->comboClickCount), 1.f, 30.f, 1.2f, 2.5f);
@@ -898,7 +898,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
             playSound(sounds.glasshit, /* maxOverlap */ 64u);
 
             // Randomize rotation on every click so the crystal looks like it's cracking.
-            firstClickedBubble->rotation = rngFast.getF(0.f, zb::tau);
+            firstClickedBubble->rotation = rngFast.getF(0.f, za::tau);
 
             // Gentle nudge: random horizontal wobble + slight downward push per click.
             // Near a map edge, clamp the horizontal range so the nudge always points
@@ -916,7 +916,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
             firstClickedBubble->velocity += rngFast.getVec2f({hLo, 0.05f}, {hHi, 0.2f}) * 0.8f;
 
             // Glass shards: pop upward from the bubble, arc and fall under gravity.
-            for (zb::SizeT i = 0u; i < 6u; ++i)
+            for (za::SizeT i = 0u; i < 6u; ++i)
             {
                 spawnParticle({.position      = firstClickedBubble->position,
                                .velocity      = rngFast.getVec2f({-0.4f, -1.f}, {0.4f, -0.2f}),
@@ -925,7 +925,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                                .accelerationY = 0.0025f,
                                .opacity       = 1.f,
                                .opacityDecay  = 0.001f,
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.02f, 0.02f)},
                               /* hue */ 0.f,
                               ParticleType::Glass);
@@ -937,12 +937,12 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
             // and fly inward into it, fading just before they reach the
             // center.
             const za::Vec2f bubbleCenter = firstClickedBubble->position;
-            const float     ringRadius   = zb::max(cfg.clickAbsorbRadius, firstClickedBubble->radius * 1.5f);
+            const float     ringRadius   = za::max(cfg.clickAbsorbRadius, firstClickedBubble->radius * 1.5f);
 
-            for (zb::SizeT i = 0u; i < 8u; ++i)
+            for (za::SizeT i = 0u; i < 8u; ++i)
             {
-                const float     angle   = rngFast.getF(0.f, zb::tau);
-                const za::Vec2f outward = {zb::cos(angle), zb::sin(angle)};
+                const float     angle   = rngFast.getF(0.f, za::tau);
+                const za::Vec2f outward = {za::cos(angle), za::sin(angle)};
                 const za::Vec2f start   = bubbleCenter + outward * ringRadius * rngFast.getF(0.8f, 1.3f);
 
                 spawnParticle({.position      = start,
@@ -952,7 +952,7 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                                .accelerationY = 0.f,
                                .opacity       = 1.f,
                                .opacityDecay  = 0.0035f,
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.005f, 0.005f)},
                               /* hue */ 0.f, // gold to match the bubble
                               ParticleType::Star);
@@ -983,10 +983,10 @@ void Main::gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
                     addCombo(comboState.combo, comboState.comboCountdown);
                     comboState.comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(comboState.combo) * 0.002f);
 
-                    comboState.comboCountdown.time = zb::min(comboState.comboCountdown.time,
+                    comboState.comboCountdown.time = za::min(comboState.comboCountdown.time,
                                                              pt->psvComboStartTime.currentValue() * 100.f);
 
-                    comboState.combo = zb::min(comboState.combo, 998);
+                    comboState.combo = za::min(comboState.combo, 998);
                 }
             }
         }
@@ -1151,14 +1151,14 @@ void Main::gameLoopUpdateCatActionUni(const float deltaTimeMs, Cat& cat)
 
         bToTransform.velocity                   = {0.f, 0.f};
         bToTransform.pendingTransformMs         = freezeMs;
-        bToTransform.pendingTransformTargetType = static_cast<zb::U8>(asIdx(starBubbleType));
+        bToTransform.pendingTransformTargetType = static_cast<za::U8>(asIdx(starBubbleType));
         bToTransform.pendingTransformCatIdx     = 0xFF'FFu;
-        bToTransform.rotation                   = zb::positiveRemainder(bToTransform.rotation + deltaTimeMs, zb::tau);
+        bToTransform.rotation                   = za::positiveRemainder(bToTransform.rotation + deltaTimeMs, za::tau);
 
         for (SizeT i = 0u; i < 8u; ++i)
         {
-            const float     angle   = rngFast.getF(0.f, zb::tau);
-            const za::Vec2f outward = {zb::cos(angle), zb::sin(angle)};
+            const float     angle   = rngFast.getF(0.f, za::tau);
+            const za::Vec2f outward = {za::cos(angle), za::sin(angle)};
 
             spawnParticle({.position      = bToTransform.position + outward * convergeRadius * rngFast.getF(0.8f, 1.2f),
                            .velocity      = -outward * convergeSpeed,
@@ -1167,7 +1167,7 @@ void Main::gameLoopUpdateCatActionUni(const float deltaTimeMs, Cat& cat)
                            .accelerationY = 0.f,
                            .opacity       = 1.f,
                            .opacityDecay  = 1.f / freezeMs * 0.9f,
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.003f, 0.003f)},
                           /* hue */ 0.f,
                           ParticleType::Star);
@@ -1262,18 +1262,18 @@ void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
         constexpr float convergeRadius = 60.f;
         const float     convergeSpeed  = convergeRadius / freezeMs;
 
-        const auto catIdx = static_cast<zb::SizeT>(&cat - pt->cats.data());
+        const auto catIdx = static_cast<za::SizeT>(&cat - pt->cats.data());
 
         bubble.velocity                   = {0.f, 0.f};
         bubble.pendingTransformMs         = freezeMs;
-        bubble.pendingTransformTargetType = static_cast<zb::U8>(asIdx(BubbleType::Bomb));
-        bubble.pendingTransformCatIdx     = static_cast<zb::U16>(catIdx);
-        bubble.rotation                   = zb::positiveRemainder(bubble.rotation + deltaTimeMs, zb::tau);
+        bubble.pendingTransformTargetType = static_cast<za::U8>(asIdx(BubbleType::Bomb));
+        bubble.pendingTransformCatIdx     = static_cast<za::U16>(catIdx);
+        bubble.rotation                   = za::positiveRemainder(bubble.rotation + deltaTimeMs, za::tau);
 
         for (SizeT i = 0u; i < 8u; ++i)
         {
-            const float     angle   = rngFast.getF(0.f, zb::tau);
-            const za::Vec2f outward = {zb::cos(angle), zb::sin(angle)};
+            const float     angle   = rngFast.getF(0.f, za::tau);
+            const za::Vec2f outward = {za::cos(angle), za::sin(angle)};
 
             spawnParticle({.position      = bubble.position + outward * convergeRadius * rngFast.getF(0.8f, 1.2f),
                            .velocity      = -outward * convergeSpeed,
@@ -1282,7 +1282,7 @@ void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
                            .accelerationY = 0.f,
                            .opacity       = 1.f,
                            .opacityDecay  = 1.f / freezeMs * 0.9f,
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.003f, 0.003f)},
                           /* hue */ 0.f,
                           ParticleType::Fire);
@@ -1301,7 +1301,7 @@ void Main::gameLoopUpdateCatActionDevil(const float deltaTimeMs, Cat& cat)
         pt->hellPortals.pushBack({
             .position = portalPos,
             .life     = Countdown{.time = 1750.f},
-            .catIdx   = static_cast<zb::SizeT>(&cat - pt->cats.data()),
+            .catIdx   = static_cast<za::SizeT>(&cat - pt->cats.data()),
         });
 
         sounds.makeBomb.settings.position = {portalPos.x, portalPos.y};
@@ -1506,7 +1506,7 @@ void Main::resolveWardenBonkStrike(Cat& cat)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Main::anyCatHexedOrCopyHexed() const
 {
-    return zb::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) { return cat.isHexedOrCopyHexed(); });
+    return za::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) { return cat.isHexedOrCopyHexed(); });
 }
 
 
@@ -1685,7 +1685,7 @@ void Main::gameLoopUpdateNapScheduler(const float deltaTimeMs)
 
 void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
                                             Cat&                    cat,
-                                            zb::Vector<HexSession>& sessionsToUse,
+                                            za::Vector<HexSession>& sessionsToUse,
                                             const SizeT             nCatsToHex)
 {
     const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
@@ -1694,7 +1694,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
     const bool copy = &sessionsToUse == &pt->copyHexSessions;
 
     // Collect all eligible candidates in range.
-    zb::Vector<SizeT> candidateIndices;
+    za::Vector<SizeT> candidateIndices;
 
     for (SizeT i = 0u; i < pt->cats.size(); ++i)
     {
@@ -1728,7 +1728,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
     }
 
     // Partial Fisher-Yates shuffle to pick `nToHex` distinct random indices.
-    const SizeT nToHex = zb::min(nCatsToHex, otherCatCount);
+    const SizeT nToHex = za::min(nCatsToHex, otherCatCount);
 
     for (SizeT i = 0u; i < nToHex; ++i)
     {
@@ -1744,7 +1744,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
     float buffPower = pt->psvPPWitchCatBuffDuration.currentValue();
 
     if (pt->perm.witchCatBuffPowerScalesWithNCats)
-        buffPower += zb::ceil(zb::pow(static_cast<float>(otherCatCount), 0.9f)) * 0.5f;
+        buffPower += za::ceil(za::pow(static_cast<float>(otherCatCount), 0.9f)) * 0.5f;
 
     if (pt->perm.witchCatBuffPowerScalesWithMapSize)
     {
@@ -1753,7 +1753,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
         buffPower += static_cast<float>(nMapExtensions) * 0.75f;
     }
 
-    const auto nDollsToSpawn = zb::max(SizeT{2u},
+    const auto nDollsToSpawn = za::max(SizeT{2u},
                                        static_cast<SizeT>(buffPower * (pt->perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
 
     const auto isPositionFarFromOtherDolls = [&](const za::Vec2f position) -> bool
@@ -1818,7 +1818,7 @@ void Main::gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */,
         {
             auto& d = session.dolls.emplaceBack(
                 Doll{.position      = pickDollPosition(),
-                     .wobbleRadians = rng.getF(0.f, zb::tau),
+                     .wobbleRadians = rng.getF(0.f, za::tau),
                      .buffPower     = buffPower,
                      .catType       = selected.type == CatType::Copy ? pt->copycatCopiedCatType : selected.type,
                      .tcActivation  = {.duration = rng.getF(300.f, 600.f) * static_cast<float>(i + 1)},
@@ -1848,7 +1848,7 @@ void Main::gameLoopUpdateCatActionWitch(const float deltaTimeMs, Cat& cat)
 {
     SFEX_PROFILE_SCOPE_AUTOLABEL();
 
-    ZB_ASSERT(canHexMore());
+    ZA_ASSERT(canHexMore());
     gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->hexSessions, /* nCatsToHex */ 1u); // TODO P1: add PP for more cats to hex at once
 }
 
@@ -1896,7 +1896,7 @@ void Main::gameLoopUpdateCatActionWizard(const float deltaTimeMs, Cat& cat)
     bubble.rotation += deltaTimeMs * 0.025f; // TODO P0: change this to something sensible
     spawnParticlesWithHue(230.f, 1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
-    if (bubble.rotation >= zb::tau)
+    if (bubble.rotation >= za::tau)
     {
         const auto wisdomReward = pt->getComputedRewardByBubbleType(bubble.type);
 
@@ -1941,7 +1941,7 @@ void Main::gameLoopUpdateCatActionMouse(const float /* deltaTimeMs */, Cat& cat)
     cat.pawOpacity  = 255.f;
 
     addCombo(pt->mouseCatCombo, pt->mouseCatComboCountdown);
-    pt->mouseCatCombo = zb::min(pt->mouseCatCombo, 999); // cap at 999x
+    pt->mouseCatCombo = za::min(pt->mouseCatCombo, 999); // cap at 999x
 
     const auto savedBubblePos = bubble.position;
 
@@ -2021,7 +2021,7 @@ void Main::gameLoopUpdateCatActionEngi(const float /* deltaTimeMs */, Cat& cat)
     if (nCatsHit > 0)
     {
         cat.textStatusShakeEffect.bump(rngFast, 1.5f);
-        cat.hits += static_cast<zb::U32>(nCatsHit);
+        cat.hits += static_cast<za::U32>(nCatsHit);
 
         statMaintenance(nCatsHit);
         statHighestSimultaneousMaintenances(nCatsHit);
@@ -2080,7 +2080,7 @@ void Main::gameLoopUpdateCatActionCopy(const float deltaTimeMs, Cat& cat)
 
     if (pt->copycatCopiedCatType == CatType::Witch)
     {
-        ZB_ASSERT(canCopyHexMore());
+        ZA_ASSERT(canCopyHexMore());
         gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->copyHexSessions, /* nCatsToHex */ 1u);
     }
     else if (pt->copycatCopiedCatType == CatType::Wizard)
@@ -2152,7 +2152,7 @@ auto Main::makeMagnetAction(
         const auto strength = (getComputedRangeByCatTypeOrCopyCat(catType) - bcDiff.length()) * 0.000017f;
         bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
 
-        (bubble.*countdownPm).time = zb::max((bubble.*countdownPm).time, countdownTime);
+        (bubble.*countdownPm).time = za::max((bubble.*countdownPm).time, countdownTime);
         return ControlFlow::Continue;
     };
 }
@@ -2214,7 +2214,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
         const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
 
         if (cat.bonkImpactMs > 0.f)
-            cat.bonkImpactMs = zb::max(0.f, cat.bonkImpactMs - deltaTimeMs);
+            cat.bonkImpactMs = za::max(0.f, cat.bonkImpactMs - deltaTimeMs);
 
         // Wardencat baton sequence: tick the current phase's countdown; on
         // expiry, advance to the next phase (Windup → Travel → Hold →
@@ -2241,7 +2241,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
             auto& bonk = *cat.wardenBonk;
 
-            bonk.phaseMs = zb::max(0.f, bonk.phaseMs - deltaTimeMs);
+            bonk.phaseMs = za::max(0.f, bonk.phaseMs - deltaTimeMs);
 
             if (bonk.phaseMs <= 0.f)
             {
@@ -2283,7 +2283,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             if (cat.cooldown.time == 0.f && cat.pawOpacity > 10.f)
             {
                 cat.pawOpacity -= 0.5f * deltaTimeMs;
-                cat.pawOpacity = zb::max(cat.pawOpacity, 0.f);
+                cat.pawOpacity = za::max(cat.pawOpacity, 0.f);
             }
         }
 
@@ -2313,8 +2313,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
             if (isCatBeingDragged(cat))
             {
-                const float vx      = frameDelta.x / zb::max(deltaTimeMs, 0.001f);
-                const float target  = zb::clamp(vx * tiltPerVelocity, -maxTilt, maxTilt);
+                const float vx      = frameDelta.x / za::max(deltaTimeMs, 0.001f);
+                const float target  = za::clamp(vx * tiltPerVelocity, -maxTilt, maxTilt);
                 cat.dragTiltRadians = exponentialApproach(cat.dragTiltRadians, target, deltaTimeMs, 40.f);
             }
             else
@@ -2355,13 +2355,13 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
 
             if (isCatBeingDragged(cat))
             {
-                const float moved = zb::min(frameDelta.length(), perFrameDeltaCap);
+                const float moved = za::min(frameDelta.length(), perFrameDeltaCap);
 
-                cat.napShakeProgress = zb::clamp(cat.napShakeProgress + moved / requiredShakeDistance, 0.f, 1.f);
+                cat.napShakeProgress = za::clamp(cat.napShakeProgress + moved / requiredShakeDistance, 0.f, 1.f);
 
                 // Motion-driven wobble feedback.
                 if (moved > 2.f)
-                    cat.napWakeWobble = rngFast.getF(-0.35f, 0.35f) * zb::min(moved / 20.f, 1.f);
+                    cat.napWakeWobble = rngFast.getF(-0.35f, 0.35f) * za::min(moved / 20.f, 1.f);
 
                 if (cat.napShakeProgress >= 1.f && fullyAsleep)
                 {
@@ -2378,11 +2378,11 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             }
             else
             {
-                cat.napShakeProgress = zb::max(0.f, cat.napShakeProgress - idleDrainPerMs * deltaTimeMs);
+                cat.napShakeProgress = za::max(0.f, cat.napShakeProgress - idleDrainPerMs * deltaTimeMs);
             }
 
             // Wobble decays back to zero.
-            cat.napWakeWobble *= zb::pow(0.001f, deltaTimeMs * 0.001f);
+            cat.napWakeWobble *= za::pow(0.001f, deltaTimeMs * 0.001f);
 
             if (t.reversed && t.value <= 0.f)
             {
@@ -2465,8 +2465,8 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                         continue;
 
                     if (&otherCat == &cat)
-                        cat.hue = zb::sin(zb::remainder(cat.cooldown.time / remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
-                                                        zb::tau)) *
+                        cat.hue = za::sin(za::remainder(cat.cooldown.time / remap(cat.cooldown.time, 0.f, 10'000.f, 15.f, 150.f),
+                                                        za::tau)) *
                                   50.f * intensity;
 
                     const auto diff2 = otherCat.position - cat.position;
@@ -2483,7 +2483,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                        .accelerationY = -0.0017f,
                                        .opacity       = 1.f,
                                        .opacityDecay  = rngFast.getF(0.00035f, 0.0025f),
-                                       .rotation      = rngFast.getF(0.f, zb::tau),
+                                       .rotation      = rngFast.getF(0.f, za::tau),
                                        .torque        = rngFast.getF(-0.002f, 0.002f)},
                                       /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + hueMod),
                                       ParticleType::Hex);
@@ -2511,7 +2511,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                .accelerationY = -0.0017f,
                                .opacity       = 0.5f,
                                .opacityDecay  = rngFast.getF(0.00035f, 0.0025f) * 0.6f,
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ wrapHue(rngFast.getF(-50.f, 50.f)),
                               ParticleType::Hex);
@@ -2530,7 +2530,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                .accelerationY = -0.0017f,
                                .opacity       = 0.5f,
                                .opacityDecay  = rngFast.getF(0.00035f, 0.0025f) * 0.6f,
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + 180.f),
                               ParticleType::Hex);
@@ -2547,7 +2547,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                            .accelerationY = 0.f,
                            .opacity       = 1.f,
                            .opacityDecay  = rngFast.getF(0.00025f, 0.0015f) * 1.5f,
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.002f, 0.002f)},
                           /* hue */ 0.f,
                           ParticleType::Star);
@@ -2565,7 +2565,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                            .accelerationY = -0.002f,
                            .opacity       = 1.f,
                            .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.002f, 0.002f)},
                           /* hue */ 0.f,
                           ParticleType::Star);
@@ -2581,7 +2581,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                            .accelerationY = -0.0015f,
                            .opacity       = 1.f,
                            .opacityDecay  = rngFast.getF(0.00055f, 0.0045f),
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.002f, 0.002f)},
                           /* hue */ 180.f,
                           ParticleType::Cog);
@@ -2600,7 +2600,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                            .accelerationY = -0.0015f,
                            .opacity       = 1.f,
                            .opacityDecay  = rngFast.getF(0.00055f, 0.0045f),
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.002f, 0.002f)},
                           /* hue */ 210.f,
                           ParticleType::Star);
@@ -2621,7 +2621,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                .accelerationY = -0.0015f,
                                .opacity       = 1.f,
                                .opacityDecay  = rngFast.getF(0.00055f, 0.0045f),
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 0.f,
                               ParticleType::Fire2);
@@ -2633,7 +2633,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                .accelerationY = -0.0015f,
                                .opacity       = 1.f,
                                .opacityDecay  = rngFast.getF(0.00055f, 0.0045f) * 2.f,
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 0.f,
                               ParticleType::Fire2);
@@ -2645,7 +2645,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                .accelerationY = -0.0015f,
                                .opacity       = 1.f,
                                .opacityDecay  = rngFast.getF(0.00055f, 0.0045f) * 2.f,
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 0.f,
                               ParticleType::Fire2);
@@ -2673,7 +2673,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                                .accelerationY = -0.00017f,
                                                .opacity       = 0.5f,
                                                .opacityDecay  = rngFast.getF(0.00065f, 0.00075f),
-                                               .rotation      = rngFast.getF(0.f, zb::tau),
+                                               .rotation      = rngFast.getF(0.f, za::tau),
                                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                                   0.f,
                                   ParticleType::Smoke);
@@ -2746,7 +2746,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                 static float absorbSin = 0.f;
                 absorbSin += deltaTimeMs * 0.002f;
 
-                cat.hue = wrapHue(zb::sin(zb::remainder(absorbSin, zb::tau)) * 25.f);
+                cat.hue = wrapHue(za::sin(za::remainder(absorbSin, za::tau)) * 25.f);
 
                 if (wizardcatAbsorptionRotation < 0.15f)
                     wizardcatAbsorptionRotation += deltaTimeMs * 0.0005f;
@@ -2768,7 +2768,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
                                .accelerationY = -0.002f,
                                .opacity       = 1.f,
                                .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                               .rotation      = rngFast.getF(0.f, zb::tau),
+                               .rotation      = rngFast.getF(0.f, za::tau),
                                .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 225.f,
                               ParticleType::Star);
@@ -2851,7 +2851,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             &Main::gameLoopUpdateCatActionDuck,
         };
 
-        static_assert(zb::getArraySize(fnPtrs) == nCatTypes);
+        static_assert(za::getArraySize(fnPtrs) == nCatTypes);
 
         (this->*fnPtrs[asIdx(cat.type)])(deltaTimeMs, cat);
     }
@@ -2981,7 +2981,7 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
             const auto pivotCatIdx = pickDragPivotCatIndex();
             Cat&       pivotCat    = *playerInputState.draggedCats[pivotCatIdx];
 
-            static thread_local zb::Vector<za::Vec2f> relativeCatPositions;
+            static thread_local za::Vector<za::Vec2f> relativeCatPositions;
             relativeCatPositions.clear();
             relativeCatPositions.reserve(playerInputState.draggedCats.size());
 
@@ -2990,7 +2990,7 @@ void Main::gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countF
 
             pivotCat.position = exponentialApproach(pivotCat.position, mousePos + za::Vec2f{-10.f, 13.f}, deltaTimeMs, 25.f);
 
-            for (zb::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
+            for (za::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
             {
                 if (i == pivotCatIdx)
                     continue;
@@ -3151,7 +3151,7 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
 
                     bubble.rotation += deltaTimeMs * 0.025f;
 
-                    if (bubble.rotation >= zb::tau)
+                    if (bubble.rotation >= za::tau)
                     {
                         sounds.absorb.settings.position = {bubble.position.x, bubble.position.y};
                         playSound(sounds.absorb, /* maxOverlap */ 1u);
@@ -3322,7 +3322,7 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
                     updateSelectedBackgroundSelectorIndex();
                     updateSelectedBGMSelectorIndex();
 
-                    switchToBGM(static_cast<zb::SizeT>(profile.selectedBGM), /* force */ false);
+                    switchToBGM(static_cast<za::SizeT>(profile.selectedBGM), /* force */ false);
                 }
                 else if (cdStatus == TickResult::Running)
                 {
@@ -3330,28 +3330,28 @@ void Main::gameLoopUpdateShrines(const float deltaTimeMs)
                                           static_cast<SizeT>(1 + 12 * shrine.getDeathProgress()),
                                           shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                           ParticleType::Fire,
-                                          zb::max(0.25f, 1.f - shrine.getDeathProgress()),
+                                          za::max(0.25f, 1.f - shrine.getDeathProgress()),
                                           0.75f);
 
                     spawnParticlesWithHue(shrine.getHue(),
                                           static_cast<SizeT>(4 + 36 * shrine.getDeathProgress()),
                                           shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                           ParticleType::Shrine,
-                                          zb::max(0.35f, 1.2f - shrine.getDeathProgress()),
+                                          za::max(0.35f, 1.2f - shrine.getDeathProgress()),
                                           0.5f);
                 }
             }
         }
     }
 
-    zb::vectorEraseIf(pt->shrines, [](const Shrine& shrine) { return shrine.getDeathProgress() >= 1.f; });
+    za::vectorEraseIf(pt->shrines, [](const Shrine& shrine) { return shrine.getDeathProgress() >= 1.f; });
 }
 
 
 ////////////////////////////////////////////////////////////
 void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
 {
-    ZB_ASSERT(!d.tcDeath.hasValue());
+    ZA_ASSERT(!d.tcDeath.hasValue());
 
     statDollCollected();
 
@@ -3369,7 +3369,7 @@ void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
     d.tcDeath.emplace(TimedCountdown{.duration = 750.f});
     d.tcDeath->restart();
 
-    const bool allDollsCollected = zb::allOf(session.dolls.begin(), session.dolls.end(), [&](const Doll& otherDoll) {
+    const bool allDollsCollected = za::allOf(session.dolls.begin(), session.dolls.end(), [&](const Doll& otherDoll) {
         return otherDoll.tcDeath.hasValue();
     });
 
@@ -3394,7 +3394,7 @@ void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
             1.f, // Duck
         };
 
-        static_assert(zb::getArraySize(buffDurationMult) == nCatTypes);
+        static_assert(za::getArraySize(buffDurationMult) == nCatTypes);
 
         // Apply some diminishing returns if the same buff type is chosen over and over
         constexpr float buffDurationSoftCap = 60'000.f;
@@ -3403,13 +3403,13 @@ void Main::collectDollImpl(Doll& d, HexSession& session, const bool copy)
         const float currentBuff = pt->buffCountdownsPerType[asIdx(d.catType)].time;
 
         const float factor = (currentBuff < buffDurationSoftCap)
-                                 ? zb::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
+                                 ? za::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
                                  : 0.1f;
 
         pt->buffCountdownsPerType[asIdx(d.catType)].time += buffDuration * factor;
 
         Cat* const hexedCat = getSessionTargetCat(session);
-        ZB_ASSERT(hexedCat != nullptr);
+        ZA_ASSERT(hexedCat != nullptr);
 
         spawnParticle({.position = d.getDrawPosition(),
                        .velocity = (hexedCat->getDrawPosition(profile.enableCatBobbing) - d.getDrawPosition()).normalized() * 1.f,
@@ -3451,7 +3451,7 @@ void Main::collectCopyDoll(Doll& d, HexSession& session)
 ////////////////////////////////////////////////////////////
 void Main::gameLoopUpdateDollsImpl(const float             deltaTimeMs,
                                    const za::Vec2f         mousePos,
-                                   zb::Vector<HexSession>& sessionsToUse,
+                                   za::Vector<HexSession>& sessionsToUse,
                                    const bool              copy)
 {
     for (HexSession& session : sessionsToUse)
@@ -3490,7 +3490,7 @@ void Main::gameLoopUpdateDollsImpl(const float             deltaTimeMs,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
-                                   .rotation      = rngFast.getF(0.f, zb::tau),
+                                   .rotation      = rngFast.getF(0.f, za::tau),
                                    .torque        = rngFast.getF(-0.002f, 0.002f)},
                                   /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                                   ParticleType::Hex);
@@ -3514,16 +3514,16 @@ void Main::gameLoopUpdateDollsImpl(const float             deltaTimeMs,
                                       static_cast<SizeT>(1 + 12 * d.getDeathProgress()),
                                       d.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                       ParticleType::Hex,
-                                      zb::max(0.25f, 1.f - d.getDeathProgress()),
+                                      za::max(0.25f, 1.f - d.getDeathProgress()),
                                       0.75f);
             }
         }
 
-        zb::vectorEraseIf(session.dolls, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
+        za::vectorEraseIf(session.dolls, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
     }
 
     // Drop sessions whose cat has since gone away (e.g. prestige transition).
-    zb::vectorEraseIf(sessionsToUse, [&](const HexSession& s) { return getSessionTargetCat(s) == nullptr; });
+    za::vectorEraseIf(sessionsToUse, [&](const HexSession& s) { return getSessionTargetCat(s) == nullptr; });
 }
 
 
@@ -3560,7 +3560,7 @@ void Main::gameLoopUpdateHellPortals(const float deltaTimeMs)
             playSound(sounds.portaloff);
         }
 
-        for (zb::SizeT iP = 0u; iP < 2u; ++iP)
+        for (za::SizeT iP = 0u; iP < 2u; ++iP)
             spawnParticle({.position = hp.getDrawPosition() +
                                        rngFast.getDirVec2f() * rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
                            .velocity      = rngFast.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
@@ -3569,13 +3569,13 @@ void Main::gameLoopUpdateHellPortals(const float deltaTimeMs)
                            .accelerationY = 0.f,
                            .opacity       = 1.f,
                            .opacityDecay  = rngFast.getF(0.00155f, 0.0145f),
-                           .rotation      = rngFast.getF(0.f, zb::tau),
+                           .rotation      = rngFast.getF(0.f, za::tau),
                            .torque        = rngFast.getF(-0.002f, 0.002f)},
                           /* hue */ 0.f,
                           ParticleType::Fire2);
     }
 
-    zb::vectorEraseIf(pt->hellPortals, [](const HellPortal& hp) { return hp.life.isDone(); });
+    za::vectorEraseIf(pt->hellPortals, [](const HellPortal& hp) { return hp.life.isDone(); });
 }
 
 
@@ -3622,7 +3622,7 @@ void Main::addEventInvincibleBubble()
     // away from either horizontal boundary (capped so we never invert the
     // range on a tiny / unbought map).
     const float mapLimit = pt->getMapLimit();
-    const float margin   = zb::min(cfg.spawnEdgeMarginPx, zb::max(0.f, mapLimit * 0.5f - bubble.radius));
+    const float margin   = za::min(cfg.spawnEdgeMarginPx, za::max(0.f, mapLimit * 0.5f - bubble.radius));
     bubble.position.x    = rng.getF(margin, mapLimit - margin);
     bubble.position.y    = -bubble.radius * rng.getF(cfg.spawnYOffsetTopMin, cfg.spawnYOffsetTopMax);
     bubble.velocity.x    = rng.getF(-cfg.velocityJitterX, cfg.velocityJitterX);
@@ -3681,7 +3681,7 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
 
     // Per-kind update: advance the event's own timers and (if positional)
     // drive its spawner. Returns the remaining duration -- <= 0 means expire.
-    const auto tickEvent = zb::OverloadSet{
+    const auto tickEvent = za::OverloadSet{
         // Invincible bubble events are fire-and-forget: the bubble itself is
         // the manifestation, so the entry expires on the very next frame.
         [&](EInvincibleBubble& e) -> float { return e.remainingMs; },
@@ -3696,16 +3696,16 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
         // `deltaTimeMs * intensity` scales the effective spawn frequency
         // without changing the total event length.
         const float duration    = bfCfg.durationMs <= 0.f ? 1.f : bfCfg.durationMs;
-        const float elapsedNorm = zb::clamp(1.f - (e.remainingMs / duration), 0.f, 1.f);
+        const float elapsedNorm = za::clamp(1.f - (e.remainingMs / duration), 0.f, 1.f);
 
-        const float attack  = zb::clamp(bfCfg.attackRatio, 0.f, 0.5f);
-        const float release = zb::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
+        const float attack  = za::clamp(bfCfg.attackRatio, 0.f, 0.5f);
+        const float release = za::clamp(bfCfg.releaseRatio, 0.f, 0.5f);
 
         float intensity = 1.f;
         if (attack > 0.f && elapsedNorm < attack)
-            intensity = easeInOutCubic(zb::clamp(elapsedNorm / attack, 0.f, 1.f));
+            intensity = easeInOutCubic(za::clamp(elapsedNorm / attack, 0.f, 1.f));
         else if (release > 0.f && elapsedNorm > 1.f - release)
-            intensity = easeInOutCubic(zb::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
+            intensity = easeInOutCubic(za::clamp((1.f - elapsedNorm) / release, 0.f, 1.f));
 
         e.subTickMs += deltaTimeMs * intensity;
 
@@ -3743,10 +3743,10 @@ void Main::gameLoopUpdateEvents(const float deltaTimeMs)
     for (GameEvent& ev : pt->activeEvents)
         (void)ev.linearVisit(tickEvent);
 
-    zb::vectorEraseIf(pt->activeEvents,
+    za::vectorEraseIf(pt->activeEvents,
                       [&](GameEvent& ev)
     {
-        return ev.linearVisit(zb::OverloadSet{
+        return ev.linearVisit(za::OverloadSet{
             [](const EBubblefall& e) { return e.remainingMs <= 0.f; },
             [](const EInvincibleBubble& e) { return e.remainingMs <= 0.f; },
         });
@@ -3789,7 +3789,7 @@ void Main::gameLoopUpdateMana(const float deltaTimeMs)
     if (pt->mewltiplierAuraTimer > 0.f)
     {
         pt->mewltiplierAuraTimer -= deltaTimeMs;
-        pt->mewltiplierAuraTimer = zb::max(pt->mewltiplierAuraTimer, 0.f);
+        pt->mewltiplierAuraTimer = za::max(pt->mewltiplierAuraTimer, 0.f);
 
         const float wizardRange = pt->getComputedRangeByCatType(CatType::Wizard);
 
@@ -3818,7 +3818,7 @@ void Main::gameLoopUpdateMana(const float deltaTimeMs)
     if (pt->stasisFieldTimer > 0.f)
     {
         pt->stasisFieldTimer -= deltaTimeMs;
-        pt->stasisFieldTimer = zb::max(pt->stasisFieldTimer, 0.f);
+        pt->stasisFieldTimer = za::max(pt->stasisFieldTimer, 0.f);
 
         const float wizardRange = pt->getComputedRangeByCatType(CatType::Wizard);
 
@@ -3854,7 +3854,7 @@ void Main::gameLoopUpdateAutocast()
 
     const auto spellIndex = pt->perm.autocastIndex - 1u;
 
-    if (static_cast<zb::SizeT>(spellIndex) > pt->psvSpellCount.nPurchases)
+    if (static_cast<za::SizeT>(spellIndex) > pt->psvSpellCount.nPurchases)
         return;
 
     if (pt->mana >= spellManaCostByIndex[spellIndex])

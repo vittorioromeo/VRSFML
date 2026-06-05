@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/InputImpl.hpp"
 
-#include "Zancle/System/Android/Activity.hpp"
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Window/Android/Activity.hpp"
+#include "Zancle/Err/Err.hpp"
 
 #include <jni.h>
 

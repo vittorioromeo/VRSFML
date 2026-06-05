@@ -16,15 +16,15 @@
 #include "Zancle/GLUtils/EGL/EGLCheck.hpp"
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 #ifdef ZA_SYSTEM_ANDROID
-    #include "Zancle/System/Android/Activity.hpp"
+    #include "Zancle/Window/Android/Activity.hpp"
 
     #include <mutex>
 #endif
@@ -54,7 +54,7 @@ namespace EglContextImpl
         return result;
     }();
 
-    ZB_ASSERT(display != EGL_NO_DISPLAY);
+    ZA_ASSERT(display != EGL_NO_DISPLAY);
     return display;
 }
 
@@ -72,7 +72,7 @@ bool ensureInit()
             // Dump a message to the console and let the application terminate
             priv::errMsg("Failed to load EGL entry points");
 
-            ZB_ASSERT(false);
+            ZA_ASSERT(false);
 
             return false;
         }
@@ -83,7 +83,7 @@ bool ensureInit()
         return true;
     }();
 
-    ZB_ASSERT(result);
+    ZA_ASSERT(result);
     return result;
 
 #else
@@ -128,7 +128,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const za:
         priv::errMsg("Failed to get EGL configs (1st call)");
 
     // Retrieve the list of available configs
-    zb::Vector<EGLConfig> configs(static_cast<zb::SizeT>(configCount));
+    za::Vector<EGLConfig> configs(static_cast<za::SizeT>(configCount));
 
     if (const auto rc = eglCheck(eglGetConfigs(display, configs.data(), configCount, &configCount)); rc == EGL_FALSE)
         priv::errMsg("Failed to get EGL configs (2nd call)");
@@ -137,7 +137,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const za:
     int       bestScore = 0x7F'FF'FF'FF;
     EGLConfig bestConfig{};
 
-    for (zb::SizeT i = 0; i < static_cast<zb::SizeT>(configCount); ++i)
+    for (za::SizeT i = 0; i < static_cast<za::SizeT>(configCount); ++i)
     {
         // Check mandatory attributes
         int surfaceType    = 0;
@@ -181,7 +181,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const za:
         }
     }
 
-    ZB_ASSERT(bestScore < 0x7F'FF'FF'FF && "Failed to calculate best config");
+    ZA_ASSERT(bestScore < 0x7F'FF'FF'FF && "Failed to calculate best config");
 
     return bestConfig;
 #else
@@ -259,7 +259,7 @@ EglContext::EglContext(unsigned int id, EglContext* shared, const ContextSetting
     constexpr EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
     m_impl->surface = eglCheck(eglCreatePbufferSurface(m_impl->display, m_impl->config, attribList));
-    ZB_ASSERT(m_impl->surface != EGL_NO_SURFACE);
+    ZA_ASSERT(m_impl->surface != EGL_NO_SURFACE);
 #else
     EGLNativeWindowType dummyWindow{};
     createSurface(&dummyWindow);
@@ -397,7 +397,7 @@ void EglContext::createContext(EglContext* shared)
 
     // Create EGL context
     m_impl->context = eglCheck(eglCreateContext(m_impl->display, m_impl->config, toShared, contextAttribs));
-    ZB_ASSERT(m_impl->context != EGL_NO_CONTEXT);
+    ZA_ASSERT(m_impl->context != EGL_NO_CONTEXT);
 }
 
 
@@ -407,7 +407,7 @@ void EglContext::createSurface(void* windowPtr)
     m_impl->surface = eglCheck(
         eglCreateWindowSurface(m_impl->display, m_impl->config, *static_cast<EGLNativeWindowType*>(windowPtr), nullptr));
 
-    ZB_ASSERT(m_impl->surface != EGL_NO_SURFACE);
+    ZA_ASSERT(m_impl->surface != EGL_NO_SURFACE);
 }
 
 

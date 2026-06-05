@@ -12,12 +12,12 @@
 #include "Zancle/Network/SocketHandle.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/String.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/String/String.hpp"
 
 
 namespace za
@@ -29,27 +29,27 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(zb::U8 byte0, zb::U8 byte1, zb::U8 byte2, zb::U8 byte3) :
-    m_address(static_cast<zb::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
+IpAddress::IpAddress(za::U8 byte0, za::U8 byte1, za::U8 byte2, za::U8 byte3) :
+    m_address(static_cast<za::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(zb::U32 address) : m_address(address)
+IpAddress::IpAddress(za::U32 address) : m_address(address)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::U32 IpAddress::toInteger() const
+za::U32 IpAddress::toInteger() const
 {
     return m_address;
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<IpAddress> IpAddress::getLocalAddress()
+za::Optional<IpAddress> IpAddress::getLocalAddress()
 {
     // The method here is to connect a UDP socket to a public ip,
     // and get the local socket address with the getsockname function.
@@ -60,7 +60,7 @@ zb::Optional<IpAddress> IpAddress::getLocalAddress()
     if (sock == priv::SocketImpl::invalidSocket())
     {
         priv::errMsg("Failed to retrieve local address (invalid socket)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Connect the socket to a public ip (here 1.1.1.1) on any
@@ -72,7 +72,7 @@ zb::Optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::errMsg("Failed to retrieve local address (socket connection failure)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Get the local address of the socket connection
@@ -82,19 +82,19 @@ zb::Optional<IpAddress> IpAddress::getLocalAddress()
         priv::SocketImpl::close(sock);
 
         priv::errMsg("Failed to retrieve local address (socket local address retrieval failure)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Close the socket
     priv::SocketImpl::close(sock);
 
     // Finally build the IP address
-    return zb::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(address.sAddr()));
+    return za::makeOptional<IpAddress>(priv::SocketImpl::networkToHost(address.sAddr()));
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
+za::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
@@ -115,7 +115,7 @@ zb::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
     priv::errMsg("Failed to retrieve public address from external IP resolution server (HTTP response status {})",
                  static_cast<int>(status));
 
-    return zb::nullOpt;
+    return za::nullOpt;
 }
 
 

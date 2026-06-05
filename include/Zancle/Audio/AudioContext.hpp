@@ -11,9 +11,9 @@
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -47,15 +47,15 @@ public:
     /// This function performs the necessary initialization of the
     /// audio system. It must be called before any other audio
     /// functions are used. If the audio system cannot be
-    /// initialized, this function returns `zb::nullOpt`.
+    /// initialized, this function returns `za::nullOpt`.
     ///
     /// It is recommended to create an AudioContext early in the
     /// program's execution, for example in `main()`.
     ///
-    /// \return A new audio context on success, or `zb::nullOpt` on failure
+    /// \return A new audio context on success, or `za::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
-    static zb::Optional<AudioContext> create();
+    static za::Optional<AudioContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -117,7 +117,7 @@ public:
     ///
     /// \see PlaybackDevice, getDefaultPlaybackDeviceHandle
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
+    [[nodiscard]] static za::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio playback device
@@ -129,13 +129,13 @@ public:
     /// This handle can be used to create an `za::PlaybackDevice` instance.
     ///
     /// If no default playback device is available (e.g., no audio
-    /// hardware is present), this function returns `zb::nullOpt`.
+    /// hardware is present), this function returns `za::nullOpt`.
     ///
-    /// \return An optional containing a handle to the default audio playback device, or `zb::nullOpt`
+    /// \return An optional containing a handle to the default audio playback device, or `za::nullOpt`
     ///
     /// \see PlaybackDevice, getAvailablePlaybackDeviceHandles
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
+    [[nodiscard]] static za::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio capture devices
@@ -153,7 +153,7 @@ public:
     ///
     /// \see CaptureDevice, getDefaultCaptureDeviceHandle
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
+    [[nodiscard]] static za::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio capture device
@@ -165,13 +165,13 @@ public:
     /// This handle can be used to create an `za::CaptureDevice` instance.
     ///
     /// If no default capture device is available (e.g., no microphone
-    /// is connected), this function returns `zb::nullOpt`.
+    /// is connected), this function returns `za::nullOpt`.
     ///
-    /// \return An optional containing a handle to the default audio capture device, or `zb::nullOpt`
+    /// \return An optional containing a handle to the default audio capture device, or `za::nullOpt`
     ///
     /// \see CaptureDevice, getAvailableCaptureDeviceHandles
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static zb::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+    [[nodiscard]] static za::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -179,7 +179,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioContext(zb::PassKey<AudioContext>&&);
+    [[nodiscard]] explicit AudioContext(za::PassKey<AudioContext>&&);
 
 private:
     friend CaptureDevice;

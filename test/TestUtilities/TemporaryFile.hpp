@@ -2,13 +2,13 @@
 
 #include "Zancle/Config.hpp"
 
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Fmt/FmtToString.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/UIntPtrT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Fmt/FmtToString.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Base/UIntPtrT.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)
     #include <process.h>
@@ -28,7 +28,7 @@ namespace za::testing
     return static_cast<unsigned int>(::getpid());
 #else
     static const int fallbackProcessToken = 0;
-    return static_cast<unsigned int>(reinterpret_cast<zb::UIntPtrT>(&fallbackProcessToken));
+    return static_cast<unsigned int>(reinterpret_cast<za::UIntPtrT>(&fallbackProcessToken));
 #endif
 }
 
@@ -44,9 +44,9 @@ inline Path getTemporaryFilePath()
     static int counter = 0;
 
     const auto tmp = Path::getTempDirectory();
-    ZB_ASSERT(tmp && "Failed to obtain temp directory");
+    ZA_ASSERT(tmp && "Failed to obtain temp directory");
 
-    return *tmp / Path(zb::fmtToString("zancletemp_{}_{}.tmp", getProcessUniqueId(), counter++));
+    return *tmp / Path(za::fmtToString("zancletemp_{}_{}.tmp", getProcessUniqueId(), counter++));
 }
 
 
@@ -66,13 +66,13 @@ public:
     }
 
     /// Create a temporary file containing \a contents.
-    explicit TemporaryFile(zb::StringView contents) : m_path(getTemporaryFilePath())
+    explicit TemporaryFile(za::StringView contents) : m_path(getTemporaryFilePath())
     {
         auto optFile = OutFile::open(m_path);
-        ZB_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
+        ZA_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
 
         [[maybe_unused]] const bool wrote = optFile->write(contents.data(), contents.size());
-        ZB_ASSERT(wrote && "Failed to write temporary file contents");
+        ZA_ASSERT(wrote && "Failed to write temporary file contents");
 
         // Destructor of `optFile` closes the file when this body returns.
     }
@@ -82,7 +82,7 @@ public:
         if (m_path.exists())
         {
             [[maybe_unused]] const bool removed = m_path.removeFromDisk();
-            ZB_ASSERT(removed && "m_path failed to be removed from filesystem");
+            ZA_ASSERT(removed && "m_path failed to be removed from filesystem");
         }
     }
 

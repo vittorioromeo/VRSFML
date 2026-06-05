@@ -18,32 +18,32 @@
 #include "Zancle/GLUtils/GLUtils.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/InputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathUtils.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/InputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathUtils.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/Exchange.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Exchange.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 using GLhandle = GLuint;
 
 #if defined(ZA_SYSTEM_MACOS) || defined(ZA_SYSTEM_IOS)
 
-    #include "ZancleBase/PtrDiffT.hpp"
+    #include "Zancle/Base/PtrDiffT.hpp"
 
-    #define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(::zb::PtrDiffT{x})
-    #define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::zb::PtrDiffT>(x))
+    #define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(::za::PtrDiffT{x})
+    #define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::za::PtrDiffT>(x))
 
 #else
 
@@ -57,9 +57,9 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 // Retrieve the maximum number of texture units available
-[[nodiscard]] zb::SizeT getMaxTextureUnits()
+[[nodiscard]] za::SizeT getMaxTextureUnits()
 {
-    static const auto maxUnits = static_cast<zb::SizeT>(za::priv::getGLInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
+    static const auto maxUnits = static_cast<za::SizeT>(za::priv::getGLInteger(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS));
     return maxUnits;
 }
 
@@ -68,14 +68,14 @@ namespace
 // Pair of indices into thread-local buffer
 struct [[nodiscard]] BufferSlice
 {
-    zb::SizeT beginIdx;
-    zb::SizeT count;
+    za::SizeT beginIdx;
+    za::SizeT count;
 
-    [[nodiscard]] explicit BufferSlice(zb::SizeT b, zb::SizeT c) : beginIdx(b), count(c)
+    [[nodiscard]] explicit BufferSlice(za::SizeT b, za::SizeT c) : beginIdx(b), count(c)
     {
     }
 
-    [[nodiscard]] zb::StringView toView(const zb::Vector<char>& buffer) const
+    [[nodiscard]] za::StringView toView(const za::Vector<char>& buffer) const
     {
         return {buffer.data() + beginIdx, count};
     }
@@ -85,55 +85,55 @@ struct [[nodiscard]] BufferSlice
 ////////////////////////////////////////////////////////////
 // Read the contents of a file and append them (followed by a null terminator)
 // to `buffer`, returning the slice of `buffer` that holds the new contents.
-[[nodiscard]] zb::Optional<BufferSlice> appendFileContentsToVector(const za::Path& filename, zb::Vector<char>& buffer)
+[[nodiscard]] za::Optional<BufferSlice> appendFileContentsToVector(const za::Path& filename, za::Vector<char>& buffer)
 {
-    const zb::SizeT bufferSizeBeforeRead = buffer.size();
+    const za::SizeT bufferSizeBeforeRead = buffer.size();
 
     if (!za::appendFromFile(filename, buffer))
     {
         za::priv::errMsg("Failed to open shader file");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     buffer.pushBack('\0');
-    return zb::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
+    return za::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 
 ////////////////////////////////////////////////////////////
 // Read the contents of a stream into an array of char
-[[nodiscard]] zb::Optional<BufferSlice> appendStreamContentsToVector(za::InputStream& stream, zb::Vector<char>& buffer)
+[[nodiscard]] za::Optional<BufferSlice> appendStreamContentsToVector(za::InputStream& stream, za::Vector<char>& buffer)
 {
-    const zb::Optional<zb::SizeT> size = stream.getSize();
+    const za::Optional<za::SizeT> size = stream.getSize();
 
     if (!size.hasValue() || size.value() == 0)
     {
         za::priv::errMsg("Failed to read shader stream (empty or unsized)");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     if (!stream.seek(0).hasValue())
     {
         za::priv::errMsg("Failed to seek shader stream");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    const zb::SizeT bufferSizeBeforeRead = buffer.size();
+    const za::SizeT bufferSizeBeforeRead = buffer.size();
     buffer.reserve(bufferSizeBeforeRead + *size + 1u);
     buffer.unsafeSetSize(bufferSizeBeforeRead + *size);
 
-    const zb::Optional<zb::SizeT> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
+    const za::Optional<za::SizeT> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
 
     if (!read.hasValue() || *read != *size)
     {
         // Roll back the size grow so `buffer` is left as the caller saw it.
         buffer.unsafeSetSize(bufferSizeBeforeRead);
         za::priv::errMsg("Failed to read stream contents into buffer");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     buffer.pushBack('\0');
-    return zb::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
+    return za::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
 }
 
 
@@ -145,9 +145,9 @@ struct [[nodiscard]] BufferSlice
 // individual file reads and lives until `compile()` returns.
 //
 // Non-reentrant by the same contract as the I/O scratch.
-[[nodiscard]] zb::Vector<char>& getThreadLocalShaderConcatBuffer()
+[[nodiscard]] za::Vector<char>& getThreadLocalShaderConcatBuffer()
 {
-    static thread_local zb::Vector<char> result;
+    static thread_local za::Vector<char> result;
     return result;
 }
 
@@ -170,7 +170,7 @@ static_assert(sizeof(za::Glsl::Mat4) == 16 * sizeof(float));
 // not preamble-relative ones. The preamble is constant per build, so callers
 // pass it as a separate source string to `glShaderSource(count=2)` and avoid
 // the per-compile concatenation.
-[[nodiscard]] constexpr zb::StringView getShaderPreamble()
+[[nodiscard]] constexpr za::StringView getShaderPreamble()
 {
     return
 #if defined(ZA_SYSTEM_EMSCRIPTEN)
@@ -191,9 +191,9 @@ static_assert(sizeof(za::Glsl::Mat4) == 16 * sizeof(float));
 // Slow-path helper for compile-error reporting: concatenates the preamble and
 // user source into a thread-local buffer so `printLinesWithNumbers` can show
 // the full source as the driver saw it (preamble included).
-[[nodiscard]] zb::StringView buildConcatenatedShaderSource(zb::StringView preamble, zb::StringView src)
+[[nodiscard]] za::StringView buildConcatenatedShaderSource(za::StringView preamble, za::StringView src)
 {
-    static thread_local zb::Vector<char> buffer; // Cannot reuse the other buffer here
+    static thread_local za::Vector<char> buffer; // Cannot reuse the other buffer here
     buffer.clear();
 
     buffer.emplaceRange(preamble.data(), preamble.size());
@@ -204,26 +204,26 @@ static_assert(sizeof(za::Glsl::Mat4) == 16 * sizeof(float));
 
 
 ////////////////////////////////////////////////////////////
-void printLinesWithNumbers(zb::StringView text)
+void printLinesWithNumbers(za::StringView text)
 {
     za::priv::ErrMsgScope scope;
     scope.disableTrailing();
     scope.append("\n\n");
 
-    constexpr zb::StringView lineDirectivePrefix{"#line "};
-    constexpr zb::StringView beginIncludePrefix{"// >>> begin included from \""};
-    constexpr zb::StringView endIncludePrefix{"// <<< end included from \""};
+    constexpr za::StringView lineDirectivePrefix{"#line "};
+    constexpr za::StringView beginIncludePrefix{"// >>> begin included from \""};
+    constexpr za::StringView endIncludePrefix{"// <<< end included from \""};
 
-    zb::SizeT lineStart  = 0u;
-    zb::SizeT lineNumber = 1u;
+    za::SizeT lineStart  = 0u;
+    za::SizeT lineNumber = 1u;
 
     while (lineStart < text.size())
     {
         // Find the position of the next newline character.
-        zb::SizeT  newlinePos = text.find('\n', lineStart);
-        const bool lastLine   = (newlinePos == zb::StringView::nPos);
+        za::SizeT  newlinePos = text.find('\n', lineStart);
+        const bool lastLine   = (newlinePos == za::StringView::nPos);
 
-        const zb::StringView line = lastLine ? text.substrByPosLen(lineStart)
+        const za::StringView line = lastLine ? text.substrByPosLen(lineStart)
                                              : text.substrByPosLen(lineStart, newlinePos - lineStart);
 
         // Check if this line is a #line directive and update the tracked line number
@@ -233,7 +233,7 @@ void printLinesWithNumbers(zb::StringView text)
             // Parse the line number from the directive
             unsigned int parsedLineNumber = 0;
 
-            for (zb::SizeT i = lineDirectivePrefix.size(); i < line.size(); ++i)
+            for (za::SizeT i = lineDirectivePrefix.size(); i < line.size(); ++i)
             {
                 const char c = line[i];
                 if (c < '0' || c > '9')
@@ -326,8 +326,8 @@ void destroyProgramIfNeeded(const unsigned int program)
     // Always delete programs and shaders on the shared context
     za::priv::GLSharedContextGuard guard;
 
-    ZB_ASSERT(za::GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(glCheck(glIsProgram(castToGlHandle(program))));
+    ZA_ASSERT(za::GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(glCheck(glIsProgram(castToGlHandle(program))));
     glCheck(glDeleteProgram(castToGlHandle(program)));
 
     // GL handles can be reused after deletion. If the cache still names this
@@ -361,9 +361,9 @@ struct Shader::Impl
     }
 
     explicit Impl(Impl&& rhs) noexcept :
-        shaderProgram(zb::exchange(rhs.shaderProgram, 0u)),
-        currentTexture(zb::exchange(rhs.currentTexture, -1)),
-        textures(ZB_MOVE(rhs.textures))
+        shaderProgram(za::exchange(rhs.shaderProgram, 0u)),
+        currentTexture(za::exchange(rhs.currentTexture, -1)),
+        textures(ZA_MOVE(rhs.textures))
     {
     }
 
@@ -374,9 +374,9 @@ struct Shader::Impl
 
         destroyProgramIfNeeded(shaderProgram);
 
-        shaderProgram  = zb::exchange(rhs.shaderProgram, 0u);
-        currentTexture = zb::exchange(rhs.currentTexture, -1);
-        textures       = ZB_MOVE(rhs.textures);
+        shaderProgram  = za::exchange(rhs.shaderProgram, 0u);
+        currentTexture = za::exchange(rhs.currentTexture, -1);
+        textures       = ZA_MOVE(rhs.textures);
 
         return *this;
     }
@@ -386,7 +386,7 @@ struct Shader::Impl
 ////////////////////////////////////////////////////////////
 Shader::UniformLocation::UniformLocation(int location) : m_value(location)
 {
-    ZB_ASSERT(m_value != -1);
+    ZA_ASSERT(m_value != -1);
 }
 
 
@@ -397,7 +397,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int currentProgramInt)
     {
-        ZB_ASSERT(currentProgramInt != 0u);
+        ZA_ASSERT(currentProgramInt != 0u);
 
         m_savedProgram = readCurrentProgramOrQuery();
         m_needsRestore = (currentProgramInt != m_savedProgram);
@@ -441,14 +441,14 @@ Shader& Shader::operator=(Shader&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
+za::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
 {
     // Prepare thread-local buffer
-    zb::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
+    za::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
     buffer.clear();
 
     // Helper function
-    const auto readIntoBufferSlice = [&](const char* typeStr, const Path& optPath, zb::Optional<BufferSlice>& optBufferSlice)
+    const auto readIntoBufferSlice = [&](const char* typeStr, const Path& optPath, za::Optional<BufferSlice>& optBufferSlice)
     {
         if (optPath.empty())
             return true;
@@ -464,33 +464,33 @@ zb::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
     };
 
     // Read the vertex shader file (if path provided)
-    zb::Optional<BufferSlice> vertexShaderSlice;
+    za::Optional<BufferSlice> vertexShaderSlice;
     if (!readIntoBufferSlice("vertex", settings.vertexPath, vertexShaderSlice))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Read the geometry shader file (if path provided)
-    zb::Optional<BufferSlice> geometryShaderSlice;
+    za::Optional<BufferSlice> geometryShaderSlice;
     if (!readIntoBufferSlice("geometry", settings.geometryPath, geometryShaderSlice))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Read the fragment shader file (if path provided)
-    zb::Optional<BufferSlice> fragmentShaderSlice;
+    za::Optional<BufferSlice> fragmentShaderSlice;
     if (!readIntoBufferSlice("fragment", settings.fragmentPath, fragmentShaderSlice))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Get source views
-    auto vertexView   = vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : zb::StringView{};
-    auto geometryView = geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : zb::StringView{};
-    auto fragmentView = fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : zb::StringView{};
+    auto vertexView   = vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : za::StringView{};
+    auto geometryView = geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : za::StringView{};
+    auto fragmentView = fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : za::StringView{};
 
     // Preprocess #include directives if present
-    zb::Vector<char> ppVertexBuf;
-    zb::Vector<char> ppGeometryBuf;
-    zb::Vector<char> ppFragmentBuf;
+    za::Vector<char> ppVertexBuf;
+    za::Vector<char> ppGeometryBuf;
+    za::Vector<char> ppFragmentBuf;
 
-    const auto preprocessIfNeeded = [](zb::StringView& source, const Path& shaderPath, zb::Vector<char>& ppBuf) -> bool
+    const auto preprocessIfNeeded = [](za::StringView& source, const Path& shaderPath, za::Vector<char>& ppBuf) -> bool
     {
-        if (source.data() == nullptr || source.find("#include") == zb::StringView::nPos)
+        if (source.data() == nullptr || source.find("#include") == za::StringView::nPos)
             return true;
 
         if (!ShaderUtils::preprocessGlslIncludes(source, shaderPath, ppBuf))
@@ -501,35 +501,35 @@ zb::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
     };
 
     if (!preprocessIfNeeded(vertexView, settings.vertexPath, ppVertexBuf))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     if (!preprocessIfNeeded(geometryView, settings.geometryPath, ppGeometryBuf))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     if (!preprocessIfNeeded(fragmentView, settings.fragmentPath, ppFragmentBuf))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     return compile(vertexView, geometryView, fragmentView);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Shader> Shader::loadFromMemory(const LoadFromMemorySettings& settings)
+za::Optional<Shader> Shader::loadFromMemory(const LoadFromMemorySettings& settings)
 {
     return compile(settings.vertexCode, settings.geometryCode, settings.fragmentCode);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settings)
+za::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settings)
 {
     // Prepare thread-local buffer
-    zb::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
+    za::Vector<char>& buffer = getThreadLocalShaderConcatBuffer();
     buffer.clear();
 
     // Helper function
     const auto readIntoBufferSlice =
-        [&](const char* typeStr, InputStream* optStream, zb::Optional<BufferSlice>& optBufferSlice)
+        [&](const char* typeStr, InputStream* optStream, za::Optional<BufferSlice>& optBufferSlice)
     {
         if (optStream == nullptr)
             return true;
@@ -545,44 +545,44 @@ zb::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settin
     };
 
     // Read the vertex shader code from the stream
-    zb::Optional<BufferSlice> vertexShaderSlice;
+    za::Optional<BufferSlice> vertexShaderSlice;
     if (!readIntoBufferSlice("vertex", settings.vertexStream, vertexShaderSlice))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Read the geometry shader code from the stream
-    zb::Optional<BufferSlice> geometryShaderSlice;
+    za::Optional<BufferSlice> geometryShaderSlice;
     if (!readIntoBufferSlice("geometry", settings.geometryStream, geometryShaderSlice))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Read the fragment shader code from the stream
-    zb::Optional<BufferSlice> fragmentShaderSlice;
+    za::Optional<BufferSlice> fragmentShaderSlice;
     if (!readIntoBufferSlice("fragment", settings.fragmentStream, fragmentShaderSlice))
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : zb::StringView{},
-                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : zb::StringView{},
-                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : zb::StringView{});
+    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : za::StringView{},
+                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : za::StringView{},
+                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : za::StringView{});
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Shader::UniformLocation> Shader::getUniformLocation(zb::StringView uniformName) const
+za::Optional<Shader::UniformLocation> Shader::getUniformLocation(za::StringView uniformName) const
 {
-    enum : zb::SizeT
+    enum : za::SizeT
     {
         maxUniformNameLength = 256
     };
 
-    ZB_ASSERT(uniformName.size() < maxUniformNameLength && "Uniform name too long");
+    ZA_ASSERT(uniformName.size() < maxUniformNameLength && "Uniform name too long");
 
     // To get a a null-terminated string
     char uniformNameBuffer[maxUniformNameLength];
-    ZB_MEMCPY(uniformNameBuffer, uniformName.data(), uniformName.size());
+    ZA_MEMCPY(uniformNameBuffer, uniformName.data(), uniformName.size());
     uniformNameBuffer[uniformName.size()] = '\0';
 
     // Request the location from OpenGL
     const int location = glCheck(glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer));
-    return location == -1 ? zb::nullOpt : zb::makeOptional(UniformLocation{location});
+    return location == -1 ? za::nullOpt : za::makeOptional(UniformLocation{location});
 }
 
 
@@ -720,8 +720,8 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
     ++m_uniformGeneration;
 
-    ZB_ASSERT(m_impl->shaderProgram);
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(m_impl->shaderProgram);
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Mutates `m_impl->textures`; must be called from the Shader's owning thread.
     // Store the location -> texture mapping
@@ -751,8 +751,8 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     ++m_uniformGeneration;
 
-    ZB_ASSERT(m_impl->shaderProgram);
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(m_impl->shaderProgram);
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -760,7 +760,7 @@ void Shader::setUniform(UniformLocation location, CurrentTextureType)
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const float* scalarArray, zb::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const float* scalarArray, za::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -769,7 +769,7 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, zb::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, za::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -778,7 +778,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArra
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, zb::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, za::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -787,7 +787,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArra
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, zb::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, za::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -796,7 +796,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArra
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, zb::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixArray, za::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -808,7 +808,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Mat3* matrixA
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, zb::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Mat4* matrixArray, za::SizeT length)
 {
     ++m_uniformGeneration;
     const UniformBinder binder{m_impl->shaderProgram};
@@ -829,11 +829,11 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    ZB_ASSERT(m_impl->shaderProgram != 0u);
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(m_impl->shaderProgram != 0u);
 
     // Enable the program
-    ZB_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
+    ZA_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
     useProgram(m_impl->shaderProgram);
 
     // Bind the textures
@@ -848,7 +848,7 @@ void Shader::bind() const
 ////////////////////////////////////////////////////////////
 void Shader::unbind()
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     useProgram(0u);
 }
 
@@ -859,7 +859,7 @@ bool Shader::isGeometryAvailable()
 #ifdef ZA_OPENGL_ES
     return false;
 #else
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     // `GLAD_GL_VERSION_3_2` is the runtime flag set by glad after `gladLoadGL`.
     // (Not `GL_VERSION_3_2`, which is a `#define` that always expands to 1.)
     return GLAD_GL_VERSION_3_2 != 0;
@@ -868,11 +868,11 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(zb::PassKey<Shader>&&, unsigned int shaderProgram) :
+Shader::Shader(za::PassKey<Shader>&&, unsigned int shaderProgram) :
     m_impl(
         [&]
 {
-    ZB_ASSERT(shaderProgram != 0);
+    ZA_ASSERT(shaderProgram != 0);
     return shaderProgram;
 }()),
     m_hasBuiltInUniformMVPRow0(glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow0")) != -1),
@@ -883,11 +883,11 @@ Shader::Shader(zb::PassKey<Shader>&&, unsigned int shaderProgram) :
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
-                                     zb::StringView geometryShaderCode,
-                                     zb::StringView fragmentShaderCode)
+za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
+                                     za::StringView geometryShaderCode,
+                                     za::StringView fragmentShaderCode)
 {
-    ZB_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure we can use geometry shaders
     if (geometryShaderCode.data() != nullptr && !isGeometryAvailable())
@@ -896,7 +896,7 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
             "Failed to create a shader: your system doesn't support geometry shaders (you should test "
             "Shader::isGeometryAvailable() before trying to use geometry shaders)");
 
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Always create programs and shaders on the shared context
@@ -904,14 +904,14 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
 
     // Create the program
     const GLhandle shaderProgram = glCheck(glCreateProgram());
-    ZB_ASSERT(glCheck(glIsProgram(shaderProgram)));
+    ZA_ASSERT(glCheck(glIsProgram(shaderProgram)));
 
-    const auto makeShader = [&](GLenum type, const char* typeStr, zb::StringView shaderCode)
+    const auto makeShader = [&](GLenum type, const char* typeStr, za::StringView shaderCode)
     {
         // Pass `#version` (+ precision + `#line 1`) and the user source as two
         // separate source strings -- the preamble is build-time constant, no
         // per-compile concatenation needed.
-        constexpr zb::StringView preamble = getShaderPreamble();
+        constexpr za::StringView preamble = getShaderPreamble();
 
         const GLhandle shader = glCheck(glCreateShader(type));
 
@@ -920,7 +920,7 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
 
         glCheck(glShaderSource(shader, 2, sources, lengths));
         glCheck(glCompileShader(shader));
-        ZB_ASSERT(glCheck(glIsShader(shader)));
+        ZA_ASSERT(glCheck(glIsShader(shader)));
 
         // Check the compile log
         GLint success = 0;
@@ -953,14 +953,14 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
         vertexShaderCode = DefaultShader::srcVertex;
 
     if (!makeShader(GL_VERTEX_SHADER, "vertex", vertexShaderCode))
-        return zb::nullOpt;
+        return za::nullOpt;
 
 
     // Create the geometry shader if needed
     if (geometryShaderCode.data())
     {
         if (!makeShader(GL_GEOMETRY_SHADER, "geometry", geometryShaderCode))
-            return zb::nullOpt;
+            return za::nullOpt;
     }
 
     if (fragmentShaderCode.data() == nullptr)
@@ -968,7 +968,7 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
 
     // Create the fragment shader
     if (!makeShader(GL_FRAGMENT_SHADER, "fragment", fragmentShaderCode))
-        return zb::nullOpt;
+        return za::nullOpt;
 
     // Link the program
     glCheck(glLinkProgram(shaderProgram));
@@ -989,7 +989,7 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
                      geometryShaderCode);
 
         glCheck(glDeleteProgram(shaderProgram));
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // Force an OpenGL flush, so that the shader will appear updated
@@ -1010,7 +1010,7 @@ zb::Optional<Shader> Shader::compile(zb::StringView vertexShaderCode,
     glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "za_u_mvpRow1"));
 #endif
 
-    return zb::makeOptional<Shader>(zb::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
+    return za::makeOptional<Shader>(za::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
 }
 
 
@@ -1020,7 +1020,7 @@ void Shader::bindTextures() const
 {
     auto* it = m_impl->textures.begin();
 
-    for (zb::SizeT i = 0u; i < m_impl->textures.size(); ++i)
+    for (za::SizeT i = 0u; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
 

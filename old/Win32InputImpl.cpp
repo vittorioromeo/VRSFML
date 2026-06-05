@@ -11,14 +11,14 @@
 #include "Zancle/System/String.hpp"
 #include "Zancle/System/Win32/WindowsHeader.hpp"
 
-#include "ZancleBase/EnumArray.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Container/EnumArray.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace
 {
-zb::EnumArray<za::Keyboard::Key, za::Keyboard::Scancode, za::Keyboard::KeyCount> keyToScancodeMapping; ///< Mapping from Key to Scancode
-zb::EnumArray<za::Keyboard::Scancode, za::Keyboard::Key, za::Keyboard::ScancodeCount> scancodeToKeyMapping; ///< Mapping from Scancode to Key
+za::EnumArray<za::Keyboard::Key, za::Keyboard::Scancode, za::Keyboard::KeyCount> keyToScancodeMapping; ///< Mapping from Key to Scancode
+za::EnumArray<za::Keyboard::Scancode, za::Keyboard::Key, za::Keyboard::ScancodeCount> scancodeToKeyMapping; ///< Mapping from Scancode to Key
 
 [[nodiscard]] za::Keyboard::Key virtualKeyToSfKey(UINT virtualKey)
 {
@@ -495,34 +495,34 @@ zb::EnumArray<za::Keyboard::Scancode, za::Keyboard::Key, za::Keyboard::ScancodeC
     // clang-format on
 }
 
-[[nodiscard]] zb::Optional<za::String> sfScanToConsumerKeyName(za::Keyboard::Scancode code)
+[[nodiscard]] za::Optional<za::String> sfScanToConsumerKeyName(za::Keyboard::Scancode code)
 {
     // Convert an SFML scancode to a Windows consumer keyboard key name
     // Reference: https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#keystroke-messages
     // clang-format off
     switch (code)
     {
-        case za::Keyboard::Scan::MediaNextTrack:     return zb::makeOptional<za::String>("Next Track");
-        case za::Keyboard::Scan::MediaPreviousTrack: return zb::makeOptional<za::String>("Previous Track");
-        case za::Keyboard::Scan::MediaStop:          return zb::makeOptional<za::String>("Stop");
-        case za::Keyboard::Scan::MediaPlayPause:     return zb::makeOptional<za::String>("Play/Pause");
-        case za::Keyboard::Scan::VolumeMute:         return zb::makeOptional<za::String>("Mute");
-        case za::Keyboard::Scan::VolumeUp:           return zb::makeOptional<za::String>("Volume Increment");
-        case za::Keyboard::Scan::VolumeDown:         return zb::makeOptional<za::String>("Volume Decrement");
-        case za::Keyboard::Scan::LaunchMediaSelect:  return zb::makeOptional<za::String>("Consumer Control Configuration");
-        case za::Keyboard::Scan::LaunchMail:         return zb::makeOptional<za::String>("Email Reader");
-        case za::Keyboard::Scan::LaunchApplication2: return zb::makeOptional<za::String>("Calculator");
-        case za::Keyboard::Scan::LaunchApplication1: return zb::makeOptional<za::String>("Local Machine Browser");
-        case za::Keyboard::Scan::Search:             return zb::makeOptional<za::String>("Search");
-        case za::Keyboard::Scan::HomePage:           return zb::makeOptional<za::String>("Home");
-        case za::Keyboard::Scan::Back:               return zb::makeOptional<za::String>("Back");
-        case za::Keyboard::Scan::Forward:            return zb::makeOptional<za::String>("Forward");
-        case za::Keyboard::Scan::Stop:               return zb::makeOptional<za::String>("Stop");
-        case za::Keyboard::Scan::Refresh:            return zb::makeOptional<za::String>("Refresh");
-        case za::Keyboard::Scan::Favorites:          return zb::makeOptional<za::String>("Bookmarks");
+        case za::Keyboard::Scan::MediaNextTrack:     return za::makeOptional<za::String>("Next Track");
+        case za::Keyboard::Scan::MediaPreviousTrack: return za::makeOptional<za::String>("Previous Track");
+        case za::Keyboard::Scan::MediaStop:          return za::makeOptional<za::String>("Stop");
+        case za::Keyboard::Scan::MediaPlayPause:     return za::makeOptional<za::String>("Play/Pause");
+        case za::Keyboard::Scan::VolumeMute:         return za::makeOptional<za::String>("Mute");
+        case za::Keyboard::Scan::VolumeUp:           return za::makeOptional<za::String>("Volume Increment");
+        case za::Keyboard::Scan::VolumeDown:         return za::makeOptional<za::String>("Volume Decrement");
+        case za::Keyboard::Scan::LaunchMediaSelect:  return za::makeOptional<za::String>("Consumer Control Configuration");
+        case za::Keyboard::Scan::LaunchMail:         return za::makeOptional<za::String>("Email Reader");
+        case za::Keyboard::Scan::LaunchApplication2: return za::makeOptional<za::String>("Calculator");
+        case za::Keyboard::Scan::LaunchApplication1: return za::makeOptional<za::String>("Local Machine Browser");
+        case za::Keyboard::Scan::Search:             return za::makeOptional<za::String>("Search");
+        case za::Keyboard::Scan::HomePage:           return za::makeOptional<za::String>("Home");
+        case za::Keyboard::Scan::Back:               return za::makeOptional<za::String>("Back");
+        case za::Keyboard::Scan::Forward:            return za::makeOptional<za::String>("Forward");
+        case za::Keyboard::Scan::Stop:               return za::makeOptional<za::String>("Stop");
+        case za::Keyboard::Scan::Refresh:            return za::makeOptional<za::String>("Refresh");
+        case za::Keyboard::Scan::Favorites:          return za::makeOptional<za::String>("Bookmarks");
 
         // Not a consumer key
-        default: return zb::nullOpt;
+        default: return za::nullOpt;
     }
     // clang-format on
 }
@@ -612,7 +612,7 @@ Keyboard::Scancode delocalize(Keyboard::Key key)
 String getDescription(Keyboard::Scancode code)
 {
     // Try to translate the scan code to a consumer key
-    if (const zb::Optional consumerKeyName = sfScanToConsumerKeyName(code))
+    if (const za::Optional consumerKeyName = sfScanToConsumerKeyName(code))
         return *consumerKeyName;
 
     WORD      winCode = sfScanToWinScanExtended(code);

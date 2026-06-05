@@ -30,7 +30,7 @@
 #include "ExampleUtils/MathUtils.hpp"
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "Zancle/System/Vec2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////

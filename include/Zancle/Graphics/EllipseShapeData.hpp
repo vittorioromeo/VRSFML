@@ -11,13 +11,13 @@
 #include "Zancle/Graphics/Priv/ShapeMacros.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/GlobalAnchorPointMixin.hpp"
-#include "Zancle/System/LocalAnchorPointMixin.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
+#include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/RequireDesignatedInitializers.hpp"
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za
@@ -34,7 +34,7 @@ namespace za
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ZA_GRAPHICS_API EllipseShapeData : LocalAnchorPointMixin, GlobalAnchorPointMixin
 {
-    ZB_REQUIRE_DESIGNATED_INITIALIZERS;
+    ZA_REQUIRE_DESIGNATED_INITIALIZERS;
 
     ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     ZA_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;

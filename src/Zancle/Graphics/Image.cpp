@@ -9,30 +9,30 @@
 
 #include "Zancle/Graphics/Color.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/InputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathUtils.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/InputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathUtils.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Builtin/Memcpy.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/MinMax.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/PassKey.hpp"
-#include "ZancleBase/PtrDiffT.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Swap.hpp"
-#include "ZancleBase/UniquePtr.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Swap.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 #ifdef ZA_SYSTEM_ANDROID
-    #include "Zancle/System/Android/Activity.hpp"
-    #include "Zancle/System/Android/ResourceStream.hpp"
+    #include "Zancle/Window/Android/Activity.hpp"
+    #include "Zancle/Window/Android/ResourceStream.hpp"
 #endif
 
 #define QOI_IMPLEMENTATION
@@ -69,10 +69,10 @@ namespace
 // stb_image callback for constructing a buffer
 void bufferFromCallback(void* const context, void* const data, int size)
 {
-    const auto* const source = static_cast<zb::U8*>(data);
-    auto* const       dest   = static_cast<zb::Vector<zb::U8>*>(context);
+    const auto* const source = static_cast<za::U8*>(data);
+    auto* const       dest   = static_cast<za::Vector<za::U8>*>(context);
 
-    dest->emplaceRange(source, static_cast<zb::SizeT>(size));
+    dest->emplaceRange(source, static_cast<za::SizeT>(size));
 }
 
 ////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ struct StbDeleter
 
 
 ////////////////////////////////////////////////////////////
-using StbPtr = zb::UniquePtr<stbi_uc, StbDeleter>;
+using StbPtr = za::UniquePtr<stbi_uc, StbDeleter>;
 
 
 ////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ using StbPtr = zb::UniquePtr<stbi_uc, StbDeleter>;
 // (this is used with qoi.h)
 struct MallocPointerDeleter
 {
-    void operator()(zb::U8* ptr) const
+    void operator()(za::U8* ptr) const
     {
         free(ptr); // NOLINT(*-no-malloc)
     }
@@ -103,12 +103,12 @@ struct MallocPointerDeleter
 
 
 ////////////////////////////////////////////////////////////
-using MallocPtr = zb::UniquePtr<zb::U8, MallocPointerDeleter>;
+using MallocPtr = za::UniquePtr<za::U8, MallocPointerDeleter>;
 
 
 ////////////////////////////////////////////////////////////
 // A helper to check if the given buffer is a valid QOI file magic number
-[[nodiscard]] bool isQoiMagicNumber(const char* const buffer, const zb::SizeT size)
+[[nodiscard]] bool isQoiMagicNumber(const char* const buffer, const za::SizeT size)
 {
     return size >= 4 && buffer[0] == 'q' && buffer[1] == 'o' && buffer[2] == 'i' && buffer[3] == 'f';
 }
@@ -118,12 +118,12 @@ using MallocPtr = zb::UniquePtr<zb::U8, MallocPointerDeleter>;
 struct QOISaveData
 {
     MallocPtr ptr;
-    zb::SizeT size;
+    za::SizeT size;
 };
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] QOISaveData saveQOIImpl(const zb::U8* pixels, const za::Vec2u size)
+[[nodiscard]] QOISaveData saveQOIImpl(const za::U8* pixels, const za::Vec2u size)
 {
     const qoi_desc desc = {
         .width      = size.x,
@@ -133,24 +133,24 @@ struct QOISaveData
     };
 
     int dataSize = 0;
-    if (auto ptr = MallocPtr(static_cast<zb::U8*>(qoi_encode(pixels, &desc, &dataSize))))
-        return {ZB_MOVE(ptr), static_cast<zb::SizeT>(dataSize)};
+    if (auto ptr = MallocPtr(static_cast<za::U8*>(qoi_encode(pixels, &desc, &dataSize))))
+        return {ZA_MOVE(ptr), static_cast<za::SizeT>(dataSize)};
 
     return {nullptr, 0u};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Optional<za::Image> loadQOIImpl(zb::PassKey<za::Image>&& passKey, const zb::U8* const data, const zb::SizeT size)
+[[nodiscard]] za::Optional<za::Image> loadQOIImpl(za::PassKey<za::Image>&& passKey, const za::U8* const data, const za::SizeT size)
 {
     qoi_desc   formatDesc{};
-    const auto ptr = MallocPtr(static_cast<zb::U8*>(qoi_decode(data, static_cast<int>(size), &formatDesc, 4)));
+    const auto ptr = MallocPtr(static_cast<za::U8*>(qoi_decode(data, static_cast<int>(size), &formatDesc, 4)));
 
     if (!ptr)
-        return zb::nullOpt;
+        return za::nullOpt;
 
     const za::Vec2u imageSize{formatDesc.width, formatDesc.height};
-    return zb::makeOptional<za::Image>(ZB_MOVE(passKey), imageSize, ptr.get(), ptr.get() + imageSize.x * imageSize.y * 4);
+    return za::makeOptional<za::Image>(ZA_MOVE(passKey), imageSize, ptr.get(), ptr.get() + imageSize.x * imageSize.y * 4);
 }
 
 } // namespace
@@ -159,9 +159,9 @@ struct QOISaveData
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::Optional<Image> Image::create(Vec2u size, Color color)
+za::Optional<Image> Image::create(Vec2u size, Color color)
 {
-    zb::Optional<Image> result; // Use a single local variable for NRVO
+    za::Optional<Image> result; // Use a single local variable for NRVO
 
     if (size.x == 0 || size.y == 0)
     {
@@ -169,11 +169,11 @@ zb::Optional<Image> Image::create(Vec2u size, Color color)
         return result; // Empty optional
     }
 
-    result.emplace(zb::PassKey<Image>{}, size, zb::SizeT{size.x} * zb::SizeT{size.y} * 4);
+    result.emplace(za::PassKey<Image>{}, size, za::SizeT{size.x} * za::SizeT{size.y} * 4);
 
     // Fill it with the specified color
-    zb::U8*       ptr = result->m_pixels.data();
-    zb::U8* const end = ptr + result->m_pixels.size();
+    za::U8*       ptr = result->m_pixels.data();
+    za::U8* const end = ptr + result->m_pixels.size();
 
     while (ptr != end)
     {
@@ -188,46 +188,46 @@ zb::Optional<Image> Image::create(Vec2u size, Color color)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Image> Image::create(Vec2u size, const zb::U8* pixels)
+za::Optional<Image> Image::create(Vec2u size, const za::U8* pixels)
 {
     if (size.x == 0 || size.y == 0)
     {
         priv::errMsg("Failed to create image, invalid size (zero) provided");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     if (pixels == nullptr)
     {
         priv::errMsg("Failed to create image, null pixels pointer provided");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    return zb::makeOptional<Image>(zb::PassKey<Image>{}, size, pixels, pixels + size.x * size.y * 4);
+    return za::makeOptional<Image>(za::PassKey<Image>{}, size, pixels, pixels + size.x * size.y * 4);
 }
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(zb::PassKey<Image>&&, Vec2u size, zb::SizeT pixelCount) : m_size(size), m_pixels(pixelCount)
+Image::Image(za::PassKey<Image>&&, Vec2u size, za::SizeT pixelCount) : m_size(size), m_pixels(pixelCount)
 {
-    ZB_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
-    ZB_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
+    ZA_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
+    ZA_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
 }
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(zb::PassKey<Image>&&, Vec2u size, const zb::U8* itBegin, const zb::U8* itEnd) :
+Image::Image(za::PassKey<Image>&&, Vec2u size, const za::U8* itBegin, const za::U8* itEnd) :
     m_size(size),
     m_pixels(itBegin, itEnd)
 {
-    ZB_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
-    ZB_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
+    ZA_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
+    ZA_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Image> Image::loadFromFile(const Path& filename)
+za::Optional<Image> Image::loadFromFile(const Path& filename)
 {
-    zb::Optional<Image> result; // Use a single local variable for NRVO
+    za::Optional<Image> result; // Use a single local variable for NRVO
 
 #ifdef ZA_SYSTEM_ANDROID
 
@@ -246,7 +246,7 @@ zb::Optional<Image> Image::loadFromFile(const Path& filename)
     // Read the entire file into the thread-local scratch buffer in a single
     // native I/O call, then delegate to `loadFromMemory` which is the single
     // decode entry point (handles QOI + stbi formats).
-    zb::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
+    za::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
 
     if (!readFromFile(filename, scratch))
     {
@@ -269,18 +269,18 @@ zb::Optional<Image> Image::loadFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Image> Image::loadFromMemory(const void* data, zb::SizeT size)
+za::Optional<Image> Image::loadFromMemory(const void* data, za::SizeT size)
 {
     if (data == nullptr || size == 0)
     {
         priv::errMsg("Failed to load image from memory, no data provided");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     // QOI fast path: detect by magic and decode in-place. This is the single
     // QOI entry point -- `loadFromFile` and `loadFromStream` both delegate here.
     if (isQoiMagicNumber(static_cast<const char*>(data), size))
-        return loadQOIImpl(zb::PassKey<Image>{}, static_cast<const zb::U8*>(data), size);
+        return loadQOIImpl(za::PassKey<Image>{}, static_cast<const za::U8*>(data), size);
 
     // stb_image path for everything else (PNG/JPG/BMP/...)
     int width    = 0;
@@ -293,13 +293,13 @@ zb::Optional<Image> Image::loadFromMemory(const void* data, zb::SizeT size)
     if (ptr == nullptr)
     {
         priv::errMsg("Failed to load image from memory. Reason: {}", stbi_failure_reason());
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    ZB_ASSERT(width > 0 && "Loaded image from memory with width == 0");
-    ZB_ASSERT(height > 0 && "Loaded image from memory with height == 0");
+    ZA_ASSERT(width > 0 && "Loaded image from memory with width == 0");
+    ZA_ASSERT(height > 0 && "Loaded image from memory with height == 0");
 
-    return zb::makeOptional<Image>(zb::PassKey<Image>{},
+    return za::makeOptional<Image>(za::PassKey<Image>{},
                                    Vec2i{width, height}.toVec2u(),
                                    ptr.get(),
                                    ptr.get() + width * height * 4);
@@ -307,7 +307,7 @@ zb::Optional<Image> Image::loadFromMemory(const void* data, zb::SizeT size)
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Image> Image::loadFromStream(InputStream& stream)
+za::Optional<Image> Image::loadFromStream(InputStream& stream)
 {
     // stb_image and QOI both need the entire encoded blob in memory anyway, so
     // skip the streaming-callbacks dance: slurp the stream into the scratch
@@ -315,25 +315,25 @@ zb::Optional<Image> Image::loadFromStream(InputStream& stream)
     if (!stream.seek(0).hasValue())
     {
         priv::errMsg("Failed to seek image stream");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    const zb::Optional streamSize = stream.getSize();
+    const za::Optional streamSize = stream.getSize();
     if (!streamSize.hasValue())
     {
         priv::errMsg("Failed to determine image stream size");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
-    zb::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
+    za::Vector<char>& scratch = getThreadLocalScratchCharBuffer();
     scratch.reserve(*streamSize);
     scratch.unsafeSetSize(*streamSize);
 
-    const zb::Optional readSize = stream.read(scratch.data(), *streamSize);
+    const za::Optional readSize = stream.read(scratch.data(), *streamSize);
     if (!readSize.hasValue() || *readSize != *streamSize)
     {
         priv::errMsg("Failed to read full image stream contents");
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     return loadFromMemory(scratch.data(), scratch.size());
@@ -348,14 +348,14 @@ Vec2u Image::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void Image::createMaskFromColor(Color color, zb::U8 alpha)
+void Image::createMaskFromColor(Color color, za::U8 alpha)
 {
     // Make sure that the image is not empty
-    ZB_ASSERT(!m_pixels.empty());
+    ZA_ASSERT(!m_pixels.empty());
 
     // Replace the alpha of the pixels that match the transparent color
-    zb::U8* ptr = m_pixels.data();
-    zb::U8* end = ptr + m_pixels.size();
+    za::U8* ptr = m_pixels.data();
+    za::U8* end = ptr + m_pixels.size();
 
     while (ptr != end)
     {
@@ -370,7 +370,7 @@ void Image::createMaskFromColor(Color color, zb::U8 alpha)
 bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool applyAlpha)
 {
     // Make sure that both images are valid
-    ZB_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
+    ZA_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
 
     // Make sure the sourceRect components are non-negative before casting them to unsigned values
     if (sourceRect.position.x < 0 || sourceRect.position.y < 0 || sourceRect.size.x < 0 || sourceRect.size.y < 0)
@@ -397,15 +397,15 @@ bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool
         return false;
 
     // Then find the valid size of the destination rectangle
-    const Vec2u dstSize(zb::min(m_size.x - dest.x, srcRect.size.x), zb::min(m_size.y - dest.y, srcRect.size.y));
+    const Vec2u dstSize(za::min(m_size.x - dest.x, srcRect.size.x), za::min(m_size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
-    const zb::SizeT    pitch     = static_cast<zb::SizeT>(dstSize.x) * 4;
+    const za::SizeT    pitch     = static_cast<za::SizeT>(dstSize.x) * 4;
     const unsigned int srcStride = source.m_size.x * 4;
     const unsigned int dstStride = m_size.x * 4;
 
-    const zb::U8* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
-    zb::U8*       dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
+    const za::U8* srcPixels = source.m_pixels.data() + (srcRect.position.x + srcRect.position.y * source.m_size.x) * 4;
+    za::U8*       dstPixels = m_pixels.data() + (dest.x + dest.y * m_size.x) * 4;
 
     // Copy the pixels
     if (applyAlpha)
@@ -416,19 +416,19 @@ bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool
             for (unsigned int j = 0; j < dstSize.x; ++j)
             {
                 // Get a direct pointer to the components of the current pixel
-                const zb::U8* src = srcPixels + j * 4;
-                zb::U8*       dst = dstPixels + j * 4;
+                const za::U8* src = srcPixels + j * 4;
+                za::U8*       dst = dstPixels + j * 4;
 
                 // Interpolate RGBA components using the alpha values of the destination and source pixels
-                const zb::U8 srcAlpha = src[3];
-                const zb::U8 dstAlpha = dst[3];
-                const auto   outAlpha = static_cast<zb::U8>(srcAlpha + dstAlpha - srcAlpha * dstAlpha / 255);
+                const za::U8 srcAlpha = src[3];
+                const za::U8 dstAlpha = dst[3];
+                const auto   outAlpha = static_cast<za::U8>(srcAlpha + dstAlpha - srcAlpha * dstAlpha / 255);
 
                 dst[3] = outAlpha;
 
                 if (outAlpha)
                     for (int k = 0; k < 3; k++)
-                        dst[k] = static_cast<zb::U8>((src[k] * srcAlpha + dst[k] * (outAlpha - srcAlpha)) / outAlpha);
+                        dst[k] = static_cast<za::U8>((src[k] * srcAlpha + dst[k] * (outAlpha - srcAlpha)) / outAlpha);
                 else
                     for (int k = 0; k < 3; k++)
                         dst[k] = src[k];
@@ -443,7 +443,7 @@ bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool
         // Optimized copy ignoring alpha values, row by row (faster)
         for (unsigned int i = 0u; i < dstSize.y; ++i)
         {
-            ZB_MEMCPY(dstPixels, srcPixels, pitch);
+            ZA_MEMCPY(dstPixels, srcPixels, pitch);
             srcPixels += srcStride;
             dstPixels += dstStride;
         }
@@ -456,11 +456,11 @@ bool Image::copy(const Image& source, Vec2u dest, const Rect2i& sourceRect, bool
 ////////////////////////////////////////////////////////////
 void Image::setPixel(Vec2u coords, Color color)
 {
-    ZB_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
-    ZB_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
+    ZA_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
+    ZA_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
 
     const auto index = (coords.x + coords.y * m_size.x) * 4;
-    zb::U8*    pixel = &m_pixels[index];
+    za::U8*    pixel = &m_pixels[index];
 
     *pixel++ = color.r;
     *pixel++ = color.g;
@@ -472,20 +472,20 @@ void Image::setPixel(Vec2u coords, Color color)
 ////////////////////////////////////////////////////////////
 Color Image::getPixel(Vec2u coords) const
 {
-    ZB_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
-    ZB_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
+    ZA_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
+    ZA_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");
 
     const auto    index = (coords.x + coords.y * m_size.x) * 4;
-    const zb::U8* pixel = &m_pixels[index];
+    const za::U8* pixel = &m_pixels[index];
 
     return {pixel[0], pixel[1], pixel[2], pixel[3]};
 }
 
 
 ////////////////////////////////////////////////////////////
-const zb::U8* Image::getPixelsPtr() const
+const za::U8* Image::getPixelsPtr() const
 {
-    ZB_ASSERT(!m_pixels.empty());
+    ZA_ASSERT(!m_pixels.empty());
     return m_pixels.data();
 }
 
@@ -493,18 +493,18 @@ const zb::U8* Image::getPixelsPtr() const
 ////////////////////////////////////////////////////////////
 void Image::flipHorizontally()
 {
-    ZB_ASSERT(!m_pixels.empty());
+    ZA_ASSERT(!m_pixels.empty());
 
-    const zb::SizeT rowSize = m_size.x * 4;
+    const za::SizeT rowSize = m_size.x * 4;
 
-    for (zb::SizeT y = 0; y < m_size.y; ++y)
+    for (za::SizeT y = 0; y < m_size.y; ++y)
     {
-        auto* left  = m_pixels.begin() + static_cast<zb::PtrDiffT>(y * rowSize);
-        auto* right = m_pixels.begin() + static_cast<zb::PtrDiffT>((y + 1) * rowSize - 4);
+        auto* left  = m_pixels.begin() + static_cast<za::PtrDiffT>(y * rowSize);
+        auto* right = m_pixels.begin() + static_cast<za::PtrDiffT>((y + 1) * rowSize - 4);
 
-        for (zb::SizeT x = 0; x < m_size.x / 2; ++x)
+        for (za::SizeT x = 0; x < m_size.x / 2; ++x)
         {
-            zb::swapRanges(left, left + 4, right);
+            za::swapRanges(left, left + 4, right);
 
             left += 4;
             right -= 4;
@@ -516,16 +516,16 @@ void Image::flipHorizontally()
 ////////////////////////////////////////////////////////////
 void Image::flipVertically()
 {
-    ZB_ASSERT(!m_pixels.empty());
+    ZA_ASSERT(!m_pixels.empty());
 
-    const auto rowSize = static_cast<zb::PtrDiffT>(m_size.x * 4);
+    const auto rowSize = static_cast<za::PtrDiffT>(m_size.x * 4);
 
     auto* top    = m_pixels.begin();
     auto* bottom = m_pixels.end() - rowSize;
 
-    for (zb::SizeT y = 0; y < m_size.y / 2; ++y)
+    for (za::SizeT y = 0; y < m_size.y / 2; ++y)
     {
-        zb::swapRanges(top, top + rowSize, bottom);
+        za::swapRanges(top, top + rowSize, bottom);
 
         top += rowSize;
         bottom -= rowSize;
@@ -563,7 +563,7 @@ bool Image::saveToFile(const Path& filename) const
         if (ctx.error)
             return;
 
-        if (!ctx.file.write(static_cast<const char*>(data), static_cast<zb::SizeT>(size)))
+        if (!ctx.file.write(static_cast<const char*>(data), static_cast<za::SizeT>(size)))
             ctx.error = true;
     };
 
@@ -625,12 +625,12 @@ bool Image::saveToFile(const Path& filename) const
 
 
 ////////////////////////////////////////////////////////////
-zb::Vector<zb::U8> Image::saveToMemory(SaveFormat format) const
+za::Vector<za::U8> Image::saveToMemory(SaveFormat format) const
 {
     // Choose function based on format
     const auto convertedSize = m_size.toVec2i();
 
-    zb::Vector<zb::U8> buffer; // Use a single local variable for NRVO
+    za::Vector<za::U8> buffer; // Use a single local variable for NRVO
 
     if (format == SaveFormat::BMP)
     {
@@ -659,12 +659,12 @@ zb::Vector<zb::U8> Image::saveToMemory(SaveFormat format) const
             // Skip the zero-init pass that `resize` would do; we immediately overwrite via memcpy.
             buffer.reserve(size);
             buffer.unsafeSetSize(size);
-            ZB_MEMCPY(buffer.data(), data.get(), size);
+            ZA_MEMCPY(buffer.data(), data.get(), size);
             return buffer;
         }
     }
 
-    ZB_ASSERT(false);
+    ZA_ASSERT(false);
     return buffer;
 }
 

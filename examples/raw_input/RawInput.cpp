@@ -12,15 +12,15 @@
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Utf8String.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/String/Utf8String.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -65,11 +65,11 @@ int main()
                                   .fillColor     = za::Color::White,
                               });
 
-    zb::Vector<zb::String> log;
+    za::Vector<za::String> log;
 
     while (true)
     {
-        while (const zb::Optional event = window.pollEvent())
+        while (const za::Optional event = window.pollEvent())
         {
             if (za::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -78,7 +78,7 @@ int main()
                 continue;
 
             static const auto vec2ToString = [](const za::Vec2i vec2)
-            { return '(' + zb::toString(vec2.x) + ", " + zb::toString(vec2.y) + ')'; };
+            { return '(' + za::toString(vec2.x) + ", " + za::toString(vec2.y) + ')'; };
 
             if (const auto* const mouseMoved = event->getIf<za::Event::MouseMoved>())
                 mousePosition.setString("Mouse Position: " + vec2ToString(mouseMoved->position));
@@ -95,7 +95,7 @@ int main()
         window.clear();
         window.draw(mousePosition, {.view = windowView});
 
-        for (zb::SizeT i = 0u; i < log.size(); ++i)
+        for (za::SizeT i = 0u; i < log.size(); ++i)
         {
             mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);

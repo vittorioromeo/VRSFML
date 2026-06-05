@@ -9,8 +9,8 @@
 #include "LaserDirection.hpp"
 #include "Tetramino.hpp"
 
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/Variant.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
 
 
 namespace tsurv
@@ -39,7 +39,7 @@ struct [[nodiscard]] AnimSquish // NOLINT(cppcoreguidelines-pro-type-member-init
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] AnimClearLines
 {
-    using RowVector = zb::InPlaceVector<zb::SizeT, 8>;
+    using RowVector = za::InPlaceVector<za::SizeT, 8>;
 
     RowVector rows;
     bool      awardXP;
@@ -56,7 +56,7 @@ struct [[nodiscard]] AnimFadeBlocks
         za::Vec2uz position;
     };
 
-    using FadingBlockVector = zb::InPlaceVector<FadingBlock, 64>;
+    using FadingBlockVector = za::InPlaceVector<FadingBlock, 64>;
 
     FadingBlockVector fadingBlocks;
 };
@@ -107,14 +107,14 @@ struct [[nodiscard]] AnimFadeAttachments // NOLINT(cppcoreguidelines-pro-type-me
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] AnimLightningStrike // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
-    zb::SizeT numStrikes;
+    za::SizeT numStrikes;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct AnimationCommandP0
 {
-    using VariantType = zb::Variant< //
+    using VariantType = za::Variant< //
         AnimWait,
         AnimDrill,
         AnimLightningStrike,
@@ -129,7 +129,7 @@ struct AnimationCommandP0
 ////////////////////////////////////////////////////////////
 struct AnimationCommandP1
 {
-    using VariantType = zb::Variant< //
+    using VariantType = za::Variant< //
         AnimHardDrop,
         AnimSquish,
         AnimClearLines,
@@ -145,7 +145,7 @@ struct AnimationCommandP1
 ////////////////////////////////////////////////////////////
 struct AnimationCommandP2
 {
-    using VariantType = zb::Variant< //
+    using VariantType = za::Variant< //
         AnimClearLines>;
 
     VariantType data;

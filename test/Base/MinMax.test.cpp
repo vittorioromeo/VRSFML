@@ -1,6 +1,6 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/MinMax.hpp"
+#include "Zancle/Math/MinMax.hpp"
 
 
 TEST_CASE("[Base] Base/MinMax.hpp")
@@ -10,12 +10,12 @@ TEST_CASE("[Base] Base/MinMax.hpp")
         const int a = 10;
         const int b = -10;
 
-        CHECK(&zb::min(a, b) == &b);
-        CHECK(&zb::max(a, b) == &a);
+        CHECK(&za::min(a, b) == &b);
+        CHECK(&za::max(a, b) == &a);
 
         const int c = 10;
 
-        CHECK(&zb::min(a, c) == &a);
-        CHECK(&zb::max(a, c) == &a);
+        CHECK(&za::min(a, c) == &a);
+        CHECK(&za::max(a, c) == &a);
     }
 }

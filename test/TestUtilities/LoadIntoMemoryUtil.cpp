@@ -1,17 +1,17 @@
 #include "LoadIntoMemoryUtil.hpp"
 
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
-zb::Vector<char> loadIntoMemory(const char* path)
+za::Vector<char> loadIntoMemory(const char* path)
 {
-    zb::Vector<char> buffer;
+    za::Vector<char> buffer;
 
     [[maybe_unused]] const bool ok = za::readFromFile(za::Path{path}, buffer);
-    ZB_ASSERT(ok);
+    ZA_ASSERT(ok);
 
     return buffer;
 }

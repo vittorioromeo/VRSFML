@@ -2,13 +2,13 @@
 
 #include "RNGSeedType.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/AssertAndAssume.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Cos.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/Math/Sqrt.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/Sqrt.hpp"
 
 #include <random>
 
@@ -54,14 +54,14 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline T getI(const T min, const T max)
     {
-        ZB_ASSERT_AND_ASSUME(min <= max);
+        ZA_ASSERT_AND_ASSUME(min <= max);
         return std::uniform_int_distribution<T>{min, max}(m_engine);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getF(const float min, const float max)
     {
-        ZB_ASSERT_AND_ASSUME(min <= max);
+        ZA_ASSERT_AND_ASSUME(min <= max);
         return std::uniform_real_distribution<float>{min, max}(m_engine);
     }
 
@@ -80,17 +80,17 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getPointInCircle(const za::Vec2f center, const float radius)
     {
-        const float angle    = getF(0.f, zb::tau);
-        const float distance = radius * zb::sqrt(getF(0.f, 1.f));
+        const float angle    = getF(0.f, za::tau);
+        const float distance = radius * za::sqrt(getF(0.f, 1.f));
 
         // Compute the point's coordinates using polar-to-Cartesian conversion.
-        return {center.x + distance * zb::cos(angle), center.y + distance * zb::sin(angle)};
+        return {center.x + distance * za::cos(angle), center.y + distance * za::sin(angle)};
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline za::Vec2f getDirVec2f()
     {
-        const float angle = getF(0.f, zb::tau);
-        return {zb::cos(angle), zb::sin(angle)};
+        const float angle = getF(0.f, za::tau);
+        return {za::cos(angle), za::sin(angle)};
     }
 };

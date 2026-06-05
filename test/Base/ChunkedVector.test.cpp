@@ -1,21 +1,21 @@
 #include "Tst/Tst.hpp"
 
-#include "ZancleBase/ChunkedVector.hpp"
+#include "Zancle/Container/ChunkedVector.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTrivial.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyCopyable.hpp"
-#include "ZancleBase/Trait/IsTriviallyDestructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsTriviallyMoveConstructible.hpp"
-#include "ZancleBase/Trait/IsTriviallyRelocatable.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsMoveAssignable.hpp"
+#include "Zancle/Trait/IsMoveConstructible.hpp"
+#include "Zancle/Trait/IsTrivial.hpp"
+#include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
+#include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace
@@ -104,21 +104,21 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("Type traits")
     {
-        using T = zb::ChunkedVector<int, 2>;
+        using T = za::ChunkedVector<int, 2>;
 
-        STATIC_CHECK(!ZB_IS_TRIVIAL(T));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPYABLE(T));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_DESTRUCTIBLE(T));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_COPY_ASSIGNABLE(T));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(T));
-        STATIC_CHECK(!ZB_IS_TRIVIALLY_MOVE_ASSIGNABLE(T));
+        STATIC_CHECK(!ZA_IS_TRIVIAL(T));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPYABLE(T));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_DESTRUCTIBLE(T));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(T));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_COPY_ASSIGNABLE(T));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(T));
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_MOVE_ASSIGNABLE(T));
 
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(T));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(T));
-        STATIC_CHECK(ZB_IS_MOVE_CONSTRUCTIBLE(T));
-        STATIC_CHECK(ZB_IS_MOVE_ASSIGNABLE(T));
-        STATIC_CHECK(ZB_IS_TRIVIALLY_RELOCATABLE(T));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(T));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(T));
+        STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(T));
+        STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(T));
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(T));
     }
 
     SECTION("Empty")
@@ -131,24 +131,24 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
     CHECK((tv).capacity() == 0u);                                \
     CHECK((tv).empty());
 
-        zb::ChunkedVector<int, 2> tv;
+        za::ChunkedVector<int, 2> tv;
         DO_EMPTY_CHECKS_CV(tv);
 
         tv.clear();
         DO_EMPTY_CHECKS_CV(tv);
 
-        zb::ChunkedVector<int, 2> tv2 = tv;
+        za::ChunkedVector<int, 2> tv2 = tv;
         DO_EMPTY_CHECKS_CV(tv2);
 
-        zb::ChunkedVector<int, 2> tv3 = ZB_MOVE(tv);
+        za::ChunkedVector<int, 2> tv3 = ZA_MOVE(tv);
         DO_EMPTY_CHECKS_CV(tv3);
 
-        zb::ChunkedVector<int, 2> tv4;
+        za::ChunkedVector<int, 2> tv4;
         tv4 = tv2;
         DO_EMPTY_CHECKS_CV(tv4);
 
-        zb::ChunkedVector<int, 2> tv5;
-        tv5 = ZB_MOVE(tv4);
+        za::ChunkedVector<int, 2> tv5;
+        tv5 = ZA_MOVE(tv4);
         DO_EMPTY_CHECKS_CV(tv5);
     }
 
@@ -156,22 +156,22 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
     {
         const int src[] = {1, 2, 3, 4, 5};
 
-        const zb::ChunkedVector<int, 2> fromRange(src, src + 5);
-        const zb::ChunkedVector<int, 2> fromList{1, 2, 3, 4, 5};
-        const zb::ChunkedVector<int, 2> filled(5, 7);
+        const za::ChunkedVector<int, 2> fromRange(src, src + 5);
+        const za::ChunkedVector<int, 2> fromList{1, 2, 3, 4, 5};
+        const za::ChunkedVector<int, 2> filled(5, 7);
 
         CHECK(fromRange.size() == 5u);
         CHECK(fromRange == fromList);
         CHECK(fromRange != filled);
         CHECK(filled.size() == 5u);
 
-        for (zb::SizeT i = 0u; i < 5u; ++i)
+        for (za::SizeT i = 0u; i < 5u; ++i)
             CHECK(filled[i] == 7);
     }
 
     SECTION("Push back, reserve, pointer stability, and shrinkToFit")
     {
-        zb::ChunkedVector<int, 2> vec;
+        za::ChunkedVector<int, 2> vec;
 
         for (int i = 0; i < 10; ++i)
             vec.pushBack(i);
@@ -181,7 +181,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         CHECK(vec.front() == 0);
         CHECK(vec.back() == 9);
 
-        for (zb::SizeT i = 0u; i < vec.size(); ++i)
+        for (za::SizeT i = 0u; i < vec.size(); ++i)
             CHECK(vec[i] == static_cast<int>(i));
 
         int* const stablePtr = &vec[3];
@@ -210,13 +210,13 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("Resize, unsafe append helpers, and popBack")
     {
-        zb::ChunkedVector<int, 2> vec;
+        za::ChunkedVector<int, 2> vec;
         vec.resize(6u);
 
         CHECK(vec.size() == 6u);
         CHECK(vec.capacity() == 8u);
 
-        for (zb::SizeT i = 0u; i < vec.size(); ++i)
+        for (za::SizeT i = 0u; i < vec.size(); ++i)
             CHECK(vec[i] == 0);
 
         const int src[] = {10, 20, 30};
@@ -226,15 +226,15 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         vec.unsafeEmplaceBackRange(src, 3u);
         vec.unsafePushBackMultiple(40, 50);
 
-        CHECK(vec == zb::ChunkedVector<int, 2>{10, 20, 30, 40, 50});
+        CHECK(vec == za::ChunkedVector<int, 2>{10, 20, 30, 40, 50});
 
         vec.popBack();
-        CHECK(vec == zb::ChunkedVector<int, 2>{10, 20, 30, 40});
+        CHECK(vec == za::ChunkedVector<int, 2>{10, 20, 30, 40});
     }
 
     SECTION("Callback iteration helpers")
     {
-        zb::ChunkedVector<int, 2> vec;
+        za::ChunkedVector<int, 2> vec;
 
         for (int i = 0; i < 10; ++i)
             vec.pushBack(i);
@@ -248,8 +248,8 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
         CHECK(mutatedSum == 45);
 
-        zb::SizeT indexedCount = 0u;
-        vec.forEachIndexed([&](const zb::SizeT i, int& x)
+        za::SizeT indexedCount = 0u;
+        vec.forEachIndexed([&](const za::SizeT i, int& x)
         {
             CHECK(x == static_cast<int>(i * 2u));
             ++indexedCount;
@@ -257,14 +257,14 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
         CHECK(indexedCount == vec.size());
 
-        zb::SizeT blockCount   = 0u;
-        zb::SizeT elementCount = 0u;
+        za::SizeT blockCount   = 0u;
+        za::SizeT elementCount = 0u;
         int       blockSum     = 0;
 
         asConst(vec).forEachBlock([&](const int* begin, const int* end)
         {
             ++blockCount;
-            elementCount += static_cast<zb::SizeT>(end - begin);
+            elementCount += static_cast<za::SizeT>(end - begin);
 
             for (const int* p = begin; p != end; ++p)
                 blockSum += *p;
@@ -284,7 +284,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("Iterator compatibility")
     {
-        zb::ChunkedVector<int, 2> vec{0, 1, 2, 3, 4, 5, 6};
+        za::ChunkedVector<int, 2> vec{0, 1, 2, 3, 4, 5, 6};
 
         int rangeForSum = 0;
         for (const int x : vec)
@@ -310,7 +310,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         resetCounters();
 
         {
-            zb::ChunkedVector<Obj, 2> vec;
+            za::ChunkedVector<Obj, 2> vec;
             vec.emplaceBack(1);
             vec.emplaceBack(2);
             vec.emplaceBack(3);
@@ -336,7 +336,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
     {
         resetCounters();
 
-        zb::ChunkedVector<Obj, 2> source;
+        za::ChunkedVector<Obj, 2> source;
         source.emplaceBack(1);
         source.emplaceBack(2);
         source.emplaceBack(3);
@@ -345,8 +345,8 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
         resetCounters();
 
-        zb::ChunkedVector<Obj, 2> copy(source);
-        zb::ChunkedVector<Obj, 2> assigned;
+        za::ChunkedVector<Obj, 2> copy(source);
+        za::ChunkedVector<Obj, 2> assigned;
         assigned = source;
 
         CHECK(copyCtorCount == 6);
@@ -356,12 +356,12 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         CHECK_UNARY(copy == source);
         CHECK_UNARY(assigned == source);
 
-        zb::ChunkedVector<Obj, 2> moved(ZB_MOVE(source));
+        za::ChunkedVector<Obj, 2> moved(ZA_MOVE(source));
         CHECK(source.empty());
         CHECK(stablePtr == &moved[1]);
 
-        zb::ChunkedVector<Obj, 2> moveAssigned;
-        moveAssigned = ZB_MOVE(copy);
+        za::ChunkedVector<Obj, 2> moveAssigned;
+        moveAssigned = ZA_MOVE(copy);
 
         CHECK(copy.empty());
         CHECK(moveAssigned.size() == 3u);
@@ -374,7 +374,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
     {
         resetCounters();
 
-        zb::ChunkedVector<Obj, 2> vec;
+        za::ChunkedVector<Obj, 2> vec;
         vec.emplaceBack(1);
         vec.emplaceBack(2);
         vec.emplaceBack(3);
@@ -397,7 +397,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("Self-assignment")
     {
-        zb::ChunkedVector<int, 2> vec{1, 2, 3, 4, 5};
+        za::ChunkedVector<int, 2> vec{1, 2, 3, 4, 5};
 
         const auto* const stablePtr = &vec[2];
 
@@ -410,7 +410,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         CHECK(stablePtr == &vec[2]);
 
         auto& moveRef = vec;
-        vec           = ZB_MOVE(moveRef);
+        vec           = ZA_MOVE(moveRef);
         CHECK(vec.size() == 5u);
         CHECK(vec[0] == 1);
         CHECK(vec[2] == 3);
@@ -419,8 +419,8 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("Swap")
     {
-        zb::ChunkedVector<int, 2> a{1, 2, 3};
-        zb::ChunkedVector<int, 2> b{10, 20};
+        za::ChunkedVector<int, 2> a{1, 2, 3};
+        za::ChunkedVector<int, 2> b{10, 20};
 
         a.swap(b);
         CHECK(a.size() == 2u);
@@ -432,17 +432,17 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         CHECK(b[2] == 3);
 
         swap(a, b);
-        CHECK(a == zb::ChunkedVector<int, 2>{1, 2, 3});
-        CHECK(b == zb::ChunkedVector<int, 2>{10, 20});
+        CHECK(a == za::ChunkedVector<int, 2>{1, 2, 3});
+        CHECK(b == za::ChunkedVector<int, 2>{10, 20});
 
         // Self-swap
         a.swap(a);
-        CHECK(a == zb::ChunkedVector<int, 2>{1, 2, 3});
+        CHECK(a == za::ChunkedVector<int, 2>{1, 2, 3});
     }
 
     SECTION("Reserve smaller than current capacity is a no-op")
     {
-        zb::ChunkedVector<int, 2> vec{1, 2, 3, 4, 5, 6};
+        za::ChunkedVector<int, 2> vec{1, 2, 3, 4, 5, 6};
 
         const auto        capBefore = vec.capacity();
         const auto* const stablePtr = &vec[3];
@@ -455,7 +455,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("ShrinkToFit when already tight")
     {
-        zb::ChunkedVector<int, 2> vec;
+        za::ChunkedVector<int, 2> vec;
 
         // Push exactly one block worth of elements (blockSize == 4 for BlockShift=2)
         vec.pushBack(1);
@@ -470,16 +470,16 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         CHECK(vec.capacity() == capBefore);
         CHECK(vec.size() == 4u);
 
-        for (zb::SizeT i = 0u; i < 4u; ++i)
+        for (za::SizeT i = 0u; i < 4u; ++i)
             CHECK(vec[i] == static_cast<int>(i + 1));
     }
 
     SECTION("Block boundary crossing")
     {
-        zb::ChunkedVector<int, 2> vec;
+        za::ChunkedVector<int, 2> vec;
 
         // Push exactly blockSize elements (fills one block exactly)
-        for (zb::SizeT i = 0u; i < 4u; ++i)
+        for (za::SizeT i = 0u; i < 4u; ++i)
             vec.pushBack(static_cast<int>(i * 10u));
 
         CHECK(vec.size() == 4u);
@@ -490,7 +490,7 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
         CHECK(vec.size() == 5u);
         CHECK(vec.capacity() == 8u);
 
-        for (zb::SizeT i = 0u; i < 5u; ++i)
+        for (za::SizeT i = 0u; i < 5u; ++i)
             CHECK(vec[i] == static_cast<int>(i * 10u));
 
         // Verify pointer stability across the boundary
@@ -509,13 +509,13 @@ TEST_CASE("[Base] Base/ChunkedVector.hpp")
 
     SECTION("Reduce on empty vector")
     {
-        const zb::ChunkedVector<int, 2> vec;
+        const za::ChunkedVector<int, 2> vec;
         CHECK(vec.reduce(42, [](int acc, int x) { return acc + x; }) == 42);
     }
 
     SECTION("FindIf on empty vector")
     {
-        zb::ChunkedVector<int, 2> vec;
+        za::ChunkedVector<int, 2> vec;
         CHECK(vec.findIf([](int) { return true; }) == nullptr);
         CHECK(asConst(vec).findIf([](int) { return true; }) == nullptr);
     }

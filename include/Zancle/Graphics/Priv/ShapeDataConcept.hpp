@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "ZancleBase/Trait/IsSame.hpp"
+#include "Zancle/Trait/IsSame.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,20 +37,20 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 template <typename T>
 concept ShapeDataConcept =                      //
-    ZB_IS_SAME(T, ArrowShapeData) ||            //
-    ZB_IS_SAME(T, ChevronShapeData) ||          //
-    ZB_IS_SAME(T, CircleShapeData) ||           //
-    ZB_IS_SAME(T, CogShapeData) ||              //
-    ZB_IS_SAME(T, CrossShapeData) ||            //
-    ZB_IS_SAME(T, CurvedArrowShapeData) ||      //
-    ZB_IS_SAME(T, EllipseShapeData) ||          //
-    ZB_IS_SAME(T, HeartShapeData) ||            //
-    ZB_IS_SAME(T, PieSliceShapeData) ||         //
-    ZB_IS_SAME(T, RectangleShapeData) ||        //
-    ZB_IS_SAME(T, RingShapeData) ||             //
-    ZB_IS_SAME(T, RingPieSliceShapeData) ||     //
-    ZB_IS_SAME(T, RoundedRectangleShapeData) || //
-    ZB_IS_SAME(T, StarShapeData) ||             //
-    ZB_IS_SAME(T, TrapezoidShapeData);
+    ZA_IS_SAME(T, ArrowShapeData) ||            //
+    ZA_IS_SAME(T, ChevronShapeData) ||          //
+    ZA_IS_SAME(T, CircleShapeData) ||           //
+    ZA_IS_SAME(T, CogShapeData) ||              //
+    ZA_IS_SAME(T, CrossShapeData) ||            //
+    ZA_IS_SAME(T, CurvedArrowShapeData) ||      //
+    ZA_IS_SAME(T, EllipseShapeData) ||          //
+    ZA_IS_SAME(T, HeartShapeData) ||            //
+    ZA_IS_SAME(T, PieSliceShapeData) ||         //
+    ZA_IS_SAME(T, RectangleShapeData) ||        //
+    ZA_IS_SAME(T, RingShapeData) ||             //
+    ZA_IS_SAME(T, RingPieSliceShapeData) ||     //
+    ZA_IS_SAME(T, RoundedRectangleShapeData) || //
+    ZA_IS_SAME(T, StarShapeData) ||             //
+    ZA_IS_SAME(T, TrapezoidShapeData);
 
 } // namespace za::priv

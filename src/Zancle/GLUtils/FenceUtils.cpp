@@ -11,10 +11,10 @@
 #include "Zancle/GLUtils/GLFenceSync.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Abort.hpp"
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace
@@ -38,7 +38,7 @@ GLFenceSync makeFence()
     if (fenceToCreate == nullptr) [[unlikely]]
     {
         priv::errMsg("FATAL ERROR: Error creating fence sync object");
-        zb::abort();
+        za::abort();
     }
 
     return GLFenceSync{static_cast<void*>(fenceToCreate)};
@@ -63,13 +63,13 @@ bool tryWaitOnFence(GLFenceSync& fenceToWaitOn)
     if (waitResult == GL_WAIT_FAILED) [[unlikely]]
     {
         priv::errMsg("FATAL ERROR: Error waiting on GPU fence");
-        zb::abort();
+        za::abort();
     }
 
     if (waitResult == GL_TIMEOUT_EXPIRED)
         return false;
 
-    ZB_ASSERT(waitResult == GL_ALREADY_SIGNALED || waitResult == GL_CONDITION_SATISFIED);
+    ZA_ASSERT(waitResult == GL_ALREADY_SIGNALED || waitResult == GL_CONDITION_SATISFIED);
 
     fenceToWaitOn.reset();
 
@@ -89,16 +89,16 @@ void waitOnFence(GLFenceSync& fenceToWaitOn)
     if (waitResult == GL_WAIT_FAILED) [[unlikely]]
     {
         priv::errMsg("FATAL ERROR: Error waiting on GPU fence");
-        zb::abort();
+        za::abort();
     }
 
     if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
     {
         priv::errMsg("FATAL ERROR: Fence wait timed out");
-        zb::abort();
+        za::abort();
     }
 
-    ZB_ASSERT(waitResult == GL_ALREADY_SIGNALED || waitResult == GL_CONDITION_SATISFIED);
+    ZA_ASSERT(waitResult == GL_ALREADY_SIGNALED || waitResult == GL_CONDITION_SATISFIED);
 
     fenceToWaitOn.reset();
 }

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -16,28 +16,28 @@ struct PlayerInputState
 {
     bool escWasPressed{false};
 
-    zb::Optional<za::Vec2f> dragPosition;
+    za::Optional<za::Vec2f> dragPosition;
     float                   scroll{0.f};
     float                   actualScroll{0.f};
 
     za::Vec2f lastMousePos;
 
     float                   catDragPressDuration{0.f};
-    zb::Optional<za::Vec2f> catDragOrigin;
-    zb::Vector<Cat*>        draggedCats;
+    za::Optional<za::Vec2f> catDragOrigin;
+    za::Vector<Cat*>        draggedCats;
     bool                    draggedCatsStartedWithTouch{false};
     bool                    draggedCatsStartedFromAOESelection{false};
     Cat*                    catToPlace{nullptr};
 
-    zb::Vector<zb::Optional<za::Vec2f>> fingerPositions;
+    za::Vector<za::Optional<za::Vec2f>> fingerPositions;
 };
 
 
 ////////////////////////////////////////////////////////////
 struct FrameInput
 {
-    zb::Optional<za::Vec2f> clickPosition;
-    zb::Vector<za::Vec2f>   downFingers;
+    za::Optional<za::Vec2f> clickPosition;
+    za::Vector<za::Vec2f>   downFingers;
     za::Vec2i               windowSpaceMouseOrFingerPos;
     za::Vec2f               mousePos;
 };
@@ -46,6 +46,6 @@ struct FrameInput
 ////////////////////////////////////////////////////////////
 struct FrameUpdateState
 {
-    zb::I64 elapsedUs{0};
+    za::I64 elapsedUs{0};
     float   cursorGrow{0.f};
 };

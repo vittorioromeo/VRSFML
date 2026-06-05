@@ -26,13 +26,13 @@ class Rect2;
 
 // `stringifyValue` ADL overloads -- found when these operands need
 // rendering for a failed assertion.
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const BlendMode& blendMode) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, StencilComparison comparison) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, StencilUpdateOperation updateOperation) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const StencilMode& stencilMode) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Color& color) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const Transform& transform) noexcept;
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const View& view) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const BlendMode& blendMode) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, StencilComparison comparison) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, StencilUpdateOperation updateOperation) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const StencilMode& stencilMode) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const Color& color) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const Transform& transform) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const View& view) noexcept;
 } // namespace za
 
 

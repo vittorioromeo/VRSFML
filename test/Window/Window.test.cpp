@@ -4,19 +4,19 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 // Other 1st party headers
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 #include "WindowUtil.hpp"
 
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/Trait/HasVirtualDestructor.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Trait/HasVirtualDestructor.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 TEST_CASE("[Window] za::Window" * tst::skip(skipDisplayTests))
@@ -25,11 +25,11 @@ TEST_CASE("[Window] za::Window" * tst::skip(skipDisplayTests))
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_HAS_VIRTUAL_DESTRUCTOR(za::Window));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::Window));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::Window));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Window));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::Window));
+        STATIC_CHECK(!ZA_HAS_VIRTUAL_DESTRUCTOR(za::Window));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::Window));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::Window));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::Window));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Window));
     }
 
     SECTION("Construction")

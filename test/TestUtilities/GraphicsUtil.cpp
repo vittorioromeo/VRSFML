@@ -8,41 +8,41 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Fabs.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToChars.hpp"
-#include "ZancleBase/Trait/IsFloatingPoint.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToChars.hpp"
+#include "Zancle/Trait/IsFloatingPoint.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-zb::String gfxFloatToString(const float value, const int precision = 6)
+za::String gfxFloatToString(const float value, const int precision = 6)
 {
     char       buf[64];
-    char*      end = zb::toChars(buf, buf + sizeof(buf), value, precision);
-    const auto len = static_cast<zb::SizeT>(end - buf);
-    return zb::String{buf, len};
+    char*      end = za::toChars(buf, buf + sizeof(buf), value, precision);
+    const auto len = static_cast<za::SizeT>(end - buf);
+    return za::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::String gfxIntToString(const T value)
+za::String gfxIntToString(const T value)
 {
     char       buf[32];
-    char*      end = zb::toChars(buf, buf + sizeof(buf), value);
-    const auto len = static_cast<zb::SizeT>(end - buf);
-    return zb::String{buf, len};
+    char*      end = za::toChars(buf, buf + sizeof(buf), value);
+    const auto len = static_cast<za::SizeT>(end - buf);
+    return za::String{buf, len};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String hexToString(const zb::U32 value)
+za::String hexToString(const za::U32 value)
 {
     char buf[10];
     buf[0]    = '0';
@@ -55,114 +55,114 @@ zb::String hexToString(const zb::U32 value)
         const unsigned nibble = (value >> shift) & 0xFu;
         buf[pos++]            = static_cast<char>(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
     } while (shift > 0);
-    return zb::String{buf, static_cast<zb::SizeT>(pos)};
+    return za::String{buf, static_cast<za::SizeT>(pos)};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String stencilComparisonToString(const za::StencilComparison comparison)
+za::String stencilComparisonToString(const za::StencilComparison comparison)
 {
     switch (comparison)
     {
         case za::StencilComparison::Never:
-            return zb::String{"Never"};
+            return za::String{"Never"};
         case za::StencilComparison::Less:
-            return zb::String{"Less"};
+            return za::String{"Less"};
         case za::StencilComparison::LessEqual:
-            return zb::String{"LessEqual"};
+            return za::String{"LessEqual"};
         case za::StencilComparison::Greater:
-            return zb::String{"Greater"};
+            return za::String{"Greater"};
         case za::StencilComparison::GreaterEqual:
-            return zb::String{"GreaterEqual"};
+            return za::String{"GreaterEqual"};
         case za::StencilComparison::Equal:
-            return zb::String{"Equal"};
+            return za::String{"Equal"};
         case za::StencilComparison::NotEqual:
-            return zb::String{"NotEqual"};
+            return za::String{"NotEqual"};
         case za::StencilComparison::Always:
-            return zb::String{"Always"};
+            return za::String{"Always"};
     }
-    return zb::String{};
+    return za::String{};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String stencilUpdateOperationToString(const za::StencilUpdateOperation updateOperation)
+za::String stencilUpdateOperationToString(const za::StencilUpdateOperation updateOperation)
 {
     switch (updateOperation)
     {
         case za::StencilUpdateOperation::Keep:
-            return zb::String{"Keep"};
+            return za::String{"Keep"};
         case za::StencilUpdateOperation::Zero:
-            return zb::String{"Zero"};
+            return za::String{"Zero"};
         case za::StencilUpdateOperation::Replace:
-            return zb::String{"Replace"};
+            return za::String{"Replace"};
         case za::StencilUpdateOperation::Increment:
-            return zb::String{"Increment"};
+            return za::String{"Increment"};
         case za::StencilUpdateOperation::Decrement:
-            return zb::String{"Decrement"};
+            return za::String{"Decrement"};
         case za::StencilUpdateOperation::Invert:
-            return zb::String{"Invert"};
+            return za::String{"Invert"};
     }
-    return zb::String{};
+    return za::String{};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String vec2ToString(const za::Vec2<float> v)
+za::String vec2ToString(const za::Vec2<float> v)
 {
-    return zb::String{"("} + gfxFloatToString(v.x) + zb::String{", "} + gfxFloatToString(v.y) + zb::String{")"};
+    return za::String{"("} + gfxFloatToString(v.x) + za::String{", "} + gfxFloatToString(v.y) + za::String{")"};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-zb::String rectToString(const za::Rect2<T>& rect)
+za::String rectToString(const za::Rect2<T>& rect)
 {
-    if constexpr (zb::isFloatingPoint<T>)
-        return zb::String{"(position=("} + gfxFloatToString(rect.position.x) + zb::String{", "} +
-               gfxFloatToString(rect.position.y) + zb::String{"), size=("} + gfxFloatToString(rect.size.x) +
-               zb::String{", "} + gfxFloatToString(rect.size.y) + zb::String{"))"};
+    if constexpr (za::isFloatingPoint<T>)
+        return za::String{"(position=("} + gfxFloatToString(rect.position.x) + za::String{", "} +
+               gfxFloatToString(rect.position.y) + za::String{"), size=("} + gfxFloatToString(rect.size.x) +
+               za::String{", "} + gfxFloatToString(rect.size.y) + za::String{"))"};
     else
-        return zb::String{"(position=("} + gfxIntToString(rect.position.x) + zb::String{", "} +
-               gfxIntToString(rect.position.y) + zb::String{"), size=("} + gfxIntToString(rect.size.x) +
-               zb::String{", "} + gfxIntToString(rect.size.y) + zb::String{"))"};
+        return za::String{"(position=("} + gfxIntToString(rect.position.x) + za::String{", "} +
+               gfxIntToString(rect.position.y) + za::String{"), size=("} + gfxIntToString(rect.size.x) +
+               za::String{", "} + gfxIntToString(rect.size.y) + za::String{"))"};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String blendModeToString(const za::BlendMode& blendMode)
+za::String blendModeToString(const za::BlendMode& blendMode)
 {
-    return zb::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) + zb::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) + zb::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.colorEquation)) + zb::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.alphaSrcFactor)) + zb::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.alphaDstFactor)) + zb::String{", "} +
-           gfxIntToString(static_cast<int>(blendMode.alphaEquation)) + zb::String{" )"};
+    return za::String{"( "} + gfxIntToString(static_cast<int>(blendMode.colorSrcFactor)) + za::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.colorDstFactor)) + za::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.colorEquation)) + za::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaSrcFactor)) + za::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaDstFactor)) + za::String{", "} +
+           gfxIntToString(static_cast<int>(blendMode.alphaEquation)) + za::String{" )"};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String stencilModeToString(const za::StencilMode& stencilMode)
+za::String stencilModeToString(const za::StencilMode& stencilMode)
 {
-    return zb::String{"( "} + stencilComparisonToString(stencilMode.stencilComparison) + zb::String{", "} +
-           stencilUpdateOperationToString(stencilMode.stencilUpdateOperation) + zb::String{", "} +
-           zb::String{stencilMode.stencilOnly ? "true" : "false"} + zb::String{", "} +
-           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + zb::String{", "} +
-           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + zb::String{" )"};
+    return za::String{"( "} + stencilComparisonToString(stencilMode.stencilComparison) + za::String{", "} +
+           stencilUpdateOperationToString(stencilMode.stencilUpdateOperation) + za::String{", "} +
+           za::String{stencilMode.stencilOnly ? "true" : "false"} + za::String{", "} +
+           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilReference.value)) + za::String{", "} +
+           gfxIntToString(static_cast<unsigned int>(stencilMode.stencilMask.value)) + za::String{" )"};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String colorToString(const za::Color color)
+za::String colorToString(const za::Color color)
 {
-    return hexToString(color.toInteger()) + zb::String{" (r="} + gfxIntToString(int{color.r}) + zb::String{", g="} +
-           gfxIntToString(int{color.g}) + zb::String{", b="} + gfxIntToString(int{color.b}) + zb::String{", a="} +
-           gfxIntToString(int{color.a}) + zb::String{")"};
+    return hexToString(color.toInteger()) + za::String{" (r="} + gfxIntToString(int{color.r}) + za::String{", g="} +
+           gfxIntToString(int{color.g}) + za::String{", b="} + gfxIntToString(int{color.b}) + za::String{", a="} +
+           gfxIntToString(int{color.a}) + za::String{")"};
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String transformToString(const za::Transform& transform)
+za::String transformToString(const za::Transform& transform)
 {
     // clang-format off
     float matrix[]{{},  {},  0.f, 0.f,
@@ -173,21 +173,21 @@ zb::String transformToString(const za::Transform& transform)
 
     transform.writeTo4x4Matrix(matrix);
 
-    return gfxFloatToString(matrix[0]) + zb::String{", "} + gfxFloatToString(matrix[4]) + zb::String{", "} +
-           gfxFloatToString(matrix[12]) + zb::String{", "} + gfxFloatToString(matrix[1]) + zb::String{", "} +
-           gfxFloatToString(matrix[5]) + zb::String{", "} + gfxFloatToString(matrix[13]) + zb::String{", "} +
-           gfxFloatToString(matrix[3]) + zb::String{", "} + gfxFloatToString(matrix[7]) + zb::String{", "} +
+    return gfxFloatToString(matrix[0]) + za::String{", "} + gfxFloatToString(matrix[4]) + za::String{", "} +
+           gfxFloatToString(matrix[12]) + za::String{", "} + gfxFloatToString(matrix[1]) + za::String{", "} +
+           gfxFloatToString(matrix[5]) + za::String{", "} + gfxFloatToString(matrix[13]) + za::String{", "} +
+           gfxFloatToString(matrix[3]) + za::String{", "} + gfxFloatToString(matrix[7]) + za::String{", "} +
            gfxFloatToString(matrix[15]);
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::String viewToString(const za::View& view)
+za::String viewToString(const za::View& view)
 {
-    return zb::String{"( center="} + vec2ToString(view.center) + zb::String{", size="} + vec2ToString(view.size) +
-           zb::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) + zb::String{" deg"} +
-           zb::String{", viewport="} + rectToString(view.viewport) + zb::String{", scissor="} +
-           rectToString(view.scissor) + zb::String{" )"};
+    return za::String{"( center="} + vec2ToString(view.center) + za::String{", size="} + vec2ToString(view.size) +
+           za::String{", rotation="} + gfxFloatToString(view.rotation.asDegrees()) + za::String{" deg"} +
+           za::String{", viewport="} + rectToString(view.viewport) + za::String{", scissor="} +
+           rectToString(view.scissor) + za::String{" )"};
 }
 
 } // namespace
@@ -196,65 +196,65 @@ zb::String viewToString(const za::View& view)
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::BlendMode& blendMode) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::BlendMode& blendMode) noexcept
 {
-    const zb::String s = blendModeToString(blendMode);
+    const za::String s = blendModeToString(blendMode);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::StencilComparison comparison) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::StencilComparison comparison) noexcept
 {
-    const zb::String s = stencilComparisonToString(comparison);
+    const za::String s = stencilComparisonToString(comparison);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::StencilUpdateOperation updateOperation) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::StencilUpdateOperation updateOperation) noexcept
 {
-    const zb::String s = stencilUpdateOperationToString(updateOperation);
+    const za::String s = stencilUpdateOperationToString(updateOperation);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::StencilMode& stencilMode) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::StencilMode& stencilMode) noexcept
 {
-    const zb::String s = stencilModeToString(stencilMode);
+    const za::String s = stencilModeToString(stencilMode);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Color& color) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Color& color) noexcept
 {
-    const zb::String s = colorToString(color);
+    const za::String s = colorToString(color);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::Transform& transform) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::Transform& transform) noexcept
 {
-    const zb::String s = transformToString(transform);
+    const za::String s = transformToString(transform);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::View& view) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::View& view) noexcept
 {
-    const zb::String s = viewToString(view);
+    const za::String s = viewToString(view);
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
 
 ////////////////////////////////////////////////////////////
-zb::SizeT stringifyValue(char* buf, zb::SizeT cap, const za::View::ScissorRect& scissorRect) noexcept
+za::SizeT stringifyValue(char* buf, za::SizeT cap, const za::View::ScissorRect& scissorRect) noexcept
 {
-    const zb::String s = rectToString(static_cast<const za::Rect2<float>&>(scissorRect));
+    const za::String s = rectToString(static_cast<const za::Rect2<float>&>(scissorRect));
     return ::tst::detail::copyInto(buf, cap, s.data(), s.size());
 }
 
@@ -290,8 +290,8 @@ bool operator==(const za::Transform& lhs, const Approx<za::Transform>& rhs)
 ////////////////////////////////////////////////////////////
 bool operator==(const za::Color& lhs, const Approx<za::Color>& rhs)
 {
-    return zb::fabs(static_cast<float>(lhs.r - rhs.value.r)) < 2.f &&
-           zb::fabs(static_cast<float>(lhs.g - rhs.value.g)) < 2.f &&
-           zb::fabs(static_cast<float>(lhs.b - rhs.value.b)) < 2.f &&
-           zb::fabs(static_cast<float>(lhs.a - rhs.value.a)) < 2.f;
+    return za::fabs(static_cast<float>(lhs.r - rhs.value.r)) < 2.f &&
+           za::fabs(static_cast<float>(lhs.g - rhs.value.g)) < 2.f &&
+           za::fabs(static_cast<float>(lhs.b - rhs.value.b)) < 2.f &&
+           za::fabs(static_cast<float>(lhs.a - rhs.value.a)) < 2.f;
 }

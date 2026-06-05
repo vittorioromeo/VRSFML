@@ -12,7 +12,7 @@
 #include "Zancle/Window/macOS/HIDInputManager.hpp"
 #import <Zancle/Window/macOS/SFOpenGLView.h>
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
 #import <AppKit/AppKit.h>
 

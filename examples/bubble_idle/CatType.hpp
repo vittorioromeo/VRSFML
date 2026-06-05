@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] CatType : zb::U8
+enum class [[nodiscard]] CatType : za::U8
 {
     Normal = 0u,
     Uni    = 1u,
@@ -29,11 +29,11 @@ enum class [[nodiscard]] CatType : zb::U8
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr auto asIdx(const CatType type) noexcept
 {
-    return static_cast<zb::SizeT>(type);
+    return static_cast<za::SizeT>(type);
 }
 
 ////////////////////////////////////////////////////////////
-enum : zb::SizeT
+enum : za::SizeT
 {
     nCatTypes = asIdx(CatType::Count)
 };
@@ -41,6 +41,6 @@ enum : zb::SizeT
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr bool isUniqueCatType(const CatType catType) noexcept
 {
-    ZB_ASSERT(catType < CatType::Count);
+    ZA_ASSERT(catType < CatType::Count);
     return catType >= CatType::Witch;
 }

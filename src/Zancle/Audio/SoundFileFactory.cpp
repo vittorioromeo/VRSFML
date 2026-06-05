@@ -15,22 +15,22 @@
 #include "Zancle/Audio/SoundFileWriterOgg.hpp"
 #include "Zancle/Audio/SoundFileWriterWav.hpp"
 
-#include "Zancle/System/Err.hpp"
-#include "Zancle/System/FileInputStream.hpp"
-#include "Zancle/System/MemoryInputStream.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/PathUtils.hpp"
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
+#include "Zancle/IO/MemoryInputStream.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/IO/PathUtils.hpp"
 
-#include "ZancleBase/AnkerlUnorderedDense.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/UniquePtr.hpp"
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-using CreateFnPtr = zb::UniquePtr<T> (*)();
+using CreateFnPtr = za::UniquePtr<T> (*)();
 
 using ReaderCheckFnPtr = bool (*)(za::InputStream&);
 using WriterCheckFnPtr = bool (*)(const za::Path&);
@@ -71,9 +71,9 @@ using WriterFactoryMap = ankerl::unordered_dense::map<CreateFnPtr<za::SoundFileW
 namespace za
 {
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
+za::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const Path& filename)
 {
-    zb::UniquePtr<SoundFileReader> result; // Use a single local variable for NRVO
+    za::UniquePtr<SoundFileReader> result; // Use a single local variable for NRVO
 
     auto stream = FileInputStream::open(filename);
     if (!stream.hasValue())
@@ -91,7 +91,7 @@ zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromFilename(const 
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, zb::SizeT sizeInBytes)
+za::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const void* data, za::SizeT sizeInBytes)
 {
     MemoryInputStream stream(data, sizeInBytes);
     return createReaderFromStream(stream);
@@ -99,7 +99,7 @@ zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromMemory(const vo
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
+za::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStream& stream)
 {
     // Test the stream for all the registered factories
     for (const auto& [fpCreate, fpCheck] : getReaderFactoryMap())
@@ -121,7 +121,7 @@ zb::UniquePtr<SoundFileReader> SoundFileFactory::createReaderFromStream(InputStr
 
 
 ////////////////////////////////////////////////////////////
-zb::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
+za::UniquePtr<SoundFileWriter> SoundFileFactory::createWriterFromFilename(const Path& filename)
 {
     // Test the filename in all the registered factories
     for (const auto& [fpCreate, fpCheck] : getWriterFactoryMap())

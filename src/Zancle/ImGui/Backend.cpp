@@ -443,7 +443,7 @@ void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
         return;
 
     ImGui_ImplOpenGL3_Data* bd = ImGui_ImplOpenGL3_GetBackendData();
-    ZB_ASSERT(bd != nullptr);
+    ZA_ASSERT(bd != nullptr);
 
     // ImGui always renders with `GL_TEXTURE0` as the active texture unit;
     // Zancle's baseline is the same, so just set it without querying.

@@ -14,12 +14,12 @@
 #include "Tetramino.hpp"
 #include "TetraminoShapes.hpp"
 
-#include "ZancleBase/Array.hpp"
-#include "ZancleBase/IntTypes.hpp"
-#include "ZancleBase/Math/Pow.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv
@@ -33,46 +33,46 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::U64 getXPNeededForLevelUp(const zb::U32 level)
+[[nodiscard]] inline za::U64 getXPNeededForLevelUp(const za::U32 level)
 {
     constexpr double baseXP   = 30.0;
     constexpr double exponent = 1.035;
 
-    return static_cast<zb::U64>(baseXP * zb::pow(static_cast<double>(level), exponent));
+    return static_cast<za::U64>(baseXP * za::pow(static_cast<double>(level), exponent));
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::U64 getElapsedSeconds(const zb::U64 ticks)
+[[nodiscard]] inline za::U64 getElapsedSeconds(const za::U64 ticks)
 {
-    return static_cast<zb::U64>(static_cast<float>(ticks) / ticksPerSecond);
+    return static_cast<za::U64>(static_cast<float>(ticks) / ticksPerSecond);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline zb::U64 getDifficultyFactor(const zb::U64 ticks)
+[[nodiscard]] inline za::U64 getDifficultyFactor(const za::U64 ticks)
 {
-    constexpr zb::U64 baseDifficulty = 800u;
+    constexpr za::U64 baseDifficulty = 800u;
     return baseDifficulty + getElapsedSeconds(ticks) * 5u;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] zb::Array<zb::U64, 4> generateTetraminoHealthDistribution(zb::U64 difficultyFactor, auto&& rng)
+[[nodiscard]] za::Array<za::U64, 4> generateTetraminoHealthDistribution(za::U64 difficultyFactor, auto&& rng)
 {
     const auto minHealth = 1;
     const auto maxHealth = 4;
 
     // 1. Start with all blocks at minimum health.
-    zb::Array<zb::U64, 4> healths{minHealth, minHealth, minHealth, minHealth};
+    za::Array<za::U64, 4> healths{minHealth, minHealth, minHealth, minHealth};
 
     // 2. Iterate through each of the 4 block "slots" and attempt to upgrade them.
-    for (zb::SizeT i = 0u; i < healths.size(); ++i)
+    for (za::SizeT i = 0u; i < healths.size(); ++i)
     {
         // A block can try to upgrade multiple times in a row.
         while (healths[i] < maxHealth)
         {
-            const zb::U64 targetHealth = healths[i] + 1;
+            const za::U64 targetHealth = healths[i] + 1;
 
             // --- Calculate the chance to upgrade to the targetHealth ---
 
@@ -104,7 +104,7 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
             // c) Intra-tetramino penalty makes multiple high-HP blocks on one piece rare.
             //    Each existing block with >= targetHealth reduces the chance by 30%.
             int highHpBlocksCount = 0;
-            for (zb::SizeT j = 0u; j < healths.size(); ++j)
+            for (za::SizeT j = 0u; j < healths.size(); ++j)
             {
                 if (i == j)
                     continue; // Don't count the block we are currently upgrading
@@ -146,31 +146,31 @@ struct [[nodiscard]] World
 
     BlockGrid blockGrid{10u, 20u + gridGraceY};
 
-    zb::Vector<TaggedBlockMatrix> blockMatrixBag;
+    za::Vector<TaggedBlockMatrix> blockMatrixBag;
 
-    zb::Optional<Tetramino> currentTetramino;
-    zb::Optional<Tetramino> heldTetramino;
+    za::Optional<Tetramino> currentTetramino;
+    za::Optional<Tetramino> heldTetramino;
 
     bool holdUsedThisTurn = false;
 
-    zb::SizeT rerollsPerLevel      = 3u;
-    zb::SizeT nPerkChoicesPerLevel = 3u;
+    za::SizeT rerollsPerLevel      = 3u;
+    za::SizeT nPerkChoicesPerLevel = 3u;
 
-    zb::U64 tick = 0u;
+    za::U64 tick = 0u;
 
-    zb::U64 dropTickAccumulator = 0u;
-    zb::U64 dropTickTarget      = 60u;
+    za::U64 dropTickAccumulator = 0u;
+    za::U64 dropTickTarget      = 60u;
 
-    zb::U64 graceDropMoves      = 0u;
-    zb::U64 maxGraceDropMoves   = 2u;
+    za::U64 graceDropMoves      = 0u;
+    za::U64 maxGraceDropMoves   = 2u;
     bool    lastMoveWasRotation = false;
 
-    zb::U32 playerLevel          = 1u;
-    zb::U32 committedPlayerLevel = 1u;
-    zb::U64 currentXP            = 0u;
+    za::U32 playerLevel          = 1u;
+    za::U32 committedPlayerLevel = 1u;
+    za::U64 currentXP            = 0u;
 
-    zb::U64 linesCleared    = 0u;
-    zb::U64 tetaminosPlaced = 0u;
+    za::U64 linesCleared    = 0u;
+    za::U64 tetaminosPlaced = 0u;
 
     int perkRndHitOnClear = 0;
 
@@ -184,7 +184,7 @@ struct [[nodiscard]] World
         int tetraminosPlacedCount = 0;
     };
 
-    zb::Optional<DeleteFloorPerNTetraminos> perkDeleteFloorPerNTetraminos;
+    za::Optional<DeleteFloorPerNTetraminos> perkDeleteFloorPerNTetraminos;
 
     int perkExtraLinePiecesInPool = 0;
 
@@ -194,10 +194,10 @@ struct [[nodiscard]] World
         int maxPenetration = 1;
     };
 
-    zb::Optional<DrillData> perkDrill[drillDirectionCount]{
-        // zb::Optional<DrillData>{DrillData{}},
-        // zb::Optional<DrillData>{DrillData{}},
-        // zb::Optional<DrillData>{DrillData{}},
+    za::Optional<DrillData> perkDrill[drillDirectionCount]{
+        // za::Optional<DrillData>{DrillData{}},
+        // za::Optional<DrillData>{DrillData{}},
+        // za::Optional<DrillData>{DrillData{}},
     };
 
     int perkNPeek = 1;
@@ -208,7 +208,7 @@ struct [[nodiscard]] World
         int tetraminosPlacedCount = 0;
     };
 
-    zb::Optional<RndHitPerNTetraminos> perkRndHitPerNTetraminos;
+    za::Optional<RndHitPerNTetraminos> perkRndHitPerNTetraminos;
 
     int perkChainLightning = 0;
 
@@ -218,9 +218,9 @@ struct [[nodiscard]] World
         bool bounce         = false;
     };
 
-    zb::Optional<LaserData> perkLaser[laserDirectionCount]{
-        // zb::Optional<LaserData>{LaserData{}},
-        // zb::Optional<LaserData>{LaserData{}},
+    za::Optional<LaserData> perkLaser[laserDirectionCount]{
+        // za::Optional<LaserData>{LaserData{}},
+        // za::Optional<LaserData>{LaserData{}},
     };
 };
 

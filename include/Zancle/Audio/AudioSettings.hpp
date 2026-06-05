@@ -8,10 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/Listener.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Vec3.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
 
-#include "ZancleBase/FloatMax.hpp"
+#include "Zancle/Math/FloatMax.hpp"
 
 
 namespace za
@@ -65,7 +65,7 @@ struct AudioSettings
     float dopplerFactor{1.f}; //!< Strength of the Doppler effect (0 = disabled)
 
     float minDistance{1.f};          //!< Distance below which the sound is heard at full volume
-    float maxDistance{ZB_FLOAT_MAX}; //!< Distance above which the sound is heard at minimum (clamped) volume
+    float maxDistance{ZA_FLOAT_MAX}; //!< Distance above which the sound is heard at minimum (clamped) volume
 
     float minGain{0.f}; //!< Lower bound for the attenuated gain (between `0` and `1`)
     float maxGain{1.f}; //!< Upper bound for the attenuated gain (between `0` and `1`)

@@ -8,9 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/GlDataType.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ namespace za
 struct [[nodiscard]] InstanceAttributeBinder
 {
     ////////////////////////////////////////////////////////////
-    explicit InstanceAttributeBinder(zb::SizeT instanceCount);
+    explicit InstanceAttributeBinder(za::SizeT instanceCount);
     ~InstanceAttributeBinder();
 
     ////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// \param stride    Size, in bytes, of one per-instance record
     ///
     ////////////////////////////////////////////////////////////
-    void uploadData(VBOHandle& vboHandle, const void* data, zb::SizeT stride);
+    void uploadData(VBOHandle& vboHandle, const void* data, za::SizeT stride);
 
     ////////////////////////////////////////////////////////////
     /// \brief Type-safe wrapper around `uploadData` for contiguous arrays
@@ -149,7 +149,7 @@ struct [[nodiscard]] InstanceAttributeBinder
             range.size();
         }
     {
-        ZB_ASSERT(range.size() >= m_instanceCount);
+        ZA_ASSERT(range.size() >= m_instanceCount);
         uploadContiguousData(vboHandle, range.data());
     }
 
@@ -171,7 +171,7 @@ struct [[nodiscard]] InstanceAttributeBinder
     /// \param fieldOffset Byte offset of this attribute within a single instance record
     ///
     ////////////////////////////////////////////////////////////
-    void setup(unsigned int location, unsigned int size, GlDataType type, bool normalized, zb::SizeT stride, zb::SizeT fieldOffset);
+    void setup(unsigned int location, unsigned int size, GlDataType type, bool normalized, za::SizeT stride, za::SizeT fieldOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Configure a per-instance attribute from a pointer-to-member
@@ -264,14 +264,14 @@ private:
     // Offset of a member within its struct
     ////////////////////////////////////////////////////////////
     template <auto MPtr>
-    [[nodiscard, gnu::const]] static zb::SizeT memberOffset()
+    [[nodiscard, gnu::const]] static za::SizeT memberOffset()
     {
         using S = MemberPtrStructType<decltype(MPtr)>;
 
         alignas(S) char storage[sizeof(S)];
 
         auto* const obj = reinterpret_cast<S*>(storage);
-        return static_cast<zb::SizeT>(reinterpret_cast<const char*>(&(obj->*MPtr)) - reinterpret_cast<const char*>(obj));
+        return static_cast<za::SizeT>(reinterpret_cast<const char*>(&(obj->*MPtr)) - reinterpret_cast<const char*>(obj));
     }
 
     ////////////////////////////////////////////////////////////
@@ -282,18 +282,18 @@ private:
         unsigned int size;
         GlDataType   type;
         bool         normalized;
-        zb::SizeT    stride;
-        zb::SizeT    byteOffset;
+        za::SizeT    stride;
+        za::SizeT    byteOffset;
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    zb::SizeT                             m_instanceCount;
-    zb::InPlaceVector<VBOHandle*, 8u>     m_touchedVBOHandles;
-    zb::InPlaceVector<DeferredSetup, 16u> m_deferredSetups;
+    za::SizeT                             m_instanceCount;
+    za::InPlaceVector<VBOHandle*, 8u>     m_touchedVBOHandles;
+    za::InPlaceVector<DeferredSetup, 16u> m_deferredSetups;
     VBOHandle*                            m_currentVBOHandle{nullptr};
-    zb::SizeT                             m_currentUploadByteOffset{0u};
+    za::SizeT                             m_currentUploadByteOffset{0u};
     bool                                  m_drawSubmitted{false};
 };
 

@@ -10,16 +10,16 @@
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/System/IO.hpp"
-#include "Zancle/System/Path.hpp"
-#include "Zancle/System/Thread.hpp"
-#include "Zancle/System/Time.hpp"
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+#include "Zancle/Chrono/Time.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/InPlaceVector.hpp"
-#include "ZancleBase/Optional.hpp"
-#include "ZancleBase/SizeT.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -35,16 +35,16 @@ int main()
     const auto playbackDeviceHandles = za::AudioContext::getAvailablePlaybackDeviceHandles();
     if (playbackDeviceHandles.empty())
     {
-        zb::printErrLn("No playback devices found.");
+        za::printErrLn("No playback devices found.");
         return 1;
     }
 
-    zb::printLn("Found {} playback devices:", playbackDeviceHandles.size());
+    za::printLn("Found {} playback devices:", playbackDeviceHandles.size());
 
-    zb::InPlaceVector<za::PlaybackDevice, 8> playbackDevices;
+    za::InPlaceVector<za::PlaybackDevice, 8> playbackDevices;
     for (const za::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
-        zb::printLn("  - {}", deviceHandle.getName());
+        za::printLn("  - {}", deviceHandle.getName());
         playbackDevices.emplaceBack(deviceHandle);
     }
 
@@ -58,9 +58,9 @@ int main()
     za::Sound sound(playbackDevices[0], soundBuffer);
     sound.play();
 
-    zb::Optional<za::Music> music0;
-    zb::Optional<za::Music> music1;
-    zb::Optional<za::Music> music2;
+    za::Optional<za::Music> music0;
+    za::Optional<za::Music> music1;
+    za::Optional<za::Music> music2;
 
     if (playbackDevices.size() > 1u)
         music0.emplace(playbackDevices[1], musicSource0).play();
@@ -73,7 +73,7 @@ int main()
 
     // Keep program alive while sounds are playing and display spinning icon
     const char messageIcons[]{'-', '\\', '|', '/'};
-    zb::SizeT  messageIconIndex = 0u;
+    za::SizeT  messageIconIndex = 0u;
 
     const auto anySourcePlaying = [&]
     {
@@ -89,8 +89,8 @@ int main()
         za::ThisThread::sleepFor(za::milliseconds(100));
 
         // Display a message to show we're not frozen
-        zb::print("\rPlaying... {}", messageIcons[messageIconIndex++ % 4]);
+        za::print("\rPlaying... {}", messageIcons[messageIconIndex++ % 4]);
     }
 
-    zb::printLn("");
+    za::printLn("");
 }

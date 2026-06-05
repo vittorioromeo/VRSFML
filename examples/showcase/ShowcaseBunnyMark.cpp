@@ -19,17 +19,17 @@
 
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/System/Angle.hpp"
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/Clamp.hpp"
-#include "ZancleBase/Constants.hpp"
-#include "ZancleBase/Math/Sin.hpp"
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/ToString.hpp"
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -86,12 +86,12 @@ za::Rect2f ExampleBunnyMark::addImgToAtlasWithRotatedHue(const za::Path& path, c
 
 
 ////////////////////////////////////////////////////////////
-zb::String ExampleBunnyMark::toDigitSeparatedString(const zb::SizeT value)
+za::String ExampleBunnyMark::toDigitSeparatedString(const za::SizeT value)
 {
-    auto s = zb::toString(value);
+    auto s = za::toString(value);
 
     for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
-        s.insert(static_cast<zb::SizeT>(i), ".");
+        s.insert(static_cast<za::SizeT>(i), ".");
 
     return s;
 }
@@ -131,18 +131,18 @@ void ExampleBunnyMark::update(const float deltaTimeMs)
     else if (za::Keyboard::isKeyPressed(za::Keyboard::Key::Left))
         m_bunnyTargetCount -= 5000;
 
-    m_bunnyTargetCount = zb::clamp(m_bunnyTargetCount, zb::SizeT{5000}, zb::SizeT{2'500'000});
+    m_bunnyTargetCount = za::clamp(m_bunnyTargetCount, za::SizeT{5000}, za::SizeT{2'500'000});
 
     if (m_bunnies.size() < m_bunnyTargetCount)
     {
         m_bunnies.reserve(m_bunnyTargetCount);
 
-        for (zb::SizeT i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
+        for (za::SizeT i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
         {
             m_bunnies.emplaceBack(
                 /* position */ m_rng.getVec2f(resolution),
                 /* velocity */ m_rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}),
-                /* rotation */ za::radians(m_rng.getF(0.f, zb::tau)),
+                /* rotation */ za::radians(m_rng.getF(0.f, za::tau)),
                 /*    scale */ m_rng.getF(0.25f, 0.5f));
         }
     }
@@ -195,7 +195,7 @@ void ExampleBunnyMark::drawInstanced()
 
     m_instanceData.resize(nBunnies);
 
-    for (zb::SizeT i = 0u; i < nBunnies; ++i)
+    for (za::SizeT i = 0u; i < nBunnies; ++i)
     {
         const auto& [position, velocity, rotation, scale] = m_bunnies[i];
         const auto& txr                                   = m_bunnyTextureRects[i % 8u];
@@ -243,7 +243,7 @@ void ExampleBunnyMark::draw()
 
         const float scaleMul = m_scaleMultiplier;
 
-        zb::SizeT i = 0;
+        za::SizeT i = 0;
 
         for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {
@@ -277,11 +277,11 @@ void ExampleBunnyMark::draw()
 
     const auto applyEffect = [&](za::VertexSpan quads)
     {
-        for (zb::SizeT j = 0u; j < quads.size(); j += 4u)
+        for (za::SizeT j = 0u; j < quads.size(); j += 4u)
         {
             if (j >= digitSeparatedBunnyCount.size() * 4u)
             {
-                const float offY = zb::sin(m_time) * 1.25f;
+                const float offY = za::sin(m_time) * 1.25f;
 
                 quads[j + 0].position.y -= offY;
                 quads[j + 1].position.y -= offY;
@@ -295,7 +295,7 @@ void ExampleBunnyMark::draw()
             }
             else
             {
-                const float offY = zb::sin(m_time + static_cast<float>(j)) * 1.5f;
+                const float offY = za::sin(m_time + static_cast<float>(j)) * 1.5f;
 
                 quads[j + 0].position.y += offY;
                 quads[j + 1].position.y += offY;

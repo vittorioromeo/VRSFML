@@ -13,10 +13,10 @@
 #include "Zancle/Window/JoystickState.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Optional.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za
@@ -33,14 +33,14 @@ Joystick::Query::Query(const priv::JoystickManager& joystickManager, const unsig
     m_joystickManager(joystickManager),
     m_joystickId(joystickId)
 {
-    ZB_ASSERT(isConnected() && "Created query for unconnected joystick");
+    ZA_ASSERT(isConnected() && "Created query for unconnected joystick");
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned int Joystick::Query::getIndex() const
 {
-    ZB_ASSERT(isConnected() && "Query on unconnected joystick: get index");
+    ZA_ASSERT(isConnected() && "Query on unconnected joystick: get index");
     return m_joystickId;
 }
 
@@ -69,7 +69,7 @@ unsigned int Joystick::Query::getProductId() const
 ////////////////////////////////////////////////////////////
 const priv::JoystickIdentification& Joystick::Query::getIdentification() const
 {
-    ZB_ASSERT(isConnected() && "Query on unconnected joystick: get identification");
+    ZA_ASSERT(isConnected() && "Query on unconnected joystick: get identification");
     return m_joystickManager.getIdentification(m_joystickId);
 }
 
@@ -77,7 +77,7 @@ const priv::JoystickIdentification& Joystick::Query::getIdentification() const
 ////////////////////////////////////////////////////////////
 unsigned int Joystick::Query::getButtonCount() const
 {
-    ZB_ASSERT(isConnected() && "Query on unconnected joystick: get button count");
+    ZA_ASSERT(isConnected() && "Query on unconnected joystick: get button count");
     return m_joystickManager.getCapabilities(m_joystickId).buttonCount;
 }
 
@@ -85,7 +85,7 @@ unsigned int Joystick::Query::getButtonCount() const
 ////////////////////////////////////////////////////////////
 bool Joystick::Query::hasAxis(const Axis axis) const
 {
-    ZB_ASSERT(isConnected() && "Query on unconnected joystick: has axis");
+    ZA_ASSERT(isConnected() && "Query on unconnected joystick: has axis");
     return m_joystickManager.getCapabilities(m_joystickId).axes[axis];
 }
 
@@ -93,7 +93,7 @@ bool Joystick::Query::hasAxis(const Axis axis) const
 ////////////////////////////////////////////////////////////
 bool Joystick::Query::isButtonPressed(const unsigned int button) const
 {
-    ZB_ASSERT(isConnected() && "Query on unconnected joystick: is button pressed");
+    ZA_ASSERT(isConnected() && "Query on unconnected joystick: is button pressed");
     return m_joystickManager.getState(m_joystickId).buttons[button];
 }
 
@@ -101,7 +101,7 @@ bool Joystick::Query::isButtonPressed(const unsigned int button) const
 ////////////////////////////////////////////////////////////
 float Joystick::Query::getAxisPosition(const Axis axis) const
 {
-    ZB_ASSERT(isConnected() && "Query on unconnected joystick: get axis position");
+    ZA_ASSERT(isConnected() && "Query on unconnected joystick: get axis position");
     return m_joystickManager.getState(m_joystickId).axes[axis];
 }
 
@@ -114,21 +114,21 @@ bool Joystick::Query::isConnected() const
 
 
 ////////////////////////////////////////////////////////////
-zb::Optional<Joystick::Query> Joystick::query(const unsigned int joystickId)
+za::Optional<Joystick::Query> Joystick::query(const unsigned int joystickId)
 {
     if (joystickId >= Joystick::MaxCount)
     {
         priv::errMsg("Invalid joystick index: {}, valid range is [0 .. {}]", joystickId, (Joystick::MaxCount - 1));
 
-        return zb::nullOpt;
+        return za::nullOpt;
     }
 
     const auto& joystickManager = WindowContext::getJoystickManager();
 
     if (!joystickManager.isConnected(joystickId))
-        return zb::nullOpt;
+        return za::nullOpt;
 
-    return zb::makeOptionalFromFunc([&] { return Query{joystickManager, joystickId}; });
+    return za::makeOptionalFromFunc([&] { return Query{joystickManager, joystickId}; });
 }
 
 } // namespace za

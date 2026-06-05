@@ -1,25 +1,25 @@
 #include "StringifyStringViewUtil.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/MemoryInputStream.hpp"
+#include "Zancle/IO/MemoryInputStream.hpp"
 
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 TEST_CASE("[System] za::MemoryInputStream")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(ZB_IS_COPY_CONSTRUCTIBLE(za::MemoryInputStream));
-        STATIC_CHECK(ZB_IS_COPY_ASSIGNABLE(za::MemoryInputStream));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::MemoryInputStream));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::MemoryInputStream));
+        STATIC_CHECK(ZA_IS_COPY_CONSTRUCTIBLE(za::MemoryInputStream));
+        STATIC_CHECK(ZA_IS_COPY_ASSIGNABLE(za::MemoryInputStream));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::MemoryInputStream));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::MemoryInputStream));
     }
 
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("open()")
     {
@@ -50,13 +50,13 @@ TEST_CASE("[System] za::MemoryInputStream")
         // Read within input
         char output[32]{};
         CHECK(memoryInputStream.read(output, 5).value() == 5);
-        CHECK(zb::StringView(output, 5) == "hello"_sv);
+        CHECK(za::StringView(output, 5) == "hello"_sv);
         CHECK(memoryInputStream.tell().value() == 5);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read beyond input
         CHECK(memoryInputStream.read(output, 100).value() == 6);
-        CHECK(zb::StringView(output, 6) == " world"_sv);
+        CHECK(za::StringView(output, 6) == " world"_sv);
         CHECK(memoryInputStream.tell().value() == 11);
         CHECK(memoryInputStream.getSize().value() == input.size());
     }

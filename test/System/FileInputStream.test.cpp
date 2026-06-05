@@ -3,33 +3,33 @@
 #include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/System/FileInputStream.hpp"
+#include "Zancle/IO/FileInputStream.hpp"
 
-#include "Zancle/System/Path.hpp"
+#include "Zancle/IO/Path.hpp"
 
-#include "ZancleBase/Macros.hpp"
-#include "ZancleBase/String.hpp"
-#include "ZancleBase/StringView.hpp"
-#include "ZancleBase/Trait/IsCopyAssignable.hpp"
-#include "ZancleBase/Trait/IsCopyConstructible.hpp"
-#include "ZancleBase/Trait/IsDefaultConstructible.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveAssignable.hpp"
-#include "ZancleBase/Trait/IsNothrowMoveConstructible.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsDefaultConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 using za::testing::TemporaryFile;
 
 TEST_CASE("[System] za::FileInputStream")
 {
-    using namespace zb::literals;
+    using namespace za::literals;
 
     SECTION("Type traits")
     {
-        STATIC_CHECK(!ZB_IS_DEFAULT_CONSTRUCTIBLE(za::FileInputStream));
-        STATIC_CHECK(!ZB_IS_COPY_CONSTRUCTIBLE(za::FileInputStream));
-        STATIC_CHECK(!ZB_IS_COPY_ASSIGNABLE(za::FileInputStream));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::FileInputStream));
-        STATIC_CHECK(ZB_IS_NOTHROW_MOVE_ASSIGNABLE(za::FileInputStream));
+        STATIC_CHECK(!ZA_IS_DEFAULT_CONSTRUCTIBLE(za::FileInputStream));
+        STATIC_CHECK(!ZA_IS_COPY_CONSTRUCTIBLE(za::FileInputStream));
+        STATIC_CHECK(!ZA_IS_COPY_ASSIGNABLE(za::FileInputStream));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_CONSTRUCTIBLE(za::FileInputStream));
+        STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::FileInputStream));
     }
 
     const TemporaryFile temporaryFile("Hello world");
@@ -40,11 +40,11 @@ TEST_CASE("[System] za::FileInputStream")
         SECTION("Move constructor")
         {
             auto                movedFileInputStream = za::FileInputStream::open(temporaryFile.getPath()).value();
-            za::FileInputStream fileInputStream      = ZB_MOVE(movedFileInputStream);
+            za::FileInputStream fileInputStream      = ZA_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
-            CHECK(zb::StringView(buffer, 6) == "Hello "_sv);
+            CHECK(za::StringView(buffer, 6) == "Hello "_sv);
         }
 
         SECTION("Move assignment")
@@ -52,11 +52,11 @@ TEST_CASE("[System] za::FileInputStream")
             auto                movedFileInputStream = za::FileInputStream::open(temporaryFile.getPath()).value();
             const TemporaryFile temporaryFile2("Hello world the sequel");
             auto                fileInputStream = za::FileInputStream::open(temporaryFile2.getPath()).value();
-            fileInputStream                     = ZB_MOVE(movedFileInputStream);
+            fileInputStream                     = ZA_MOVE(movedFileInputStream);
             CHECK(fileInputStream.read(buffer, 6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
             CHECK(fileInputStream.getSize().value() == 11);
-            CHECK(zb::StringView(buffer, 6) == "Hello "_sv);
+            CHECK(za::StringView(buffer, 6) == "Hello "_sv);
         }
     }
 
@@ -66,7 +66,7 @@ TEST_CASE("[System] za::FileInputStream")
         CHECK(fileInputStream.read(buffer, 5).value() == 5);
         CHECK(fileInputStream.tell().value() == 5);
         CHECK(fileInputStream.getSize().value() == 11);
-        CHECK(zb::StringView(buffer, 5) == "Hello"_sv);
+        CHECK(za::StringView(buffer, 5) == "Hello"_sv);
         CHECK(fileInputStream.seek(6).value() == 6);
         CHECK(fileInputStream.tell().value() == 6);
     }
@@ -78,13 +78,13 @@ TEST_CASE("[System] za::FileInputStream")
         for (const auto& filenameSuffix : filenameSuffixes)
         {
             const za::Path filename = U"test" + filenameSuffix + U".txt";
-            INFO("Filename: " << filename.to<zb::String>().cStr());
+            INFO("Filename: " << filename.to<za::String>().cStr());
 
             auto fileInputStream = za::FileInputStream::open(filename).value();
             CHECK(fileInputStream.read(buffer, 5).value() == 5);
             CHECK(fileInputStream.tell().value() == 5);
             CHECK(fileInputStream.getSize().value() == 12);
-            CHECK(zb::StringView(buffer, 5) == "Hello"_sv);
+            CHECK(za::StringView(buffer, 5) == "Hello"_sv);
             CHECK(fileInputStream.seek(6).value() == 6);
             CHECK(fileInputStream.tell().value() == 6);
         }

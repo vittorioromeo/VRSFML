@@ -11,11 +11,11 @@
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/VertexUtils.hpp"
 
-#include "Zancle/System/Priv/Vec2Base.hpp"
-#include "Zancle/System/Rect2.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
-#include "ZancleBase/SizeT.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace za
@@ -115,7 +115,7 @@ void Shape::setOutlineThickness(float thickness)
 
     m_outlineThickness = thickness;
 
-    const zb::SizeT pointCount = m_verticesEndIndex - 2u;
+    const za::SizeT pointCount = m_verticesEndIndex - 2u;
 
     m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
 
@@ -164,9 +164,9 @@ Rect2f Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::update(const za::Vec2f* points, const zb::SizeT pointCount)
+void Shape::update(const za::Vec2f* points, const za::SizeT pointCount)
 {
-    updateFromFunc([&points] [[gnu::always_inline, gnu::flatten]] (const zb::SizeT i) { return points[i]; }, pointCount);
+    updateFromFunc([&points] [[gnu::always_inline, gnu::flatten]] (const za::SizeT i) { return points[i]; }, pointCount);
 }
 
 
@@ -223,7 +223,7 @@ void Shape::updateOutline()
         return;
     }
 
-    const zb::SizeT count = m_vertices.size() - 2u;
+    const za::SizeT count = m_vertices.size() - 2u;
     m_vertices.resize(m_verticesEndIndex + (count + 1u) * 2u);
 
     ShapeUtils::updateOutlineFromTriangleFanFill(m_outlineThickness,

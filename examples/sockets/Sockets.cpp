@@ -4,9 +4,9 @@
 #include "TCP.hpp"
 #include "UDP.hpp"
 
-#include "ZancleBase/Fmt/Fmt.hpp"
-#include "ZancleBase/Fmt/FmtNumeric.hpp"
-#include "ZancleBase/Scn/ScnStdin.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Scn/ScnStdin.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -19,21 +19,21 @@ int main()
     const unsigned short port = 50'001;
 
     // TCP, UDP or connected UDP ?
-    zb::print("Do you want to use TCP (t) or UDP (u)? ");
-    const char protocol = zb::scnStdin<char>().valueOr('u');
-    zb::scnStdinIgnoreLine();
+    za::print("Do you want to use TCP (t) or UDP (u)? ");
+    const char protocol = za::scnStdin<char>().valueOr('u');
+    za::scnStdinIgnoreLine();
 
     // Client or server ?
-    zb::print("Do you want to be a server (s) or a client (c)? ");
-    const char who = zb::scnStdin<char>().valueOr('c');
-    zb::scnStdinIgnoreLine();
+    za::print("Do you want to be a server (s) or a client (c)? ");
+    const char who = za::scnStdin<char>().valueOr('c');
+    za::scnStdinIgnoreLine();
 
     if (protocol == 't')
     {
         // Enable TLS ?
-        zb::print("Do you want to enable TLS (y) or not (n)? ");
-        const char tls = zb::scnStdin<char>().valueOr('n');
-        zb::scnStdinIgnoreLine();
+        za::print("Do you want to enable TLS (y) or not (n)? ");
+        const char tls = za::scnStdin<char>().valueOr('n');
+        za::scnStdinIgnoreLine();
 
         // Test the TCP protocol
         if (who == 's')
@@ -51,7 +51,7 @@ int main()
     }
 
     // Wait until the user presses 'enter' key
-    zb::printLn("Press enter to exit...");
-    zb::scnStdinIgnoreLine();
-    zb::scnStdinIgnoreLine();
+    za::printLn("Press enter to exit...");
+    za::scnStdinIgnoreLine();
+    za::scnStdinIgnoreLine();
 }

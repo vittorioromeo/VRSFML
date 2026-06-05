@@ -7,9 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Vulkan.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Assert.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
 
 #define VK_NO_PROTOTYPES
 #include <vulkan.h>
@@ -63,7 +63,7 @@ bool isAvailable([[maybe_unused]] bool requireGraphics)
 ////////////////////////////////////////////////////////////
 VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 {
-    ZB_ASSERT(name != nullptr && "Name cannot be a null pointer");
+    ZA_ASSERT(name != nullptr && "Name cannot be a null pointer");
 
     if (!isAvailable(/* requireGraphics */ false))
     {
@@ -85,7 +85,7 @@ VulkanFunctionPointer getFunction(const char* name, const VkInstance instance)
 
 
 ////////////////////////////////////////////////////////////
-zb::Span<const char* const> getGraphicsRequiredInstanceExtensions()
+za::Span<const char* const> getGraphicsRequiredInstanceExtensions()
 {
     if (!isAvailable(/* requireGraphics */ true))
     {
@@ -102,7 +102,7 @@ zb::Span<const char* const> getGraphicsRequiredInstanceExtensions()
         return {};
     }
 
-    return {extensions, static_cast<zb::SizeT>(count)};
+    return {extensions, static_cast<za::SizeT>(count)};
 }
 
 ////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ bool createVulkanSurface(const VkInstance&            instance,
                          VkSurfaceKHR&                surface,
                          const VkAllocationCallbacks* allocator)
 {
-    ZB_ASSERT(sdlWindowHandle != nullptr && "SDL window handle cannot be a null pointer");
+    ZA_ASSERT(sdlWindowHandle != nullptr && "SDL window handle cannot be a null pointer");
 
     if (!isAvailable(true))
     {

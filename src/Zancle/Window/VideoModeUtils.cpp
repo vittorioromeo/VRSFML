@@ -11,13 +11,13 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/System/Err.hpp"
+#include "Zancle/Err/Err.hpp"
 
-#include "ZancleBase/Algorithm/Find.hpp"
-#include "ZancleBase/Algorithm/Sort.hpp"
-#include "ZancleBase/Assert.hpp"
-#include "ZancleBase/Span.hpp"
-#include "ZancleBase/Vector.hpp"
+#include "Zancle/Algorithm/Find.hpp"
+#include "Zancle/Algorithm/Sort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+#include "Zancle/Container/Vector.hpp"
 
 
 namespace za
@@ -47,11 +47,11 @@ VideoMode VideoModeUtils::getDesktopMode()
 
 
 ////////////////////////////////////////////////////////////
-zb::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
+za::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 {
     static const auto cachedModes = []
     {
-        zb::Vector<VideoMode> result;
+        za::Vector<VideoMode> result;
 
         auto& sdlLayer = WindowContext::getSDLLayer();
 
@@ -67,15 +67,15 @@ zb::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 
         for (const auto* mode : modes)
         {
-            ZB_ASSERT(mode != nullptr);
+            ZA_ASSERT(mode != nullptr);
 
             const za::VideoMode res = sdlLayer.getVideoModeFromSDLDisplayMode(*mode);
 
-            if (zb::find(result.begin(), result.end(), res) == result.end())
+            if (za::find(result.begin(), result.end(), res) == result.end())
                 result.pushBack(res);
         }
 
-        zb::quickSort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
+        za::quickSort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
         return result;
     }();
 
