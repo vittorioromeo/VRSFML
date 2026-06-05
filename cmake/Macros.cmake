@@ -118,25 +118,10 @@ macro(zancle_add_library module)
     # target_compile_options(${target} PUBLIC -include Tracy.hpp)
     # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
-    # propagate macros to dependent targets (`add_definitions` does not propagate to parent)
-    if(ZA_ENABLE_LIFETIME_TRACKING)
-        target_compile_definitions(${target} PUBLIC -DZA_ENABLE_LIFETIME_TRACKING)
-    endif()
-
-    if(ZA_ENABLE_PCH)
-        target_compile_definitions(${target} PUBLIC -DZA_ENABLE_PCH)
-    endif()
-
-    if(ZA_ENABLE_STACK_TRACES)
-        target_compile_definitions(${target} PUBLIC -DZA_ENABLE_STACK_TRACES)
-    endif()
-
-    if(ZA_OPENGL_ES)
-        target_compile_definitions(${target} PUBLIC -DZA_OPENGL_ES)
-    endif()
-
-    # enable C++23 support
-    target_compile_features(${target} PUBLIC cxx_std_23)
+    # All Zancle build-time toggles (incl. C++23 feature requirement) live on a
+    # single INTERFACE target; PUBLIC-link wrapped in $<BUILD_INTERFACE:...> so
+    # the install/export set is unaffected.
+    target_link_libraries(${target} PUBLIC $<BUILD_INTERFACE:zancle-build-options>)
 
     # Add required flags for GCC if coverage reporting is enabled
     if(ZA_ENABLE_COVERAGE AND (ZA_COMPILER_GCC OR ZA_COMPILER_CLANG))

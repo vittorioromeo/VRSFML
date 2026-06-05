@@ -40,39 +40,28 @@ if(ZA_OS_ANDROID)
     set(BUILD_SHARED_LIBS ON)
 endif()
 
-# suppress annoying warnings on windows
-if(ZA_OS_WINDOWS)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-endif()
-
-# avoid transitive includes with libc++
-add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
+# Centralised propagation surface for all Zancle build-time toggles.
+#
+# Every Zancle target (libraries, tests, examples) PUBLIC-links this so a
+# single switch flips the macro across the whole tree. The definitions are
+# populated at the bottom of this options block (after all relevant cache
+# variables have been resolved).
+target_compile_features(zancle-build-options INTERFACE cxx_std_23)
 
 # include CPM to manage external dependencies
 include(cmake/CPM.cmake)
 
 # add an option to enable stack traces on assertions
 zancle_set_option(ZA_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
-if(ZA_ENABLE_STACK_TRACES)
-    add_definitions(-DZA_ENABLE_STACK_TRACES)
-
-    if (NOT ZA_OS_EMSCRIPTEN)
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extlibs/libbacktrace)
-    endif()
+if(ZA_ENABLE_STACK_TRACES AND NOT ZA_OS_EMSCRIPTEN)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extlibs/libbacktrace)
 endif()
 
 # add an option to enable lifetime tracking
 zancle_set_option(ZA_ENABLE_LIFETIME_TRACKING $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
-if(ZA_ENABLE_LIFETIME_TRACKING)
-    add_definitions(-DZA_ENABLE_LIFETIME_TRACKING)
-endif()
 
 # option to enable precompiled headers
 zancle_set_option(ZA_ENABLE_PCH OFF BOOL "TRUE to enable precompiled headers for Zancle builds -- only supported on Windows/Linux and for static library builds")
-
-if(ZA_ENABLE_PCH)
-    add_definitions(-DZA_ENABLE_PCH)
-endif()
 
 # add options to select which modules to build
 zancle_set_option(ZA_BUILD_GLUTILS ON BOOL "ON to build Zancle's GLUtils module.")
@@ -81,30 +70,6 @@ zancle_set_option(ZA_BUILD_GRAPHICS ON BOOL "ON to build Zancle's Graphics modul
 zancle_set_option(ZA_BUILD_IMGUI ON BOOL "ON to build Zancle's ImGui module.")
 zancle_set_option(ZA_BUILD_AUDIO ON BOOL "ON to build Zancle's Audio module.")
 zancle_set_option(ZA_BUILD_NETWORK ON BOOL "ON to build Zancle's Network module.")
-
-if(ZA_BUILD_GLUTILS)
-    add_definitions(-DZA_BUILD_GLUTILS)
-endif()
-
-if(ZA_BUILD_WINDOW)
-    add_definitions(-DZA_BUILD_WINDOW)
-endif()
-
-if(ZA_BUILD_GRAPHICS)
-    add_definitions(-DZA_BUILD_GRAPHICS)
-endif()
-
-if(ZA_BUILD_IMGUI)
-    add_definitions(-DZA_BUILD_IMGUI)
-endif()
-
-if(ZA_BUILD_AUDIO)
-    add_definitions(-DZA_BUILD_AUDIO)
-endif()
-
-if(ZA_BUILD_NETWORK)
-    add_definitions(-DZA_BUILD_NETWORK)
-endif()
 
 if(ZA_BUILD_WINDOW)
     # add an option for choosing the OpenGL implementation
@@ -125,9 +90,6 @@ endif()
 # Android options
 if(ZA_OS_ANDROID)
     zancle_set_option(ZA_ANDROID_USE_SUSPEND_AWARE_CLOCK OFF BOOL "ON to use an za::Clock implementation which takes system sleep time into account (keeps advancing during suspension), OFF to default to another available monotonic clock")
-    if(ZA_ANDROID_USE_SUSPEND_AWARE_CLOCK)
-        add_definitions(-DZA_ANDROID_USE_SUSPEND_AWARE_CLOCK)
-    endif()
 
     # avoid missing libraries when building Zancle for Android with NDK r19c and later
     list(PREPEND CMAKE_FIND_ROOT_PATH "${PROJECT_SOURCE_DIR}")
@@ -182,11 +144,6 @@ if(ZA_COMPILER_MSVC)
     endif()
 endif()
 
-# define ZA_OPENGL_ES if needed
-if(ZA_OPENGL_ES)
-    add_definitions(-DZA_OPENGL_ES)
-endif()
-
 # define an option for choosing between static and dynamic C runtime (Windows only)
 if(ZA_OS_WINDOWS)
     zancle_set_option(ZA_USE_STATIC_STD_LIBS OFF BOOL "ON to statically link to the standard libraries, OFF to use them as DLLs")
@@ -231,15 +188,6 @@ if(ZA_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
 endif()
 
-if(ZA_BUILD_EXAMPLES)
-    add_definitions(-DZA_BUILD_EXAMPLES)
-endif()
-
-if(ZA_BUILD_TEST_SUITE)
-    # this definition is used in the PCH file to speed up compilation of tests
-    # `add_definitions` must be called before `add_subdirectory`
-    add_definitions(-DZA_BUILD_TEST_SUITE)
-endif()
 
 option(ZA_ENABLE_STDLIB_ASSERTIONS "Enable standard library assertions" OFF)
 if(ZA_ENABLE_STDLIB_ASSERTIONS)
@@ -313,6 +261,27 @@ endif()
 if(ZA_ENABLE_PCH AND ZA_OS_MACOS)
     message(FATAL_ERROR "Precompiled headers are currently not supported in macOS builds")
 endif()
+
+# Populate `zancle-build-options` once all toggles have been resolved.
+# Listed in the same order as the option declarations above for easy auditing.
+target_compile_definitions(zancle-build-options INTERFACE
+    _LIBCPP_REMOVE_TRANSITIVE_INCLUDES                                          # avoid transitive includes with libc++
+    $<$<BOOL:${ZA_OS_WINDOWS}>:_CRT_SECURE_NO_WARNINGS>                         # suppress CRT warnings on Windows
+    $<$<BOOL:${ZA_ENABLE_STACK_TRACES}>:ZA_ENABLE_STACK_TRACES>
+    $<$<BOOL:${ZA_ENABLE_LIFETIME_TRACKING}>:ZA_ENABLE_LIFETIME_TRACKING>
+    $<$<BOOL:${ZA_ENABLE_PCH}>:ZA_ENABLE_PCH>
+    $<$<BOOL:${ZA_BUILD_GLUTILS}>:ZA_BUILD_GLUTILS>
+    $<$<BOOL:${ZA_BUILD_WINDOW}>:ZA_BUILD_WINDOW>
+    $<$<BOOL:${ZA_BUILD_GRAPHICS}>:ZA_BUILD_GRAPHICS>
+    $<$<BOOL:${ZA_BUILD_IMGUI}>:ZA_BUILD_IMGUI>
+    $<$<BOOL:${ZA_BUILD_AUDIO}>:ZA_BUILD_AUDIO>
+    $<$<BOOL:${ZA_BUILD_NETWORK}>:ZA_BUILD_NETWORK>
+    $<$<BOOL:${ZA_OPENGL_ES}>:ZA_OPENGL_ES>
+    $<$<BOOL:${ZA_USE_DRM}>:ZA_USE_DRM>
+    $<$<BOOL:${ZA_ANDROID_USE_SUSPEND_AWARE_CLOCK}>:ZA_ANDROID_USE_SUSPEND_AWARE_CLOCK>
+    $<$<BOOL:${ZA_BUILD_EXAMPLES}>:ZA_BUILD_EXAMPLES>
+    $<$<BOOL:${ZA_BUILD_TEST_SUITE}>:ZA_BUILD_TEST_SUITE>
+)
 
 # add the subdirectories
 add_subdirectory(src/Zancle)

@@ -50,8 +50,6 @@ if (NOT ZA_OS_EMSCRIPTEN AND NOT ZA_ARCH_ARM64)
     else()
         set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
     endif()
-
-    add_definitions(-DBUBBLEBYTE_USE_STEAMWORKS=1)
 else()
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
@@ -100,6 +98,10 @@ endif()
 zancle_add_example(bubble_idle GUI_APP
                  SOURCES ${SRC}
                  DEPENDS Zancle::Audio Zancle::Graphics Zancle::ImGui ImGui::ImGui ${STEAM_LIB})
+
+if (STEAM_LIB)
+    target_compile_definitions(bubble_idle PRIVATE BUBBLEBYTE_USE_STEAMWORKS=1)
+endif()
 
 if (WIN32 AND NOT ZA_ARCH_ARM64)
     target_link_libraries(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")

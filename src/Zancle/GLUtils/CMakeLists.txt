@@ -15,7 +15,6 @@ if(ZA_OS_WINDOWS)
     endif()
 elseif(ZA_OS_LINUX OR ZA_OS_FREEBSD OR ZA_OS_OPENBSD OR ZA_OS_NETBSD)
     if(ZA_USE_DRM)
-        add_definitions(-DZA_USE_DRM)
         set(PLATFORM_SRC
             ${SRCROOT}/EGL/EGLCheck.cpp
             ${SRCROOT}/EGL/EGLCheck.hpp

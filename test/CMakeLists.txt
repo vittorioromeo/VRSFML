@@ -32,22 +32,16 @@ endif()
 zancle_set_stdlib(zancle-test-main)
 
 zancle_set_option(ZA_RUN_DISPLAY_TESTS ON BOOL "ON to run tests that require a display, OFF to ignore it")
-if(ZA_RUN_DISPLAY_TESTS)
-    add_definitions(-DZA_RUN_DISPLAY_TESTS)
-    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_DISPLAY_TESTS)
-endif()
-
 zancle_set_option(ZA_RUN_AUDIO_DEVICE_TESTS ON BOOL "ON to run tests that require an audio device, OFF to ignore it")
-if(ZA_RUN_AUDIO_DEVICE_TESTS)
-    add_definitions(-DZA_RUN_AUDIO_DEVICE_TESTS)
-    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_AUDIO_DEVICE_TESTS)
-endif()
 
-if(NOT ZA_OS_IOS)
-    add_definitions(-DZA_RUN_CONNECTION_TESTS -DZA_RUN_LOOPBACK_TESTS)
-    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_CONNECTION_TESTS)
-    target_compile_definitions(zancle-test-main PRIVATE ZA_RUN_LOOPBACK_TESTS)
-endif()
+# Test toggles are carried on `zancle-test-main` and PUBLIC-propagated to each
+# test executable (which PRIVATE-links this target).
+target_compile_definitions(zancle-test-main PUBLIC
+    $<$<BOOL:${ZA_RUN_DISPLAY_TESTS}>:ZA_RUN_DISPLAY_TESTS>
+    $<$<BOOL:${ZA_RUN_AUDIO_DEVICE_TESTS}>:ZA_RUN_AUDIO_DEVICE_TESTS>
+    $<$<NOT:$<BOOL:${ZA_OS_IOS}>>:ZA_RUN_CONNECTION_TESTS>
+    $<$<NOT:$<BOOL:${ZA_OS_IOS}>>:ZA_RUN_LOOPBACK_TESTS>
+)
 
 add_subdirectory(Audio)
 add_subdirectory(Base)
