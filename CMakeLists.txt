@@ -46,6 +46,7 @@ endif()
 # single switch flips the macro across the whole tree. The definitions are
 # populated at the bottom of this options block (after all relevant cache
 # variables have been resolved).
+add_library(zancle-build-options INTERFACE)
 target_compile_features(zancle-build-options INTERFACE cxx_std_23)
 
 # include CPM to manage external dependencies
@@ -282,6 +283,9 @@ target_compile_definitions(zancle-build-options INTERFACE
     $<$<BOOL:${ZA_BUILD_EXAMPLES}>:ZA_BUILD_EXAMPLES>
     $<$<BOOL:${ZA_BUILD_TEST_SUITE}>:ZA_BUILD_TEST_SUITE>
 )
+
+# Resolve platform-library lists (GL backend, Apple frameworks) once.
+include(cmake/PlatformLibs.cmake)
 
 # add the subdirectories
 add_subdirectory(src/Zancle)

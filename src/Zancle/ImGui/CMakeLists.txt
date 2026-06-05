@@ -13,16 +13,8 @@ target_include_directories(zancle-imgui SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/ex
 # setup dependencies
 target_link_libraries(zancle-imgui PUBLIC Zancle::Graphics)
 
-if(ZA_OS_IOS)
-    target_link_libraries(zancle-imgui PRIVATE "-framework OpenGLES")
-elseif(ZA_OS_ANDROID OR ZA_OS_EMSCRIPTEN OR ZA_OPENGL_ES)
-    find_package(EGL REQUIRED)
-    find_package(GLES REQUIRED)
-    target_link_libraries(zancle-imgui PRIVATE EGL::EGL GLES::GLES)
-else()
-    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-    target_link_libraries(zancle-imgui PRIVATE OpenGL::GL)
-endif()
+# GL backend comes from cmake/PlatformLibs.cmake.
+target_link_libraries(zancle-imgui PRIVATE ${ZA_GL_BACKEND_LIBS})
 
 # use an immediately invoked function to scope option variables we have to set
 function(zancle_add_imgui_dependencies)
