@@ -51,20 +51,7 @@ block()
     FetchContent_MakeAvailable(MbedTLS)
 endblock()
 
-set_target_properties(mbedtls mbedcrypto mbedx509 PROPERTIES FOLDER "Dependencies" SYSTEM ON)
-
-# if building Zancle as a shared library and linking our dependencies in
-# as static libraries we need to build them with -fPIC
-if(BUILD_SHARED_LIBS)
-    set_target_properties(mbedtls mbedcrypto mbedx509 PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
-
-# disable building dependencies as part of a unity build, they don't support it
-set_target_properties(mbedtls mbedcrypto mbedx509 PROPERTIES UNITY_BUILD OFF)
-
-zancle_set_stdlib(mbedtls)
-zancle_set_stdlib(mbedcrypto)
-zancle_set_stdlib(mbedx509)
+zancle_tame_thirdparty(TARGETS mbedtls mbedcrypto mbedx509)
 
 target_link_libraries(zancle-network PRIVATE mbedtls mbedcrypto mbedx509)
 

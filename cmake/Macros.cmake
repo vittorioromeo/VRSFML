@@ -83,6 +83,63 @@ macro(zancle_apply_emscripten_options target)
 endmacro()
 
 
+# Apply the standard "third-party hygiene" treatment to a set of targets
+# pulled in by CPM or FetchContent. This consolidates the per-module boilerplate
+# previously inlined in Audio/Graphics/ImGui/Network.
+#
+# Each target receives:
+#   - FOLDER "Dependencies" (IDE grouping)
+#   - SYSTEM ON (include dirs treated as -isystem)
+#   - POSITION_INDEPENDENT_CODE ON when BUILD_SHARED_LIBS is ON
+#   - target_compile_options PRIVATE -w (silence third-party warnings)
+#   - zancle_set_stdlib + zancle_apply_emscripten_options
+#
+# Optional UNITY_BUILD keyword turns on unity build with batch size 256;
+# otherwise unity build is forced OFF.
+#
+# Missing targets are silently skipped, so the helper is safe to call when a
+# target is gated behind a feature flag.
+#
+# Usage:
+#   zancle_tame_thirdparty(TARGETS foo bar baz)
+#   zancle_tame_thirdparty(UNITY_BUILD TARGETS foo bar)
+#
+# IMPORTANT: call this OUTSIDE any block() / function() scope that overrode
+# BUILD_SHARED_LIBS, so the helper sees the original (project-wide) value.
+function(zancle_tame_thirdparty)
+    cmake_parse_arguments(ZTT "UNITY_BUILD" "" "TARGETS" ${ARGN})
+
+    foreach(t IN LISTS ZTT_TARGETS)
+        if(NOT TARGET ${t})
+            continue()
+        endif()
+
+        set_target_properties(${t} PROPERTIES
+            FOLDER "Dependencies"
+            SYSTEM ON
+        )
+
+        if(BUILD_SHARED_LIBS)
+            set_target_properties(${t} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+        endif()
+
+        if(ZTT_UNITY_BUILD)
+            set_target_properties(${t} PROPERTIES
+                UNITY_BUILD ON
+                UNITY_BUILD_BATCH_SIZE 256
+            )
+        else()
+            set_target_properties(${t} PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        target_compile_options(${t} PRIVATE -w)
+
+        zancle_set_stdlib(${t})
+        zancle_apply_emscripten_options(${t})
+    endforeach()
+endfunction()
+
+
 # add a new target which is a Zancle library
 # example: zancle_add_library(Graphics
 #                           SOURCES sprite.cpp image.cpp ...

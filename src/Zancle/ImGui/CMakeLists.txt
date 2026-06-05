@@ -16,13 +16,10 @@ target_link_libraries(zancle-imgui PUBLIC Zancle::Graphics)
 # GL backend comes from cmake/PlatformLibs.cmake.
 target_link_libraries(zancle-imgui PRIVATE ${ZA_GL_BACKEND_LIBS})
 
-# use an immediately invoked function to scope option variables we have to set
-function(zancle_add_imgui_dependencies)
-    # remember whether we are building Zancle as a shared library
-    if(BUILD_SHARED_LIBS)
-        set(ZA_BUILD_SHARED_LIBS ON)
-    endif()
-
+# imgui has no CMake support, so we create our own target after pulling the
+# sources via CPM. Option/policy overrides are scoped via block(); the target
+# itself is created outside so subsequent target_* commands operate on it.
+block()
     set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
     set(BUILD_SHARED_LIBS OFF)
 
@@ -33,56 +30,38 @@ function(zancle_add_imgui_dependencies)
         SYSTEM TRUE
     )
 
-    # imgui has no CMake support, so we create our own target
-
+    # block() does not export normal variables, so propagate the paths we need.
+    set(IMGUI_INCLUDE_DIRS "${imgui_SOURCE_DIR}" PARENT_SCOPE)
     file(GLOB imgui_sources "${imgui_SOURCE_DIR}/*.cpp")
+    set(IMGUI_SOURCES "${imgui_sources}" PARENT_SCOPE)
+endblock()
 
-    set(IMGUI_FOUND TRUE)
-    set(IMGUI_INCLUDE_DIRS ${imgui_SOURCE_DIR})
-    set(IMGUI_SOURCES ${imgui_sources} ${imgui_sources_cpp})
-    set(IMGUI_VERSION "1.91.0")
+if(BUILD_SHARED_LIBS)
+    add_library(imgui STATIC ${IMGUI_SOURCES})
+else()
+    add_library(imgui ${IMGUI_SOURCES})
+endif()
 
-    if(BUILD_SHARED_LIBS)
-        add_library(imgui STATIC ${IMGUI_SOURCES})
-    else()
-        add_library(imgui ${IMGUI_SOURCES})
-    endif()
+target_sources(imgui PUBLIC
+                FILE_SET public_headers
+                TYPE HEADERS
+                BASE_DIRS ${IMGUI_INCLUDE_DIRS}
+                FILES ${IMGUI_INCLUDE_DIRS}/imgui.h)
 
-    target_compile_features(imgui PUBLIC cxx_std_23)
+target_include_directories(imgui
+                            SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
+                                          $<INSTALL_INTERFACE:include>)
 
-    target_sources(imgui PUBLIC
-                    FILE_SET public_headers
-                    TYPE HEADERS
-                    BASE_DIRS ${IMGUI_INCLUDE_DIRS}
-                    FILES ${IMGUI_INCLUDE_DIRS}/imgui.h)
+target_link_libraries(imgui
+    PUBLIC $<BUILD_INTERFACE:zancle-build-options>
+    PRIVATE Zancle::Graphics)
 
-    set_target_properties(imgui PROPERTIES FOLDER "Dependencies")
+zancle_tame_thirdparty(TARGETS imgui)
 
-    target_compile_options(imgui PRIVATE "-w")
+add_library(ImGui::ImGui ALIAS imgui)
 
-    target_include_directories(imgui
-                                SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
-                                                $<INSTALL_INTERFACE:include>)
-
-    target_link_libraries(imgui PRIVATE Zancle::Graphics)
-
-    # add flags required for emscripten support (e.g. pthread)
-    zancle_apply_emscripten_options(imgui)
-
-    # if building Zancle as a shared library and linking our dependencies in
-    # as static libraries we need to build them with -fPIC
-    if(ZA_BUILD_SHARED_LIBS)
-        set_target_properties(imgui PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    endif()
-
-    zancle_set_stdlib(imgui)
-    add_library(ImGui::ImGui ALIAS imgui)
-
-    # TODO P0: this is hardcoded, should follow same pattern as Macros.cmake
-    install(TARGETS imgui EXPORT ZancleImGuiStaticTargets FILE_SET public_headers)
-endfunction()
-
-zancle_add_imgui_dependencies()
+# TODO P0: this is hardcoded, should follow same pattern as Macros.cmake
+install(TARGETS imgui EXPORT ZancleImGuiStaticTargets FILE_SET public_headers)
 
 target_link_libraries(zancle-imgui PRIVATE ImGui::ImGui)
 target_compile_definitions(zancle-imgui PUBLIC IMGUI_USER_CONFIG="${PROJECT_SOURCE_DIR}/include/Zancle/ImGui/ImConfigSFML.hpp")

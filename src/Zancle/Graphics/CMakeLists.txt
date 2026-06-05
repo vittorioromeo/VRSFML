@@ -29,13 +29,8 @@ endif()
 if(ZA_USE_SYSTEM_DEPS)
     find_package(Freetype REQUIRED)
 else()
-    # use an immediately invoked function to scope option variables we have to set
-    function(zancle_add_graphics_dependencies)
-        # remember whether we are building Zancle as a shared library
-        if(BUILD_SHARED_LIBS)
-            set(ZA_BUILD_SHARED_LIBS ON)
-        endif()
-
+    # Scope CPM/option overrides without leaking them to the parent scope.
+    block()
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
         set(BUILD_SHARED_LIBS OFF)
         set(SKIP_INSTALL_HEADERS ON)
@@ -56,36 +51,23 @@ else()
             SYSTEM TRUE
         )
 
-        set_target_properties(freetype PROPERTIES FOLDER "Dependencies")
+        # block() does not export normal variables, so re-publish the
+        # CPM-set freetype_SOURCE_DIR for set_source_files_properties below.
+        set(freetype_SOURCE_DIR "${freetype_SOURCE_DIR}" PARENT_SCOPE)
+    endblock()
 
-        # add flags required for emscripten support (e.g. pthread)
-        zancle_apply_emscripten_options(freetype)
+    zancle_tame_thirdparty(UNITY_BUILD TARGETS freetype)
 
-        # if building Zancle as a shared library and linking our dependencies in
-        # as static libraries we need to build them with -fPIC
-        if(ZA_BUILD_SHARED_LIBS)
-            set_target_properties(freetype PROPERTIES POSITION_INDEPENDENT_CODE ON)
-        endif()
+    set_source_files_properties(
+        "${freetype_SOURCE_DIR}/src/pfr/pfr.c"
+        "${freetype_SOURCE_DIR}/src/smooth/smooth.c"
+        "${freetype_SOURCE_DIR}/builds/windows/ftsystem.c"
+        "${freetype_SOURCE_DIR}/builds/windows/ftdebug.c"
+        TARGET_DIRECTORY freetype
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+    )
 
-        # build using unity build and exclude files that cause issues
-        set_target_properties(freetype PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 256)
-        set_source_files_properties(
-            "${freetype_SOURCE_DIR}/src/pfr/pfr.c"
-            "${freetype_SOURCE_DIR}/src/smooth/smooth.c"
-            "${freetype_SOURCE_DIR}/builds/windows/ftsystem.c"
-            "${freetype_SOURCE_DIR}/builds/windows/ftdebug.c"
-            TARGET_DIRECTORY freetype
-            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
-        )
-
-        zancle_set_stdlib(freetype)
-
-        # Disable all warnings
-        target_compile_options(freetype PRIVATE -w)
-
-        add_library(Freetype::Freetype ALIAS freetype)
-    endfunction()
-    zancle_add_graphics_dependencies()
+    add_library(Freetype::Freetype ALIAS freetype)
 endif()
 
 target_link_libraries(zancle-graphics PRIVATE Freetype::Freetype PUBLIC Zancle::GLUtils)

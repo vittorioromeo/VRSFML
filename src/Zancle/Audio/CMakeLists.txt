@@ -15,13 +15,8 @@ if(ZA_USE_SYSTEM_DEPS)
     find_package(Vorbis REQUIRED)
     find_package(FLAC REQUIRED)
 else()
-    # use an immediately invoked function to scope option variables we have to set
-    function(zancle_add_audio_dependencies)
-        # remember whether we are building Zancle as a shared library
-        if(BUILD_SHARED_LIBS)
-            set(ZA_BUILD_SHARED_LIBS ON)
-        endif()
-
+    # Scope CPM/option overrides without leaking them to the parent scope.
+    block()
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
         set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
         set(BUILD_SHARED_LIBS OFF)
@@ -72,74 +67,58 @@ else()
             PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/vorbis/PatchVorbis.cmake
         )
 
-        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES FOLDER "Dependencies")
+        # block() does not export normal variables, so re-publish the CPM-set
+        # *_SOURCE_DIR paths we need for set_source_files_properties below.
+        set(flac_SOURCE_DIR    "${flac_SOURCE_DIR}"    PARENT_SCOPE)
+        set(vorbis_SOURCE_DIR  "${vorbis_SOURCE_DIR}"  PARENT_SCOPE)
+    endblock()
 
-        # if building Zancle as a shared library and linking our dependencies in
-        # as static libraries we need to build them with -fPIC
-        if(ZA_BUILD_SHARED_LIBS)
-            set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES POSITION_INDEPENDENT_CODE ON)
-        endif()
+    zancle_tame_thirdparty(UNITY_BUILD TARGETS ogg FLAC vorbis vorbisenc vorbisfile)
 
-        # build using unity build and exclude files that cause issues
-        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 256)
-        set_source_files_properties(
-            "${flac_SOURCE_DIR}/src/libFLAC/fixed.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/format.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_sse2.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_ssse3.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_sse42.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/lpc.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/metadata_object.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/stream_decoder.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/stream_encoder.c"
-            "${flac_SOURCE_DIR}/src/libFLAC/window.c"
-            TARGET_DIRECTORY FLAC
-            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
-        )
-        set_source_files_properties(
-            "${vorbis_SOURCE_DIR}/lib/floor1.c"
-            "${vorbis_SOURCE_DIR}/lib/sharedbook.c"
-            "${vorbis_SOURCE_DIR}/lib/vorbisenc.c"
-            TARGET_DIRECTORY vorbis
-            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
-        )
-        set_source_files_properties(
-            "${vorbis_SOURCE_DIR}/lib/vorbisenc.c"
-            TARGET_DIRECTORY vorbisenc
-            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
-        )
+    # files that fail unity build in FLAC
+    set_source_files_properties(
+        "${flac_SOURCE_DIR}/src/libFLAC/fixed.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/format.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_sse2.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_ssse3.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_sse42.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/lpc.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/metadata_object.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/stream_decoder.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/stream_encoder.c"
+        "${flac_SOURCE_DIR}/src/libFLAC/window.c"
+        TARGET_DIRECTORY FLAC
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+    )
+    set_source_files_properties(
+        "${vorbis_SOURCE_DIR}/lib/floor1.c"
+        "${vorbis_SOURCE_DIR}/lib/sharedbook.c"
+        "${vorbis_SOURCE_DIR}/lib/vorbisenc.c"
+        TARGET_DIRECTORY vorbis
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+    )
+    set_source_files_properties(
+        "${vorbis_SOURCE_DIR}/lib/vorbisenc.c"
+        TARGET_DIRECTORY vorbisenc
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+    )
 
-        if(TARGET benchmark_residual)
-            set_target_properties(benchmark_residual PROPERTIES UNITY_BUILD OFF)
-        endif()
+    if(TARGET benchmark_residual)
+        set_target_properties(benchmark_residual PROPERTIES UNITY_BUILD OFF)
+    endif()
 
-        zancle_set_stdlib(ogg)
-        zancle_set_stdlib(FLAC)
-        zancle_set_stdlib(vorbis)
-        zancle_set_stdlib(vorbisenc)
-        zancle_set_stdlib(vorbisfile)
+    # define NDEBUG when building FLAC to suppress console debug output
+    target_compile_definitions(FLAC PRIVATE NDEBUG)
 
-        # define NDEBUG when building FLAC to suppress console debug output
-        target_compile_definitions(FLAC PRIVATE NDEBUG)
+    # _FILE_OFFSET_BITS=64 is not supported with older (<24) Android API levels
+    if(ZA_OS_ANDROID)
+        target_compile_definitions(FLAC PRIVATE _FILE_OFFSET_BITS=32)
+    endif()
 
-        # _FILE_OFFSET_BITS=64 is not supported with older (<24) Android API levels
-        if(ZA_OS_ANDROID)
-            target_compile_definitions(FLAC PRIVATE _FILE_OFFSET_BITS=32)
-        endif()
-
-        # Disable all warnings
-        target_compile_options(ogg PRIVATE -w)
-        target_compile_options(FLAC PRIVATE -w)
-        target_compile_options(vorbis PRIVATE -w)
-        target_compile_options(vorbisenc PRIVATE -w)
-        target_compile_options(vorbisfile PRIVATE -w)
-
-        # aliases were introduced only after 1.3.7 was released
-        add_library(Vorbis::vorbis ALIAS vorbis)
-        add_library(Vorbis::vorbisenc ALIAS vorbisenc)
-        add_library(Vorbis::vorbisfile ALIAS vorbisfile)
-    endfunction()
-    zancle_add_audio_dependencies()
+    # aliases were introduced only after 1.3.7 was released
+    add_library(Vorbis::vorbis ALIAS vorbis)
+    add_library(Vorbis::vorbisenc ALIAS vorbisenc)
+    add_library(Vorbis::vorbisfile ALIAS vorbisfile)
 endif()
 
 find_package(Threads REQUIRED)
