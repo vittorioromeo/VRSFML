@@ -561,10 +561,29 @@ macro(zancle_add_example target)
 endmacro()
 
 # add a new target which is a Zancle test
-# example: zancle_add_test(zancle-test
-#                           ftp.cpp ...
-#                           Zancle::Network)
-function(zancle_add_test target SOURCES DEPENDS)
+#
+# example: zancle_add_test(test-zancle-network
+#                          SOURCES ftp.cpp http.cpp
+#                          DEPENDS Zancle::Network
+#                          RESOURCES doodle_pop.ogg ding.flac ...)
+#
+# RESOURCES are bundled into the test app on iOS (MACOSX_PACKAGE_LOCATION
+# derived from the target's "test-zancle-<name>" suffix, e.g.
+# "test-zancle-audio" -> "Audio") and preloaded into the WASM virtual filesystem
+# on Emscripten via a per-target staging directory + `--preload-file`.
+# `--preload-file` (rather than `--embed-file`) is used because non-ASCII
+# filenames (e.g. ń, snail emoji) break --embed-file's symbol generation.
+function(zancle_add_test target)
+    cmake_parse_arguments(THIS "" "" "SOURCES;DEPENDS;RESOURCES" ${ARGN})
+    if(NOT "${THIS_UNPARSED_ARGUMENTS}" STREQUAL "")
+        message(FATAL_ERROR "Extra unparsed arguments when calling zancle_add_test: ${THIS_UNPARSED_ARGUMENTS}")
+    endif()
+
+    # Backwards-compatible aliases (the previous positional signature was
+    # zancle_add_test(target SOURCES DEPENDS); keep DEPENDS as a callable
+    # symbol below so the rest of the function reads naturally.)
+    set(SOURCES "${THIS_SOURCES}")
+    set(DEPENDS "${THIS_DEPENDS}")
 
     # create the target
     add_executable(${target} ${SOURCES})
@@ -645,6 +664,27 @@ function(zancle_add_test target SOURCES DEPENDS)
     # Enable support for UTF-8 characters in source code
     if(ZA_COMPILER_MSVC)
         target_compile_options(${target} PRIVATE /utf-8)
+    endif()
+
+    # Bundle and (on Emscripten) preload resources.
+    if(THIS_RESOURCES AND (ZA_OS_IOS OR ZA_OS_EMSCRIPTEN))
+        # Derive the iOS package subdir from the target: test-zancle-audio -> Audio
+        string(REGEX REPLACE "^test-zancle-" "" _bundle "${target}")
+        string(SUBSTRING "${_bundle}" 0 1 _bundle_first)
+        string(TOUPPER  "${_bundle_first}" _bundle_first)
+        string(SUBSTRING "${_bundle}" 1 -1 _bundle_rest)
+        set(_bundle "${_bundle_first}${_bundle_rest}")
+
+        target_sources(${target} PRIVATE ${THIS_RESOURCES})
+        set_source_files_properties(${THIS_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION "${_bundle}")
+
+        if(ZA_OS_EMSCRIPTEN)
+            set(_staging "${CMAKE_CURRENT_BINARY_DIR}/staging_${target}")
+            foreach(_r IN LISTS THIS_RESOURCES)
+                file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${_r}" DESTINATION "${_staging}")
+            endforeach()
+            target_link_options(${target} PRIVATE "SHELL:--preload-file ${_staging}@/")
+        endif()
     endif()
 
     # Add the test
