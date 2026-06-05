@@ -140,174 +140,154 @@ function(zancle_tame_thirdparty)
 endfunction()
 
 
-# add a new target which is a Zancle library
-# example: zancle_add_library(Graphics
-#                           SOURCES sprite.cpp image.cpp ...
-#                           [STATIC]) # Always create a static library and ignore BUILD_SHARED_LIBS
-macro(zancle_add_library module)
+# -- zancle_add_library helpers ------------------------------------------------
+#
+# Each helper handles one concern of a Zancle library target. The public
+# `zancle_add_library` macro composes them in order. Helpers are functions
+# (their writes don't leak) but they freely READ caller-scope variables
+# (`THIS_STATIC`, `THIS_DEPENDENCIES`, `module`, etc.) set by the macro's
+# `cmake_parse_arguments` call.
 
-    # parse the arguments
-    cmake_parse_arguments(THIS "STATIC" "DEPENDENCIES" "SOURCES" ${ARGN})
-    if(NOT "${THIS_UNPARSED_ARGUMENTS}" STREQUAL "")
-        message(FATAL_ERROR "Extra unparsed arguments when calling zancle_add_library: ${THIS_UNPARSED_ARGUMENTS}")
-    endif()
-
-    # create the target
-    string(TOLOWER zancle-${module} target)
+# Create the library target itself, set up universal compile concerns
+# (warnings, visibility, build-options link, coverage, DEFINE_SYMBOL/EXPORT_NAME).
+function(_zancle_create_module_target target module)
     if(THIS_STATIC)
         add_library(${target} STATIC ${THIS_SOURCES})
     else()
         add_library(${target} ${THIS_SOURCES})
     endif()
+
     add_library(Zancle::${module} ALIAS ${target})
 
-    # set required compile/link options for emscripten
+    # Emscripten compile/link options + .html output suffix.
     zancle_apply_emscripten_options(${target})
     if(ZA_OS_EMSCRIPTEN)
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
     endif()
-
-    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
-    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
-    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
-
-    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
-    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
-    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
     # All Zancle build-time toggles (incl. C++23 feature requirement) live on a
     # single INTERFACE target; PUBLIC-link wrapped in $<BUILD_INTERFACE:...> so
     # the install/export set is unaffected.
     target_link_libraries(${target} PUBLIC $<BUILD_INTERFACE:zancle-build-options>)
 
-    # Add required flags for GCC if coverage reporting is enabled
+    # GCC/Clang coverage flags
     if(ZA_ENABLE_COVERAGE AND (ZA_COMPILER_GCC OR ZA_COMPILER_CLANG))
-        target_compile_options(${target} PUBLIC $<$<CONFIG:DEBUG>:-O0> $<$<CONFIG:DEBUG>:-g> $<$<CONFIG:DEBUG>:-fprofile-arcs> $<$<CONFIG:DEBUG>:-ftest-coverage>)
+        target_compile_options(${target} PUBLIC
+            $<$<CONFIG:DEBUG>:-O0>
+            $<$<CONFIG:DEBUG>:-g>
+            $<$<CONFIG:DEBUG>:-fprofile-arcs>
+            $<$<CONFIG:DEBUG>:-ftest-coverage>)
         target_link_options(${target} PUBLIC $<$<CONFIG:DEBUG>:--coverage>)
     endif()
 
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
 
-    # enable precompiled headers
-    if (ZA_ENABLE_PCH AND (NOT ${target} STREQUAL "zancle-system"))
-        message(VERBOSE "enabling PCH for Zancle library '${target}'")
-        target_precompile_headers(${target} REUSE_FROM zancle-system)
-
-        find_package(Threads REQUIRED)
-        target_link_libraries(${target} PRIVATE Threads::Threads)
-    endif()
-
-    # define the export symbol of the module
+    # DEFINE_SYMBOL is what CMake uses for the dllexport macro when building shared.
     string(REPLACE "-" "_" NAME_UPPER "${target}")
     string(TOUPPER "${NAME_UPPER}" NAME_UPPER)
-    set_target_properties(${target} PROPERTIES DEFINE_SYMBOL ${NAME_UPPER}_EXPORTS)
 
-    # define the export name of the module
-    set_target_properties(${target} PROPERTIES EXPORT_NAME Zancle::${module})
+    set_target_properties(${target} PROPERTIES
+        DEFINE_SYMBOL ${NAME_UPPER}_EXPORTS
+        EXPORT_NAME   Zancle::${module}
+    )
+endfunction()
 
-    # adjust the output file prefix/suffix to match our conventions
+# PCH reuse from zancle-system (the umbrella target carrying the PCH source).
+function(_zancle_apply_pch target)
+    if(NOT ZA_ENABLE_PCH OR ${target} STREQUAL "zancle-system")
+        return()
+    endif()
+    message(VERBOSE "enabling PCH for Zancle library '${target}'")
+    target_precompile_headers(${target} REUSE_FROM zancle-system)
+
+    find_package(Threads REQUIRED)
+    target_link_libraries(${target} PRIVATE Threads::Threads)
+endfunction()
+
+# Windows shared-library .rc resource generation, prefix/suffix tweaks.
+function(_zancle_apply_windows_rc target module)
+    if(NOT (BUILD_SHARED_LIBS AND NOT THIS_STATIC AND ZA_OS_WINDOWS))
+        return()
+    endif()
+
+    set_target_properties(${target} PROPERTIES
+        DEBUG_POSTFIX -d
+        SUFFIX        "-${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    )
+
+    # fill in template variables for resource.rc.in
+    string(TIMESTAMP RC_CURRENT_YEAR "%Y")
+    set(RC_MODULE_NAME "${module}")
+    set(RC_VERSION_SUFFIX "")           # Add something like the git revision short SHA-1 in the future
+    set(RC_PRERELEASE "0")              # Set to 1 to mark the DLL as a pre-release DLL
+    set(RC_TARGET_NAME "${target}")
+    set(RC_TARGET_FILE_NAME_SUFFIX "-${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+    configure_file(
+        "${PROJECT_SOURCE_DIR}/tools/windows/resource.rc.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc"
+        @ONLY
+    )
+
+    target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
+
+    # gcc/clang on Windows: strip "lib" prefix and use .a for import libs
+    if(ZA_COMPILER_GCC OR ZA_COMPILER_CLANG)
+        set_target_properties(${target} PROPERTIES
+            PREFIX        ""
+            IMPORT_SUFFIX ".a"
+        )
+    endif()
+endfunction()
+
+# DEBUG_POSTFIX/RELEASE_POSTFIX, SOVERSION/VERSION, IDE folder, stdlib selection.
+function(_zancle_apply_postfix_and_version target)
+    # Windows shared builds already set DEBUG_POSTFIX in _zancle_apply_windows_rc.
     if(BUILD_SHARED_LIBS AND NOT THIS_STATIC)
-        if(ZA_OS_WINDOWS)
-            # include the major version number in Windows shared library names (but not import library names)
-            set_target_properties(${target} PROPERTIES DEBUG_POSTFIX -d)
-            set_target_properties(${target} PROPERTIES SUFFIX "-${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-            # fill out all variables we use to generate the .rc file
-            string(TIMESTAMP RC_CURRENT_YEAR "%Y")
-            set(RC_MODULE_NAME "${module}")
-            set(RC_VERSION_SUFFIX "") # Add something like the git revision short SHA-1 in the future
-            set(RC_PRERELEASE "0") # Set to 1 to mark the DLL as a pre-release DLL
-            set(RC_TARGET_NAME "${target}")
-            set(RC_TARGET_FILE_NAME_SUFFIX "-${PROJECT_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-            # generate the .rc file
-            configure_file(
-                "${PROJECT_SOURCE_DIR}/tools/windows/resource.rc.in"
-                "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc"
-                @ONLY
-            )
-            target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
-
-            if(ZA_COMPILER_GCC OR ZA_COMPILER_CLANG)
-                # on Windows + gcc/clang get rid of "lib" prefix for shared libraries,
-                # and transform the ".dll.a" suffix into ".a" for import libraries
-                set_target_properties(${target} PROPERTIES PREFIX "")
-                set_target_properties(${target} PROPERTIES IMPORT_SUFFIX ".a")
-            endif()
-        else()
+        if(NOT ZA_OS_WINDOWS)
             set_target_properties(${target} PROPERTIES DEBUG_POSTFIX -d)
         endif()
     else()
-        set_target_properties(${target} PROPERTIES DEBUG_POSTFIX -s-d)
-        set_target_properties(${target} PROPERTIES RELEASE_POSTFIX -s)
-        set_target_properties(${target} PROPERTIES MINSIZEREL_POSTFIX -s)
-        set_target_properties(${target} PROPERTIES RELWITHDEBINFO_POSTFIX -s)
+        set_target_properties(${target} PROPERTIES
+            DEBUG_POSTFIX          -s-d
+            RELEASE_POSTFIX        -s
+            MINSIZEREL_POSTFIX     -s
+            RELWITHDEBINFO_POSTFIX -s
+        )
     endif()
 
-    # set the version and soversion of the target (for compatible systems -- mostly Linuxes)
-    # except for Android which strips soversion suffixes
+    # SOVERSION/VERSION (Android strips these so skip there)
     if(NOT ZA_OS_ANDROID)
-        set_target_properties(${target} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
-        set_target_properties(${target} PROPERTIES VERSION ${PROJECT_VERSION})
+        set_target_properties(${target} PROPERTIES
+            SOVERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+            VERSION   ${PROJECT_VERSION}
+        )
     endif()
 
-    # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Zancle")
-
-    # set the target flags to use the appropriate C++ standard library
     zancle_set_stdlib(${target})
+endfunction()
 
-    # For Visual Studio on Windows, export debug symbols (PDB files) to lib directory
-    if(ZA_GENERATE_PDB)
-        # PDB files are only generated in Debug and RelWithDebInfo configurations, find out which one
-        if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-            set(ZA_PDB_POSTFIX "-d")
-        else()
-            set(ZA_PDB_POSTFIX "")
-        endif()
-
-        if(BUILD_SHARED_LIBS AND NOT THIS_STATIC)
-            # DLLs export debug symbols in the linker PDB (the compiler PDB is an intermediate file)
-            set_target_properties(${target} PROPERTIES
-                                  PDB_NAME "${target}${ZA_PDB_POSTFIX}"
-                                  PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-        else()
-            if(NOT ${target} STREQUAL "zancle-main")
-                string(PREPEND ZA_PDB_POSTFIX "-s")
-            endif()
-
-            if(ZA_ENABLE_PCH)
-                message(VERBOSE "overriding PDB name for '${target}' with \"zancle-system\" due to PCH being enabled")
-
-                # For PCH builds with PCH reuse, the PDB name must be the same as the target that's being reused
-                set_target_properties(${target} PROPERTIES
-                                      COMPILE_PDB_NAME "zancle-system"
-                                      COMPILE_PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-            else()
-                # Static libraries have no linker PDBs, thus the compiler PDBs are relevant
-                set_target_properties(${target} PROPERTIES
-                                      COMPILE_PDB_NAME "${target}${ZA_PDB_POSTFIX}"
-                                      COMPILE_PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-            endif()
-        endif()
-    endif()
-
-    # build frameworks or dylibs
+# Apple framework/bundle props and Android PIC requirement.
+function(_zancle_apply_apple_packaging target)
     if((ZA_OS_MACOS OR ZA_OS_IOS) AND BUILD_SHARED_LIBS AND NOT THIS_STATIC)
         if(ZA_BUILD_FRAMEWORKS)
-            # adapt target to build frameworks instead of dylibs
             set_target_properties(${target} PROPERTIES
-                                  FRAMEWORK ON
-                                  FRAMEWORK_VERSION ${PROJECT_VERSION}
-                                  MACOSX_FRAMEWORK_IDENTIFIER org.zancle.${target}
-                                  MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
-                                  MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION})
+                FRAMEWORK                             ON
+                FRAMEWORK_VERSION                     ${PROJECT_VERSION}
+                MACOSX_FRAMEWORK_IDENTIFIER           org.zancle.${target}
+                MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION}
+                MACOSX_FRAMEWORK_BUNDLE_VERSION       ${PROJECT_VERSION}
+            )
         endif()
 
-        # adapt install directory to allow distributing dylibs/frameworks in user's frameworks/application bundle
-        # but only if cmake rpath options aren't set
-        if(NOT CMAKE_SKIP_RPATH AND NOT CMAKE_SKIP_INSTALL_RPATH AND NOT CMAKE_INSTALL_RPATH AND NOT CMAKE_INSTALL_RPATH_USE_LINK_PATH AND NOT CMAKE_INSTALL_NAME_DIR)
+        # Let dylibs/frameworks ship inside user app bundles (only if no rpath options set).
+        if(NOT CMAKE_SKIP_RPATH
+           AND NOT CMAKE_SKIP_INSTALL_RPATH
+           AND NOT CMAKE_INSTALL_RPATH
+           AND NOT CMAKE_INSTALL_RPATH_USE_LINK_PATH
+           AND NOT CMAKE_INSTALL_NAME_DIR)
             set_target_properties(${target} PROPERTIES INSTALL_NAME_DIR "@rpath")
             if(NOT CMAKE_SKIP_BUILD_RPATH)
                 set_target_properties(${target} PROPERTIES BUILD_WITH_INSTALL_NAME_DIR ON)
@@ -319,62 +299,99 @@ macro(zancle_add_library module)
         zancle_set_common_ios_properties(${target})
     endif()
 
+    # On Android everything ends up in a shared library, so static archives must
+    # still be position-independent code.
     if(ZA_OS_ANDROID)
-        # Always use position-independent code on Android, even when linking statically.
-        # This is needed because all c++ code is placed in a shared library on Android.
         set_target_properties(${target} PROPERTIES POSITION_INDEPENDENT_CODE ON)
     endif()
+endfunction()
 
+# Visual-Studio PDB output naming/placement.
+function(_zancle_apply_pdb target)
+    if(NOT ZA_GENERATE_PDB)
+        return()
+    endif()
+
+    # PDB files are only generated in Debug and RelWithDebInfo configurations.
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+        set(pdb_postfix "-d")
+    else()
+        set(pdb_postfix "")
+    endif()
+
+    if(BUILD_SHARED_LIBS AND NOT THIS_STATIC)
+        # DLLs use the linker PDB.
+        set_target_properties(${target} PROPERTIES
+            PDB_NAME             "${target}${pdb_postfix}"
+            PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+        )
+    else()
+        if(NOT ${target} STREQUAL "zancle-main")
+            string(PREPEND pdb_postfix "-s")
+        endif()
+
+        if(ZA_ENABLE_PCH)
+            # PCH reuse forces the PDB name to match the reused target.
+            message(VERBOSE "overriding PDB name for '${target}' with \"zancle-system\" due to PCH being enabled")
+            set_target_properties(${target} PROPERTIES
+                COMPILE_PDB_NAME             "zancle-system"
+                COMPILE_PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+            )
+        else()
+            # Static libs have no linker PDB; use the compiler PDB.
+            set_target_properties(${target} PROPERTIES
+                COMPILE_PDB_NAME             "${target}${pdb_postfix}"
+                COMPILE_PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+            )
+        endif()
+    endif()
+endfunction()
+
+# install(TARGETS), pkg-config, Dependencies.cmake.in, ZA_STATIC, include dirs,
+# UTF-8 source flag, and global module-bookkeeping for zancle_export_targets().
+function(_zancle_install_and_export target module)
     if(BUILD_SHARED_LIBS)
         set(config_name "Shared")
     else()
         set(config_name "Static")
     endif()
 
-    # install the target and create export-set
     install(TARGETS ${target} EXPORT Zancle${module}${config_name}Targets
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
-            FRAMEWORK DESTINATION "." COMPONENT bin)
+            RUNTIME   DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
+            LIBRARY   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
+            ARCHIVE   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
+            FRAMEWORK DESTINATION "."                     COMPONENT bin)
 
-    # install pkgconfig
+    # pkg-config
     if(ZA_INSTALL_PKGCONFIG_FILES AND NOT ${target} STREQUAL "zancle-main")
         configure_file(
             "${PROJECT_SOURCE_DIR}/tools/pkg-config/${target}.pc.in"
             "${CMAKE_CURRENT_BINARY_DIR}/tools/pkg-config/${target}.pc"
             @ONLY)
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tools/pkg-config/${target}.pc"
-            DESTINATION "${ZA_PKGCONFIG_INSTALL_DIR}")
+                DESTINATION "${ZA_PKGCONFIG_INSTALL_DIR}")
     endif()
 
-    # because the frameworks directory hierarchy has to be set up before any target files
-    # are installed we can't call install(EXPORT ...Targets) here
-    # this is because frameworks are only set up after all modules directories have already been added
-    # zancle_export_targets() is called after the frameworks are set up so we will have to
-    # save all modules to a global property and read it out to call install(EXPORT ...Targets)
-    # for each module in zancle_export_targets(), see below
+    # Frameworks must be set up before any install(EXPORT) call, so defer
+    # install(EXPORT) to zancle_export_targets(). Track modules added so far.
     get_property(ZA_ADD_LIBRARY_MODULES GLOBAL PROPERTY ZA_ADD_LIBRARY_MODULES_PROPERTY)
     list(APPEND ZA_ADD_LIBRARY_MODULES ${module})
     set_property(GLOBAL PROPERTY ZA_ADD_LIBRARY_MODULES_PROPERTY "${ZA_ADD_LIBRARY_MODULES}")
 
-    # when static linking, generate and install dependency configuration
+    # Generate per-module Dependencies.cmake when static linking.
     if(NOT BUILD_SHARED_LIBS AND THIS_DEPENDENCIES)
-        # if we are building static libraries, generate and install dependencies config file
         include(CMakePackageConfigHelpers)
-
-        configure_package_config_file("${THIS_DEPENDENCIES}" "${CMAKE_CURRENT_BINARY_DIR}/Zancle${module}Dependencies.cmake"
+        configure_package_config_file("${THIS_DEPENDENCIES}"
+            "${CMAKE_CURRENT_BINARY_DIR}/Zancle${module}Dependencies.cmake"
             INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/Zancle")
-
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Zancle${module}Dependencies.cmake"
                 DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Zancle
                 COMPONENT devel)
     endif()
 
-    # add <project>/include as public include directory
     target_include_directories(${target}
-                               PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-                               PRIVATE ${PROJECT_SOURCE_DIR}/src)
+        PUBLIC  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
     if(ZA_BUILD_FRAMEWORKS)
         target_include_directories(${target} INTERFACE $<INSTALL_INTERFACE:Zancle.framework>)
@@ -382,15 +399,35 @@ macro(zancle_add_library module)
         target_include_directories(${target} INTERFACE $<INSTALL_INTERFACE:include>)
     endif()
 
-    # define ZA_STATIC if the build type is not set to 'shared'
     if(NOT BUILD_SHARED_LIBS)
         target_compile_definitions(${target} PUBLIC "ZA_STATIC")
     endif()
 
-    # Enable support for UTF-8 characters in source code
     if(ZA_COMPILER_MSVC)
         target_compile_options(${target} PRIVATE /utf-8)
     endif()
+endfunction()
+
+
+# add a new target which is a Zancle library
+# example: zancle_add_library(Graphics
+#                           SOURCES sprite.cpp image.cpp ...
+#                           [STATIC]) # Always create a static library and ignore BUILD_SHARED_LIBS
+macro(zancle_add_library module)
+    cmake_parse_arguments(THIS "STATIC" "DEPENDENCIES" "SOURCES" ${ARGN})
+    if(NOT "${THIS_UNPARSED_ARGUMENTS}" STREQUAL "")
+        message(FATAL_ERROR "Extra unparsed arguments when calling zancle_add_library: ${THIS_UNPARSED_ARGUMENTS}")
+    endif()
+
+    string(TOLOWER zancle-${module} target)
+
+    _zancle_create_module_target(${target} ${module})
+    _zancle_apply_pch(${target})
+    _zancle_apply_windows_rc(${target} ${module})
+    _zancle_apply_postfix_and_version(${target})
+    _zancle_apply_apple_packaging(${target})
+    _zancle_apply_pdb(${target})
+    _zancle_install_and_export(${target} ${module})
 endmacro()
 
 # add a new target which is a Zancle example
