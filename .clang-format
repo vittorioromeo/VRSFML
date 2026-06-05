@@ -101,31 +101,74 @@ IncludeCategories:
     Regex: '^\"Zancle\/Config.hpp\"$'
   - Priority: 3
     Regex: '^\"Zancle\/(.+)\/Export.hpp\"$'
+  # Multimedia modules (Level 8+), alphabetical within the level.
   - Priority: 4
-    Regex: '^\"Zancle\/ImGui'
+    Regex: '^\"Zancle\/Audio\/'
   - Priority: 5
-    Regex: '^\"Zancle\/Graphics'
+    Regex: '^\"Zancle\/GLUtils\/'
   - Priority: 6
-    Regex: '^\"Zancle\/Audio'
+    Regex: '^\"Zancle\/Graphics\/'
   - Priority: 7
-    Regex: '^\"Zancle\/Network'
+    Regex: '^\"Zancle\/ImGui\/'
   - Priority: 8
-    Regex: '^\"Zancle\/Window'
+    Regex: '^\"Zancle\/Network\/'
   - Priority: 9
-    Regex: '^\"Zancle\/GLUtils'
+    Regex: '^\"Zancle\/Window\/'
+  # Utility modules, ordered by descending Lakos level (lower-level modules
+  # come LATER in the formatted block). Within a level, alphabetical.
+  # Level 7: Err, Lifetime, Scn
   - Priority: 10
-    Regex: '^\"Zancle\/(Mixin|Lifetime|Err|Scn|IO|Fmt|Concurrency|Chrono|Geometry|String|Algorithm|Container|Vocabulary|Diagnostic|Math|Trait|Base)\/'
+    Regex: '^\"Zancle\/Err\/'
+  - Priority: 11
+    Regex: '^\"Zancle\/Lifetime\/'
   - Priority: 12
+    Regex: '^\"Zancle\/Scn\/'
+  # Level 6: Fmt, IO
+  - Priority: 13
+    Regex: '^\"Zancle\/Fmt\/'
+  - Priority: 14
+    Regex: '^\"Zancle\/IO\/'
+  # Level 5: Concurrency, Mixin, String
+  - Priority: 15
+    Regex: '^\"Zancle\/Concurrency\/'
+  - Priority: 16
+    Regex: '^\"Zancle\/Mixin\/'
+  - Priority: 17
+    Regex: '^\"Zancle\/String\/'
+  # Level 4: Algorithm, Chrono, Container, Geometry
+  - Priority: 18
+    Regex: '^\"Zancle\/Algorithm\/'
+  - Priority: 19
+    Regex: '^\"Zancle\/Chrono\/'
+  - Priority: 20
+    Regex: '^\"Zancle\/Container\/'
+  - Priority: 21
+    Regex: '^\"Zancle\/Geometry\/'
+  # Level 3: Vocabulary
+  - Priority: 22
+    Regex: '^\"Zancle\/Vocabulary\/'
+  # Level 2: Diagnostic, Math
+  - Priority: 23
+    Regex: '^\"Zancle\/Diagnostic\/'
+  - Priority: 24
+    Regex: '^\"Zancle\/Math\/'
+  # Level 1: Trait
+  - Priority: 25
+    Regex: '^\"Zancle\/Trait\/'
+  # Level 0: Base
+  - Priority: 26
+    Regex: '^\"Zancle\/Base\/'
+  - Priority: 27
     Regex: '^\"ExampleUtils'
   - Priority: -100
     Regex: '^\"(.+)\"$'
-  - Priority: 22
+  - Priority: 100
     Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|blockingconcurrentqueue|concurrentqueue|SDL3|boost)'
-  - Priority: 23
+  - Priority: 101
     Regex: '^<(AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStdStringUtil|StringifyStringViewUtil|StringifyArrayUtil|StringifyIpAddressUtil|StringifyZbStringUtil|LoadIntoMemoryUtil)'
-  - Priority: 24
+  - Priority: 102
     Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
-  - Priority: 25
+  - Priority: 103
     Regex: '^<c(.+)>$'
 SortIncludes: true
 SortUsingDeclarations: true
