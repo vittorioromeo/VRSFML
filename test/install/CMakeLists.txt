@@ -19,10 +19,6 @@ endif()
 add_executable(test-zancle-install Install.cpp)
 target_link_libraries(test-zancle-install PRIVATE Zancle::ImGui Zancle::Graphics Zancle::Network Zancle::Audio)
 
-# target_include_directories(test-zancle-install PRIVATE ${PROJECT_SOURCE_DIR}/../../tracy/public/tracy/)
-# target_compile_options(test-zancle-install PUBLIC -include Tracy.hpp)
-# target_compile_definitions(test-zancle-install PUBLIC -DTRACY_ENABLE)
-
 if (ZA_ENABLE_PCH)
     target_precompile_headers(test-zancle-install REUSE_FROM zancle-system)
 endif()

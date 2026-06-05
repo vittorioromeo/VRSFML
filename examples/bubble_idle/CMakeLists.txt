@@ -1,97 +1,12 @@
-# all source files
-if (NOT ZA_OS_EMSCRIPTEN AND NOT ZA_ARCH_ARM64)
-    set(SRC BubbleIdle.cpp
-            BubbleIdleMain.cpp
-            TextShakeEffect.cpp
-            TextEffectWiggle.cpp
-            HexSession.cpp
-            InputHelper.cpp
-            InputState.cpp
-            ImGuiNotify.cpp
-            Serialization.cpp
-            cJSON.c
-            Sounds.cpp
-            Steam.cpp
-            CatNames.cpp
-            MainApp.cpp
-            MainGameplay.cpp
-            GameRender.cpp
-            GameUpdate.cpp
-            MainLoop.cpp
-            PlayerInput.cpp
-            MainProgression.cpp
-            MainRendering.cpp
-            MainSystems.cpp
-            UIQuickbar.cpp
-            UIRuntime.cpp
-            UITabBar.cpp
-            UIShopCats.cpp
-            UIShopCore.cpp
-            UIShopGoals.cpp
-            UIPrestigeCore.cpp
-            UIPrestigeOverview.cpp
-            UIPrestigeShrines.cpp
-            UISettingsAudio.cpp
-            UISettingsData.cpp
-            UISettingsDebug.cpp
-            UISettingsDisplay.cpp
-            UISettingsGraphics.cpp
-            UISettingsUi.cpp
-            UiCore.cpp
-            UiMagic.cpp
-            UiPrestige.cpp
-            UiSettings.cpp
-            UiShop.cpp
-            UiStats.cpp)
+file(GLOB SRC CONFIGURE_DEPENDS "*.cpp" "*.c")
 
-    # set the correct steam library
-    if (ZA_OS_WINDOWS)
-        set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/steam_api64.lib")
-    else()
-        set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
-    endif()
-else()
-    set(SRC BubbleIdle.cpp
-            BubbleIdleMain.cpp
-            TextEffectWiggle.cpp
-            InputHelper.cpp
-            InputState.cpp
-            ImGuiNotify.cpp
-            Serialization.cpp
-            cJSON.c
-            Sounds.cpp
-            CatNames.cpp
-            MainApp.cpp
-            MainGameplay.cpp
-            GameRender.cpp
-            GameUpdate.cpp
-            MainLoop.cpp
-            PlayerInput.cpp
-            MainProgression.cpp
-            MainRendering.cpp
-            MainSystems.cpp
-            UIQuickbar.cpp
-            UIRuntime.cpp
-            UITabBar.cpp
-            UIShopCats.cpp
-            UIShopCore.cpp
-            UIShopGoals.cpp
-            UIPrestigeCore.cpp
-            UIPrestigeOverview.cpp
-            UIPrestigeShrines.cpp
-            UISettingsAudio.cpp
-            UISettingsData.cpp
-            UISettingsDebug.cpp
-            UISettingsDisplay.cpp
-            UISettingsGraphics.cpp
-            UISettingsUi.cpp
-            UiCore.cpp
-            UiMagic.cpp
-            UiPrestige.cpp
-            UiSettings.cpp
-            UiShop.cpp
-            UiStats.cpp)
+if(ZA_OS_EMSCRIPTEN OR ZA_ARCH_ARM64)
+    list(REMOVE_ITEM SRC "${CMAKE_CURRENT_SOURCE_DIR}/Steam.cpp")
     set(STEAM_LIB "")
+elseif(ZA_OS_WINDOWS)
+    set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/steam_api64.lib")
+else()
+    set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
 endif()
 
 # define the bubble_idle target

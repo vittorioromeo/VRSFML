@@ -65,20 +65,11 @@ endfunction()
 # `--shared-memory is disallowed because it was not compiled with 'atomics'
 # or 'bulk-memory' features`.
 #
-# Usage:
-#     zancle_apply_emscripten_options(<target>)             # PRIVATE (default)
-#     zancle_apply_emscripten_options(<target> INTERFACE)   # for INTERFACE libs
-#
 # On non-Emscripten builds this is a no-op.
 macro(zancle_apply_emscripten_options target)
     if(ZA_OS_EMSCRIPTEN)
-        set(_sfml_emscripten_visibility "PRIVATE")
-        if(${ARGC} GREATER 1)
-            set(_sfml_emscripten_visibility "${ARGV1}")
-        endif()
-        target_compile_options(${target} ${_sfml_emscripten_visibility} ${ZA_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
-        target_link_options(${target} ${_sfml_emscripten_visibility} ${ZA_EMSCRIPTEN_TARGET_LINK_OPTIONS})
-        unset(_sfml_emscripten_visibility)
+        target_compile_options(${target} PRIVATE ${ZA_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${ZA_EMSCRIPTEN_TARGET_LINK_OPTIONS})
     endif()
 endmacro()
 
@@ -449,9 +440,7 @@ macro(zancle_add_example target)
     # create the target
     if(THIS_GUI_APP AND ZA_OS_WINDOWS AND NOT DEFINED CMAKE_CONFIGURATION_TYPES AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
         add_executable(${target} WIN32 ${target_input})
-        target_link_libraries(${target} PRIVATE Zancle::Main
-        #tracyclient
-        )
+        target_link_libraries(${target} PRIVATE Zancle::Main)
     elseif(THIS_GUI_APP AND ZA_OS_IOS)
 
         # For iOS apps we need the launch screen storyboard,
@@ -465,9 +454,7 @@ macro(zancle_add_example target)
         set_target_properties(${target} PROPERTIES RESOURCE "${RESOURCES}"
                                                    MACOSX_BUNDLE_INFO_PLIST ${INFO_PLIST}
                                                    MACOSX_BUNDLE_ICON_FILE icon.icns)
-        target_link_libraries(${target} PRIVATE Zancle::Main
-        #tracyclient
-        )
+        target_link_libraries(${target} PRIVATE Zancle::Main)
     else()
         add_executable(${target} ${target_input})
     endif()
@@ -484,10 +471,6 @@ macro(zancle_add_example target)
         find_package(Threads REQUIRED)
         target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
-
-    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
-    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
-    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
@@ -516,9 +499,7 @@ macro(zancle_add_example target)
 
     # link the target to its Zancle dependencies
     if(THIS_DEPENDS)
-        target_link_libraries(${target} PRIVATE ${THIS_DEPENDS}
-        #tracyclient
-        )
+        target_link_libraries(${target} PRIVATE ${THIS_DEPENDS})
     endif()
 
     # set required compile/link options for emscripten and preload resource files
@@ -607,10 +588,6 @@ function(zancle_add_test target)
         target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
 
-    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
-    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
-    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
-
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")
 
@@ -627,9 +604,7 @@ function(zancle_add_test target)
     )
 
     # link the target to its Zancle dependencies
-    target_link_libraries(${target} PRIVATE ${DEPENDS} zancle-test-main
-    #tracyclient
-    )
+    target_link_libraries(${target} PRIVATE ${DEPENDS} zancle-test-main)
 
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
