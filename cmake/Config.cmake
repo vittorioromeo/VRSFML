@@ -1,75 +1,27 @@
 # detect the OS
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+if(WIN32)
     set(ZA_OS_WINDOWS 1)
-
-    # don't use the OpenGL ES implementation on Windows
-    set(OPENGL_ES 0)
 
     # detect the architecture
     if("${CMAKE_GENERATOR_PLATFORM}" MATCHES "ARM64" OR "${MSVC_CXX_ARCHITECTURE_ID}" MATCHES "ARM64" OR "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "ARM64")
-        set(ARCH_ARM64 1)
+        set(ZA_ARCH_ARM64 1)
     elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        set(ARCH_X86 1)
+        set(ZA_ARCH_X86 1)
     elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(ARCH_X64 1)
+        set(ZA_ARCH_X64 1)
     else()
         message(FATAL_ERROR "Unsupported architecture")
-        return()
     endif()
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(ZA_OS_UNIX 1)
-
-    if(ANDROID)
-        set(ZA_OS_ANDROID 1)
-
-        # use the OpenGL ES implementation on Android
-        set(OPENGL_ES 1)
-    else()
-        set(ZA_OS_LINUX 1)
-
-        # don't use the OpenGL ES implementation on Linux
-        set(OPENGL_ES 0)
-    endif()
-elseif(CMAKE_SYSTEM_NAME MATCHES "^k?FreeBSD$")
-    set(ZA_OS_FREEBSD 1)
-
-    # don't use the OpenGL ES implementation on FreeBSD
-    set(OPENGL_ES 0)
-elseif(CMAKE_SYSTEM_NAME MATCHES "^OpenBSD$")
-    set(ZA_OS_OPENBSD 1)
-
-    # don't use the OpenGL ES implementation on OpenBSD
-    set(OPENGL_ES 0)
-elseif(CMAKE_SYSTEM_NAME MATCHES "^NetBSD$")
-    set(ZA_OS_NETBSD 1)
-
-    # don't use the OpenGL ES implementation on NetBSD
-    set(OPENGL_ES 0)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "iOS")
-    set(ZA_OS_IOS 1)
-    # use the OpenGL ES implementation on iOS
-    set(OPENGL_ES 1)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    set(ZA_OS_MACOS 1)
-
-    # don't use the OpenGL ES implementation on macOS
-    set(OPENGL_ES 0)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+elseif(ANDROID)
     set(ZA_OS_ANDROID 1)
-
-    # use the OpenGL ES implementation on Android
-    set(OPENGL_ES 1)
-
-# comparing CMAKE_SYSTEM_NAME with "CYGWIN" generates a false warning depending on the CMake version
-# let's avoid it so the actual error is more visible
-elseif(${CYGWIN})
-    message(FATAL_ERROR "Unfortunately Zancle doesn't support Cygwin's 'hybrid' status between both Windows and Linux derivatives.\nIf you insist on using the GCC, please use a standalone build of MinGW without the Cygwin environment instead.")
-elseif(${EMSCRIPTEN})
+    set(ZA_OS_UNIX 1)
+elseif(IOS)
+    set(ZA_OS_IOS 1)
+elseif(APPLE)
+    set(ZA_OS_MACOS 1)
+elseif(EMSCRIPTEN)
     message(STATUS "Detected Emscripten")
     set(ZA_OS_EMSCRIPTEN 1)
-
-    # use the OpenGL ES implementation on Emscripten
-    set(OPENGL_ES 1)
 
     set(ZA_EMSCRIPTEN_TARGET_COMPILE_OPTIONS_DEBUG
         -g3          # Enable debug mode
@@ -181,9 +133,34 @@ elseif(${EMSCRIPTEN})
         --shell-file=${CMAKE_SOURCE_DIR}/emscripten/shell.html
     )
 
+elseif(LINUX)
+    set(ZA_OS_LINUX 1)
+    set(ZA_OS_UNIX 1)
+elseif(BSD)
+    if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD" OR CMAKE_SYSTEM_NAME STREQUAL "kFreeBSD")
+        set(ZA_OS_FREEBSD 1)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+        set(ZA_OS_OPENBSD 1)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+        set(ZA_OS_NETBSD 1)
+    else()
+        message(FATAL_ERROR "Unsupported BSD variant: ${CMAKE_SYSTEM_NAME}")
+    endif()
+elseif(CYGWIN)
+    message(FATAL_ERROR "Unfortunately Zancle doesn't support Cygwin's 'hybrid' status between both Windows and Linux derivatives.\nIf you insist on using the GCC, please use a standalone build of MinGW without the Cygwin environment instead.")
 else()
-    message(FATAL_ERROR "Unsupported operating system or environment")
-    return()
+    message(FATAL_ERROR "Unsupported operating system or environment: ${CMAKE_SYSTEM_NAME}")
+endif()
+
+# Default for the ZA_OPENGL_ES build option (the option itself is declared in
+# the top-level CMakeLists.txt under ZA_BUILD_WINDOW so the user can still
+# override it via -DZA_OPENGL_ES=ON/OFF on the cmake command line).
+if(NOT DEFINED ZA_OPENGL_ES_DEFAULT)
+    if(ZA_OS_ANDROID OR ZA_OS_IOS OR ZA_OS_EMSCRIPTEN)
+        set(ZA_OPENGL_ES_DEFAULT ON)
+    else()
+        set(ZA_OPENGL_ES_DEFAULT OFF)
+    endif()
 endif()
 
 # detect the compiler

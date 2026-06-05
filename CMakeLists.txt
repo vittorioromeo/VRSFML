@@ -108,7 +108,7 @@ endif()
 
 if(ZA_BUILD_WINDOW)
     # add an option for choosing the OpenGL implementation
-    zancle_set_option(ZA_OPENGL_ES ${OPENGL_ES} BOOL "ON to use an OpenGL ES implementation, OFF to use a desktop OpenGL implementation")
+    zancle_set_option(ZA_OPENGL_ES ${ZA_OPENGL_ES_DEFAULT} BOOL "ON to use an OpenGL ES implementation, OFF to use a desktop OpenGL implementation")
 
     # add an option for choosing whether to use the DRM windowing backend
     if(ZA_OS_LINUX)

@@ -1,5 +1,5 @@
 # all source files
-if (NOT ZA_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
+if (NOT ZA_OS_EMSCRIPTEN AND NOT ZA_ARCH_ARM64)
     set(SRC BubbleIdle.cpp
             BubbleIdleMain.cpp
             TextShakeEffect.cpp
@@ -101,7 +101,7 @@ zancle_add_example(bubble_idle GUI_APP
                  SOURCES ${SRC}
                  DEPENDS Zancle::Audio Zancle::Graphics Zancle::ImGui ImGui::ImGui ${STEAM_LIB})
 
-if (WIN32 AND NOT ARCH_ARM64)
+if (WIN32 AND NOT ZA_ARCH_ARM64)
     target_link_libraries(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
 endif()
 
@@ -127,7 +127,7 @@ if (FALSE)
 
     target_compile_definitions(bubble_idle_demo PRIVATE BUBBLEBYTE_DEMO)
 
-    if (WIN32 AND NOT ARCH_ARM64)
+    if (WIN32 AND NOT ZA_ARCH_ARM64)
         target_link_libraries(bubble_idle_demo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
     endif()
 

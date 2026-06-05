@@ -4,9 +4,9 @@ set(MESA3D_SHA256 "67e76e9844206c71cf313e09409303af9c01d7561c5f57d7e152771e2408a
 get_filename_component(MESA3D_ARCHIVE "${MESA3D_URL}" NAME)
 get_filename_component(MESA3D_ARCHIVE_DIRECTORY "${MESA3D_URL}" NAME_WLE)
 
-if(ARCH_X64)
+if(ZA_ARCH_X64)
     set(MESA3D_ARCH "x64")
-elseif(ARCH_X86)
+elseif(ZA_ARCH_X86)
     set(MESA3D_ARCH "x86")
 elseif(ZA_USE_MESA3D)
     message(FATAL_ERROR "Mesa 3D does currently not support the target architecture.")
