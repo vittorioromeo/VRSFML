@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.28)
-set(CMAKE_POLICY_VERSION_MINIMUM "3.5") # workaround for dependencies
 
 # Prevent in-source builds
 if("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
@@ -17,9 +16,7 @@ endmacro()
 # these options have to be set before CMake detects/configures the toolchain
 
 # When configuring with `--fresh`, also do a fresh configure for fetched dependencies
-if(POLICY CMP0168)
-    cmake_policy(SET CMP0168 NEW)
-endif()
+cmake_policy(SET CMP0168 NEW)
 
 # determine whether to create a debug or release build
 zancle_set_option(CMAKE_BUILD_TYPE Release STRING "Choose the type of build (Debug or Release)")

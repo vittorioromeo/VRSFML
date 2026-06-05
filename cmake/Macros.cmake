@@ -1,5 +1,3 @@
-include(CMakeParseArguments)
-
 # include the compiler warnings helpers
 include(${CMAKE_CURRENT_LIST_DIR}/CompilerWarnings.cmake)
 
@@ -175,10 +173,7 @@ macro(zancle_add_library module)
 
             # fill out all variables we use to generate the .rc file
             string(TIMESTAMP RC_CURRENT_YEAR "%Y")
-            string(REGEX REPLACE "zancle-([a-z])([a-z]*)" "\\1" RC_MODULE_NAME_HEAD "${target}")
-            string(REGEX REPLACE "zancle-([a-z])([a-z]*)" "\\2" RC_MODULE_NAME_TAIL "${target}")
-            string(TOUPPER "${RC_MODULE_NAME_HEAD}" RC_MODULE_NAME_HEAD)
-            set(RC_MODULE_NAME "${RC_MODULE_NAME_HEAD}${RC_MODULE_NAME_TAIL}")
+            set(RC_MODULE_NAME "${module}")
             set(RC_VERSION_SUFFIX "") # Add something like the git revision short SHA-1 in the future
             set(RC_PRERELEASE "0") # Set to 1 to mark the DLL as a pre-release DLL
             set(RC_TARGET_NAME "${target}")

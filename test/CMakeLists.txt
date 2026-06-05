@@ -1,8 +1,6 @@
 add_subdirectory(install)
 set_target_warnings(test-zancle-install)
 
-set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
-
 set(TEST_SRCROOT ${PROJECT_SOURCE_DIR}/test)
 file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS
     "${TEST_SRCROOT}/TestUtilities/*.cpp"
