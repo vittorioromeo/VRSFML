@@ -8,9 +8,10 @@
 #include "Zancle/Audio/CaptureDevice.hpp"
 #include "Zancle/Audio/PlaybackDevice.hpp"
 
+#include "Zancle/Scn/ScnStdin.hpp"
+
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Scn/ScnStdin.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -7,14 +7,15 @@
 
 #include "ExampleUtils/Progress.hpp"
 
+#include "Zancle/Graphics/DrawableBatch.hpp"
+
 #include "Zancle/ImGui/ImGuiContext.hpp"
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Algorithm/Erase.hpp"
 
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Algorithm/Erase.hpp"
 #include "Zancle/Math/Clamp.hpp"
 
 ////////////////////////////////////////////////////////////

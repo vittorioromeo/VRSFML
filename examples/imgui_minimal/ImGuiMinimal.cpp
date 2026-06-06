@@ -1,6 +1,3 @@
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/CircleShape.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -11,18 +8,24 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/Chrono/Clock.hpp"
-#include "Zancle/IO/IO.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp"
+
+#include "Zancle/IO/IO.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 
 int main()

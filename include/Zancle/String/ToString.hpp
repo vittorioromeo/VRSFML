@@ -6,12 +6,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToChars.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 #include "Zancle/Trait/IsIntegral.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

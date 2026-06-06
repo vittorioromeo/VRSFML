@@ -1,8 +1,6 @@
 #include "ShowcaseBunnyMark.hpp"
 #include "ShowcaseExample.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DefaultShader.hpp"
 #include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
@@ -17,19 +15,24 @@
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
 
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Window/Keyboard.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
 
 #include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
+#include "Zancle/Vocabulary/Span.hpp"
+
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Sin.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Vocabulary/Span.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToString.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 #include "Zancle/Audio/SoundRecorder.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

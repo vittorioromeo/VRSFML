@@ -8,8 +8,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: export -- callers virtually always want numeric support
-#include "Zancle/Base/NonDeduced.hpp"
+
 #include "Zancle/String/String.hpp"
+
+#include "Zancle/Base/NonDeduced.hpp"
 
 
 namespace za

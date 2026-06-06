@@ -4,8 +4,10 @@
 
 #include "Zancle/Algorithm/Sort.hpp"
 
-#include "Zancle/Algorithm/IsSorted.hpp"
 #include "Zancle/String/String.hpp"
+
+#include "Zancle/Algorithm/IsSorted.hpp"
+
 #include "Zancle/Container/Vector.hpp"
 
 

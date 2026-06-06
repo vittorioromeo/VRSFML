@@ -9,8 +9,9 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/TstFwd.hpp"
 
-#include "Zancle/Base/Pragma.hpp"
 #include "Zancle/Trait/IsArray.hpp"
+
+#include "Zancle/Base/Pragma.hpp"
 
 
 namespace tst::detail

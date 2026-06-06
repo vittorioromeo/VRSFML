@@ -8,10 +8,11 @@
     #include "Zancle/Window/WindowBase.hpp"
     #include "Zancle/Window/WindowContext.hpp"
 
-    #include "Zancle/Base/WindowsHeader.hpp" // IWYU pragma: keep
+    #include "Zancle/Vocabulary/Optional.hpp"
 
     #include "Zancle/Diagnostic/Assert.hpp"
-    #include "Zancle/Vocabulary/Optional.hpp"
+
+    #include "Zancle/Base/WindowsHeader.hpp" // IWYU pragma: keep
 
 
 namespace

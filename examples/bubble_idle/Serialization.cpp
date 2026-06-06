@@ -19,30 +19,38 @@
 #include "ExampleUtils/Progress.hpp"
 
 #include "Zancle/Err/FmtPath.hpp"
+
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathStreamOp.hpp" // IWYU pragma: keep
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Container/Array.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/OverloadSet.hpp"
 #include "Zancle/Vocabulary/ScopeGuard.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Trait/IsEnum.hpp"
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 #include "Zancle/Trait/IsIntegral.hpp"
 #include "Zancle/Trait/IsSame.hpp"
 #include "Zancle/Trait/RemoveCVRef.hpp"
 #include "Zancle/Trait/UnderlyingType.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 

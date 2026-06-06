@@ -7,10 +7,11 @@
 
 #include "Zancle/Chrono/Clock.hpp"
 
-#include "Zancle/Base/Memset.hpp"
-#include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/Memset.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <cstdarg>
 #include <cstdio>

@@ -7,11 +7,11 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Network/SocketImpl.hpp"
 
-#include "Zancle/Base/WindowsHeader.hpp"
-
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/WindowsHeader.hpp"
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

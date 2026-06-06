@@ -39,17 +39,20 @@
 */
 ////////////////////////////////////////////////////////////
 
+#include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Container/Array.hpp"
+
+#include "Zancle/Trait/IsArray.hpp"
+#include "Zancle/Trait/IsUnion.hpp"
+#include "Zancle/Trait/RemoveCVRef.hpp"
+#include "Zancle/Trait/RemoveReference.hpp"
+
 #include "Zancle/Base/DeclVal.hpp"
 #include "Zancle/Base/IndexSequence.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/MakeIndexSequence.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/Trait/IsArray.hpp"
-#include "Zancle/Trait/IsUnion.hpp"
-#include "Zancle/Trait/RemoveCVRef.hpp"
-#include "Zancle/Trait/RemoveReference.hpp"
 #include "Zancle/Base/TypePackElement.hpp"
 
 

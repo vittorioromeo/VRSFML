@@ -16,12 +16,14 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/VertexSpan.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

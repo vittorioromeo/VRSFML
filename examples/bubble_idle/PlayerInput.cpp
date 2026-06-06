@@ -8,24 +8,28 @@
 #include "UIState.hpp"
 #include "Version.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/View.hpp"
+
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
+#include "Zancle/Algorithm/Erase.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Math/Lround.hpp"
 #include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 namespace
 {

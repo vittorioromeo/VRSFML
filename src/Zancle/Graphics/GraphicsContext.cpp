@@ -15,14 +15,17 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/Concurrency/Atomic.hpp"
 #include "Zancle/Err/Err.hpp"
+
+#include "Zancle/Concurrency/Atomic.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
 
 #include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/Macros.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Vocabulary/PassKey.hpp"
 
 
 namespace za

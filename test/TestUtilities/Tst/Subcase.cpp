@@ -9,8 +9,8 @@
 #include "Tst/Detail/Subcase.hpp"
 #include "Tst/TstFwd.hpp"
 
-#include "Zancle/Base/Strcmp.hpp"
 #include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Strcmp.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -13,13 +13,16 @@
 
 #include "ExampleUtils/Progress.hpp"
 
+#include "Zancle/Algorithm/Count.hpp"
+
 #include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Algorithm/Count.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
+
 #include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 ////////////////////////////////////////////////////////////

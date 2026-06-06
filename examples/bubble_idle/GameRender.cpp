@@ -37,13 +37,15 @@
 
 #include "Zancle/Window/Mouse.hpp"
 
+#include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Math/Remainder.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/StringView.hpp"
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] FrameViewState Main::gameLoopComputeViews()

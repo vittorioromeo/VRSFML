@@ -5,9 +5,9 @@
 #include "Profile.hpp"
 #include "UIState.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Keyboard.hpp"
 

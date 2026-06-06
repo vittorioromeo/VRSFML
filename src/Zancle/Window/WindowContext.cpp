@@ -7,12 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/Window/ContextSettings.hpp"
-#include "Zancle/Window/JoystickManager.hpp"
-#include "Zancle/Window/SDLGlContext.hpp"
-#include "Zancle/Window/SDLLayer.hpp"
-#include "Zancle/Window/SensorManager.hpp"
-
 #include "Zancle/GLUtils/CopyFramebuffer.hpp"
 #include "Zancle/GLUtils/FramebufferSaver.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
@@ -24,24 +18,37 @@
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
 
+#include "Zancle/Window/ContextSettings.hpp"
+#include "Zancle/Window/JoystickManager.hpp"
+#include "Zancle/Window/SDLGlContext.hpp"
+#include "Zancle/Window/SDLLayer.hpp"
+#include "Zancle/Window/SensorManager.hpp"
+
+#include "Zancle/Err/Err.hpp"
+#include "Zancle/Err/SignalErrHandler.hpp"
+
 #include "Zancle/Concurrency/Atomic.hpp"
 #include "Zancle/Concurrency/AtomicMutex.hpp"
-#include "Zancle/Err/Err.hpp"
 #include "Zancle/Concurrency/LockGuard.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Err/SignalErrHandler.hpp"
+
+#include "Zancle/String/StringView.hpp"
 #include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Algorithm/Find.hpp"
+
 #include "Zancle/Container/AnkerlUnorderedDense.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/String/StringView.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 #include <SDL3/SDL_hints.h> // TODO P0: move to SDLLayer
 

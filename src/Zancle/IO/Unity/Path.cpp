@@ -8,21 +8,27 @@
 #include "Zancle/IO/Path.hpp"
 
 #include "Zancle/Err/FmtPath.hpp"
-#include "Zancle/IO/PathUtils.hpp"
 
 #include "Zancle/Fmt/FmtResult.hpp"
 #include "Zancle/Fmt/FmtSink.hpp"
 #include "Zancle/Fmt/FmtSpec.hpp"
-#include "Zancle/Vocabulary/FunctionRef.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Chrono/StdChrono.hpp"
+
+#include "Zancle/IO/PathUtils.hpp"
+
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Chrono/StdChrono.hpp"
+
+#include "Zancle/Vocabulary/FunctionRef.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Trait/IsSame.hpp"
 #include "Zancle/Trait/RemoveCVRef.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <filesystem>
 #include <string>

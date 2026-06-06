@@ -7,9 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Vocabulary/Radix.hpp" // IWYU pragma: export
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/Trait/IsIntegral.hpp"
 #include "Zancle/Trait/MakeUnsigned.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

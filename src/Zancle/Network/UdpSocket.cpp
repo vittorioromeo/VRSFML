@@ -15,8 +15,10 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

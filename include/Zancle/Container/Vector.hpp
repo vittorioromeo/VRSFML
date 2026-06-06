@@ -6,16 +6,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Container/Priv/VectorUtils.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
-#include "Zancle/Base/InitializerList.hpp"
+
 #include "Zancle/Math/MinMaxMacros.hpp"
+
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+
+#include "Zancle/Base/InitializerList.hpp"
 #include "Zancle/Base/PlacementNew.hpp"
-#include "Zancle/Container/Priv/VectorUtils.hpp"
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
-#include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace za

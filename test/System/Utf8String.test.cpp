@@ -3,18 +3,21 @@
 
 #include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/String/Utf8StringCodepoints.hpp"
-
 #include "Zancle/Fmt/FmtAppendMixin.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/Utf8StringCodepoints.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Trait/IsSame.hpp"
+
 #include "Zancle/Base/InitializerList.hpp"
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/StringView.hpp"
 #include "Zancle/Base/Swap.hpp"
-#include "Zancle/Trait/IsSame.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace

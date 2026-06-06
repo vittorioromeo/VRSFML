@@ -4,18 +4,19 @@
 
 #include "Zancle/Fmt/Fmt.hpp"
 
-#include "Zancle/String/Utf8String.hpp"
-
-#include "Zancle/Base/Strlen.hpp"
 #include "Zancle/Fmt/FmtArgDefaultAlign.hpp"
 #include "Zancle/Fmt/FmtResult.hpp"
 #include "Zancle/Fmt/FmtSink.hpp"
 #include "Zancle/Fmt/FmtSpec.hpp"
 #include "Zancle/Fmt/FmtToString.hpp"
-#include "Zancle/Base/NonDeduced.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+#include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Base/NonDeduced.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <limits>
 

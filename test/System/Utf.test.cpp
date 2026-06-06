@@ -4,8 +4,9 @@
 
 #include "Zancle/String/Utf.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Container/BackInserter.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
 
 #include <locale>
 #include <string_view>

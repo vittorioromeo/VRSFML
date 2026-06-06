@@ -12,21 +12,26 @@
 #include "Zancle/Audio/SoundFileReader.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/InputStream.hpp"
 #include "Zancle/IO/MemoryInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathUtils.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

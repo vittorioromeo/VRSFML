@@ -16,11 +16,12 @@
 #include "Stats.hpp"
 #include "UIState.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Algorithm/Count.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"

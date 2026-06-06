@@ -6,10 +6,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Fmt/FmtResult.hpp"
 #include "Zancle/Fmt/FmtSink.hpp"
 #include "Zancle/Fmt/FmtSpec.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

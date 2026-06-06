@@ -5,14 +5,17 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
-#include "Zancle/Base/WindowsHeader.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Math/Cos.hpp"
+
+#include "Zancle/Base/WindowsHeader.hpp"
 
 
 namespace

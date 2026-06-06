@@ -6,6 +6,7 @@
 #include "Zancle/Geometry/RectUtils.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsStandardLayout.hpp"
 #include "Zancle/Trait/IsTrivial.hpp"

@@ -10,6 +10,7 @@
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
 #include "Zancle/IO/Path.hpp"
+
 #include "Zancle/String/Utf8String.hpp"
 
 

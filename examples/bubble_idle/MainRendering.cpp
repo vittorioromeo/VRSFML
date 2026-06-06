@@ -58,29 +58,35 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/ToString.hpp"
+
+#include "Zancle/Algorithm/Erase.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Algorithm/Erase.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Math/Clamp.hpp"
-#include "Zancle/Math/Constants.hpp"
-#include "Zancle/Base/GetArraySize.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Cos.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Math/Pow.hpp"
-#include "Zancle/Math/Sin.hpp"
-#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/OverloadSet.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Pow.hpp"
 #include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/Sin.hpp"
+
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <cctype>
 #include <cstdio>
@@ -1510,11 +1516,11 @@ void drawCatVisuals(const CatDrawContext& ctx)
 
         if (txrMaskToUse != nullptr)
             addCatSprite(
-                za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
-                           .scale       = ctx.catScale * remap(bounce, 0.f, 0.5f, 1.f, 0.75f),
-                           .origin      = {ctx.main.gameConstants.copyMaskOrigin.x,
-                                           ctx.main.gameConstants.copyMaskOrigin.y * remap(bounce, 0.f, 0.5f, 1.f, 1.25f)},
-                           .rotation    = za::radians(ctx.catRotation + bounce),
+                za::Sprite{.position = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
+                           .scale    = ctx.catScale * remap(bounce, 0.f, 0.5f, 1.f, 0.75f),
+                           .origin   = {ctx.main.gameConstants.copyMaskOrigin.x,
+                                        ctx.main.gameConstants.copyMaskOrigin.y * remap(bounce, 0.f, 0.5f, 1.f, 1.25f)},
+                           .rotation = za::radians(ctx.catRotation + bounce),
                            .textureRect = *txrMaskToUse,
                            .color       = ctx.catColor});
     }

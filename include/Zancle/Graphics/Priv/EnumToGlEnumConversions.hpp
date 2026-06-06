@@ -6,14 +6,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/GlDataType.hpp"
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
 
-#include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 
 

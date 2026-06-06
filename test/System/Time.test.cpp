@@ -3,10 +3,9 @@
 
 #include "Zancle/Chrono/Time.hpp"
 
+#include "Zancle/Chrono/StdChrono.hpp"
 #include "Zancle/Chrono/TimeChronoUtil.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Chrono/StdChrono.hpp"
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsStandardLayout.hpp"
 #include "Zancle/Trait/IsTrivial.hpp"
@@ -17,6 +16,8 @@
 #include "Zancle/Trait/IsTriviallyDestructible.hpp"
 #include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
 #include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 using namespace std::chrono_literals;
 

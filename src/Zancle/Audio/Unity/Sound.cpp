@@ -14,13 +14,17 @@
 #include "Zancle/Audio/SoundBuffer.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/Lifetime/LifetimeDependant.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/IntTypes.hpp"
+
 #include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 #include <miniaudio.h>

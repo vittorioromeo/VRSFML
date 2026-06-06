@@ -10,9 +10,10 @@
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/SocketImpl.hpp"
 
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 namespace za

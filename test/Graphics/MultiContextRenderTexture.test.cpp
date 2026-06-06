@@ -15,8 +15,9 @@
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 #if defined(_WIN32)

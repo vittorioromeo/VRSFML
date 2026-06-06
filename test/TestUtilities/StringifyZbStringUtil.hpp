@@ -2,8 +2,9 @@
 
 #include "Tst/Detail/StringifyValue.hpp"
 
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

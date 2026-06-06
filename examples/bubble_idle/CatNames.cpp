@@ -1,10 +1,13 @@
 #include "CatNames.hpp"
 #include "CatType.hpp"
 
-#include "Zancle/Algorithm/Shuffle.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Algorithm/Shuffle.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

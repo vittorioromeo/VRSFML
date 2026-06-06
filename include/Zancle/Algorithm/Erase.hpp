@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Algorithm/Remove.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

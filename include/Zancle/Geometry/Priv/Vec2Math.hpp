@@ -10,11 +10,13 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/Atan2.hpp"
 #include "Zancle/Math/Cos.hpp"
 #include "Zancle/Math/Floor.hpp"
 #include "Zancle/Math/Sin.hpp"
 #include "Zancle/Math/Sqrt.hpp"
+
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 
 

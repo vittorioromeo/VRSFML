@@ -11,11 +11,13 @@
 #include "Zancle/Audio/SoundBuffer.hpp"
 
 #include "Zancle/Lifetime/LifetimeDependee.hpp"
+
 #include "Zancle/IO/Path.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Trait/HasVirtualDestructor.hpp"
 #include "Zancle/Trait/IsConstructible.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
@@ -24,6 +26,8 @@
 #include "Zancle/Trait/IsMoveConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 TEST_CASE("[Audio] za::Sound" * tst::skip(skipAudioDeviceTests))
 {

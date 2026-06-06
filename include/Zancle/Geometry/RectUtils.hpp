@@ -9,8 +9,9 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Math/MinMaxMacros.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Math/MinMaxMacros.hpp"
 
 
 namespace za

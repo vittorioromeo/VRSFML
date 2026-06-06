@@ -14,14 +14,17 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/RectUtils.hpp"
 
-#include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Math/Fabs.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace

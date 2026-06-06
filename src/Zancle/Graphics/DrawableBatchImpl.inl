@@ -46,15 +46,17 @@
 
 #include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Math/Constants.hpp"
-#include "Zancle/Math/FloatEpsilon.hpp"
+
 #include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/FloatEpsilon.hpp"
 #include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Math/MinMaxMacros.hpp"
 #include "Zancle/Math/Remainder.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
+
+#include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

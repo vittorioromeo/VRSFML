@@ -8,11 +8,14 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
+
 #include "Zancle/Err/FmtPath.hpp" // IWYU pragma: keep -- makes fmtArg(Path) visible at errMsg call sites
 
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: export -- errMsg call sites typically format numeric arguments
+
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

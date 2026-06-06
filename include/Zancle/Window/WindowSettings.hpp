@@ -8,10 +8,12 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/ContextSettings.hpp"
 
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/String/Utf8String.hpp"
 
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 

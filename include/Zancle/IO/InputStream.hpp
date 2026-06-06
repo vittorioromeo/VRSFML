@@ -8,8 +8,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
 
-
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

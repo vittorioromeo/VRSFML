@@ -10,6 +10,7 @@
 #include "Zancle/Window/VideoModeUtils.hpp"
 
 #include "Zancle/Algorithm/Find.hpp"
+
 #include "Zancle/Vocabulary/Span.hpp"
 
 

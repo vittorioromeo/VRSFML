@@ -3,9 +3,10 @@
 
 #include "Zancle/Window/VideoMode.hpp"
 
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToChars.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 namespace
 {

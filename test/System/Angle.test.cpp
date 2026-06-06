@@ -4,6 +4,7 @@
 #include "Zancle/Geometry/Angle.hpp"
 
 #include "Zancle/Math/Constants.hpp"
+
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsTriviallyAssignable.hpp"
 #include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"

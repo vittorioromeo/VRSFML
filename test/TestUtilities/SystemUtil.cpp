@@ -2,17 +2,19 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
 
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToChars.hpp"
+#include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/AutoWrapAngle.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Chrono/Time.hpp"
-#include "Zancle/String/Utf8String.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToChars.hpp"
 
 
 namespace

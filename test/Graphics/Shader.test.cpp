@@ -3,21 +3,22 @@
 // Other 1st party headers
 #include "Tst/Tst.hpp"
 
-#include "Zancle/Graphics/Glsl.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
+
+#include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
 
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsDefaultConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 
 namespace

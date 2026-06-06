@@ -14,9 +14,9 @@
 
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Math/Sqrt.hpp"
 #include "Zancle/Math/Remainder.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
+#include "Zancle/Math/Sqrt.hpp"
 
 
 namespace za::priv

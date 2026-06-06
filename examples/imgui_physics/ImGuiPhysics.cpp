@@ -9,9 +9,6 @@
 
 #include "ExampleUtils/Scaling.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/CircleShapeData.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -23,22 +20,30 @@
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/View.hpp"
 
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #include "Zancle/Math/Atan2.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Sin.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <box2d/box2d.h>
 #include <box2d/collision.h>

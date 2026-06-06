@@ -7,6 +7,11 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
+
 #include "Zancle/Graphics/CircleShape.hpp"
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -18,26 +23,25 @@
 #include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/String/String.hpp"
 #include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #include "Zancle/Math/Cos.hpp"
 #include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/String/String.hpp"
 
 #ifdef ZA_SYSTEM_IOS
     #include "Zancle/Main.hpp"

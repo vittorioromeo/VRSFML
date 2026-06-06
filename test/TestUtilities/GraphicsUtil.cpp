@@ -8,14 +8,17 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Geometry/Rect2.hpp"
-
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToChars.hpp"
+
+#include "Zancle/Geometry/Rect2.hpp"
+
+#include "Zancle/Math/Fabs.hpp"
+
 #include "Zancle/Trait/IsFloatingPoint.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

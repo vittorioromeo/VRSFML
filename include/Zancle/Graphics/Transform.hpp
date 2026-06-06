@@ -11,6 +11,7 @@
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
 

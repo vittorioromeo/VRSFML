@@ -2,9 +2,10 @@
 #include "CatType.hpp"
 #include "Playthrough.hpp"
 
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToString.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 za::String Main::uiShopBuildNextGoalsText()
 {

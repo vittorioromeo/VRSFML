@@ -12,17 +12,23 @@
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 
-#include "Zancle/Concurrency/Atomic.hpp"
 #include "Zancle/Err/Err.hpp"
+
+#include "Zancle/Concurrency/Atomic.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <miniaudio.h>
 

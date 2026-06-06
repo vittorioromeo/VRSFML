@@ -13,16 +13,20 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Window/Android/Activity.hpp"
 #include "Zancle/Window/Event.hpp"
 
-#include "Zancle/Window/Android/Activity.hpp"
 #include "Zancle/Err/Err.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Concurrency/Thread.hpp"
+
+#include "Zancle/String/String.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
 
 #include <android/native_activity.h>
 #include <android/window.h>

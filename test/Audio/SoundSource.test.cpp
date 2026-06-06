@@ -8,11 +8,13 @@
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
 #include "Zancle/Math/FloatMax.hpp"
+
 #include "Zancle/Trait/HasVirtualDestructor.hpp"
 #include "Zancle/Trait/IsConstructible.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"

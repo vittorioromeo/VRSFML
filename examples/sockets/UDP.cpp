@@ -8,13 +8,17 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/UdpSocket.hpp"
 
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Scn/ScnStdin.hpp"
 #include "Zancle/Scn/ScnString.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
 #include "Zancle/String/String.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

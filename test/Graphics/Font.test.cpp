@@ -16,10 +16,12 @@
 
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/String/String.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsDefaultConstructible.hpp"

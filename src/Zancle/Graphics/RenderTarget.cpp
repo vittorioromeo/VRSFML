@@ -7,6 +7,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/RenderTarget.hpp"
 
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLVAOGroup.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/BatchedGeometry.hpp"
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
@@ -43,27 +47,30 @@
 #include "Zancle/Graphics/VertexBuffer.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/GLVAOGroup.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
+#include "Zancle/Err/Err.hpp"
 
 #include "Zancle/Concurrency/Atomic.hpp"
-#include "Zancle/Err/Err.hpp"
+
+#include "Zancle/Container/Array.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/OffsetOf.hpp"
 #include "Zancle/Vocabulary/FunctionRef.hpp"
+#include "Zancle/Vocabulary/ScopeGuard.hpp"
+#include "Zancle/Vocabulary/Span.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Trait/IsSame.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/ScopeGuard.hpp"
+#include "Zancle/Base/OffsetOf.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Vocabulary/Span.hpp"
-#include "Zancle/Trait/IsSame.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/Diagnostic/Abort.hpp"

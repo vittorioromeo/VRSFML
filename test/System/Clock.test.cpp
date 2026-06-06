@@ -4,6 +4,7 @@
 #include "Zancle/Chrono/Clock.hpp"
 
 #include "Zancle/Concurrency/Thread.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Trait/IsCopyAssignable.hpp"

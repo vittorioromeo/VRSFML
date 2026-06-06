@@ -13,8 +13,9 @@
 
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 namespace
 {

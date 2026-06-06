@@ -11,14 +11,18 @@
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 
-#include "Zancle/Concurrency/Atomic.hpp"
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Concurrency/Atomic.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Diagnostic/Abort.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 #include <miniaudio.h>
 

@@ -9,18 +9,22 @@
 #include "Zancle/Audio/PlaybackDevice.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Trait/HasVirtualDestructor.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace

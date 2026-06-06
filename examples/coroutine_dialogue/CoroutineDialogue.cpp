@@ -16,14 +16,18 @@
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/String/String.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
 
 
 namespace

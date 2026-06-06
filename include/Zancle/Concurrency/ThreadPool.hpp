@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Vocabulary/FixedFunction.hpp"
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

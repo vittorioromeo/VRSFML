@@ -13,6 +13,7 @@
 #include "Zancle/Lifetime/LifetimeDependant.hpp"
 
 #include "Zancle/Container/InPlaceVector.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 
 #include <miniaudio.h>

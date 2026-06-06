@@ -8,17 +8,22 @@
 #include "Zancle/Graphics/ShaderUtils.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/StringView.hpp"
 #include "Zancle/String/ToChars.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

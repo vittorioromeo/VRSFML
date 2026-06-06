@@ -18,26 +18,34 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/Concurrency/Atomic.hpp"
-#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Concurrency/Atomic.hpp"
 #include "Zancle/Concurrency/Thread.hpp"
-#include "Zancle/Chrono/Time.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
+
 #include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Vec2.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Math/Clamp.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Pow.hpp"
-#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Pow.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Concurrency/ThreadPool.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>

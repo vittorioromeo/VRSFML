@@ -12,8 +12,9 @@
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
+
 #include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

@@ -10,6 +10,7 @@
 #include "Tetramino.hpp"
 
 #include "Zancle/Container/InPlaceVector.hpp"
+
 #include "Zancle/Vocabulary/Variant.hpp"
 
 

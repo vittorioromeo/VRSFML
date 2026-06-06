@@ -18,29 +18,36 @@
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Math/Clamp.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Math/Cos.hpp"
 #include "Zancle/Math/Sin.hpp"
 #include "Zancle/Math/Tan.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/SourceLocation.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <limits> // TODO P1: rewrite in zb
 

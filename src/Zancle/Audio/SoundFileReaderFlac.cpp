@@ -11,15 +11,20 @@
 #include "Zancle/Audio/SoundFileReader.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/InputStream.hpp"
 
 #include "Zancle/Algorithm/Copy.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <FLAC/format.h>
 #include <FLAC/ordinals.h>

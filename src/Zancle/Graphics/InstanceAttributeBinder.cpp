@@ -7,16 +7,17 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/InstanceAttributeBinder.hpp"
 
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/GlDataType.hpp"
 #include "Zancle/Graphics/Priv/EnumToGlEnumConversions.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Unreachable.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Unreachable.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/Err/Err.hpp"

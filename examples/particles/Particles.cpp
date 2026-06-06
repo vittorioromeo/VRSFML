@@ -3,9 +3,6 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Sampler.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -19,30 +16,41 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
+
+#include "Zancle/Concurrency/ThreadPool.hpp"
+
+#include "Zancle/String/ToString.hpp"
 
 #include "Zancle/Algorithm/Erase.hpp"
 #include "Zancle/Algorithm/SwapAndPop.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/MinMax.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/InterferenceSize.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Concurrency/ThreadPool.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <latch>
 

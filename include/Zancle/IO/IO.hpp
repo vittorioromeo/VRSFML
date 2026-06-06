@@ -8,10 +8,11 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Vocabulary/EnumClassBitwiseOps.hpp"
-#include "Zancle/Base/FwdStdString.hpp" // TODO P1: remove?
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
+
+#include "Zancle/Base/FwdStdString.hpp" // TODO P1: remove?
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

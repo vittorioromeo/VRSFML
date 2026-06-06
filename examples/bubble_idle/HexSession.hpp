@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 struct Doll;

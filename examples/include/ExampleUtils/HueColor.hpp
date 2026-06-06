@@ -7,8 +7,10 @@
 #include "Zancle/Graphics/Color.hpp"
 
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
-#include "Zancle/Base/IntTypes.hpp"
+
 #include "Zancle/Math/Remainder.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

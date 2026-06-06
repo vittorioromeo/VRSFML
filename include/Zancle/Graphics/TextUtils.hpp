@@ -13,18 +13,21 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
 #include "Zancle/String/Utf8String.hpp"
 #include "Zancle/String/Utf8StringCodepoints.hpp"
 
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Restrict.hpp"
+
 #include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Floor.hpp"
 #include "Zancle/Math/MinMaxMacros.hpp"
+
+#include "Zancle/Base/Restrict.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

@@ -14,16 +14,20 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Chrono/Time.hpp"
 #include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
 
 
 namespace za

@@ -12,8 +12,9 @@
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
 #include "Zancle/Chrono/Clock.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Trait/HasVirtualDestructor.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"

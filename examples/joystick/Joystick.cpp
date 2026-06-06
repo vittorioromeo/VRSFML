@@ -22,15 +22,19 @@
 #include "Zancle/Window/Keyboard.hpp"
 
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 
 namespace

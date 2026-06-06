@@ -3,18 +3,6 @@
 ////////////////////////////////////////////////////////////
 #include "ExampleUtils/Scaling.hpp"
 
-#include "Zancle/Graphics/CircleShape.hpp"
-#include "Zancle/Graphics/Color.hpp"
-#include "Zancle/Graphics/ConvexShape.hpp"
-#include "Zancle/Graphics/Font.hpp"
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/RenderStates.hpp"
-#include "Zancle/Graphics/RenderTarget.hpp"
-#include "Zancle/Graphics/RenderWindow.hpp"
-#include "Zancle/Graphics/Text.hpp"
-#include "Zancle/Graphics/Texture.hpp"
-#include "Zancle/Graphics/Transform.hpp"
-
 #include "Zancle/Audio/AudioContext.hpp"
 #include "Zancle/Audio/AudioSettings.hpp"
 #include "Zancle/Audio/ChannelMap.hpp"
@@ -27,29 +15,51 @@
 #include "Zancle/Audio/SoundChannel.hpp"
 #include "Zancle/Audio/SoundStream.hpp"
 
+#include "Zancle/Graphics/CircleShape.hpp"
+#include "Zancle/Graphics/Color.hpp"
+#include "Zancle/Graphics/ConvexShape.hpp"
+#include "Zancle/Graphics/Font.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/RenderStates.hpp"
+#include "Zancle/Graphics/RenderTarget.hpp"
+#include "Zancle/Graphics/RenderWindow.hpp"
+#include "Zancle/Graphics/Text.hpp"
+#include "Zancle/Graphics/Texture.hpp"
+#include "Zancle/Graphics/Transform.hpp"
+
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Err/FmtPath.hpp"
-#include "Zancle/IO/IO.hpp"
-#include "Zancle/IO/Path.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Chrono/Time.hpp"
-#include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Math/Clamp.hpp"
-#include "Zancle/Math/Constants.hpp"
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp"
+
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+#include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Array.hpp"
 #include "Zancle/Container/InPlaceVector.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Abort.hpp"
+
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Floor.hpp"
 #include "Zancle/Math/Fmod.hpp"
@@ -57,11 +67,10 @@
 #include "Zancle/Math/Pow.hpp"
 #include "Zancle/Math/Sin.hpp"
 #include "Zancle/Math/Tan.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <limits>
 

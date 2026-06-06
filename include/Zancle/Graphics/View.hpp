@@ -16,10 +16,12 @@
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Math/ClampMacro.hpp"
 #include "Zancle/Math/Lround.hpp"
-#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
+
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za

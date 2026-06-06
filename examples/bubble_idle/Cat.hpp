@@ -9,13 +9,16 @@
 #include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Math/Constants.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Math/Sin.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/Sin.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

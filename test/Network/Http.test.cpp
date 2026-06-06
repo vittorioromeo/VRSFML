@@ -4,10 +4,11 @@
 
 #include "Zancle/Network/Http.hpp"
 
-#include "Zancle/Chrono/Time.hpp"
-
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsMoveConstructible.hpp"
@@ -105,8 +106,9 @@ TEST_CASE("[Network] za::Http Connection")
 
         SECTION("Request Resource")
         {
-            const za::Http::Response response = http.sendRequest(za::Http::Request("vittorioromeo/zancle"), za::milliseconds(250));
-            const za::Http::Response::Status status = response.getStatus();
+            const za::Http::Response         response = http.sendRequest(za::Http::Request("vittorioromeo/zancle"),
+                                                                         za::milliseconds(250));
+            const za::Http::Response::Status status   = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
             CHECK(status == za::Http::Response::Status::MovedPermanently);
@@ -135,8 +137,9 @@ TEST_CASE("[Network] za::Http Connection")
 
         SECTION("Request Resource")
         {
-            const za::Http::Response response = http.sendRequest(za::Http::Request("vittorioromeo/zancle"), za::milliseconds(250));
-            const za::Http::Response::Status status = response.getStatus();
+            const za::Http::Response         response = http.sendRequest(za::Http::Request("vittorioromeo/zancle"),
+                                                                         za::milliseconds(250));
+            const za::Http::Response::Status status   = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
             CHECK(status == za::Http::Response::Status::Ok);
@@ -149,9 +152,10 @@ TEST_CASE("[Network] za::Http Connection")
 
         SECTION("Request Non-Existant Resource")
         {
-            const za::Http::Response response = http.sendRequest(za::Http::Request("vittorioromeo/REPOSITORYTHATDOESNOTEXIST"),
-                                                                 za::milliseconds(250));
-            const za::Http::Response::Status status = response.getStatus();
+            const za::Http::Response         response = http.sendRequest(za::Http::Request("vittorioromeo/"
+                                                                                   "REPOSITORYTHATDOESNOTEXIST"),
+                                                                         za::milliseconds(250));
+            const za::Http::Response::Status status   = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
             CHECK(status == za::Http::Response::Status::NotFound);

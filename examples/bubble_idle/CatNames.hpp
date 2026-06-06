@@ -5,10 +5,13 @@
 
 #include "ExampleUtils/RNGFast.hpp"
 
-#include "Zancle/Base/GetArraySize.hpp"
-#include "Zancle/Vocabulary/Span.hpp"
 #include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Span.hpp"
+
+#include "Zancle/Base/GetArraySize.hpp"
 
 
 ////////////////////////////////////////////////////////////

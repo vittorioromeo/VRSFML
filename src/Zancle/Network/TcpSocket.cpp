@@ -16,22 +16,29 @@
 #include "Zancle/Network/SocketImpl.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/StringView.hpp"
 #include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Base/IntTypes.hpp"
+
 #include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
-#include "Zancle/Container/Vector.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <mbedtls/version.h>
 
@@ -52,9 +59,10 @@
 
 #if defined(ZA_SYSTEM_WINDOWS)
     #include "Zancle/String/Utf.hpp"
-    #include "Zancle/Base/WindowsHeader.hpp"
 
     #include "Zancle/Container/BackInserter.hpp"
+
+    #include "Zancle/Base/WindowsHeader.hpp"
 
     #include <wincrypt.h>
 

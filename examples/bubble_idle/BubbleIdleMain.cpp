@@ -38,7 +38,8 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
 
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Image.hpp"
@@ -50,35 +51,43 @@
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Concurrency/ThreadPool.hpp"
+
+#include "Zancle/Algorithm/Erase.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Algorithm/Erase.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/FloatMax.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Concurrency/ThreadPool.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <cstdarg>
 #include <cstdio>

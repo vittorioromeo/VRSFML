@@ -8,11 +8,7 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/Memmove.hpp"
-#include "Zancle/Base/Memset.hpp"
-#include "Zancle/Base/Strlen.hpp"
+
 #include "Zancle/Fmt/FmtArgDefaultAlign.hpp" // IWYU pragma: export
 #include "Zancle/Fmt/FmtCString.hpp"         // IWYU pragma: export
 #include "Zancle/Fmt/FmtResult.hpp"
@@ -21,9 +17,17 @@
 #include "Zancle/Fmt/FmtSpan.hpp"    // IWYU pragma: export
 #include "Zancle/Fmt/FmtSpec.hpp"    // IWYU pragma: export
 #include "Zancle/Fmt/FmtString.hpp"  // IWYU pragma: export
+
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
+#include "Zancle/Trait/IsSame.hpp"
+
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Memmove.hpp"
+#include "Zancle/Base/Memset.hpp"
 #include "Zancle/Base/NonDeduced.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Trait/IsSame.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 
 ////////////////////////////////////////////////////////////

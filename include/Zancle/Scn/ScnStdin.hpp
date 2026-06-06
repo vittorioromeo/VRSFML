@@ -8,8 +8,10 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Scn/Scn.hpp" // IWYU pragma: export -- scn<T> / scnInto
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////

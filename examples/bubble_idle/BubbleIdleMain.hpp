@@ -31,23 +31,28 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Chrono/Time.hpp"
-#include "Zancle/Geometry/Vec2.hpp"
+#include "Zancle/Concurrency/ThreadPool.hpp"
 
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Vocabulary/FixedFunction.hpp"
-#include "Zancle/Base/GetArraySize.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
-#include "Zancle/Concurrency/ThreadPool.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Array.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
+
+#include "Zancle/Vocabulary/FixedFunction.hpp"
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #if defined(__GNUC__) || defined(__clang__)
     #define BUBBLE_IDLE_PRINTF_FORMAT(fmtIndex, firstArgIndex) __attribute__((format(printf, fmtIndex, firstArgIndex)))

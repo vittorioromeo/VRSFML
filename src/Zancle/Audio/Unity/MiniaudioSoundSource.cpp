@@ -16,6 +16,7 @@
 #include "Zancle/Geometry/Vec3.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Math/Clamp.hpp"
 
 #include <miniaudio.h>

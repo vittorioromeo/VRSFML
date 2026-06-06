@@ -11,11 +11,14 @@
 #include "Zancle/Audio/SoundFileReader.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/InputStream.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 #include <vorbis/codec.h>

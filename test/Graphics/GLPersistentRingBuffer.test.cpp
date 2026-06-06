@@ -3,23 +3,24 @@
 
 #include "Zancle/GLUtils/GLPersistentRingBuffer.hpp"
 
-#include "Zancle/Graphics/GraphicsContext.hpp"
-
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/GLUtils/GLBufferObject.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/GLUniqueResource.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
-#include "Zancle/Base/Memcmp.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+
+#include "Zancle/Window/WindowContext.hpp"
+
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 #ifndef ZA_OPENGL_ES

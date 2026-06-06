@@ -12,6 +12,7 @@
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"

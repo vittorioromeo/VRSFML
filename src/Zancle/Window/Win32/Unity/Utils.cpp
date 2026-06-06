@@ -7,12 +7,14 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Win32/Utils.hpp"
 
+#include "Zancle/String/String.hpp"
 #include "Zancle/String/Utf.hpp"
-#include "Zancle/Base/WindowsHeader.hpp"
+
+#include "Zancle/Container/BackInserter.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Container/BackInserter.hpp"
-#include "Zancle/String/String.hpp"
+
+#include "Zancle/Base/WindowsHeader.hpp"
 
 #include <cwchar>
 

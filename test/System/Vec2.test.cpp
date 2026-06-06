@@ -7,6 +7,7 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Math/Sqrt.hpp"
+
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsSame.hpp"
 #include "Zancle/Trait/IsStandardLayout.hpp"

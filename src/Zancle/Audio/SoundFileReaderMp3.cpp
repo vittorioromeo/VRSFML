@@ -33,12 +33,15 @@
 #include "Zancle/Audio/SoundFileReaderMp3.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/InputStream.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcmp.hpp"
-#include "Zancle/Base/IntTypes.hpp"
+
 #include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Memcmp.hpp"
 
 
 namespace

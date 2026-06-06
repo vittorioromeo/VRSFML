@@ -2,9 +2,10 @@
 
 #include "Zancle/String/FromChars.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToString.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 #include <limits>
 

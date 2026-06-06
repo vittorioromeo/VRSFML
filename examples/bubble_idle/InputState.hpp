@@ -3,9 +3,10 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
+#include "Zancle/Container/Array.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Container/Array.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 
 

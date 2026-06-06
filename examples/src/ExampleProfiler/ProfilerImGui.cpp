@@ -5,12 +5,17 @@
 
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "Zancle/Algorithm/Sort.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Vocabulary/Span.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Algorithm/Sort.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Span.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace

@@ -10,6 +10,7 @@
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/Path.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"

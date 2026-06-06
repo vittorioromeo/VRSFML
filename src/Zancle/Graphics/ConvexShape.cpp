@@ -13,6 +13,7 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

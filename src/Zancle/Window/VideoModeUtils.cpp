@@ -15,9 +15,12 @@
 
 #include "Zancle/Algorithm/Find.hpp"
 #include "Zancle/Algorithm/Sort.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Vocabulary/Span.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Span.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
 
 
 namespace za

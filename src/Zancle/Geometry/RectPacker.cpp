@@ -8,13 +8,17 @@
 #include "Zancle/Geometry/RectPacker.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Vocabulary/Span.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION

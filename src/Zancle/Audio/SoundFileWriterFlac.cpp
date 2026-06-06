@@ -11,16 +11,21 @@
 #include "Zancle/Audio/SoundChannel.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/FileUtils.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathUtils.hpp"
 
 #include "Zancle/Algorithm/Find.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <FLAC/stream_encoder.h>
 

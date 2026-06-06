@@ -8,6 +8,7 @@
 #include "Zancle/Audio/SoundFileWriterWav.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathUtils.hpp"
@@ -15,13 +16,17 @@
 #include "Zancle/Algorithm/AdjacentFind.hpp"
 #include "Zancle/Algorithm/Find.hpp"
 #include "Zancle/Algorithm/Sort.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace

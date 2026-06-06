@@ -6,14 +6,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/InitializerList.hpp" // IWYU pragma: keep
-#include "Zancle/Base/PlacementNew.hpp"
 #include "Zancle/Container/Priv/VectorUtils.hpp"
-#include "Zancle/Base/PtrDiffT.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Trait/IsTriviallyDestructible.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
+
+#include "Zancle/Base/InitializerList.hpp" // IWYU pragma: keep
+#include "Zancle/Base/PlacementNew.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

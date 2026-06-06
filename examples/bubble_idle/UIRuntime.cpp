@@ -12,24 +12,27 @@
 #include "ExampleUtils/Easing.hpp"
 #include "ExampleUtils/NinePatchUtils.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/RectangleShapeData.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
 
+#include "Zancle/ImGui/IncludeImGui.hpp"
+
 #include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/FloatMax.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <cstdio>
 #include <cstring>

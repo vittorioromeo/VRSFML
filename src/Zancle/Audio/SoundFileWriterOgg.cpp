@@ -10,14 +10,19 @@
 #include "Zancle/Audio/ChannelMap.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathUtils.hpp"
 
 #include "Zancle/Algorithm/Find.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Math/MinMax.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 #include <vorbis/vorbisenc.h>

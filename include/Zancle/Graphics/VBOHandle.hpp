@@ -7,6 +7,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

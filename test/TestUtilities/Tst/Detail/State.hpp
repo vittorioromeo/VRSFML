@@ -6,9 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tst::detail

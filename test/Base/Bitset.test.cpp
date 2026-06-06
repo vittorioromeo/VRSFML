@@ -2,11 +2,13 @@
 
 #include "Zancle/Container/Bitset.hpp"
 
-#include "Zancle/Base/Popcountll.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Popcountll.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

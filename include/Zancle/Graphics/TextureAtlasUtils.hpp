@@ -14,8 +14,9 @@
 #include "Zancle/Geometry/Rect2.hpp"
 #include "Zancle/Geometry/RectPacker.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

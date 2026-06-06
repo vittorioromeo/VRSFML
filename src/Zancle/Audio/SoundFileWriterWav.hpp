@@ -10,6 +10,7 @@
 #include "Zancle/Audio/SoundFileWriter.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 
 

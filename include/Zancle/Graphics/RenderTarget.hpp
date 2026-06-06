@@ -20,9 +20,11 @@
 
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Vocabulary/FunctionRef.hpp"
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

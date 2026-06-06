@@ -2,12 +2,15 @@
 
 #include "Zancle/Config.hpp"
 
+#include "Zancle/Fmt/FmtToString.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Fmt/FmtToString.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/UIntPtrT.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)

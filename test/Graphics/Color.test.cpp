@@ -4,7 +4,8 @@
 
 #include "Zancle/Graphics/Color.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsStandardLayout.hpp"
 #include "Zancle/Trait/IsTrivial.hpp"
@@ -15,7 +16,8 @@
 #include "Zancle/Trait/IsTriviallyDestructible.hpp"
 #include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
 #include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 TEST_CASE("[Graphics] za::Color")

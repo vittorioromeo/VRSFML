@@ -10,11 +10,12 @@
 
 #include "Zancle/Lifetime/LifetimeDependee.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

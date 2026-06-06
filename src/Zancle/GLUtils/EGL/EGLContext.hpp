@@ -14,9 +14,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
 
-#include "Zancle/Window/ContextSettings.hpp"
-
 #include "Zancle/GLUtils/GlContext.hpp"
+
+#include "Zancle/Window/ContextSettings.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
 

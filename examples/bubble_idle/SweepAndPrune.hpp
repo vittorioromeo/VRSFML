@@ -3,11 +3,14 @@
 #include "Zancle/Concurrency/Atomic.hpp"
 
 #include "Zancle/Algorithm/Sort.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/InterferenceSize.hpp"
-#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

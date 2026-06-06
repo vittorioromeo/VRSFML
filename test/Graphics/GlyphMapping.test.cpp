@@ -10,6 +10,7 @@
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
 #include "Zancle/Lifetime/LifetimeDependee.hpp"
+
 #include "Zancle/IO/Path.hpp"
 
 #include "Zancle/Base/SizeT.hpp"

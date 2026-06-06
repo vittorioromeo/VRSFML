@@ -8,8 +8,9 @@
 #include "Tst/Detail/Registry.hpp"
 #include "Tst/Detail/State.hpp"
 
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

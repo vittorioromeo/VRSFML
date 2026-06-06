@@ -13,9 +13,10 @@
     #include "Zancle/Window/WindowHandle.hpp"
 
     #include "Zancle/Geometry/Priv/Vec2Base.hpp"
-    #include "Zancle/Base/WindowsHeader.hpp" // IWYU pragma: keep
 
     #include "Zancle/Vocabulary/Optional.hpp"
+
+    #include "Zancle/Base/WindowsHeader.hpp" // IWYU pragma: keep
 
 
 namespace

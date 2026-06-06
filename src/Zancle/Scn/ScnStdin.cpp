@@ -7,9 +7,11 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Scn/ScnStdin.hpp"
 
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Scn/ScnString.hpp"
+
 #include "Zancle/String/String.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 #include <cstdio>
 

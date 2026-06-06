@@ -12,13 +12,15 @@
 
 #include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
 #include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

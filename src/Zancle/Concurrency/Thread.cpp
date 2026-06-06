@@ -10,14 +10,16 @@
 #include "Zancle/Config.hpp"
 
 #include "Zancle/Concurrency/Atomic.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/Memset.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Launder.hpp"
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/Memset.hpp"
 
 
 ////////////////////////////////////////////////////////////

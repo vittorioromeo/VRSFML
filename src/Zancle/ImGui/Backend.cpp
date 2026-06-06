@@ -7,10 +7,10 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/ImGui/Backend.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/GLUtils/GLCheck.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 
 #if defined(__APPLE__)

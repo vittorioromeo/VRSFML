@@ -16,6 +16,7 @@
     #else
 
         #include "Zancle/Vocabulary/ScopeGuard.hpp"
+
         #include "Zancle/Base/UIntPtrT.hpp"
 
         #include <backtrace.h>

@@ -7,10 +7,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcmp.hpp"
-#include "Zancle/Base/Strlen.hpp"
+
 #include "Zancle/Math/MinMaxMacros.hpp"
+
+#include "Zancle/Base/Memcmp.hpp"
 #include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 
 namespace za

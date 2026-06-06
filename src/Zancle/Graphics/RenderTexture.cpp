@@ -7,6 +7,12 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/RenderTexture.hpp"
 
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLRenderBufferObject.hpp"
+#include "Zancle/GLUtils/GLUniqueResource.hpp"
+#include "Zancle/GLUtils/GLUtils.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/RenderTextureCreateSettings.hpp"
@@ -15,20 +21,18 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/GLRenderBufferObject.hpp"
-#include "Zancle/GLUtils/GLUniqueResource.hpp"
-#include "Zancle/GLUtils/GLUtils.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/Err/Err.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Container/AnkerlUnorderedDense.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Macros.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 
 namespace

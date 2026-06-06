@@ -8,8 +8,7 @@
 #include "ExampleUtils/Sampler.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
 
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
@@ -18,21 +17,26 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
-#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToString.hpp"
 
 
 namespace

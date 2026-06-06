@@ -11,8 +11,11 @@
 #include "Zancle/Audio/SoundBuffer.hpp"
 
 #include "Zancle/Algorithm/Find.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Container/InPlaceVector.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

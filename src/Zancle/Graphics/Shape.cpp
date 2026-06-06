@@ -11,11 +11,12 @@
 #include "Zancle/Graphics/ShapeUtils.hpp"
 #include "Zancle/Graphics/VertexUtils.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace za

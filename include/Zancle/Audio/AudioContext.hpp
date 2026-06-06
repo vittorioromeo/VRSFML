@@ -11,9 +11,10 @@
 #include "Zancle/Audio/CaptureDeviceHandle.hpp"
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

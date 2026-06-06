@@ -5,9 +5,10 @@
 #include "Zancle/Concurrency/LockGuard.hpp"
 #include "Zancle/Concurrency/Thread.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Trait/IsAssignable.hpp"
 #include "Zancle/Trait/IsConstructible.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace

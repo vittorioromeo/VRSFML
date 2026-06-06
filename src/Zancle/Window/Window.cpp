@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Window.hpp"
 
+#include "Zancle/GLUtils/GlContext.hpp"
+
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowBase.hpp"
@@ -14,18 +16,20 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/GLUtils/GlContext.hpp"
+#include "Zancle/Err/Err.hpp"
+
+#include "Zancle/Concurrency/Thread.hpp"
 
 #include "Zancle/Chrono/Clock.hpp"
-#include "Zancle/Err/Err.hpp"
-#include "Zancle/Concurrency/Thread.hpp"
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 #ifdef ZA_SYSTEM_EMSCRIPTEN
     #include <emscripten.h>

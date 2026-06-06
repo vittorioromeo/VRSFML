@@ -7,13 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/Graphics/GraphicsContext.hpp"
-#include "Zancle/Graphics/Image.hpp"
-#include "Zancle/Graphics/TextureWrapMode.hpp"
-
-#include "Zancle/Window/Window.hpp"
-#include "Zancle/Window/WindowContext.hpp"
-
 #include "Zancle/GLUtils/BlitFramebuffer.hpp"
 #include "Zancle/GLUtils/FramebufferSaver.hpp"
 #include "Zancle/GLUtils/GLCheck.hpp"
@@ -22,23 +15,37 @@
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
 
-#include "Zancle/Concurrency/Atomic.hpp"
+#include "Zancle/Graphics/GraphicsContext.hpp"
+#include "Zancle/Graphics/Image.hpp"
+#include "Zancle/Graphics/TextureWrapMode.hpp"
+
+#include "Zancle/Window/Window.hpp"
+#include "Zancle/Window/WindowContext.hpp"
+
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Concurrency/Atomic.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/PassKey.hpp"
+
 #include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
 #include "Zancle/Base/Exchange.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Vocabulary/PassKey.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace

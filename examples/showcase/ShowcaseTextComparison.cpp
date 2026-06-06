@@ -1,13 +1,13 @@
 #include "ShowcaseExample.hpp"
 #include "ShowcaseTextComparison.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/GlyphMappedText.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/TextData.hpp"
 #include "Zancle/Graphics/Texture.hpp"
+
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/String/Utf8String.hpp"
 

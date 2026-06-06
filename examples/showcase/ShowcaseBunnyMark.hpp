@@ -10,15 +10,19 @@
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

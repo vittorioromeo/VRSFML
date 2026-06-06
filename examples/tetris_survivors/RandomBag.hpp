@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Algorithm/Shuffle.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

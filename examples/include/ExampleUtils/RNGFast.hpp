@@ -9,13 +9,16 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/Constants.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Math/Cos.hpp"
 #include "Zancle/Math/Sin.hpp"
 #include "Zancle/Math/Sqrt.hpp"
+
 #include "Zancle/Trait/IsIntegral.hpp"
 #include "Zancle/Trait/MakeUnsigned.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -12,9 +12,10 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

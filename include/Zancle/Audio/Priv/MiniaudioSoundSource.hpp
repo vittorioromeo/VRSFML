@@ -11,6 +11,7 @@
 #include "Zancle/Audio/Listener.hpp"
 
 #include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Geometry/Vec3.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"

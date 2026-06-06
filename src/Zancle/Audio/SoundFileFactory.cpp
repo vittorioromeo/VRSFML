@@ -16,14 +16,17 @@
 #include "Zancle/Audio/SoundFileWriterWav.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/MemoryInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathUtils.hpp"
 
 #include "Zancle/Container/AnkerlUnorderedDense.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

@@ -6,11 +6,13 @@
 #include "Zancle/Network/IpAddress.hpp"
 #include "Zancle/Network/IpAddressUtils.hpp"
 
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Scn/ScnStdin.hpp"
 #include "Zancle/Scn/ScnString.hpp"
+
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////

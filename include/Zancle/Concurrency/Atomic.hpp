@@ -8,15 +8,17 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
-#include "Zancle/Base/BitCast.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/PtrDiffT.hpp"
+
 #include "Zancle/Trait/IsEnum.hpp"
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 #include "Zancle/Trait/IsIntegral.hpp"
 #include "Zancle/Trait/IsPointer.hpp"
 #include "Zancle/Trait/IsSame.hpp"
 #include "Zancle/Trait/UnderlyingType.hpp"
+
+#include "Zancle/Base/BitCast.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/PtrDiffT.hpp"
 
 
 namespace za

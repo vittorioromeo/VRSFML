@@ -6,12 +6,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-#include "Zancle/Base/Strlen.hpp"
 #include "Zancle/Fmt/FmtResult.hpp"
 #include "Zancle/Fmt/FmtSink.hpp"
 #include "Zancle/Fmt/FmtSpec.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
+#include "Zancle/Base/Strlen.hpp"
 
 
 namespace za

@@ -5,6 +5,7 @@
 
 ////////////////////////////////////////////////////////////
 #include "Zancle/Math/Priv/Impl.hpp"
+
 #include "Zancle/Trait/IsSame.hpp"
 
 

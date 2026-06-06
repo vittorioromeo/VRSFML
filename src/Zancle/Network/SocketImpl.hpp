@@ -10,8 +10,9 @@
 #include "Zancle/Network/SocketHandle.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)
 

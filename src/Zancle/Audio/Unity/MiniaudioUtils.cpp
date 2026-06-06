@@ -15,7 +15,9 @@
 #include "Zancle/Audio/SoundChannel.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/Lifetime/LifetimeDependant.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Base/IntTypes.hpp"
@@ -24,12 +26,16 @@
     #include "Zancle/Lifetime/LifetimeDependee.hpp"
 #endif
 
+#include "Zancle/Container/InPlaceVector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/OffsetOf.hpp"
-#include "Zancle/Container/InPlaceVector.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 
 #include <miniaudio.h>
 

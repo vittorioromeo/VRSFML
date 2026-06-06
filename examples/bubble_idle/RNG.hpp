@@ -5,6 +5,7 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Cos.hpp"
 #include "Zancle/Math/Sin.hpp"

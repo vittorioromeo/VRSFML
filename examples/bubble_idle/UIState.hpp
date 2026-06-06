@@ -2,12 +2,13 @@
 
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/String/String.hpp"
 
 #include "Zancle/Container/AnkerlUnorderedDense.hpp"
-#include "Zancle/String/String.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
 
 
 ////////////////////////////////////////////////////////////

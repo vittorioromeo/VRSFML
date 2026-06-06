@@ -12,8 +12,9 @@
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 #include "Zancle/Audio/Priv/MiniaudioUtils.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Err/Err.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
 #include "Zancle/Math/Clamp.hpp"

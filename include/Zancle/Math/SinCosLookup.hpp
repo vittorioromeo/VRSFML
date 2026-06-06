@@ -7,9 +7,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/Constants.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Math/Priv/ConstexprSinCos.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace za::priv

@@ -9,6 +9,7 @@
 #include "Zancle/Config.hpp"
 
 #include "Zancle/Vocabulary/EnumClassBitwiseOps.hpp"
+
 #include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 

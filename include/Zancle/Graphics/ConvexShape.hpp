@@ -12,10 +12,11 @@
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 #include "Zancle/Graphics/Shape.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace za

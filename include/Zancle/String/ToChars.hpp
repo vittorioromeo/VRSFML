@@ -7,16 +7,19 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Clzll.hpp"
-#include "Zancle/Base/IsInf.hpp"
-#include "Zancle/Base/IsNan.hpp"
-#include "Zancle/Base/Signbit.hpp"
+
 #include "Zancle/Math/Rint.hpp"
+
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 #include "Zancle/Trait/IsIntegral.hpp"
 #include "Zancle/Trait/IsSame.hpp"
 #include "Zancle/Trait/IsUnsigned.hpp"
 #include "Zancle/Trait/MakeUnsigned.hpp"
+
+#include "Zancle/Base/Clzll.hpp"
+#include "Zancle/Base/IsInf.hpp"
+#include "Zancle/Base/IsNan.hpp"
+#include "Zancle/Base/Signbit.hpp"
 
 
 namespace za::priv

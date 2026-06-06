@@ -6,15 +6,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Container/Priv/VectorUtils.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Prefetch.hpp"
+
+#include "Zancle/Trait/Conditional.hpp"
+
 #include "Zancle/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "Zancle/Base/PlacementNew.hpp"
-#include "Zancle/Container/Priv/VectorUtils.hpp"
+#include "Zancle/Base/Prefetch.hpp"
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
-#include "Zancle/Trait/Conditional.hpp"
 
 
 ////////////////////////////////////////////////////////////

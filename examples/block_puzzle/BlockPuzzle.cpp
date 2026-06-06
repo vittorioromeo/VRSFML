@@ -8,8 +8,11 @@
 #include "ExampleUtils/RNGFast.hpp"
 #include "ExampleUtils/Scaling.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/Color.hpp"
@@ -31,11 +34,8 @@
 #include "Zancle/Graphics/TextureAtlas.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Cursor.hpp"
 #include "Zancle/Window/Event.hpp"
@@ -43,30 +43,37 @@
 #include "Zancle/Window/Keyboard.hpp"
 #include "Zancle/Window/Mouse.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Algorithm/Erase.hpp"
 #include "Zancle/Algorithm/Sort.hpp"
 #include "Zancle/Algorithm/Unique.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
+
+#include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
-#include "Zancle/Base/GetArraySize.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Fmod.hpp"
 #include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Vocabulary/Variant.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 // TODO P2:
 // - keys should have different colors compared to blocks

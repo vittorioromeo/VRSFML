@@ -10,8 +10,9 @@
 #include "Zancle/Window/SDLLayer.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/Vocabulary/Span.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Span.hpp"
 
 #include <SDL3/SDL_touch.h>
 

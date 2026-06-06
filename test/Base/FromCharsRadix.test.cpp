@@ -2,9 +2,10 @@
 
 #include "Zancle/String/FromCharsRadix.hpp"
 
-#include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/String/ToCharsRadix.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <initializer_list>
 

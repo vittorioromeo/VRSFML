@@ -6,17 +6,21 @@
 #include "Zancle/IO/Path.hpp"
 
 #include "Zancle/Err/FmtPath.hpp" // IWYU pragma: keep -- enables `fmtArg(Path, ...)` for the format test
-#include "Zancle/IO/IO.hpp"
 
 #include "Zancle/Fmt/FmtToString.hpp"
-#include "Zancle/Base/Macros.hpp"
+
+#include "Zancle/IO/IO.hpp"
+
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsDefaultConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 #include <filesystem>
 #include <string>

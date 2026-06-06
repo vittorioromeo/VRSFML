@@ -23,8 +23,9 @@
 
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
 
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
@@ -41,25 +42,30 @@
 #include "Zancle/Graphics/TextureWrapMode.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/Listener.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/Chrono/Clock.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

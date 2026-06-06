@@ -10,10 +10,12 @@
 #include "Zancle/Concurrency/AtomicMutex.hpp"
 #include "Zancle/Concurrency/LockGuard.hpp"
 
-#include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Diagnostic/StackTrace.hpp"
 #include "Zancle/String/String.hpp"
+
+#include "Zancle/Diagnostic/StackTrace.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <cstdio>
 

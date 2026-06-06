@@ -13,6 +13,7 @@
 #include "Zancle/Lifetime/LifetimeDependee.hpp"
 
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

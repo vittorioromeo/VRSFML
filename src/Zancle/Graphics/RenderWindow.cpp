@@ -7,6 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/RenderWindow.hpp"
 
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
 
@@ -15,16 +18,16 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 
 namespace za

@@ -10,8 +10,9 @@
 
 #include "Zancle/Network/IpAddress.hpp"
 
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -2,6 +2,8 @@
 
 #include "Zancle/Vocabulary/Span.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsConstructible.hpp"
 #include "Zancle/Trait/IsStandardLayout.hpp"
@@ -14,7 +16,6 @@
 #include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
 #include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 TEST_CASE("[Base] Base/Span.hpp")

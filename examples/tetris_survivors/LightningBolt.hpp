@@ -12,13 +12,15 @@
 #include "Zancle/Graphics/RenderTarget.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
 
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv

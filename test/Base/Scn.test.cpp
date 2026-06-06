@@ -4,14 +4,17 @@
 
 #include "Zancle/Scn/Scn.hpp"
 
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Vocabulary/Radix.hpp"
 #include "Zancle/Scn/ScnNumeric.hpp"
 #include "Zancle/Scn/ScnString.hpp"
 #include "Zancle/Scn/ScnStringSource.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/Radix.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////

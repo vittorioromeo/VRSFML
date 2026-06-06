@@ -8,8 +8,9 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Audio/SoundChannel.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

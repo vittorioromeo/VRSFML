@@ -11,20 +11,26 @@
 
 #include "Zancle/Audio/MusicReader.hpp"
 
-#include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/Lifetime/LifetimeDependee.hpp"
+
+#include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
+
 #include "Zancle/Concurrency/Thread.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Base/Memset.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Trait/HasVirtualDestructor.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/Memset.hpp"
 
 
 TEST_CASE("[Audio] za::Music" * tst::skip(skipAudioDeviceTests))

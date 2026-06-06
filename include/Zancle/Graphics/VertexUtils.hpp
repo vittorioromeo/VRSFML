@@ -12,7 +12,9 @@
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/MinMaxMacros.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

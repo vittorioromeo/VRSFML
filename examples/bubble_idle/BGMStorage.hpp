@@ -4,8 +4,10 @@
 #include "Zancle/Audio/MusicReader.hpp"
 
 #include "Zancle/Container/Array.hpp"
-#include "Zancle/Base/Macros.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 
 namespace za

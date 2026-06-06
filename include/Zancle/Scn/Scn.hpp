@@ -6,10 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Scn/ScnChar.hpp"    // IWYU pragma: export -- char overload (noD ADL on `char`)
 #include "Zancle/Scn/ScnCore.hpp"    // IWYU pragma: export
 #include "Zancle/Scn/ScnNumeric.hpp" // IWYU pragma: export -- int / float / bool overloads (no ADL on built-ins)
+
+#include "Zancle/Vocabulary/Optional.hpp"
 
 namespace za::priv
 {

@@ -8,10 +8,12 @@
 #include "Zancle/Window/Android/ResourceStream.hpp"
 
 #include "Zancle/Window/Android/Activity.hpp"
+
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
 
 #include <mutex>
 

@@ -8,8 +8,10 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
+
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtResult.hpp"
+
 #include "Zancle/Trait/IsEnum.hpp"
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 #include "Zancle/Trait/IsIntegral.hpp"

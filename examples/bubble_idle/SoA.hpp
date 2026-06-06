@@ -1,11 +1,12 @@
 #pragma once
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Base/IndexSequence.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/MakeIndexSequence.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/TypePackElement.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

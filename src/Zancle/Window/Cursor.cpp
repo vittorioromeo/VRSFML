@@ -11,11 +11,13 @@
 #include "Zancle/Window/WindowContext.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_mouse.h>

@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-
 #include "Zancle/Container/InPlaceVector.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
 namespace tsurv

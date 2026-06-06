@@ -7,7 +7,9 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Math/ClampMacro.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

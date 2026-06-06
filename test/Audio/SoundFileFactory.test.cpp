@@ -13,12 +13,14 @@
 #include "Zancle/IO/InputStream.hpp"
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Trait/IsTriviallyCopyAssignable.hpp"
 #include "Zancle/Trait/IsTriviallyCopyConstructible.hpp"
 #include "Zancle/Trait/IsTriviallyMoveAssignable.hpp"
 #include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace

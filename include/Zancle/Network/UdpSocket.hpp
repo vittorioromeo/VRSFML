@@ -12,9 +12,11 @@
 #include "Zancle/Network/Socket.hpp"
 #include "Zancle/Network/SocketHandle.hpp"
 
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

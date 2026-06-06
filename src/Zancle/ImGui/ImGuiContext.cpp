@@ -7,9 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/ImGui/ImGuiContext.hpp"
 
-#include "Zancle/ImGui/Backend.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/RenderTarget.hpp"
@@ -17,6 +14,9 @@
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/Texture.hpp"
+
+#include "Zancle/ImGui/Backend.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Clipboard.hpp"
 #include "Zancle/Window/Cursor.hpp"
@@ -27,19 +27,26 @@
 #include "Zancle/Window/Window.hpp"
 
 #include "Zancle/Err/Err.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Container/Array.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Math/Fabs.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Fabs.hpp"
+
+#include "Zancle/Base/Memcpy.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

@@ -2,8 +2,9 @@
 
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Math/Sqrt.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Math/Sqrt.hpp"
 
 
 ////////////////////////////////////////////////////////////

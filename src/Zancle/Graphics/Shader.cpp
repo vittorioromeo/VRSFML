@@ -7,33 +7,38 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Shader.hpp"
 
+#include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLSharedContextGuard.hpp"
+#include "Zancle/GLUtils/GLUtils.hpp"
+#include "Zancle/GLUtils/Glad.hpp"
+
 #include "Zancle/Graphics/DefaultShader.hpp"
 #include "Zancle/Graphics/Glsl.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/ShaderUtils.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 
-#include "Zancle/GLUtils/GLCheck.hpp"
-#include "Zancle/GLUtils/GLSharedContextGuard.hpp"
-#include "Zancle/GLUtils/GLUtils.hpp"
-#include "Zancle/GLUtils/Glad.hpp"
-
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/InputStream.hpp"
 #include "Zancle/IO/Path.hpp"
 #include "Zancle/IO/PathUtils.hpp"
 
+#include "Zancle/String/StringView.hpp"
+
 #include "Zancle/Container/AnkerlUnorderedDense.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Base/Exchange.hpp"
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Exchange.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 using GLhandle = GLuint;

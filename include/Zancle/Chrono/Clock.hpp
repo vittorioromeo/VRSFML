@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
+
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
 
 

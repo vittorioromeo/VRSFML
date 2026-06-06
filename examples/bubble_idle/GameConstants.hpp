@@ -2,9 +2,10 @@
 
 #include "CatType.hpp"
 
+#include "Zancle/Container/Array.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Container/Array.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

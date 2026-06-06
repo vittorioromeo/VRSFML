@@ -15,13 +15,16 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Trait/IsSame.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Trait/IsSame.hpp"
 #include "Zancle/Base/TrivialAbi.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
 
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>

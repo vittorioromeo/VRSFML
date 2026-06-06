@@ -11,10 +11,11 @@
 
 #include "ExampleUtils/ControlFlow.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 #include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv

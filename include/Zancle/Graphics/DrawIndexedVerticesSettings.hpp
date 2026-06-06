@@ -10,8 +10,9 @@
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
-#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 #include "Zancle/Vocabulary/Span.hpp"
+
+#include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 
 namespace za

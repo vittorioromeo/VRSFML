@@ -8,12 +8,13 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
 
+#include "Zancle/String/StringView.hpp"
 
 #include "Zancle/Vocabulary/FunctionRef.hpp"
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 namespace za

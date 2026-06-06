@@ -11,9 +11,10 @@
 #include "Zancle/Graphics/Priv/ShapeMacros.hpp"
 #include "Zancle/Graphics/Priv/TransformableMacros.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
 #include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 

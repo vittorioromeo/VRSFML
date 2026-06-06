@@ -7,11 +7,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
-#include "Zancle/Window/Event.hpp"
 
 #include "Zancle/GLUtils/EGL/EGLContext.hpp"
 
+#include "Zancle/Window/Event.hpp"
+
 #include "Zancle/Container/EnumArray.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 #include <android/configuration.h>

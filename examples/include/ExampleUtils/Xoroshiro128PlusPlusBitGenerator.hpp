@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 
 

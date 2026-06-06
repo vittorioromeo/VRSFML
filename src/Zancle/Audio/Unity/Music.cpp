@@ -14,18 +14,25 @@
 #include "Zancle/Audio/Priv/SoundBase.hpp"
 #include "Zancle/Audio/SoundStreamState.hpp"
 
-#include "Zancle/Concurrency/AtomicMutex.hpp"
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/Lifetime/LifetimeDependant.hpp"
+
+#include "Zancle/Concurrency/AtomicMutex.hpp"
 #include "Zancle/Concurrency/LockGuard.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

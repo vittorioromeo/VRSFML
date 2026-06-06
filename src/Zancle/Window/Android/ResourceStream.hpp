@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////
 
 #include "Zancle/Config.hpp"
+
 #include "Zancle/IO/InputStream.hpp"
 
 #include "Zancle/Vocabulary/UniquePtr.hpp"

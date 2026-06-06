@@ -11,6 +11,7 @@
 #include "Zancle/Window/VideoModeUtils.hpp"
 
 #include "Zancle/IO/Path.hpp"
+
 #include "Zancle/Concurrency/Thread.hpp"
 
 #include "Zancle/Vocabulary/Optional.hpp"

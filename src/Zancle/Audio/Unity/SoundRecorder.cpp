@@ -10,9 +10,11 @@
 #include "Zancle/Audio/CaptureDevice.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
 #include "Zancle/Lifetime/LifetimeDependant.hpp"
 
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

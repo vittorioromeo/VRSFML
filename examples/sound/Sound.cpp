@@ -12,13 +12,17 @@
 #include "Zancle/Audio/SoundBuffer.hpp"
 
 #include "Zancle/Err/FmtPath.hpp"
-#include "Zancle/IO/Path.hpp"
-#include "Zancle/Concurrency/Thread.hpp"
-#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Scn/ScnStdin.hpp"
 
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp"
-#include "Zancle/Scn/ScnStdin.hpp"
+
+#include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Concurrency/Thread.hpp"
+
+#include "Zancle/Chrono/Time.hpp"
 
 
 namespace

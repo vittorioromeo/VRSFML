@@ -7,9 +7,10 @@
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 
+#include "Zancle/Algorithm/IsSorted.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
-#include "Zancle/Algorithm/IsSorted.hpp"
 #include "Zancle/Trait/IsAggregate.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"

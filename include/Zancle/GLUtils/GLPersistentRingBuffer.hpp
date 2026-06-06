@@ -12,9 +12,11 @@
 #include "Zancle/GLUtils/GLFenceSync.hpp"
 #include "Zancle/GLUtils/GLPersistentBuffer.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/SmallVector.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

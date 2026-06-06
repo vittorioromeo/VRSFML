@@ -10,15 +10,20 @@
 #include "Zancle/Audio/Sound.hpp"
 #include "Zancle/Audio/SoundBuffer.hpp"
 
-#include "Zancle/IO/IO.hpp"
-#include "Zancle/IO/Path.hpp"
-#include "Zancle/Concurrency/Thread.hpp"
-#include "Zancle/Chrono/Time.hpp"
-
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp"
+
+#include "Zancle/IO/IO.hpp"
+#include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Concurrency/Thread.hpp"
+
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Container/InPlaceVector.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
 
 

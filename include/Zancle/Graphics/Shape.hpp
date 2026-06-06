@@ -17,11 +17,13 @@
 
 #include "Zancle/Mixin/GlobalAnchorPointMixin.hpp"
 #include "Zancle/Mixin/LocalAnchorPointMixin.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -4,14 +4,16 @@
 #include "Zancle/Concurrency/Thread.hpp"
 
 #include "Zancle/Concurrency/Atomic.hpp"
+
 #include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsMoveAssignable.hpp"
 #include "Zancle/Trait/IsMoveConstructible.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

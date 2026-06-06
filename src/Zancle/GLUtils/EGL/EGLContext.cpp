@@ -7,20 +7,22 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/GLUtils/EGL/EGLContext.hpp"
 
+#include "Zancle/GLUtils/EGL/EGLCheck.hpp"
+#include "Zancle/GLUtils/EGL/EGLGlad.hpp"
+
 #include "Zancle/Window/SDLWindowImpl.hpp"
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 #include "Zancle/Window/WindowContext.hpp"
 #include "Zancle/Window/WindowHandle.hpp"
 
-#include "Zancle/GLUtils/EGL/EGLCheck.hpp"
-#include "Zancle/GLUtils/EGL/EGLGlad.hpp"
-
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 #ifdef ZA_SYSTEM_ANDROID

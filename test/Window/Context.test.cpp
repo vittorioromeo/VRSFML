@@ -9,12 +9,14 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)
     #define GLAPI __stdcall

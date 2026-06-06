@@ -10,6 +10,7 @@
 #include "Zancle/Chrono/Time.hpp"
 
 #include "Zancle/Container/EnumArray.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 
 #include <android/looper.h>

@@ -11,6 +11,7 @@
 #include "Zancle/Audio/SoundChannel.hpp"
 
 #include "Zancle/Container/InPlaceVector.hpp"
+
 #include "Zancle/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "Zancle/Base/SizeT.hpp"
 

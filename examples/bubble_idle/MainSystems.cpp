@@ -35,43 +35,49 @@
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "Zancle/ImGui/IncludeImGui.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
 #include "Zancle/Graphics/Sprite.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Window/Keyboard.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Window/Keyboard.hpp"
 
 #include "Zancle/Algorithm/AllOf.hpp"
 #include "Zancle/Algorithm/AnyOf.hpp"
 #include "Zancle/Algorithm/Count.hpp"
 #include "Zancle/Algorithm/Erase.hpp"
 #include "Zancle/Algorithm/MaxElement.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/OverloadSet.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Pow.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/Sin.hpp"
+#include "Zancle/Math/Sqrt.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/Ceil.hpp"
-#include "Zancle/Math/Cos.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Math/Pow.hpp"
-#include "Zancle/Math/Sin.hpp"
-#include "Zancle/Math/Sqrt.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Vocabulary/OverloadSet.hpp"
-#include "Zancle/Math/Remainder.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <utility>
 

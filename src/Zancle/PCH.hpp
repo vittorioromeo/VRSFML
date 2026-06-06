@@ -22,19 +22,25 @@
     #endif // ZA_SYSTEM_WINDOWS
 
     #include "Zancle/Err/Err.hpp"
+
     #include "Zancle/IO/Path.hpp"
-    #include "Zancle/Geometry/Rect2.hpp"
-    #include "Zancle/Chrono/Time.hpp"
+
     #include "Zancle/String/Utf8String.hpp"
+
+    #include "Zancle/Chrono/Time.hpp"
+
+    #include "Zancle/Geometry/Rect2.hpp"
     #include "Zancle/Geometry/Vec2.hpp"
 
-    #include "Zancle/Diagnostic/Assert.hpp"
-    #include "Zancle/Base/Memcpy.hpp"
     #include "Zancle/Vocabulary/InPlacePImpl.hpp"
-    #include "Zancle/Base/IntTypes.hpp"
-    #include "Zancle/Base/Macros.hpp"
     #include "Zancle/Vocabulary/Optional.hpp"
     #include "Zancle/Vocabulary/UniquePtr.hpp"
+
+    #include "Zancle/Diagnostic/Assert.hpp"
+
+    #include "Zancle/Base/IntTypes.hpp"
+    #include "Zancle/Base/Macros.hpp"
+    #include "Zancle/Base/Memcpy.hpp"
 
     #ifdef ZA_BUILD_AUDIO
     // #include <miniaudio.h> // TODO P2: restore, needs CMake to be fixed

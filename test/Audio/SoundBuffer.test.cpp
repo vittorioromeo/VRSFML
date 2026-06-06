@@ -8,9 +8,9 @@
 
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
-#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsDefaultConstructible.hpp"
@@ -18,6 +18,8 @@
 #include "Zancle/Trait/IsMoveConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 
 
 TEST_CASE("[Audio] za::SoundBuffer" * tst::skip(skipAudioDeviceTests))

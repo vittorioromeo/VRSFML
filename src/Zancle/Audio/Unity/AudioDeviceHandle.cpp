@@ -9,8 +9,9 @@
 
 #include "Zancle/Audio/PlaybackDeviceHandle.hpp"
 
-#include "Zancle/Base/Memcmp.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
+
+#include "Zancle/Base/Memcmp.hpp"
 
 #include <miniaudio.h>
 

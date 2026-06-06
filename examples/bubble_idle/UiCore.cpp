@@ -22,10 +22,6 @@
 #include "ExampleUtils/HueColor.hpp"
 #include "ExampleUtils/Progress.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
-#include "Zancle/ImGui/IncludeImGuiInternal.hpp"
-
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawTextureSettings.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
@@ -33,26 +29,36 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/ImGui/IncludeImGuiInternal.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
+
+#include "Zancle/Algorithm/AnyOf.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Algorithm/AnyOf.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Strlen.hpp"
+
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
-#include "Zancle/Math/FloatMax.hpp"
-#include "Zancle/Base/GetArraySize.hpp"
-#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Math/Cos.hpp"
+#include "Zancle/Math/FloatMax.hpp"
+#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Math/Pow.hpp"
 #include "Zancle/Math/Sin.hpp"
-#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/GetArraySize.hpp"
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
-#include "Zancle/Container/Vector.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <cstdarg>
 #include <cstdio>

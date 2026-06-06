@@ -7,8 +7,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/Trait/IsEnum.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace za

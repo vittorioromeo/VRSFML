@@ -5,6 +5,12 @@
 
 #include "ExampleUtils/Scaling.hpp"
 
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/AudioSettings.hpp" // IWYU pragma: keep
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
@@ -18,35 +24,36 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/View.hpp" // IWYU pragma: keep
 
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/AudioSettings.hpp" // IWYU pragma: keep
-#include "Zancle/Audio/PlaybackDevice.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
-
 #include "Zancle/Window/Event.hpp" // IWYU pragma: keep
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/WindowSettings.hpp" // IWYU pragma: keep
 
-#include "Zancle/Chrono/Clock.hpp"
-#include "Zancle/IO/Path.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Chrono/Time.hpp"
-
-#include "Zancle/Diagnostic/Abort.hpp"
-#include "Zancle/Container/Array.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp"
+
+#include "Zancle/IO/Path.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Array.hpp"
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Round.hpp"
+
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Math/Round.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 #ifdef ZA_SYSTEM_IOS

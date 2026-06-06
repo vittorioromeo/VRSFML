@@ -4,11 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Diagnostic/AssertAndAssume.hpp"
-#include "Zancle/Base/IntTypes.hpp"
+
 #include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////

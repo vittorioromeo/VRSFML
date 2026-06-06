@@ -4,17 +4,19 @@
 #include "SystemUtil.hpp"
 #include "Tst/Tst.hpp"
 
+#include "Zancle/String/String.hpp"
 #include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
 #include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 #include "Zancle/Trait/RemoveConst.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 #include <limits>
 #include <string>

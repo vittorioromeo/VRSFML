@@ -31,6 +31,9 @@
 #include "ExampleUtils/Progress.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
+#include "Zancle/Audio/Listener.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/RenderWindow.hpp"
@@ -39,32 +42,37 @@
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Audio/Listener.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
 #include "Zancle/IO/IO.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
+
+#include "Zancle/String/String.hpp"
+#include "Zancle/String/ToString.hpp"
 
 #include "Zancle/Algorithm/AnyOf.hpp"
 #include "Zancle/Algorithm/Count.hpp"
 #include "Zancle/Algorithm/Erase.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Pow.hpp"
+
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Ceil.hpp"
-#include "Zancle/Math/Pow.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <climits>
 #include <cstdio>

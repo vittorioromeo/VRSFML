@@ -17,17 +17,23 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
+
+#include "Zancle/String/String.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace

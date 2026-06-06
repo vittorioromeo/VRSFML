@@ -15,11 +15,14 @@
 #include "TetraminoShapes.hpp"
 
 #include "Zancle/Container/Array.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Pow.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+
+#include "Zancle/Math/Pow.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace tsurv

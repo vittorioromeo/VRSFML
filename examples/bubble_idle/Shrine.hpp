@@ -10,11 +10,12 @@
 
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
+#include "Zancle/Vocabulary/Optional.hpp"
+
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Cos.hpp"
-#include "Zancle/Math/Sin.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/Sin.hpp"
 
 
 ////////////////////////////////////////////////////////////

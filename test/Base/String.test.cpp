@@ -4,13 +4,14 @@
 
 #include "Zancle/String/String.hpp"
 
-#include "Zancle/Algorithm/Copy.hpp"
 #include "Zancle/Fmt/FmtAppendMixin.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep -- enables int/float `fmtArg`
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/String/StringView.hpp"
 #include "Zancle/String/StringViewSplits.hpp" // IWYU pragma: keep
+
+#include "Zancle/Algorithm/Copy.hpp"
+
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
 #include "Zancle/Trait/IsMoveAssignable.hpp"
@@ -18,6 +19,9 @@
 #include "Zancle/Trait/IsTrivial.hpp"
 #include "Zancle/Trait/IsTriviallyCopyable.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
+
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace

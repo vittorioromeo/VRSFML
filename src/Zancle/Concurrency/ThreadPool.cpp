@@ -6,12 +6,15 @@
 
 #include "Zancle/Concurrency/Atomic.hpp"
 #include "Zancle/Concurrency/Thread.hpp"
+
 #include "Zancle/Chrono/Time.hpp"
 
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
