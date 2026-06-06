@@ -383,6 +383,9 @@ function(_zancle_install_and_export target module)
             "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.inl"
         )
     endif()
+    # BASE_DIRS = include so headers install under <prefix>/include/Zancle/...
+    # (the framework branch uses include/Zancle/ instead -- the framework
+    # bundle absorbs the Zancle/ segment into its Headers/ dir).
     target_sources(${target} PUBLIC
         FILE_SET zancle_public_headers
         TYPE HEADERS

@@ -125,7 +125,7 @@ find_package(Threads REQUIRED)
 
 # define the zancle-audio target
 zancle_add_library(Audio
-                 SOURCES ${SRC} ${CODECS_SRC}
+                 SOURCES ${SRC}
                  DEPENDENCIES "Dependencies.cmake.in")
 
 # avoids warnings in vorbisfile.h

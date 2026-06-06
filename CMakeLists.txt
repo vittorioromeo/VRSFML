@@ -64,7 +64,7 @@ include(cmake/CPM.cmake)
 # =============================================================================
 # User-facing build options
 # =============================================================================
-zancle_set_option(ZA_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
+zancle_set_option(ZA_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable stack traces on assertions, FALSE to disable them")
 if(ZA_ENABLE_STACK_TRACES AND NOT ZA_OS_EMSCRIPTEN)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extlibs/libbacktrace)
 endif()

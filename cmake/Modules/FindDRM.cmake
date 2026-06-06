@@ -1,5 +1,5 @@
 #
-# Try to find EGL library and include path.
+# Try to find DRM library and include path.
 # Once done this will define
 #
 # DRM_FOUND
