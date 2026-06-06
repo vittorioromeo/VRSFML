@@ -73,6 +73,10 @@ template <za::SizeT N>
 ////////////////////////////////////////////////////////////
 za::SizeT stringifyValue(char* buf, za::SizeT cap, bool v) noexcept;
 za::SizeT stringifyValue(char* buf, za::SizeT cap, char v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, char8_t v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, char16_t v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, char32_t v) noexcept;
+za::SizeT stringifyValue(char* buf, za::SizeT cap, wchar_t v) noexcept;
 za::SizeT stringifyValue(char* buf, za::SizeT cap, short v) noexcept;
 za::SizeT stringifyValue(char* buf, za::SizeT cap, unsigned short v) noexcept;
 za::SizeT stringifyValue(char* buf, za::SizeT cap, int v) noexcept;

@@ -8,15 +8,16 @@
 #include "Tst/Approx.hpp"
 #include "Tst/Detail/StringifyValue.hpp"
 
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtCString.hpp" // IWYU pragma: keep
+#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+#include "Zancle/Fmt/FmtSink.hpp"
+
 #include "Zancle/Geometry/Rect2.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
 #include "Zancle/Geometry/Vec3.hpp"
 
 #include "Zancle/Base/Memcpy.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtCString.hpp" // IWYU pragma: keep
-#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "Zancle/Fmt/FmtSink.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 
@@ -83,6 +84,32 @@ za::SizeT stringifyValue(char* buf, za::SizeT cap, char v) noexcept
     (void)sink.fmt("'{}'", v);
     return sink.size();
 }
+
+
+////////////////////////////////////////////////////////////
+// Wide character types: render as `'X'` when the codepoint lands in printable
+// ASCII (lets `*next == u8'Z'` failures show "'a' == 'Z'"), otherwise as
+// `U+XXXX` so non-printables and emoji still round-trip readably.
+#define ZA_TST_DEFINE_STRINGIFY_WIDECHAR(T)                          \
+    za::SizeT stringifyValue(char* buf, za::SizeT cap, T v) noexcept \
+    {                                                                \
+        za::FmtSink sink{buf, cap};                                  \
+        const auto  cp = static_cast<unsigned long>(v);              \
+                                                                     \
+        if (cp >= 0x20u && cp <= 0x7Eu)                              \
+            (void)sink.fmt("'{}'", static_cast<char>(cp));           \
+        else                                                         \
+            (void)sink.fmt("U+{:04X}", cp);                          \
+                                                                     \
+        return sink.size();                                          \
+    }
+
+ZA_TST_DEFINE_STRINGIFY_WIDECHAR(char8_t)
+ZA_TST_DEFINE_STRINGIFY_WIDECHAR(char16_t)
+ZA_TST_DEFINE_STRINGIFY_WIDECHAR(char32_t)
+ZA_TST_DEFINE_STRINGIFY_WIDECHAR(wchar_t)
+
+#undef ZA_TST_DEFINE_STRINGIFY_WIDECHAR
 
 
 ////////////////////////////////////////////////////////////
