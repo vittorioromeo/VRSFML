@@ -1,6 +1,7 @@
 file(GLOB SYSTEM_SRC CONFIGURE_DEPENDS "*.cpp" "*.hpp" "*.inl")
 zancle_add_test(test-zancle-system
     SOURCES ${SYSTEM_SRC}
+    BUNDLE_NAME System
     RESOURCES
         test.txt
         test2.txt

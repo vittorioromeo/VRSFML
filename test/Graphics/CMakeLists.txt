@@ -2,6 +2,7 @@ file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "*.cpp" "*.hpp" "*.inl")
 zancle_add_test(test-zancle-graphics
     SOURCES ${GRAPHICS_SRC}
     DEPENDS Zancle::Graphics
+    BUNDLE_NAME Graphics
     RESOURCES
         invalid_shader.vert
         zancle-logo-big.bmp
