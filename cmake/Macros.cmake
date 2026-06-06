@@ -131,6 +131,36 @@ function(zancle_tame_thirdparty)
 endfunction()
 
 
+# Collect public headers for one Zancle module into ${outvar} (PARENT_SCOPE).
+#
+# For "System": returns the four top-level umbrella headers (Config, OpenGL,
+# GpuPreference, Main) plus the headers from all 17 utility modules listed in
+# UTILITY_MODULES. For any other module name: globs include/Zancle/<Module>/.
+#
+# Used by both the per-module install path (_zancle_install_and_export) and the
+# macOS framework branch in the top-level CMakeLists.
+function(_zancle_collect_module_headers module outvar)
+    if(${module} STREQUAL "System")
+        set(_headers
+            "${PROJECT_SOURCE_DIR}/include/Zancle/Config.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/OpenGL.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/GpuPreference.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/Main.hpp")
+        foreach(_um IN LISTS UTILITY_MODULES)
+            file(GLOB_RECURSE _h CONFIGURE_DEPENDS
+                "${PROJECT_SOURCE_DIR}/include/Zancle/${_um}/*.hpp"
+                "${PROJECT_SOURCE_DIR}/include/Zancle/${_um}/*.inl")
+            list(APPEND _headers ${_h})
+        endforeach()
+    else()
+        file(GLOB_RECURSE _headers CONFIGURE_DEPENDS
+            "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.hpp"
+            "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.inl")
+    endif()
+    set(${outvar} "${_headers}" PARENT_SCOPE)
+endfunction()
+
+
 # -- zancle_add_library helpers ------------------------------------------------
 #
 # Each helper handles one concern of a Zancle library target. The public
@@ -347,40 +377,14 @@ function(_zancle_install_and_export target module)
 
     # Declare the module's public headers as a FILE_SET. Each module installs
     # only its own `include/Zancle/<Module>/` tree; disabling a module via
-    # -DZA_BUILD_X=OFF therefore omits its headers from the install, which the
-    # older `install(DIRECTORY include/ ...)` dump-everything pattern could
-    # not do.
+    # -DZA_BUILD_X=OFF therefore omits its headers from the install. The
+    # System target aggregates utility-module + umbrella headers (see
+    # _zancle_collect_module_headers).
     #
-    # Special-case "System": that target aggregates the 17 flat utility
-    # modules listed in `UTILITY_MODULES` (set by src/Zancle/System/
-    # CMakeLists.txt before it calls zancle_add_library), so glob across all
-    # of them. System also owns the four top-level umbrella headers
-    # (Config/OpenGL/GpuPreference/Main).
-    #
-    # Framework builds keep the existing add_custom_command-based POST_BUILD
-    # copy in the top-level CMakeLists, so the FILE_SET install line below is
-    # gated on NOT ZA_BUILD_FRAMEWORKS.
-    set(_module_headers "")
-    if(${module} STREQUAL "System")
-        foreach(_um IN LISTS UTILITY_MODULES)
-            file(GLOB_RECURSE _um_headers CONFIGURE_DEPENDS
-                "${PROJECT_SOURCE_DIR}/include/Zancle/${_um}/*.hpp"
-                "${PROJECT_SOURCE_DIR}/include/Zancle/${_um}/*.inl"
-            )
-            list(APPEND _module_headers ${_um_headers})
-        endforeach()
-        list(APPEND _module_headers
-            "${PROJECT_SOURCE_DIR}/include/Zancle/Config.hpp"
-            "${PROJECT_SOURCE_DIR}/include/Zancle/OpenGL.hpp"
-            "${PROJECT_SOURCE_DIR}/include/Zancle/GpuPreference.hpp"
-            "${PROJECT_SOURCE_DIR}/include/Zancle/Main.hpp"
-        )
-    else()
-        file(GLOB_RECURSE _module_headers CONFIGURE_DEPENDS
-            "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.hpp"
-            "${PROJECT_SOURCE_DIR}/include/Zancle/${module}/*.inl"
-        )
-    endif()
+    # Framework builds use a separate FILE_SET on the aggregate `Zancle` target
+    # in the top-level CMakeLists, so the FILE_SET install line below is gated
+    # on NOT ZA_BUILD_FRAMEWORKS.
+    _zancle_collect_module_headers(${module} _module_headers)
     # BASE_DIRS = include so headers install under <prefix>/include/Zancle/...
     # (the framework branch uses include/Zancle/ instead -- the framework
     # bundle absorbs the Zancle/ segment into its Headers/ dir).

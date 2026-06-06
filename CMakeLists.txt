@@ -423,25 +423,12 @@ else()
     # `<Module>/Foo.hpp` layout that consumers expect via the framework-style
     # `#include <Zancle/<Module>/Foo.hpp>` import (resolved by macOS as
     # Zancle.framework/Headers/<Module>/Foo.hpp).
-    set(_zancle_framework_headers
-        ${PROJECT_SOURCE_DIR}/include/Zancle/Config.hpp
-        ${PROJECT_SOURCE_DIR}/include/Zancle/OpenGL.hpp
-        ${PROJECT_SOURCE_DIR}/include/Zancle/GpuPreference.hpp
-        ${PROJECT_SOURCE_DIR}/include/Zancle/Main.hpp)
-
-    foreach(_mod IN LISTS UTILITY_MODULES)
-        file(GLOB_RECURSE _h CONFIGURE_DEPENDS
-            "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.hpp"
-            "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.inl")
-        list(APPEND _zancle_framework_headers ${_h})
-    endforeach()
-
+    # System (umbrella + 17 utility modules) + each enabled multimedia module.
+    _zancle_collect_module_headers(System _zancle_framework_headers)
     foreach(_mod IN LISTS MULTIMEDIA_MODULES)
         string(TOUPPER "${_mod}" _flag)
         if(ZA_BUILD_${_flag})
-            file(GLOB_RECURSE _h CONFIGURE_DEPENDS
-                "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.hpp"
-                "${PROJECT_SOURCE_DIR}/include/Zancle/${_mod}/*.inl")
+            _zancle_collect_module_headers(${_mod} _h)
             list(APPEND _zancle_framework_headers ${_h})
         endif()
     endforeach()
