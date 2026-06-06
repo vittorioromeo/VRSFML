@@ -25,19 +25,19 @@ bool Mouse::isButtonPressed(Button button)
 {
     const auto globalMouseState = SDL_GetGlobalMouseState(nullptr, nullptr);
 
-    if (button == priv::getButtonFromSDLButton(SDL_BUTTON_LEFT))
+    if (button == priv::getZancleButtonFromSDLButton(SDL_BUTTON_LEFT))
         return (globalMouseState & SDL_BUTTON_LMASK) != 0;
 
-    if (button == priv::getButtonFromSDLButton(SDL_BUTTON_MIDDLE))
+    if (button == priv::getZancleButtonFromSDLButton(SDL_BUTTON_MIDDLE))
         return (globalMouseState & SDL_BUTTON_MMASK) != 0;
 
-    if (button == priv::getButtonFromSDLButton(SDL_BUTTON_RIGHT))
+    if (button == priv::getZancleButtonFromSDLButton(SDL_BUTTON_RIGHT))
         return (globalMouseState & SDL_BUTTON_RMASK) != 0;
 
-    if (button == priv::getButtonFromSDLButton(SDL_BUTTON_X1))
+    if (button == priv::getZancleButtonFromSDLButton(SDL_BUTTON_X1))
         return (globalMouseState & SDL_BUTTON_X1MASK) != 0;
 
-    if (button == priv::getButtonFromSDLButton(SDL_BUTTON_X2))
+    if (button == priv::getZancleButtonFromSDLButton(SDL_BUTTON_X2))
         return (globalMouseState & SDL_BUTTON_X2MASK) != 0;
 
     ZA_ASSERT(false);

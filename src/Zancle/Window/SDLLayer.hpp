@@ -52,16 +52,16 @@ struct WindowSettings;
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Keyboard::Scan mapSDLScancodeToSFML(SDL_Scancode sdlCode) noexcept;
+[[nodiscard, gnu::const]] Keyboard::Scan mapSDLScancodeToZancle(SDL_Scancode sdlCode) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] SDL_Scancode mapSFMLScancodeToSDL(Keyboard::Scan scanCode) noexcept;
+[[nodiscard, gnu::const]] SDL_Scancode mapZancleScancodeToSDL(Keyboard::Scan scanCode) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Keyboard::Key mapSDLKeycodeToSFML(SDL_Keycode sdlKey) noexcept;
+[[nodiscard, gnu::const]] Keyboard::Key mapSDLKeycodeToZancle(SDL_Keycode sdlKey) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] SDL_Keycode mapSFMLKeycodeToSDL(Keyboard::Key key) noexcept;
+[[nodiscard, gnu::const]] SDL_Keycode mapZancleKeycodeToSDL(Keyboard::Key key) noexcept;
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] SDL_SystemCursor cursorTypeToSDLCursor(za::Cursor::Type type) noexcept;
@@ -76,13 +76,13 @@ namespace za::priv
 [[nodiscard, gnu::pure]] SDL_WindowFlags makeSDLWindowFlagsFromWindowSettings(const WindowSettings& windowSettings) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(za::U8 sdlButton) noexcept;
+[[nodiscard, gnu::const]] Mouse::Button getZancleButtonFromSDLButton(za::U8 sdlButton) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] za::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
+[[nodiscard, gnu::const]] za::U8 getSDLButtonFromZancleButton(Mouse::Button button) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToSFML(SDL_DisplayOrientation displayOrientation);
+[[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToZancle(SDL_DisplayOrientation displayOrientation);
 
 ////////////////////////////////////////////////////////////
 struct ZA_TRIVIAL_ABI UniquePtrSDLDeleter

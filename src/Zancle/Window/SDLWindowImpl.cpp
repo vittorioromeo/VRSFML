@@ -26,26 +26,34 @@
 #include "Zancle/Window/WindowHandle.hpp"
 #include "Zancle/Window/WindowSettings.hpp"
 
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/Err/Err.hpp"
-#include "Zancle/Geometry/Priv/Vec2Base.hpp"
-#include "Zancle/Concurrency/Thread.hpp"
-#include "Zancle/Chrono/Time.hpp"
-#include "Zancle/String/Utf.hpp"
-#include "Zancle/Geometry/Vec3.hpp"
 
-#include "Zancle/Container/AnkerlUnorderedDense.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Container/EnumArray.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Concurrency/Thread.hpp"
+
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToString.hpp"
-#include "Zancle/Vocabulary/UniquePtr.hpp"
+#include "Zancle/String/Utf.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/AnkerlUnorderedDense.hpp"
+#include "Zancle/Container/EnumArray.hpp"
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Priv/Vec2Base.hpp"
+#include "Zancle/Geometry/Vec3.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/UniquePtr.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Fabs.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -279,8 +287,8 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
             if (!m_impl->keyRepeatEnabled && e.key.repeat)
                 return;
 
-            pushEvent(Event::KeyPressed{.code       = mapSDLKeycodeToSFML(e.key.key),
-                                        .scancode   = mapSDLScancodeToSFML(e.key.scancode),
+            pushEvent(Event::KeyPressed{.code       = mapSDLKeycodeToZancle(e.key.key),
+                                        .scancode   = mapSDLScancodeToZancle(e.key.scancode),
                                         .alt        = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
                                         .control    = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
                                         .shift      = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
@@ -293,8 +301,8 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 
         case SDL_EVENT_KEY_UP:
         {
-            pushEvent(Event::KeyReleased{.code       = mapSDLKeycodeToSFML(e.key.key),
-                                         .scancode   = mapSDLScancodeToSFML(e.key.scancode),
+            pushEvent(Event::KeyReleased{.code       = mapSDLKeycodeToZancle(e.key.key),
+                                         .scancode   = mapSDLScancodeToZancle(e.key.scancode),
                                          .alt        = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
                                          .control    = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
                                          .shift      = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
@@ -333,7 +341,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         {
             pushEvent(Event::MouseButtonPressed{
-                .button   = getButtonFromSDLButton(e.button.button),
+                .button   = getZancleButtonFromSDLButton(e.button.button),
                 .position = {static_cast<int>(e.button.x), static_cast<int>(e.button.y)},
             });
             break;
@@ -342,7 +350,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_MOUSE_BUTTON_UP:
         {
             pushEvent(Event::MouseButtonReleased{
-                .button   = getButtonFromSDLButton(e.button.button),
+                .button   = getZancleButtonFromSDLButton(e.button.button),
                 .position = {static_cast<int>(e.button.x), static_cast<int>(e.button.y)},
             });
             break;

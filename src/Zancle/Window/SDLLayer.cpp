@@ -16,18 +16,22 @@
 #include "Zancle/Window/WindowSettings.hpp"
 
 #include "Zancle/Err/Err.hpp"
+
+#include "Zancle/String/Utf8String.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/String/Utf8String.hpp"
+
+#include "Zancle/Vocabulary/ScopeGuard.hpp"
 
 #include "Zancle/Diagnostic/Abort.hpp"
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Memcmp.hpp"
+#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Strcmp.hpp"
 #include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Vocabulary/ScopeGuard.hpp"
-#include "Zancle/Base/SizeT.hpp"
 
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
@@ -105,7 +109,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-#define ZA_PRIV_SFML_SDL_KEYCODE_MAPPING                                    \
+#define ZA_PRIV_ZANCLE_SDL_KEYCODE_MAPPING                                  \
     X(SDLK_UNKNOWN, ::za::Keyboard::Key::Unknown)                           \
     X(SDLK_RETURN, ::za::Keyboard::Key::Enter)                              \
     X(SDLK_ESCAPE, ::za::Keyboard::Key::Escape)                             \
@@ -367,28 +371,28 @@ namespace
 namespace za::priv
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Keyboard::Scan mapSDLScancodeToSFML(const SDL_Scancode sdlCode) noexcept
+[[nodiscard, gnu::const]] Keyboard::Scan mapSDLScancodeToZancle(const SDL_Scancode sdlCode) noexcept
 {
     return static_cast<Keyboard::Scan>(sdlCode);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] SDL_Scancode mapSFMLScancodeToSDL(const Keyboard::Scan scanCode) noexcept
+[[nodiscard, gnu::const]] SDL_Scancode mapZancleScancodeToSDL(const Keyboard::Scan scanCode) noexcept
 {
     return static_cast<SDL_Scancode>(scanCode);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Keyboard::Key mapSDLKeycodeToSFML(const SDL_Keycode sdlKey) noexcept
+[[nodiscard, gnu::const]] Keyboard::Key mapSDLKeycodeToZancle(const SDL_Keycode sdlKey) noexcept
 {
     switch (sdlKey)
     {
 #define X(sdlKey, zancleKey) \
     case sdlKey:             \
         return zancleKey;
-        ZA_PRIV_SFML_SDL_KEYCODE_MAPPING
+        ZA_PRIV_ZANCLE_SDL_KEYCODE_MAPPING
 #undef X
     }
 
@@ -397,14 +401,14 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] SDL_Keycode mapSFMLKeycodeToSDL(const Keyboard::Key key) noexcept
+[[nodiscard, gnu::const]] SDL_Keycode mapZancleKeycodeToSDL(const Keyboard::Key key) noexcept
 {
     switch (key)
     {
 #define X(sdlKey, zancleKey) \
     case zancleKey:          \
         return sdlKey;
-        ZA_PRIV_SFML_SDL_KEYCODE_MAPPING
+        ZA_PRIV_ZANCLE_SDL_KEYCODE_MAPPING
 #undef X
     }
 
@@ -413,7 +417,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-#undef ZA_PRIV_SFML_SDL_KEYCODE_MAPPING
+#undef ZA_PRIV_ZANCLE_SDL_KEYCODE_MAPPING
 
 
 ////////////////////////////////////////////////////////////
@@ -537,7 +541,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] Mouse::Button getButtonFromSDLButton(const za::U8 sdlButton) noexcept
+[[nodiscard, gnu::const]] Mouse::Button getZancleButtonFromSDLButton(const za::U8 sdlButton) noexcept
 {
     // clang-format off
     switch (sdlButton)
@@ -556,7 +560,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] za::U8 getSDLButtonFromSFMLButton(const Mouse::Button button) noexcept
+[[nodiscard, gnu::const]] za::U8 getSDLButtonFromZancleButton(const Mouse::Button button) noexcept
 {
     // clang-format off
     switch (button)
@@ -575,7 +579,7 @@ namespace za::priv
 
 
 ////////////////////////////////////////////////////////////
-DisplayOrientation mapSDLDisplayOrientationToSFML(const SDL_DisplayOrientation displayOrientation)
+DisplayOrientation mapSDLDisplayOrientationToZancle(const SDL_DisplayOrientation displayOrientation)
 {
     return static_cast<DisplayOrientation>(displayOrientation);
 }
@@ -759,22 +763,22 @@ const char* SDLLayer::getTouchDeviceName(const SDL_TouchID touchDeviceId)
 ////////////////////////////////////////////////////////////
 Keyboard::Key SDLLayer::localizeScancode(const Keyboard::Scancode code) const noexcept
 {
-    const SDL_Scancode sdlScancode = mapSFMLScancodeToSDL(code);
+    const SDL_Scancode sdlScancode = mapZancleScancodeToSDL(code);
     const SDL_Keycode  sdlKey      = SDL_GetKeyFromScancode(sdlScancode, SDL_GetModState(), true);
 
-    return mapSDLKeycodeToSFML(sdlKey);
+    return mapSDLKeycodeToZancle(sdlKey);
 }
 
 
 ////////////////////////////////////////////////////////////
 Keyboard::Scancode SDLLayer::delocalizeScancode(const Keyboard::Key key) const noexcept
 {
-    const SDL_Keycode sdlKey = mapSFMLKeycodeToSDL(key);
+    const SDL_Keycode sdlKey = mapZancleKeycodeToSDL(key);
 
     SDL_Keymod         mod{};
     const SDL_Scancode sdlScancode = SDL_GetScancodeFromKey(sdlKey, &mod);
 
-    return mapSDLScancodeToSFML(sdlScancode);
+    return mapSDLScancodeToZancle(sdlScancode);
 }
 
 
@@ -784,14 +788,14 @@ bool SDLLayer::isKeyPressedByScancode(const Keyboard::Scancode code) const noexc
     const bool* keyboardState = SDL_GetKeyboardState(nullptr);
     ZA_ASSERT(keyboardState != nullptr);
 
-    return keyboardState[mapSFMLScancodeToSDL(code)];
+    return keyboardState[mapZancleScancodeToSDL(code)];
 }
 
 
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) const noexcept
 {
-    return SDL_GetKeyName(mapSFMLKeycodeToSDL(Keyboard::localize(code)));
+    return SDL_GetKeyName(mapZancleKeycodeToSDL(Keyboard::localize(code)));
 }
 
 
@@ -936,7 +940,7 @@ Rect2i SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
 DisplayOrientation SDLLayer::getNaturalDisplayOrientation(const SDL_DisplayID displayID) const
 {
     ZA_ASSERT(displayID != 0u);
-    return mapSDLDisplayOrientationToSFML(SDL_GetNaturalDisplayOrientation(displayID));
+    return mapSDLDisplayOrientationToZancle(SDL_GetNaturalDisplayOrientation(displayID));
 }
 
 
@@ -944,7 +948,7 @@ DisplayOrientation SDLLayer::getNaturalDisplayOrientation(const SDL_DisplayID di
 DisplayOrientation SDLLayer::getCurrentDisplayOrientation(const SDL_DisplayID displayID) const
 {
     ZA_ASSERT(displayID != 0u);
-    return mapSDLDisplayOrientationToSFML(SDL_GetCurrentDisplayOrientation(displayID));
+    return mapSDLDisplayOrientationToZancle(SDL_GetCurrentDisplayOrientation(displayID));
 }
 
 
