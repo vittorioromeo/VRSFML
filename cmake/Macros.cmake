@@ -479,6 +479,37 @@ macro(zancle_add_library module)
     _zancle_install_and_export(${target} ${module})
 endmacro()
 
+# Concerns shared by both zancle_add_example and zancle_add_test: warnings,
+# hidden visibility, stdlib selection, PCH reuse + Threads, emscripten options,
+# iOS bundle properties, Windows mesa3d dependency, MSVC /utf-8 source flag.
+# `kind` is just the human-readable label ("example" / "test") for log output.
+function(_zancle_finish_executable target kind)
+    set_target_warnings(${target})
+    set_public_symbols_hidden(${target})
+    zancle_set_stdlib(${target})
+
+    zancle_apply_emscripten_options(${target})
+
+    if(ZA_ENABLE_PCH)
+        message(VERBOSE "enabling PCH for Zancle ${kind} '${target}'")
+        target_precompile_headers(${target} REUSE_FROM zancle-system)
+        target_link_libraries(${target} PRIVATE Threads::Threads)
+    endif()
+
+    if(ZA_OS_IOS)
+        zancle_set_common_ios_properties(${target})
+    endif()
+
+    if(ZA_OS_WINDOWS AND ZA_USE_MESA3D)
+        add_dependencies(${target} "install-mesa3d")
+    endif()
+
+    if(ZA_COMPILER_MSVC)
+        target_compile_options(${target} PRIVATE /utf-8)
+    endif()
+endfunction()
+
+
 # add a new target which is a Zancle example
 # example: zancle_add_example(ftp
 #                           SOURCES ftp.cpp ...
@@ -517,84 +548,42 @@ macro(zancle_add_example target)
         add_executable(${target} ${target_input})
     endif()
 
-    # add shared include directory
     target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
     target_link_libraries(${target} PRIVATE ExampleUtils)
-
-    # enable precompiled headers
-    if (ZA_ENABLE_PCH)
-        message(VERBOSE "enabling PCH for Zancle example '${target}'")
-        target_precompile_headers(${target} REUSE_FROM zancle-system)
-        target_link_libraries(${target} PRIVATE Threads::Threads)
-    endif()
-
-    set_target_warnings(${target})
-    set_public_symbols_hidden(${target})
-
-    # Disable GCC's `-Wmissing-field-initializers`, too noisy when using
-    # aggregate initialization with many fields
-    if(ZA_COMPILER_GCC)
-        target_compile_options(${target} PRIVATE -Wno-missing-field-initializers)
-    endif()
-
-    # set the debug suffix
-    set_target_properties(${target} PROPERTIES DEBUG_POSTFIX -d)
-
-    # set the target's folder (for IDEs that support it, e.g. Visual Studio)
-    set_target_properties(${target} PROPERTIES FOLDER "Examples")
-
-    # set the target flags to use the appropriate C++ standard library
-    zancle_set_stdlib(${target})
-
-    # set the properties required for debugging
-    set_target_properties(${target} PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-
-        XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        XCODE_GENERATE_SCHEME ON)
-
-    # link the target to its Zancle dependencies
     if(THIS_DEPENDS)
         target_link_libraries(${target} PRIVATE ${THIS_DEPENDS})
     endif()
 
-    # set required compile/link options for emscripten and preload resource files
-    zancle_apply_emscripten_options(${target})
+    set_target_properties(${target} PROPERTIES
+        DEBUG_POSTFIX -d
+        FOLDER "Examples"
+        VS_DEBUGGER_WORKING_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}
+        XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        XCODE_GENERATE_SCHEME          ON)
+
+    # GCC's `-Wmissing-field-initializers` is too noisy on aggregate inits.
+    if(ZA_COMPILER_GCC)
+        target_compile_options(${target} PRIVATE -Wno-missing-field-initializers)
+    endif()
+
+    # Examples-specific Emscripten resource embedding: copies the per-target
+    # `resources/` directory into a staging area and `--embed-file`s it (whole
+    # directory, no manifest). Tests use `--preload-file` instead -- see
+    # zancle_add_test.
     if(ZA_OS_EMSCRIPTEN)
         set_target_properties(${target} PROPERTIES SUFFIX ".html")
 
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
-            # 1. Define a unique path for this target's resources in the build directory
-            set(TARGET_RESOURCE_STAGING_DIR "${CMAKE_CURRENT_BINARY_DIR}/staging_${target}")
-
-            # 2. Copy resources to this isolated staging area
-            # This prevents target A and target B from overwriting each other in the build folder
-            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${TARGET_RESOURCE_STAGING_DIR})
-
-            # 3. Embed the isolated folder into the WASM virtual filesystem
-            # The syntax "physical_path@virtual_path" maps our unique staging folder
-            # to the "resources" folder the C++ code expects at runtime.
+            set(_staging "${CMAKE_CURRENT_BINARY_DIR}/staging_${target}")
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${_staging})
             target_link_options(${target} PRIVATE
-                "SHELL:--embed-file ${TARGET_RESOURCE_STAGING_DIR}/resources@resources"
-            )
-
-            # Ensure the target rebuilds if resources change
-            set_property(TARGET ${target} APPEND PROPERTY SUBDIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+                "SHELL:--embed-file ${_staging}/resources@resources")
+            set_property(TARGET ${target} APPEND PROPERTY
+                SUBDIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
         endif()
     endif()
 
-    if(ZA_OS_IOS)
-        zancle_set_common_ios_properties(${target})
-    endif()
-
-    if(ZA_OS_WINDOWS AND ZA_USE_MESA3D)
-        add_dependencies(${target} "install-mesa3d")
-    endif()
-
-    # Enable support for UTF-8 characters in source code
-    if(ZA_COMPILER_MSVC)
-        target_compile_options(${target} PRIVATE /utf-8)
-    endif()
+    _zancle_finish_executable(${target} example)
 endmacro()
 
 # add a new target which is a Zancle test
@@ -622,17 +611,11 @@ function(zancle_add_test target)
         message(FATAL_ERROR "zancle_add_test: RESOURCES given without BUNDLE_NAME (needed for iOS MACOSX_PACKAGE_LOCATION)")
     endif()
 
-    # Backwards-compatible aliases (the previous positional signature was
-    # zancle_add_test(target SOURCES DEPENDS); keep DEPENDS as a callable
-    # symbol below so the rest of the function reads naturally.)
-    set(SOURCES "${THIS_SOURCES}")
-    set(DEPENDS "${THIS_DEPENDS}")
+    add_executable(${target} ${THIS_SOURCES})
+    target_link_libraries(${target} PRIVATE ${THIS_DEPENDS} zancle-test-main)
 
-    # create the target
-    add_executable(${target} ${SOURCES})
-
-    # set required compile/link options for emscripten
-    zancle_apply_emscripten_options(${target})
+    # Emscripten: graphics/audio tests need the .html shell for GL/audio
+    # context; everything else can run headless as a .js bundle.
     if(ZA_OS_EMSCRIPTEN)
         if (${target} STREQUAL "test-zancle-graphics" OR ${target} STREQUAL "test-zancle-audio")
             set_target_properties(${target} PROPERTIES SUFFIX ".html")
@@ -641,67 +624,34 @@ function(zancle_add_test target)
         endif()
     endif()
 
-    # enable precompiled headers
-    if (ZA_ENABLE_PCH)
-        message(VERBOSE "enabling PCH for Zancle test '${target}'")
-        target_precompile_headers(${target} REUSE_FROM zancle-system)
-        target_link_libraries(${target} PRIVATE Threads::Threads)
-    endif()
-
-    # set the target's folder (for IDEs that support it, e.g. Visual Studio)
-    set_target_properties(${target} PROPERTIES FOLDER "Tests")
-
-    # set the target flags to use the appropriate C++ standard library
-    zancle_set_stdlib(${target})
-
     set_target_properties(${target} PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} # set the Visual Studio startup path for debugging
-        VS_DEBUGGER_COMMAND_ARGUMENTS "-b" # Break into debugger
+        FOLDER "Tests"
+        VS_DEBUGGER_WORKING_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}
+        VS_DEBUGGER_COMMAND_ARGUMENTS  "-b"  # break into debugger
+        XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        XCODE_SCHEME_ARGUMENTS         "-b"  # break into debugger
+        XCODE_GENERATE_SCHEME          ON)
 
-        XCODE_GENERATE_SCHEME ON # Required to set arguments
-        XCODE_SCHEME_ARGUMENTS "-b" # Break into debugger
-        XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} # set the Xcode startup path for debugging
-    )
-
-    # link the target to its Zancle dependencies
-    target_link_libraries(${target} PRIVATE ${DEPENDS} zancle-test-main)
-
-    set_target_warnings(${target})
-    set_public_symbols_hidden(${target})
-
-    # If coverage is enabled for MSVC and we are linking statically, use /WHOLEARCHIVE
-    # to make sure the linker doesn't discard unused code sections before coverage can be measured
+    # MSVC static coverage needs /WHOLEARCHIVE to keep dead-but-instrumented
+    # code sections around long enough to be measured.
     if(ZA_ENABLE_COVERAGE AND ZA_COMPILER_MSVC AND NOT BUILD_SHARED_LIBS)
-        foreach(DEPENDENCY ${DEPENDS})
+        foreach(DEPENDENCY ${THIS_DEPENDS})
             target_link_options(${target} PRIVATE $<$<CONFIG:DEBUG>:/WHOLEARCHIVE:$<TARGET_LINKER_FILE:${DEPENDENCY}>>)
         endforeach()
-    endif()
-
-    if(ZA_OS_WINDOWS AND ZA_USE_MESA3D)
-        add_dependencies(${target} "install-mesa3d")
     endif()
 
     # Delay test registration when cross compiling to avoid running crosscompiled app on host OS
     if(CMAKE_CROSSCOMPILING)
         set(CMAKE_CATCH_DISCOVER_TESTS_DISCOVERY_MODE PRE_TEST)
 
-        # When running tests on Android, use a custom shell script to invoke commands using adb shell
+        # On Android, use a custom shell script to invoke commands via adb shell
         if(ZA_OS_ANDROID)
             set_target_properties(${target} PROPERTIES CROSSCOMPILING_EMULATOR "${PROJECT_BINARY_DIR}/run-in-adb-shell.sh")
         endif()
     endif()
 
-    # Required to actually run the tests
-    if(ZA_OS_IOS)
-        zancle_set_common_ios_properties(${target})
-    endif()
-
-    # Enable support for UTF-8 characters in source code
-    if(ZA_COMPILER_MSVC)
-        target_compile_options(${target} PRIVATE /utf-8)
-    endif()
-
-    # Bundle and (on Emscripten) preload resources.
+    # Bundle and (on Emscripten) preload resources. See the function header
+    # for why tests use --preload-file (non-ASCII filenames break --embed-file).
     if(THIS_RESOURCES AND (ZA_OS_IOS OR ZA_OS_EMSCRIPTEN))
         target_sources(${target} PRIVATE ${THIS_RESOURCES})
         set_source_files_properties(${THIS_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION "${THIS_BUNDLE_NAME}")
@@ -715,16 +665,14 @@ function(zancle_add_test target)
         endif()
     endif()
 
-    # Add the test
+    _zancle_finish_executable(${target} test)
+
+    # Register the test (Emscripten runs are launched separately via emrun,
+    # not via ctest). The bespoke testing library runs every case from a
+    # single binary entry point; one ctest entry per target is sufficient
+    # (and faster than per-case discovery). LSan suppressions wire up
+    # dbus / GL driver / Vulkan leaks seen during graphics-context teardown.
     if(NOT ZA_OS_EMSCRIPTEN)
-        # Wire up LSan suppressions for the dbus / GL driver / Vulkan leaks that
-        # surface during graphics-context teardown. The suppressions list lives
-        # in `lsan_suppressions.txt` at the project root.
-        #
-        # The bespoke testing library runs every test case from a single
-        # binary entry point; the binary's exit code reports overall pass/fail
-        # and per-case diagnostics go to stderr. One ctest entry per target
-        # is sufficient (and faster to register than per-case discovery).
         add_test(NAME ${target}
                  COMMAND ${target}
                  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
