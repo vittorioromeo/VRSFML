@@ -33,33 +33,28 @@ constexpr za::StringView privateKey = R"(-----BEGIN EC PARAMETERS-----
 BgUrgQQAIg==
 -----END EC PARAMETERS-----
 -----BEGIN EC PRIVATE KEY-----
-MIGkAgEBBDD4ybj384qP07KjAqKoU4XwVyRH/Sy2kMYrtCr0SU/R0sCSxSPNwAXW
-8Z5Z5CV/uDugBwYFK4EEACKhZANiAATpYJyfUQMS5YUOS8yaf2svRqebVAyqZcNh
-lUKEP2OPwacLVul1OlW9QYJh4VFvtGvKyNEd1YCpBFUyASfeev8ZNBaLpMb20e3S
-ztTSrGCF1rJynnEoGJrIh3trvRAKD0E=
+MIGkAgEBBDBk0sxXYgP7M/WWZt2k3AQOVSkQ2GKi6EMRsUSQlq1EUF7P2IT2Fc41
+FBNPwOIHiOmgBwYFK4EEACKhZANiAATEdENJ5ESMznhouovGEkkJewpuP+tl0TY7
+sygE7cUa9t8/ZYiJcu0wcokzwTKPbh1daMGq9W9rRmDhcNaI5uX4kSa8PHN36MRA
+G6dkijFhCxjblBRE0kewNxgie6tUecg=
 -----END EC PRIVATE KEY-----)";
 
 
 ////////////////////////////////////////////////////////////
-// Generated with: openssl req -new -key key.pem -x509 -nodes -days 36500 -sha384 -out cert.pem
-// Country Name (2 letter code) [AU]:.
-// State or Province Name (full name) [Some-State]:.
-// Locality Name (eg, city) []:.
-// Organization Name (eg, company) [Internet Widgits Pty Ltd]:.
-// Organizational Unit Name (eg, section) []:.
-// Common Name (e.g. server FQDN or YOUR name) []:Zancle TLS Example
-// Email Address []:.
+// Generated with:
+//   openssl req -new -key key.pem -x509 -nodes -days 36500 -sha384 \
+//               -subj '/CN=Zancle TLS Example' -out cert.pem
 constexpr za::StringView certificate = R"(-----BEGIN CERTIFICATE-----
-MIIByTCCAVCgAwIBAgIUKT3iSj7kJlvzxEGvfK1/yAYzRPcwCgYIKoZIzj0EAwMw
-GzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTAgFw0yNTA4MjMxMjI4MDJaGA8y
-MTI1MDczMDEyMjgwMlowGzEZMBcGA1UEAwwQU0ZNTCBUTFMgRXhhbXBsZTB2MBAG
-ByqGSM49AgEGBSuBBAAiA2IABOlgnJ9RAxLlhQ5LzJp/ay9Gp5tUDKplw2GVQoQ/
-Y4/BpwtW6XU6Vb1BgmHhUW+0a8rI0R3VgKkEVTIBJ956/xk0FoukxvbR7dLO1NKs
-YIXWsnKecSgYmsiHe2u9EAoPQaNTMFEwHQYDVR0OBBYEFImks65Kr96a8vcyjMgT
-WJHWyPpQMB8GA1UdIwQYMBaAFImks65Kr96a8vcyjMgTWJHWyPpQMA8GA1UdEwEB
-/wQFMAMBAf8wCgYIKoZIzj0EAwMDZwAwZAIwEwYg6elb6OPPkWaYdMAk4u05pngs
-jN4bnBb1ChFgSeEnQmfOA1yOeAd0zUMiK5pGAjAdauGlH5+eE6939umuH6p3VMNc
-RZlDlROT9eBnJ76WeMDiPMz+7E/oUdvGCAhuZb0=
+MIIBzTCCAVSgAwIBAgIUB+ctqlbZ2JNceThZn8qGl/s7riowCgYIKoZIzj0EAwMw
+HTEbMBkGA1UEAwwSWmFuY2xlIFRMUyBFeGFtcGxlMCAXDTI2MDYwNjE2MjkwOVoY
+DzIxMjYwNTEzMTYyOTA5WjAdMRswGQYDVQQDDBJaYW5jbGUgVExTIEV4YW1wbGUw
+djAQBgcqhkjOPQIBBgUrgQQAIgNiAATEdENJ5ESMznhouovGEkkJewpuP+tl0TY7
+sygE7cUa9t8/ZYiJcu0wcokzwTKPbh1daMGq9W9rRmDhcNaI5uX4kSa8PHN36MRA
+G6dkijFhCxjblBRE0kewNxgie6tUecijUzBRMB0GA1UdDgQWBBSsz0pqwlk7Yt8a
++Q1XD2tgjh6zUTAfBgNVHSMEGDAWgBSsz0pqwlk7Yt8a+Q1XD2tgjh6zUTAPBgNV
+HRMBAf8EBTADAQH/MAoGCCqGSM49BAMDA2cAMGQCMBwvi2koqbLo604lrPEaxeDN
+40i0E09FrLwHkj9Ve1yFol7Pdsf15WtrA+Gh1XE9uAIwAQKpxAv8C6u1A0zAJinX
+J+GKVnopO18y+yqKdqFZadjJxKdwKGUUJarjgBJNrn/j
 -----END CERTIFICATE-----)";
 
 
