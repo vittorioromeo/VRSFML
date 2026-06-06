@@ -88,13 +88,17 @@ TEST_CASE("[System] za::Utf8")
     SECTION("next")
     {
         auto next = utf8.cbegin();
-        CHECK(*next == u8'S');
+        CHECK(*next == u8'Z');
         next = za::Utf8::next(next, utf8.cend());
-        CHECK(*next == u8'F');
+        CHECK(*next == u8'a');
         next = za::Utf8::next(next, utf8.cend());
-        CHECK(*next == u8'M');
+        CHECK(*next == u8'n');
         next = za::Utf8::next(next, utf8.cend());
-        CHECK(*next == u8'L');
+        CHECK(*next == u8'c');
+        next = za::Utf8::next(next, utf8.cend());
+        CHECK(*next == u8'l');
+        next = za::Utf8::next(next, utf8.cend());
+        CHECK(*next == u8'e');
         next = za::Utf8::next(next, utf8.cend());
         CHECK(*next == u8' ');
         next = za::Utf8::next(next, utf8.cend());
@@ -105,11 +109,14 @@ TEST_CASE("[System] za::Utf8")
 
     SECTION("count")
     {
-        REQUIRE(utf8.size() == 9);
-        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cend()) == 6);
-        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 9) == 6);
-        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 8) == 6);
-        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 7) == 6);
+        // "Zancle 🐌" = 6 letters + 1 space + 4-byte emoji = 11 bytes, 8 codepoints.
+        REQUIRE(utf8.size() == 11);
+        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cend()) == 8);
+        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 11) == 8);
+        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 10) == 8);
+        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 9) == 8);
+        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 8) == 8);
+        CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 7) == 7);
         CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 6) == 6);
         CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 5) == 5);
         CHECK(za::Utf8::count(utf8.cbegin(), utf8.cbegin() + 4) == 4);
@@ -263,13 +270,17 @@ TEST_CASE("[System] za::Utf16")
     SECTION("next")
     {
         auto next = utf16.cbegin();
-        CHECK(*next == u'S');
+        CHECK(*next == u'Z');
         next = za::Utf16::next(next, utf16.cend());
-        CHECK(*next == u'F');
+        CHECK(*next == u'a');
         next = za::Utf16::next(next, utf16.cend());
-        CHECK(*next == u'M');
+        CHECK(*next == u'n');
         next = za::Utf16::next(next, utf16.cend());
-        CHECK(*next == u'L');
+        CHECK(*next == u'c');
+        next = za::Utf16::next(next, utf16.cend());
+        CHECK(*next == u'l');
+        next = za::Utf16::next(next, utf16.cend());
+        CHECK(*next == u'e');
         next = za::Utf16::next(next, utf16.cend());
         CHECK(*next == u' ');
         next = za::Utf16::next(next, utf16.cend());
@@ -280,9 +291,12 @@ TEST_CASE("[System] za::Utf16")
 
     SECTION("count")
     {
-        REQUIRE(utf16.size() == 7);
-        CHECK(za::Utf16::count(utf16.cbegin(), utf16.cend()) == 6);
-        CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 7) == 6);
+        // "Zancle 🐌" = 6 letters + 1 space + 2 surrogates = 9 code units, 8 codepoints.
+        REQUIRE(utf16.size() == 9);
+        CHECK(za::Utf16::count(utf16.cbegin(), utf16.cend()) == 8);
+        CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 9) == 8);
+        CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 8) == 8);
+        CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 7) == 7);
         CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 6) == 6);
         CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 5) == 5);
         CHECK(za::Utf16::count(utf16.cbegin(), utf16.cbegin() + 4) == 4);
@@ -419,13 +433,17 @@ TEST_CASE("[System] za::Utf32")
     SECTION("next")
     {
         auto next = utf32.cbegin();
-        CHECK(*next == U'S');
+        CHECK(*next == U'Z');
         next = za::Utf32::next(next, utf32.cend());
-        CHECK(*next == U'F');
+        CHECK(*next == U'a');
         next = za::Utf32::next(next, utf32.cend());
-        CHECK(*next == U'M');
+        CHECK(*next == U'n');
         next = za::Utf32::next(next, utf32.cend());
-        CHECK(*next == U'L');
+        CHECK(*next == U'c');
+        next = za::Utf32::next(next, utf32.cend());
+        CHECK(*next == U'l');
+        next = za::Utf32::next(next, utf32.cend());
+        CHECK(*next == U'e');
         next = za::Utf32::next(next, utf32.cend());
         CHECK(*next == U' ');
         next = za::Utf32::next(next, utf32.cend());
@@ -436,8 +454,11 @@ TEST_CASE("[System] za::Utf32")
 
     SECTION("count")
     {
-        REQUIRE(utf32.size() == 6);
-        CHECK(za::Utf32::count(utf32.cbegin(), utf32.cend()) == 6);
+        // "Zancle 🐌" = 6 letters + 1 space + 1 emoji codepoint = 8 in UTF-32.
+        REQUIRE(utf32.size() == 8);
+        CHECK(za::Utf32::count(utf32.cbegin(), utf32.cend()) == 8);
+        CHECK(za::Utf32::count(utf32.cbegin(), utf32.cbegin() + 8) == 8);
+        CHECK(za::Utf32::count(utf32.cbegin(), utf32.cbegin() + 7) == 7);
         CHECK(za::Utf32::count(utf32.cbegin(), utf32.cbegin() + 6) == 6);
         CHECK(za::Utf32::count(utf32.cbegin(), utf32.cbegin() + 5) == 5);
         CHECK(za::Utf32::count(utf32.cbegin(), utf32.cbegin() + 4) == 4);
