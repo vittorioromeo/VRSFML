@@ -74,29 +74,10 @@ macro(zancle_apply_emscripten_options target)
 endmacro()
 
 
-# Apply the standard "third-party hygiene" treatment to a set of targets
-# pulled in by CPM or FetchContent. This consolidates the per-module boilerplate
-# previously inlined in Audio/Graphics/ImGui/Network.
-#
-# Each target receives:
-#   - FOLDER "Dependencies" (IDE grouping)
-#   - SYSTEM ON (include dirs treated as -isystem)
-#   - POSITION_INDEPENDENT_CODE ON when BUILD_SHARED_LIBS is ON
-#   - target_compile_options PRIVATE -w (silence third-party warnings)
-#   - zancle_set_stdlib + zancle_apply_emscripten_options
-#
-# Optional UNITY_BUILD keyword turns on unity build with batch size 256;
-# otherwise unity build is forced OFF.
-#
-# Missing targets are silently skipped, so the helper is safe to call when a
-# target is gated behind a feature flag.
-#
-# Usage:
-#   zancle_tame_thirdparty(TARGETS foo bar baz)
-#   zancle_tame_thirdparty(UNITY_BUILD TARGETS foo bar)
-#
-# IMPORTANT: call this OUTSIDE any block() / function() scope that overrode
-# BUILD_SHARED_LIBS, so the helper sees the original (project-wide) value.
+# Apply third-party hygiene (FOLDER, SYSTEM, PIC, -w, stdlib, emscripten) to
+# CPM/FetchContent targets. Pass UNITY_BUILD to enable unity build. Missing
+# targets are silently skipped. Call from a scope where BUILD_SHARED_LIBS is
+# the project-wide value, not the overridden in-block value.
 function(zancle_tame_thirdparty)
     cmake_parse_arguments(ZTT "UNITY_BUILD" "" "TARGETS" ${ARGN})
 
@@ -132,13 +113,8 @@ endfunction()
 
 
 # Collect public headers for one Zancle module into ${outvar} (PARENT_SCOPE).
-#
-# For "System": returns the four top-level umbrella headers (Config, OpenGL,
-# GpuPreference, Main) plus the headers from all 17 utility modules listed in
-# UTILITY_MODULES. For any other module name: globs include/Zancle/<Module>/.
-#
-# Used by both the per-module install path (_zancle_install_and_export) and the
-# macOS framework branch in the top-level CMakeLists.
+# For "System": umbrella headers + all 17 UTILITY_MODULES. Otherwise: glob
+# include/Zancle/<Module>/. Shared by per-module install and the macOS framework.
 function(_zancle_collect_module_headers module outvar)
     if(${module} STREQUAL "System")
         set(_headers
@@ -161,16 +137,11 @@ function(_zancle_collect_module_headers module outvar)
 endfunction()
 
 
-# -- zancle_add_library helpers ------------------------------------------------
-#
-# Each helper handles one concern of a Zancle library target. The public
-# `zancle_add_library` macro composes them in order. Helpers are functions
-# (their writes don't leak) but they freely READ caller-scope variables
-# (`THIS_STATIC`, `THIS_DEPENDENCIES`, `module`, etc.) set by the macro's
-# `cmake_parse_arguments` call.
+# zancle_add_library helpers. The macro below composes them. Helpers are
+# functions but read caller-scope THIS_STATIC / THIS_SOURCES / THIS_DEPENDENCIES
+# from cmake_parse_arguments.
 
-# Create the library target itself, set up universal compile concerns
-# (warnings, visibility, build-options link, coverage, DEFINE_SYMBOL/EXPORT_NAME).
+
 function(_zancle_create_module_target target module)
     if(THIS_STATIC)
         add_library(${target} STATIC ${THIS_SOURCES})
@@ -479,10 +450,8 @@ macro(zancle_add_library module)
     _zancle_install_and_export(${target} ${module})
 endmacro()
 
-# Concerns shared by both zancle_add_example and zancle_add_test: warnings,
-# hidden visibility, stdlib selection, PCH reuse + Threads, emscripten options,
-# iOS bundle properties, Windows mesa3d dependency, MSVC /utf-8 source flag.
-# `kind` is just the human-readable label ("example" / "test") for log output.
+# Common finishing pass for example + test executables. `kind` is just a label
+# for PCH log messages.
 function(_zancle_finish_executable target kind)
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
@@ -588,18 +557,10 @@ endmacro()
 
 # add a new target which is a Zancle test
 #
-# example: zancle_add_test(test-zancle-audio
-#                          SOURCES ftp.cpp http.cpp
-#                          DEPENDS Zancle::Network
-#                          BUNDLE_NAME Audio
-#                          RESOURCES doodle_pop.ogg ding.flac ...)
-#
-# RESOURCES are bundled into the test app on iOS (under <Bundle>/<BUNDLE_NAME>/)
-# and preloaded into the WASM virtual filesystem on Emscripten via a per-target
-# staging directory + `--preload-file`. `--preload-file` (rather than
-# `--embed-file`) is used because non-ASCII filenames (e.g. ń, snail emoji)
-# break --embed-file's symbol generation. BUNDLE_NAME is required when
-# RESOURCES is set.
+# zancle_add_test(test-name SOURCES ... DEPENDS ... [BUNDLE_NAME ... RESOURCES ...])
+# Resources are bundled on iOS and preloaded via --preload-file on Emscripten.
+# --preload-file is used (not --embed-file) so non-ASCII filenames don't break
+# emscripten's generated symbols.
 function(zancle_add_test target)
     cmake_parse_arguments(THIS "" "BUNDLE_NAME" "SOURCES;DEPENDS;RESOURCES" ${ARGN})
 

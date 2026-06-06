@@ -6,14 +6,17 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/String/String.hpp"
 
+#include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Container/Priv/VectorUtils.hpp"
+
 #include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/Memmove.hpp"
-#include "Zancle/Base/Strlen.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Container/Priv/VectorUtils.hpp"
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/StringView.hpp"
+#include "Zancle/Base/Strlen.hpp"
 
 
 namespace
@@ -427,13 +430,12 @@ void String::insert(const SizeT pos, const char* const cStr)
         return;
     }
 
-    // 1. Ensure we have enough capacity. This might reallocate and change `data()`.
-    reserve(newSize);
+    reserve(newSize); // Ensure we have enough capacity
 
     char* const d = data();
 
-    // 2. Make space for the new content by shifting the existing part to the right.
-    // We must use memmove as the source and destination memory regions overlap.
+    // Make space for the new content by shifting the existing part to the right
+    // (use memmove as the source and destination memory regions overlap)
     if (pos < oldSize)
     {
         ZA_MEMMOVE(d + pos + insertCount, // Destination
@@ -441,10 +443,8 @@ void String::insert(const SizeT pos, const char* const cStr)
                    oldSize - pos);        // Number of characters to move
     }
 
-    // 3. Copy the new content into the created space.
+    // Copy new content into the created space and update size
     ZA_MEMCPY(d + pos, cStr, insertCount);
-
-    // 4. Update the size.
     setSizeAndTerminate(newSize);
 }
 

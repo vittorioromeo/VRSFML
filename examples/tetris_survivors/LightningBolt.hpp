@@ -65,11 +65,9 @@ public:
             const BoltSegment current = segmentsToProcess.back();
             segmentsToProcess.popBack();
 
-            // Step 1: Generate the final point chain directly. No more intermediate segments.
             pointChainBuffer.clear();
             generatePointChain(pointChainBuffer, rng, current.start, current.end, mainBoltJaggedness, jaggednessDepth);
 
-            // Step 2: Decide if we should create new branches from this point chain.
             if (current.depth < maxBranchDepth && rng.getF(0.f, 1.f) < branchChance)
             {
                 const za::Vec2f dir = current.end - current.start;
@@ -91,7 +89,6 @@ public:
                                               decayedAlpha);
             }
 
-            // Step 3: Convert the final point chain into vertices.
             createVertexArray(pointChainBuffer, current.thickness, m_color.withAlpha(current.alpha));
         }
     }
@@ -160,7 +157,6 @@ private:
             return;
         }
 
-        // 1. Calculate the final size and perform a single allocation.
         const za::SizeT finalPointCount = (1u << depth) + 1u;
 
         out.resize(finalPointCount);
@@ -168,15 +164,11 @@ private:
         out[0] = start;
         out[1] = end;
 
-        // 2. The outer loop replaces recursion, running 'depth' times.
         for (int i = 0; i < depth; ++i)
         {
             // Number of points that were valid in the *previous* pass.
             const za::SizeT pointsInPrevPass = (1u << i) + 1u;
 
-            // 3. Iterate backwards over the segments of the previous pass.
-            //    This is the key to making the in-place update safe.
-            //    We use a signed int for the loop to safely terminate at j=-1.
             for (int k = static_cast<int>(pointsInPrevPass) - 2; k >= 0; --k)
             {
                 const auto j = static_cast<za::SizeT>(k);
@@ -195,10 +187,6 @@ private:
                     midpoint += normal * offset;
                 }
 
-                // 4. Place the points into their new positions for the *next* pass.
-                //    p2 (the end of the segment) moves to its new, further location.
-                //    The new midpoint is inserted between p1 and p2's new locations.
-                //    p1 (at points[2*j]) is already in the correct place from a previous step's write.
                 out[j * 2u + 2u] = p2;
                 out[j * 2u + 1u] = midpoint;
             }
@@ -213,13 +201,11 @@ private:
 
         const float glowThickness = thickness * 4.f;
 
-        // Step 2: Iterate through the segments defined by the points list and build connected quads.
         for (za::SizeT i = 0u; i < points.size() - 1u; ++i)
         {
             const za::Vec2f p1 = points[i];
             const za::Vec2f p2 = points[i + 1];
 
-            // Calculate the normal for the current segment
             const za::Vec2f dir    = (p2 - p1).normalized();
             const za::Vec2f normal = dir.perpendicular();
 
@@ -228,7 +214,6 @@ private:
             za::Vec2f normalP1 = normal;
             za::Vec2f normalP2 = normal;
 
-            // Calculate miter for the start point of the segment (p1)
             if (i > 0)
             {
                 const za::Vec2f prevDir = (p1 - points[i - 1]).normalized();
@@ -237,7 +222,6 @@ private:
                 normalP1 = tangent.perpendicular();
             }
 
-            // Calculate miter for the end point of the segment (p2)
             if (i < points.size() - 2)
             {
                 const za::Vec2f nextDir = (points[i + 2] - p2).normalized();

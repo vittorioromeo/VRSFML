@@ -47,10 +47,8 @@ struct [[nodiscard]] CollisionResolution
     if (squaredDistance >= sumRadii * sumRadii)
         return za::nullOpt;
 
-    // Calculate the distance between the bubbles' centers
     const float distance = za::sqrt(squaredDistance);
 
-    // Calculate the normal between the bubbles
     const za::Vec2f normal = (distance > 0.f) ? (diff / distance) : za::Vec2f{1.f, 0.f};
 
     // Move the bubbles apart based on their masses (heavier bubbles move less)
@@ -81,7 +79,6 @@ struct [[nodiscard]] CollisionResolution
     // Define a "softness" factor to control how quickly the overlap is resolved
     const float softnessFactor = 0.0075f * deltaTimeMs;
 
-    // Calculate the displacement needed to resolve the overlap
     const float     overlap      = sumRadii - distance; // Amount of overlap
     const za::Vec2f displacement = normal * overlap * softnessFactor;
 

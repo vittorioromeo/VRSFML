@@ -20,25 +20,32 @@
 #include "Zancle/Window/EventUtils.hpp"
 #include "Zancle/Window/Keyboard.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Chrono/Time.hpp"
-#include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Algorithm/SwapAndPop.hpp"
-#include "Zancle/Math/Clamp.hpp"
-#include "Zancle/Math/Constants.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Math/Fabs.hpp"
-#include "Zancle/Math/MinMax.hpp"
-#include "Zancle/Vocabulary/Optional.hpp"
-#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/ToString.hpp"
-#include "Zancle/Vocabulary/Variant.hpp"
+
+#include "Zancle/Algorithm/SwapAndPop.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
+
+#include "Zancle/Vocabulary/Optional.hpp"
+#include "Zancle/Vocabulary/Variant.hpp"
+
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Fabs.hpp"
+#include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/SizeT.hpp"
 
 
 namespace
@@ -654,7 +661,7 @@ struct BossPhases : BossCoroutine
     {
         SFEX_CO_BEGIN;
 
-        // ----- PHASE 1: opening salvo -----
+        // opening salvo
         barrage = BulletRingBarrage{
             .ringsToFire    = 2,
             .bulletsPerRing = 10,
@@ -665,7 +672,7 @@ struct BossPhases : BossCoroutine
 
         SFEX_CO_YIELD(Wait{0.50f});
 
-        // ----- PHASE 2: elastic pulse -----
+        // elastic pulse
         pulse = PulseAttack{
             .pulses      = 2,
             .ringBullets = 12,
@@ -674,13 +681,13 @@ struct BossPhases : BossCoroutine
 
         SFEX_CO_YIELD(Wait{0.40f});
 
-        // ----- PHASE 3: sweep -----
+        // sweep
         sweep = SweepAttack{};
         SFEX_CO_AWAIT(sweep(ctx));
 
         SFEX_CO_YIELD(Wait{0.30f});
 
-        // ----- PHASE 3.5: parallel barrage + sweep -----
+        // parallel barrage + sweep
         parallelBarrage = BulletRingBarrage{
             .ringsToFire    = 4,
             .bulletsPerRing = 10,
@@ -695,7 +702,7 @@ struct BossPhases : BossCoroutine
 
         SFEX_CO_YIELD(Wait{0.40f});
 
-        // ----- PHASE 3.8: volley vs timeout -----
+        // volley vs timeout
         parallelVolley = AimedVolley{
             .shotsToFire = 15,
             .gapSeconds  = 0.15f,
@@ -707,7 +714,7 @@ struct BossPhases : BossCoroutine
 
         SFEX_CO_YIELD(Wait{0.40f});
 
-        // ----- PHASE 4: double slam -----
+        // double slam
         slam = SlamAttack{
             .slamOffset = {-60.f, 180.f},
         };
@@ -718,7 +725,7 @@ struct BossPhases : BossCoroutine
         };
         SFEX_CO_AWAIT(slam(ctx));
 
-        // ----- PHASE 5: dash + vulnerability -----
+        // dash + vulnerability
         dash = DashAttack{
             .dashTarget = ctx.self.homePos + za::Vec2f{-80.f, 40.f},
         };
@@ -729,7 +736,7 @@ struct BossPhases : BossCoroutine
         };
         SFEX_CO_AWAIT(dash(ctx));
 
-        // ----- PHASE 6: aimed volley -----
+        // aimed volley
         volley = AimedVolley{
             .shotsToFire = 6,
         };
@@ -737,7 +744,7 @@ struct BossPhases : BossCoroutine
 
         SFEX_CO_YIELD(Wait{0.40f});
 
-        // ----- PHASE 7: desperation spiral -----
+        // desperation spiral
         barrage = BulletRingBarrage{
             .ringsToFire    = 6,
             .bulletsPerRing = 12,

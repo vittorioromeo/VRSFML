@@ -899,7 +899,6 @@ struct Main
         // Using 32 for addinional safety just in case
         static thread_local char strBuffer[32];
 
-        // First, convert to string from right to left
         char* const end = strBuffer + sizeof(strBuffer) - 1;
 
         char* ptr = end;

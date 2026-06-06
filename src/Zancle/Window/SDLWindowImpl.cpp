@@ -814,7 +814,6 @@ void SDLWindowImpl::processJoystickEvents()
 {
     auto& joystickManager = WindowContext::getJoystickManager();
 
-    // First update the global joystick states
     joystickManager.update();
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
@@ -882,7 +881,6 @@ void SDLWindowImpl::processJoystickEvents()
 ////////////////////////////////////////////////////////////
 void SDLWindowImpl::processSensorEvents()
 {
-    // First update the sensor states
     auto& sensorManager = WindowContext::getSensorManager();
     sensorManager.update();
 

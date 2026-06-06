@@ -35,8 +35,12 @@
 #include "ExampleUtils/Scaling.hpp"
 #include "ExampleUtils/SoundManager.hpp"
 
-#include "Zancle/ImGui/ImGuiContext.hpp"
-#include "Zancle/ImGui/IncludeImGui.hpp"
+#include "Zancle/Audio/AudioContext.hpp"
+#include "Zancle/Audio/Music.hpp"
+#include "Zancle/Audio/MusicReader.hpp"
+#include "Zancle/Audio/PlaybackDevice.hpp"
+#include "Zancle/Audio/Sound.hpp"
+#include "Zancle/Audio/SoundBuffer.hpp"
 
 #include "Zancle/Graphics/BlendMode.hpp"
 #include "Zancle/Graphics/CircleShapeData.hpp"
@@ -63,12 +67,8 @@
 #include "Zancle/Graphics/Vertex.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Audio/AudioContext.hpp"
-#include "Zancle/Audio/Music.hpp"
-#include "Zancle/Audio/MusicReader.hpp"
-#include "Zancle/Audio/PlaybackDevice.hpp"
-#include "Zancle/Audio/Sound.hpp"
-#include "Zancle/Audio/SoundBuffer.hpp"
+#include "Zancle/ImGui/ImGuiContext.hpp"
+#include "Zancle/ImGui/IncludeImGui.hpp"
 
 #include "Zancle/Window/Event.hpp"
 #include "Zancle/Window/EventUtils.hpp"
@@ -76,39 +76,49 @@
 #include "Zancle/Window/VideoMode.hpp"
 #include "Zancle/Window/VideoModeUtils.hpp"
 
-#include "Zancle/Geometry/Angle.hpp"
-#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Fmt/FmtToString.hpp"
+
 #include "Zancle/IO/Path.hpp"
-#include "Zancle/Geometry/Rect2.hpp"
-#include "Zancle/Chrono/Time.hpp"
-#include "Zancle/Geometry/Vec2.hpp"
+
+#include "Zancle/String/StringView.hpp"
+#include "Zancle/String/ToString.hpp"
 
 #include "Zancle/Algorithm/Erase.hpp"
 #include "Zancle/Algorithm/Find.hpp"
 #include "Zancle/Algorithm/Sort.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Container/AnkerlUnorderedDense.hpp"
 #include "Zancle/Container/Array.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Base/Unreachable.hpp"
-#include "Zancle/Math/Clamp.hpp"
-#include "Zancle/Math/Constants.hpp"
-#include "Zancle/Fmt/FmtToString.hpp"
 #include "Zancle/Container/InPlaceVector.hpp"
-#include "Zancle/Base/IntTypes.hpp"
-#include "Zancle/Math/Floor.hpp"
-#include "Zancle/Math/Fmod.hpp"
-#include "Zancle/Math/Sin.hpp"
-#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Geometry/Angle.hpp"
+#include "Zancle/Geometry/Rect2.hpp"
+#include "Zancle/Geometry/Vec2.hpp"
+
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/OverloadSet.hpp"
-#include "Zancle/Math/Remainder.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/String/ToString.hpp"
-#include "Zancle/Trait/IsConst.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
 #include "Zancle/Vocabulary/Variant.hpp"
-#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Math/Clamp.hpp"
+#include "Zancle/Math/Constants.hpp"
+#include "Zancle/Math/Floor.hpp"
+#include "Zancle/Math/Fmod.hpp"
+#include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Remainder.hpp"
+#include "Zancle/Math/Sin.hpp"
+
+#include "Zancle/Trait/IsConst.hpp"
+
+#include "Zancle/Base/IntTypes.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/Unreachable.hpp"
 
 
 namespace
@@ -1241,7 +1251,7 @@ private:
         const float     scale    = options.scale;
         constexpr float rotation = 0.f;
 
-        // 1. Define the pivot point in the tetramino's local, unscaled coordinate space.
+        // Define the pivot point in the tetramino's local, unscaled coordinate space.
         // This is the center of the 4x4 grid.
         const za::Vec2f localPivot = ((drawBlockSize * static_cast<float>(shapeDimension)) / 2.f).componentWiseFloor();
 
@@ -1253,21 +1263,20 @@ private:
                 if (!optBlock.hasValue())
                     continue;
 
-                // 2. Calculate this block's local center position, relative to the top-left corner.
+                // Calculate this block's local center position, relative to the top-left corner
                 const za::Vec2f localBlockCenter = za::Vec2uz{x, y}.toVec2f().componentWiseMul(drawBlockSize) +
                                                    (drawBlockSize / 2.f).componentWiseFloor();
 
-                // 3. Get the block's position vector relative to the central pivot.
+                // Get the block's position vector relative to the central pivot
                 za::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
 
-                // 4. Scale and rotate this relative vector.
+                // Scale and rotate this relative vector
                 positionRelativeToPivot = positionRelativeToPivot.componentWiseMul({scale, scale});
                 positionRelativeToPivot = positionRelativeToPivot.rotatedBy(za::degrees(rotation));
 
-                // 5. The final screen position is the tetramino's center plus the transformed relative vector.
+                // The final screen position is the tetramino's center plus the transformed relative vector
                 const za::Vec2f finalDrawPosition = (centerPosition + positionRelativeToPivot).componentWiseFloor();
 
-                // 6. Call drawBlock, passing all the necessary transform properties.
                 const auto [pos,
                             size] = drawBlock(*optBlock,
                                               finalDrawPosition,
@@ -1513,25 +1522,19 @@ private:
     {
         za::Vector<BlockAndPosition> result;
 
-        // 1. Guard Clause: Exit early if this drill perk isn't active.
         if (!m_world.perkDrill[direction].hasValue())
             return result;
 
-        // 2. Get the number of blocks to penetrate.
         auto nToHit = static_cast<za::SizeT>(m_world.perkDrill[direction]->maxPenetration);
         if (nToHit == 0)
             return result;
 
-        // 3. Determine the iteration step based on direction.
         const za::Vec2i step = drillDirectionToVec2i(direction);
 
-        // 4. Iterate over the source blocks on the current tetramino.
         for (const auto bPos : findDrillBlocks(tetramino, direction))
         {
-            // 5. Start probing from the block adjacent to the source block.
             za::Vec2i probePos = tetramino.position + bPos.toVec2i() + step;
 
-            // 6. Traverse the grid in the given direction until we hit a boundary.
             while (m_world.blockGrid.isInBounds(probePos))
             {
                 const auto blockGridPos = probePos.toVec2uz();
@@ -2569,7 +2572,6 @@ private:
 
             za::SizeT dropAmount = 0;
 
-            // Iterate from the bottom of the grid upwards to calculate offsets.
             // This calculates the correct offset for each row's FINAL position.
             for (int y = static_cast<int>(height) - 1; y >= 0; --y)
             {
@@ -3908,11 +3910,8 @@ private:
     template <typename T>
     [[nodiscard]] za::Vec2f getTetraminoCenterDrawPosition(const za::Vec2<T> tetraminoGridPosition) const
     {
-        // 1. Get the screen position of the top-left corner of the tetramino's grid cell.
         const za::Vec2f topLeftDrawPosition = toDrawCoordinates(tetraminoGridPosition);
 
-        // 2. The pivot is the center of the 4x4 shape. Find the offset from the top-left to this pivot.
-        // 3. The final center is the top-left position plus the offset.
         return topLeftDrawPosition + tetraminoVisualCenterOffset;
     }
 
@@ -3922,17 +3921,13 @@ private:
     [[nodiscard]] za::Vec2f getDrawPositionOfLocalBlock(const za::Vec2<T>& localBlockGridPos,
                                                         const za::Vec2f    tetraminoCenter) const
     {
-        // 1. The pivot is the center of the 4x4 shape in its own local space.
         const za::Vec2f localPivot = tetraminoVisualCenterOffset;
 
-        // 2. Find the center of the specific block in local space.
         const za::Vec2f localBlockCenter = localBlockGridPos.toVec2f().componentWiseMul(drawBlockSize) +
                                            (drawBlockSize / 2.f);
 
-        // 3. Get the block's position vector relative to the tetramino's pivot.
         const za::Vec2f positionRelativeToPivot = localBlockCenter - localPivot;
 
-        // 4. The final world position is the tetramino's world center plus this relative vector.
         return (tetraminoCenter + positionRelativeToPivot).componentWiseFloor();
     }
 
@@ -3985,13 +3980,13 @@ private:
     /////////////////////////////////////////////////////////////
     [[nodiscard]] za::Vec2f calculateLaserGridIntersection(const za::Vec2f startPos, const LaserDirection::Enum direction) const
     {
-        // 1. Define grid boundaries in draw coordinates. The playable grid area starts below gridGraceY.
+        // Define grid boundaries in draw coordinates. The playable grid area starts below gridGraceY.
         const float left  = toDrawCoordinates(za::Vec2f{0.f, 0.f}).x;
         const float right = toDrawCoordinates(za::Vec2f{static_cast<float>(m_world.blockGrid.getWidth() - 1), 0.f}).x;
         const float top   = toDrawCoordinates(za::Vec2f{0.f, static_cast<float>(gridGraceY)}).y;
         const float bottom = toDrawCoordinates(za::Vec2f{0.f, static_cast<float>(m_world.blockGrid.getHeight() - 1)}).y + 1.f;
 
-        // 2. Define the ray using its starting position and direction vector in draw space.
+        // Define the ray using its starting position and direction vector in draw space.
         const za::Vec2f rayDirGrid = laserDirectionToVec2i(direction).toVec2f();
         const za::Vec2f rayDirDraw = rayDirGrid.componentWiseMul(drawBlockSize);
 
@@ -4001,7 +3996,7 @@ private:
 
         float minT = 10000.f;
 
-        // 3. Calculate the parametric 't' value for intersection with each of the four boundary lines.
+        // Calculate the parametric 't' value for intersection with each of the four boundary lines.
         // A valid intersection occurs if t > 0 (in front of the ray) and the intersection
         // point lies on the boundary segment. The smallest valid 't' is the first point of impact.
 
@@ -4042,7 +4037,7 @@ private:
             }
         }
 
-        // 4. If a valid intersection was found (minT is not infinity), calculate the precise point.
+        // If a valid intersection was found (minT is not infinity), calculate the precise point.
         if (minT < 10000.f)
             return startPos + minT * rayDirDraw;
 

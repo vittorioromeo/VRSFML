@@ -11,16 +11,19 @@
 #include "Zancle/Graphics/Transform.hpp"
 #include "Zancle/Graphics/Vertex.hpp"
 
+#include "Zancle/String/FromChars.hpp"
+#include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Container/InPlaceVector.hpp"
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/String/FromChars.hpp"
-#include "Zancle/Container/InPlaceVector.hpp"
-#include "Zancle/Math/Sin.hpp"
 #include "Zancle/Math/MinMax.hpp"
+#include "Zancle/Math/Sin.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/StringView.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv
@@ -167,7 +170,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
         }
     };
 
-    // --- Pass 1: Measure line widths without allocating glyph structures ---
+    // Measure line widths
 
     za::InPlaceVector<za::SizeT, 64> linePixelWidths;
     linePixelWidths.emplaceBack(0u); // Width of the first line
@@ -204,8 +207,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 
     maxPixelWidth = za::max(maxPixelWidth, linePixelWidths.back());
 
-
-    // --- Pass 2: Generate vertices directly ---
+    // Generate vertices
 
     za::Vec2f cursor         = {0.f, 0.f};
     za::SizeT currentLineIdx = 0u;

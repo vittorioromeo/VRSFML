@@ -664,7 +664,6 @@ void Main::doTip(const za::String& str, const SizeT maxPrestigeLevel)
 ////////////////////////////////////////////////////////////
 float Main::getAspectRatioScalingFactor(const za::Vec2f originalSize, const za::Vec2f windowSize) const
 {
-    // Calculate the scale factors for both dimensions
     const float scaleX = windowSize.x / originalSize.x;
     const float scaleY = windowSize.y / originalSize.y;
 
@@ -863,7 +862,6 @@ za::SizeT Main::pickDragPivotCatIndex() const
     if (playerInputState.draggedCats.size() <= 2u)
         return 0u;
 
-    // First calculate the centroid
     za::Vec2f centroid;
 
     for (const Cat* cat : playerInputState.draggedCats)
@@ -877,7 +875,6 @@ za::SizeT Main::pickDragPivotCatIndex() const
 
     for (za::SizeT i = 0u; i < playerInputState.draggedCats.size(); ++i)
     {
-        // Calculate squared distance (avoiding square root for performance)
         const float distSquared = (playerInputState.draggedCats[i]->position - centroid).lengthSquared();
 
         if (minDistanceSquared - distSquared < 64.f)
@@ -1230,7 +1227,6 @@ bool Main::mustApplyMewltiplierAura(const za::Vec2f bubblePosition) const
 ////////////////////////////////////////////////////////////
 MoneyType Main::computeFinalReward(const Bubble& bubble, const float multiplier, const float comboMult, const Cat* popperCat) const
 {
-    // Determine some information about the reward
     const bool byPlayerClick = popperCat == nullptr;
 
     const bool popperCatIsMousecat = //

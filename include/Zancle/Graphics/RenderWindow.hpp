@@ -274,7 +274,7 @@ private:
 ///     window.resetGLStates();
 ///     window.draw(text);
 ///
-///     // Finally, display the rendered frame on screen.
+///     // Display the rendered frame on screen.
 ///     window.display();
 /// }
 /// \endcode

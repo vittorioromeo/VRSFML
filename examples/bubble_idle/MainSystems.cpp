@@ -2226,11 +2226,7 @@ void Main::gameLoopUpdateCatActions(const float deltaTimeMs)
             using Phase = Cat::WardenBonkState::Phase;
 
             // Self-healing: clear any inconsistent state so a single bad
-            // frame can't softlock the cat forever. Two known shapes:
-            //   1. Non-warden cat carrying bonk state (data corruption /
-            //      cat type changed under us / loaded from old save).
-            //   2. Stuck Windup -- pendingTargetIdx already consumed but
-            //      the strike never advanced the phase.
+            // frame can't softlock the cat forever
             const bool stuck = cat.type != CatType::Warden ||
                                (cat.wardenBonk->phase == Phase::Windup && !cat.wardenBonk->pendingTargetIdx.hasValue());
             if (stuck)

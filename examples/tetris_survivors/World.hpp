@@ -63,18 +63,14 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
     const auto minHealth = 1;
     const auto maxHealth = 4;
 
-    // 1. Start with all blocks at minimum health.
     za::Array<za::U64, 4> healths{minHealth, minHealth, minHealth, minHealth};
 
-    // 2. Iterate through each of the 4 block "slots" and attempt to upgrade them.
     for (za::SizeT i = 0u; i < healths.size(); ++i)
     {
         // A block can try to upgrade multiple times in a row.
         while (healths[i] < maxHealth)
         {
             const za::U64 targetHealth = healths[i] + 1;
-
-            // --- Calculate the chance to upgrade to the targetHealth ---
 
             // a) Base chance decreases sharply for higher health values.
             //    Chance to get to HP 2 is 50%, HP 3 is 20%, HP 4 is 10%.
@@ -115,7 +111,6 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
 
             const float penalty = static_cast<float>(highHpBlocksCount) * 0.4f; // 40% penalty per block
 
-            // --- Final Calculation and Roll ---
             const float finalChance = (baseUpgradeChance + difficultyModifier) - penalty;
 
             if (rng.getF(0.f, 1.f) < finalChance)
@@ -131,7 +126,6 @@ struct [[nodiscard]] TaggedBlockMatrix // NOLINT(cppcoreguidelines-pro-type-memb
         }
     }
 
-    // 4. Shuffle the results so the high HP block isn't always in the first slot.
     shuffleBag(healths, rng);
 
     return healths;

@@ -13,14 +13,17 @@
 #include "Zancle/Graphics/Vertex.hpp"
 
 #include "Zancle/Chrono/Time.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
 #include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Ceil.hpp"
+#include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Remainder.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
+
 #include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 
 namespace tsurv
@@ -69,12 +72,12 @@ public:
     {
         m_lifetime += dt;
 
-        // --- Primary Wave (large, slow wobble) ---
+        // Primary Wave (large, slow wobble)
         constexpr float wobbleAmplitude1  = 1.5f;  // The main size of the wobble
         constexpr float wobbleSpeed1      = 25.f;  // How fast the main wave pattern moves
         constexpr float spatialFrequency1 = 0.12f; // How many wiggles per pixel. Smaller = longer waves.
 
-        // --- Detail Wave (small, fast jitter) ---
+        // Detail Wave (small, fast jitter)
         constexpr float wobbleAmplitude2  = 0.7f;  // The size of the smaller, faster ripples
         constexpr float wobbleSpeed2      = 10.f;  // The detail wave should move at a different (usually faster) speed
         constexpr float spatialFrequency2 = 0.25f; // The detail wave should have a higher frequency (more wiggles)
@@ -95,7 +98,6 @@ public:
         const za::Vec2f direction = beamVector / beamLength; // Normalized direction
         const za::Vec2f normal    = direction.perpendicular();
 
-        // Calculate the current wobbled points
         const auto nBasePoints = numSegments + 1u;
 
         m_currentPoints.clear();
@@ -109,11 +111,9 @@ public:
             const float progress = static_cast<float>(i) / static_cast<float>(numSegments);
             const float distance = beamLength * progress;
 
-            // Calculate the displacement from the first (primary) wave
             const float sineInput1    = za::positiveRemainder(timeOffset1 + distance * spatialFrequency1, za::tau);
             const float displacement1 = za::sinLookup(sineInput1) * wobbleAmplitude1;
 
-            // Calculate the displacement from the second (detail) wave
             const float sineInput2    = za::positiveRemainder(timeOffset2 + distance * spatialFrequency2, za::tau);
             const float displacement2 = za::sinLookup(sineInput2) * wobbleAmplitude2;
 
@@ -201,11 +201,9 @@ private:
             const za::Vec2f p1 = points[i];
             const za::Vec2f p2 = points[i + 1];
 
-            // Calculate the normal for the current segment
             const za::Vec2f dir    = (p2 - p1).normalized();
             const za::Vec2f normal = dir.perpendicular();
 
-            // Calculate miter normals for smooth joins between segments
             za::Vec2f normalP1 = normal;
             if (i > 0)
             {

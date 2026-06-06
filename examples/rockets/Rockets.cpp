@@ -1606,7 +1606,6 @@ int main()
         ////////////////////////////////////////////////////////////
         // Event handling
         ////////////////////////////////////////////////////////////
-        // ---
         {
             while (za::Optional event = window.pollEvent())
             {
@@ -1631,15 +1630,12 @@ int main()
                 }
             }
         }
-        // ---
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
         ////////////////////////////////////////////////////////////
         // Update step
         ////////////////////////////////////////////////////////////
-        // ---
         {
             SamplerScopeGuard guard{samplesUpdateMs};
 
@@ -1695,14 +1691,11 @@ int main()
             else if (mode == Mode::SOAMeta)
                 updateNonOOPWorld(soaMetaWorld);
         }
-        // ---
-
 #pragma GCC diagnostic pop
 
         ////////////////////////////////////////////////////////////
         // ImGui step
         ////////////////////////////////////////////////////////////
-        // ---
         if (drawUI)
         {
             const auto clearSamples = [&]
@@ -1859,12 +1852,9 @@ int main()
             ImGui::PopStyleVar();
             ImGui::PopFont();
         }
-        // ---
-
         ////////////////////////////////////////////////////////////
         // Draw step
         ////////////////////////////////////////////////////////////
-        // ---
         {
             SamplerScopeGuard guard{samplesDrawMs};
 
@@ -1891,9 +1881,6 @@ int main()
 
             rtGame.display();
         }
-        // ---
-
-        // ---
         {
             SamplerScopeGuard guard{samplesDisplayMs};
 
@@ -1906,8 +1893,6 @@ int main()
 
             window.display();
         }
-        // ---
-
         samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
     }
 }

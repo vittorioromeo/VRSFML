@@ -178,7 +178,7 @@ int main()
                     // Reset the ball angle
                     do
                     {
-                        // Make sure the ball initial angle is not too much vertical
+                        // Avoid a near-vertical initial angle.
                         ballAngle = za::degrees(rng.getF(0.f, 360.f));
                     } while (za::fabs(za::cos(ballAngle.asRadians())) < 0.7f);
                 }

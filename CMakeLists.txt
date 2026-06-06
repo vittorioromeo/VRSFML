@@ -28,9 +28,7 @@ project(Zancle VERSION 3.1.0)
 set(VERSION_IS_RELEASE OFF)
 
 
-# =============================================================================
 # Platform + compiler detection
-# =============================================================================
 include(cmake/Config.cmake)
 
 # we use the paths from the cmake GNUInstallDirs module as defaults
@@ -47,26 +45,17 @@ if(ZA_OS_ANDROID)
 endif()
 
 
-# =============================================================================
-# Build-options propagation target
-#
-# Every Zancle target (libraries, tests, examples) PUBLIC-links this so a
-# single switch flips the macro across the whole tree. The definitions are
-# populated further down, once all toggles have been resolved.
-# =============================================================================
+# INTERFACE target carrying all build-time toggles; PUBLIC-linked by every
+# Zancle target. Definitions are populated below once toggles are resolved.
 add_library(zancle-build-options INTERFACE)
 target_compile_features(zancle-build-options INTERFACE cxx_std_23)
 
 
-# =============================================================================
 # CPM (third-party dependency manager)
-# =============================================================================
 include(cmake/CPM.cmake)
 
 
-# =============================================================================
 # User-facing build options
-# =============================================================================
 zancle_set_option(ZA_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable stack traces on assertions, FALSE to disable them")
 if(ZA_ENABLE_STACK_TRACES AND NOT ZA_OS_EMSCRIPTEN)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extlibs/libbacktrace)
@@ -119,9 +108,7 @@ if(ZA_OS_ANDROID)
     set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/${CMAKE_ANDROID_ARCH_ABI}")
 endif()
 
-# =============================================================================
 # Derived configuration (install dirs, force-build chains, system-deps default)
-# =============================================================================
 # Install directories
 # For miscellaneous files
 if(ZA_OS_WINDOWS OR ZA_OS_IOS)
@@ -205,9 +192,7 @@ if(ZA_OS_MACOS)
     endif()
 endif()
 
-# =============================================================================
 # Diagnostic / hardening flag toggles
-# =============================================================================
 option(ZA_ENABLE_SANITIZERS "Enable sanitizers" OFF)
 if(ZA_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
@@ -239,9 +224,7 @@ if(ZA_ENABLE_HARDENING_FLAGS AND NOT MSVC)
     )
 endif()
 
-# =============================================================================
 # Output directory + IDE folders + pkg-config install
-# =============================================================================
 # set the output directory for Zancle DLLs and executables
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
@@ -282,9 +265,7 @@ if(ZA_INSTALL_PKGCONFIG_FILES)
     endif()
 endif()
 
-# =============================================================================
 # Sanity checks
-# =============================================================================
 if(ZA_ENABLE_PCH AND BUILD_SHARED_LIBS)
     message(FATAL_ERROR "Precompiled headers are currently not supported for shared library builds")
 endif()
@@ -294,10 +275,7 @@ if(ZA_ENABLE_PCH AND ZA_OS_MACOS)
 endif()
 
 
-# =============================================================================
-# Populate `zancle-build-options` once all toggles have been resolved.
-# Listed in the same order as the option declarations above for easy auditing.
-# =============================================================================
+# Populate zancle-build-options. Order matches the option declarations above.
 target_compile_definitions(zancle-build-options INTERFACE
     _LIBCPP_REMOVE_TRANSITIVE_INCLUDES                                          # avoid transitive includes with libc++
     $<$<BOOL:${ZA_OS_WINDOWS}>:_CRT_SECURE_NO_WARNINGS>                         # suppress CRT warnings on Windows
@@ -317,17 +295,8 @@ target_compile_definitions(zancle-build-options INTERFACE
     $<$<BOOL:${ZA_BUILD_TEST_SUITE}>:ZA_BUILD_TEST_SUITE>
 )
 
-# =============================================================================
-# Module catalogue
-#
-# The 17 flat topical utility modules that get aggregated into the
-# `zancle-system` target by src/Zancle/System/CMakeLists.txt. Defined here at
-# the top level so both the per-module install helper (cmake/Macros.cmake)
-# and the framework branch below can enumerate them without re-importing the
-# list from System's CMakeLists.txt.
-#
-# The list is ordered bottom-up by Lakos level (Base = level 0).
-# =============================================================================
+# Utility modules aggregated into `zancle-system`. Ordered bottom-up by level
+# (Base = 0). Read by the install helper and the framework branch.
 set(UTILITY_MODULES
     Base
     Trait
@@ -348,8 +317,7 @@ set(UTILITY_MODULES
     Mixin
 )
 
-# Multimedia modules and their corresponding ZA_BUILD_* gate.
-# Used by the framework branch to assemble the aggregate `Zancle` header set.
+# Multimedia modules. Each is gated on ZA_BUILD_<UPPER_NAME>.
 set(MULTIMEDIA_MODULES
     GLUtils
     Window
@@ -360,9 +328,7 @@ set(MULTIMEDIA_MODULES
 )
 
 
-# =============================================================================
 # Platform libraries + Zancle subdirectory
-# =============================================================================
 # Resolve platform-library lists (GL backend, Apple frameworks) once.
 include(cmake/PlatformLibs.cmake)
 
@@ -370,9 +336,7 @@ include(cmake/PlatformLibs.cmake)
 add_subdirectory(src/Zancle)
 
 
-# =============================================================================
 # Install + export (and the macOS framework variant)
-# =============================================================================
 if(NOT ZA_BUILD_FRAMEWORKS)
     # Public headers are attached to each module target via FILE_SET HEADERS
     # in _zancle_install_and_export (cmake/Macros.cmake) and installed
@@ -450,9 +414,7 @@ install(FILES readme.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
 zancle_export_targets()
 
 
-# =============================================================================
 # Extras (doc, examples, tests, format/tidy, CPack) -- top-level builds only
-# =============================================================================
 # configure extras by default when building Zancle directly, otherwise hide them
 zancle_set_option(ZA_CONFIGURE_EXTRAS ${PROJECT_IS_TOP_LEVEL} BOOL "ON to configure extras, OFF to ignore them")
 

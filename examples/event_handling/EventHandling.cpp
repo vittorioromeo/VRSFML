@@ -51,9 +51,7 @@ namespace
 class Application
 {
 public:
-    // The visitor we pass to event->visit in the "Visitor" handler
-    // Make sure all defined operator()s return the same type.
-    // The operator()s can also have void return type if there is nothing to return.
+    // Visitor passed to event->visit; all overloads must return the same type
     struct Visitor
     {
         explicit Visitor(Application& theApplication) : application(theApplication)

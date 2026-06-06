@@ -1483,7 +1483,7 @@ void drawCatVisuals(const CatDrawContext& ctx)
         if (ctx.main.copycatMaskAnimCd.isDone() && ctx.main.copycatMaskAnim.tick(ctx.deltaTimeMs) == TickResult::JustFinished)
             ctx.main.copycatMaskAnimCd.time = 4000.f;
 
-        const float foo = easeInOutBack(ctx.main.copycatMaskAnim.asProgress(3000.f).getBounce()) * 0.5f;
+        const float bounce = easeInOutBack(ctx.main.copycatMaskAnim.asProgress(3000.f).getBounce()) * 0.5f;
 
         const auto* txrMaskToUse = [&] -> const za::Rect2f*
         {
@@ -1511,10 +1511,10 @@ void drawCatVisuals(const CatDrawContext& ctx)
         if (txrMaskToUse != nullptr)
             addCatSprite(
                 za::Sprite{.position    = ctx.anchorOffset(ctx.main.gameConstants.copyMaskOffset),
-                           .scale       = ctx.catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
+                           .scale       = ctx.catScale * remap(bounce, 0.f, 0.5f, 1.f, 0.75f),
                            .origin      = {ctx.main.gameConstants.copyMaskOrigin.x,
-                                           ctx.main.gameConstants.copyMaskOrigin.y * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
-                           .rotation    = za::radians(ctx.catRotation + foo),
+                                           ctx.main.gameConstants.copyMaskOrigin.y * remap(bounce, 0.f, 0.5f, 1.f, 1.25f)},
+                           .rotation    = za::radians(ctx.catRotation + bounce),
                            .textureRect = *txrMaskToUse,
                            .color       = ctx.catColor});
     }

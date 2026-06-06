@@ -30,14 +30,12 @@ namespace tsurv
 
     while (currentPos < text.size())
     {
-        // 1. Find the start of the next word (skip leading whitespace)
         const za::SizeT wordStart = text.findFirstNotOf(whitespace, currentPos);
 
         // If no more words are found, we're done
         if (wordStart == za::StringView::nPos)
             break;
 
-        // 2. Find the end of the word
         za::SizeT wordEnd = text.findFirstOf(whitespace, wordStart);
         if (wordEnd == za::StringView::nPos)
         {
@@ -45,10 +43,8 @@ namespace tsurv
             wordEnd = text.size();
         }
 
-        // 3. Extract the word as a string_view (no copy made here)
         const za::StringView word = text.substrByPosLen(wordStart, wordEnd - wordStart);
 
-        // 4. Decide where to place the word
         if (currentLine.empty())
         {
             // This is the first word of a new line
@@ -71,7 +67,6 @@ namespace tsurv
             currentLine.assign(word.data(), word.size());
         }
 
-        // 5. Advance our position in the input string_view
         currentPos = wordEnd;
     }
 
