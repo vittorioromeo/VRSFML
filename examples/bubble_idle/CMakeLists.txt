@@ -30,9 +30,9 @@ target_link_libraries(bubble_idle PRIVATE ExampleProfilerEnabled)
 #                       UNITY_BUILD ON
 #                       UNITY_BUILD_BATCH_SIZE 0)
 
-if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    target_compile_options(bubble_idle PRIVATE "-Wl,-subsystem,windows" "-mwindows")
-    target_link_libraries(bubble_idle PRIVATE "-Wl,-subsystem,windows" "-mwindows")
+if (WIN32)
+    target_compile_options(bubble_idle PRIVATE $<$<CONFIG:Release>:-Wl,-subsystem,windows> $<$<CONFIG:Release>:-mwindows>)
+    target_link_libraries(bubble_idle PRIVATE $<$<CONFIG:Release>:-Wl,-subsystem,windows> $<$<CONFIG:Release>:-mwindows>)
 endif()
 
 # do not produce demo target by default
@@ -54,8 +54,8 @@ if (FALSE)
                           UNITY_BUILD ON
                           UNITY_BUILD_BATCH_SIZE 0)
 
-    if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
-        target_compile_options(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")
-        target_link_libraries(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")
+    if (WIN32)
+        target_compile_options(bubble_idle_demo PRIVATE $<$<CONFIG:Release>:-Wl,-subsystem,windows> $<$<CONFIG:Release>:-mwindows>)
+        target_link_libraries(bubble_idle_demo PRIVATE $<$<CONFIG:Release>:-Wl,-subsystem,windows> $<$<CONFIG:Release>:-mwindows>)
     endif()
 endif()

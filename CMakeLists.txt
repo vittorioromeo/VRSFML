@@ -83,6 +83,9 @@ zancle_set_option(ZA_BUILD_IMGUI ON BOOL "ON to build Zancle's ImGui module.")
 zancle_set_option(ZA_BUILD_AUDIO ON BOOL "ON to build Zancle's Audio module.")
 zancle_set_option(ZA_BUILD_NETWORK ON BOOL "ON to build Zancle's Network module.")
 
+# add an option for making OpenGL errors fatal
+zancle_set_option(ZA_FATAL_OPENGL_ERRORS OFF BOOL "ON to make Zancle OpenGL errors fatal, OFF to simply warn about them")
+
 if(ZA_BUILD_WINDOW)
     # add an option for choosing the OpenGL implementation
     zancle_set_option(ZA_OPENGL_ES ${ZA_OPENGL_ES_DEFAULT} BOOL "ON to use an OpenGL ES implementation, OFF to use a desktop OpenGL implementation")
@@ -180,8 +183,9 @@ if(ZA_OS_MACOS)
     #    (because cmake currently doesn't allow specifying a custom framework name so XXX-d is not possible)
     # secondly, it works only with BUILD_SHARED_LIBS enabled
     if(ZA_BUILD_FRAMEWORKS)
-        # requirement #1
-        if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        # requirement #1 (single-config only; on Xcode the user picks the
+        # config at build time and Release is enforced per-build).
+        if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
             message(FATAL_ERROR "CMAKE_BUILD_TYPE should be \"Release\" when ZA_BUILD_FRAMEWORKS is ON")
             return()
         endif()
@@ -512,9 +516,6 @@ if(ZA_BUILD_TEST_SUITE)
         message(WARNING "Cannot build unit testing unless all modules are enabled")
     endif()
 endif()
-
-# add an option for making OpenGL errors fatal
-zancle_set_option(ZA_FATAL_OPENGL_ERRORS OFF BOOL "ON to make Zancle OpenGL errors fatal, OFF to simply warn about them")
 
 zancle_set_option(CLANG_FORMAT_EXECUTABLE clang-format STRING "Override clang-format executable, requires version 17")
 add_custom_target(format
