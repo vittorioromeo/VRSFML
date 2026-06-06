@@ -89,7 +89,7 @@ elseif(EMSCRIPTEN)
 
     set(ZA_EMSCRIPTEN_TARGET_LINK_OPTIONS_ASYNCIFY
         -sASYNCIFY=1                        # Support async operations in the compiled code (used for game loop)
-        -sASYNCIFY_IGNORE_INDIRECT=1        # Assume indirect calls can’t lead to an unwind/rewind of the stack (faster)
+        -sASYNCIFY_IGNORE_INDIRECT=1        # Assume indirect calls can't lead to an unwind/rewind of the stack (faster)
     )
 
     set(ZA_EMSCRIPTEN_TARGET_LINK_OPTIONS_JSPI
