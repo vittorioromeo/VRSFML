@@ -26,8 +26,7 @@ if(ZA_OS_ANDROID)
     # ensure that linking into shared libraries doesn't fail
     set_target_properties(zancle-main PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-    # glad sources
-    target_include_directories(zancle-main SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+    target_link_libraries(zancle-main PRIVATE $<BUILD_INTERFACE:zancle-glad-headers>)
 elseif(ZA_OS_IOS)
     target_link_libraries(zancle-main PUBLIC Zancle::Window)
 endif()

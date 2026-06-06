@@ -13,8 +13,7 @@ target_link_libraries(zancle-graphics PUBLIC Zancle::Window)
 # stb_image sources
 target_include_directories(zancle-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/stb_image")
 
-# glad sources
-target_include_directories(zancle-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+target_link_libraries(zancle-graphics PRIVATE $<BUILD_INTERFACE:zancle-glad-headers>)
 
 # qoi sources
 target_include_directories(zancle-graphics SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/qoi")

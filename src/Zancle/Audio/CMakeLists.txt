@@ -121,8 +121,6 @@ else()
     add_library(Vorbis::vorbisfile ALIAS vorbisfile)
 endif()
 
-find_package(Threads REQUIRED)
-
 # define the zancle-audio target
 zancle_add_library(Audio
                  SOURCES ${SRC}

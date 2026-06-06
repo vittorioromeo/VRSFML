@@ -3,8 +3,6 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/Zancle/Window)
 
 file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp" "${SRCROOT}/Stub/*.hpp" "${SRCROOT}/Stub/*.cpp")
 
-find_package(Threads REQUIRED)
-
 set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 
@@ -107,8 +105,7 @@ endif()
 target_link_libraries(zancle-window PUBLIC Zancle::System PRIVATE $<BUILD_INTERFACE:SDL3::SDL3> Zancle::GLUtils)
 
 
-# glad sources
-target_include_directories(zancle-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+target_link_libraries(zancle-window PRIVATE $<BUILD_INTERFACE:zancle-glad-headers>)
 
 # When static linking on macOS, we need to add this flag for objective C to work
 # https://developer.apple.com/library/archive/qa/qa1490/_index.html
@@ -134,7 +131,7 @@ if(ZA_OS_LINUX)
     find_package(UDev REQUIRED)
     target_link_libraries(zancle-window PRIVATE UDev::UDev dl)
 elseif(ZA_OS_WINDOWS)
-    target_link_libraries(zancle-window PRIVATE winmm gdi32)
+    target_link_libraries(zancle-window PRIVATE ${ZA_WINDOWS_GL_LIBS})
 elseif(ZA_OS_FREEBSD)
     target_link_libraries(zancle-window PRIVATE usbhid)
 elseif(ZA_OS_MACOS)

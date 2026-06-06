@@ -25,8 +25,6 @@ if(ZA_ENABLE_PCH)
     list(APPEND SRC ${PROJECT_SOURCE_DIR}/src/Zancle/PCH/PCH.cpp)
 endif()
 
-find_package(Threads REQUIRED)
-
 # define the zancle-system target (aggregates all utility modules)
 zancle_add_library(System
                  SOURCES ${SRC}
@@ -46,7 +44,7 @@ endif()
 
 if(ZA_OS_ANDROID)
     # glad sources
-    target_include_directories(zancle-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+    target_link_libraries(zancle-system PRIVATE $<BUILD_INTERFACE:zancle-glad-headers>)
 endif()
 
 target_link_libraries(zancle-system PRIVATE Threads::Threads)

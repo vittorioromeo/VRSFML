@@ -7,8 +7,7 @@ file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROO
 zancle_add_library(ImGui
                  SOURCES ${SRC})
 
-# glad sources
-target_include_directories(zancle-imgui SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+target_link_libraries(zancle-imgui PRIVATE $<BUILD_INTERFACE:zancle-glad-headers>)
 
 # setup dependencies
 target_link_libraries(zancle-imgui PUBLIC Zancle::Graphics)

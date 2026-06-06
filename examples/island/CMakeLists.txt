@@ -1,5 +1,3 @@
-find_package(Threads REQUIRED)
-
 # all source files
 set(SRC Island.cpp)
 

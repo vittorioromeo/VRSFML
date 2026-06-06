@@ -38,6 +38,9 @@ include(cmake/Config.cmake)
 # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
 include(GNUInstallDirs)
 
+# Find Threads once; consumers link `Threads::Threads` as needed.
+find_package(Threads REQUIRED)
+
 # disable static libraries on Android
 if(ZA_OS_ANDROID)
     set(BUILD_SHARED_LIBS ON)

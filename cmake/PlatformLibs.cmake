@@ -53,3 +53,19 @@ elseif(ZA_OS_IOS)
         "-framework CoreMotion"
     )
 endif()
+
+# -- Windows system libs needed by OpenGL/windowing code ----------------------
+set(ZA_WINDOWS_GL_LIBS "")
+if(ZA_OS_WINDOWS)
+    set(ZA_WINDOWS_GL_LIBS winmm gdi32)
+endif()
+
+# -- Bundled glad headers ------------------------------------------------------
+#
+# Six modules use the glad GL loader headers from extlibs. PRIVATE link wrapped
+# in $<BUILD_INTERFACE:...> so the install/export set is unaffected (consumers
+# bundle the headers via FILE_SET HEADERS on each module).
+add_library(zancle-glad-headers INTERFACE)
+
+target_include_directories(zancle-glad-headers SYSTEM INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include>)

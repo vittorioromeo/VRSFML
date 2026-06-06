@@ -21,10 +21,7 @@ target_link_libraries(zancle-test-main PUBLIC Zancle::System)
 # enable precompiled headers
 if (ZA_ENABLE_PCH)
     message(VERBOSE "enabling PCH for zancle-test-main")
-
     target_precompile_headers(zancle-test-main REUSE_FROM zancle-system)
-
-    find_package(Threads REQUIRED)
     target_link_libraries(zancle-test-main PRIVATE Threads::Threads)
 endif()
 

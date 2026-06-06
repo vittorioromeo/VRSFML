@@ -191,8 +191,6 @@ function(_zancle_apply_pch target)
     endif()
     message(VERBOSE "enabling PCH for Zancle library '${target}'")
     target_precompile_headers(${target} REUSE_FROM zancle-system)
-
-    find_package(Threads REQUIRED)
     target_link_libraries(${target} PRIVATE Threads::Threads)
 endfunction()
 
@@ -523,8 +521,6 @@ macro(zancle_add_example target)
     if (ZA_ENABLE_PCH)
         message(VERBOSE "enabling PCH for Zancle example '${target}'")
         target_precompile_headers(${target} REUSE_FROM zancle-system)
-
-        find_package(Threads REQUIRED)
         target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
 
@@ -639,8 +635,6 @@ function(zancle_add_test target)
     if (ZA_ENABLE_PCH)
         message(VERBOSE "enabling PCH for Zancle test '${target}'")
         target_precompile_headers(${target} REUSE_FROM zancle-system)
-
-        find_package(Threads REQUIRED)
         target_link_libraries(${target} PRIVATE Threads::Threads)
     endif()
 

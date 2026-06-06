@@ -55,8 +55,7 @@ if(ZA_OS_LINUX OR ZA_OS_FREEBSD OR ZA_OS_OPENBSD OR ZA_OS_NETBSD)
 endif()
 
 
-# glad sources
-target_include_directories(zancle-glutils SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
+target_link_libraries(zancle-glutils PRIVATE $<BUILD_INTERFACE:zancle-glad-headers>)
 
 # When static linking on macOS, we need to add this flag for objective C to work
 # https://developer.apple.com/library/archive/qa/qa1490/_index.html
@@ -71,7 +70,7 @@ target_include_directories(zancle-glutils SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/
 target_link_libraries(zancle-glutils PRIVATE ${ZA_GL_BACKEND_LIBS})
 
 if(ZA_OS_WINDOWS)
-    target_link_libraries(zancle-glutils PRIVATE winmm gdi32)
+    target_link_libraries(zancle-glutils PRIVATE ${ZA_WINDOWS_GL_LIBS})
 elseif(ZA_OS_MACOS)
     target_link_libraries(zancle-glutils PRIVATE ${ZA_APPLE_FRAMEWORK_LIBS})
 elseif(ZA_OS_IOS)
