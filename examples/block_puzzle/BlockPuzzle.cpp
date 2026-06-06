@@ -555,7 +555,7 @@ struct [[nodiscard]] ParticleData
 class Game
 {
 private:
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     const unsigned int m_aaLevel = za::min(16u, za::RenderTexture::getMaximumAntiAliasingLevel());
 
     ////////////////////////////////////////////////////////////
@@ -642,12 +642,12 @@ private:
     ////////////////////////////////////////////////////////////
     float m_time = 0.f;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     const za::Cursor m_cursorArrow      = za::Cursor::loadFromSystem(za::Cursor::Type::Arrow).value();
     const za::Cursor m_cursorHand       = za::Cursor::loadFromSystem(za::Cursor::Type::Hand).value();
     const za::Cursor m_cursorNotAllowed = za::Cursor::loadFromSystem(za::Cursor::Type::NotAllowed).value();
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     int       m_editorSelectedObjectIdx      = 0;
     int       m_editorSelectedColorIdx       = 0;
     int       m_editorSelectedLockedColorIdx = 0;
@@ -656,7 +656,7 @@ private:
     bool      m_editorObjectLocked    = false;
     bool      m_editorObjectClockwise = false;
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     za::TextureAtlas m_textureAtlas{za::Texture::create({4096u, 4096u}, {.smooth = false}).value()};
 
     ////////////////////////////////////////////////////////////
@@ -687,10 +687,10 @@ private:
     const za::Rect2f m_txrLock0        = addImgResourceToAtlas("lock0.png");
     const za::Rect2f m_txrPinned       = addImgResourceToAtlas("pinned.png");
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     za::Texture m_txLava = za::Texture::loadFromFile("resources/lava.png", {.smooth = true}).value();
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     za::CPUDrawableBatch m_dbBackground;
     za::CPUDrawableBatch m_dbLavaParticles;
     za::CPUDrawableBatch m_dbLavaParticlesTop;
@@ -700,10 +700,10 @@ private:
     za::CPUDrawableBatch m_dbObject;
     za::CPUDrawableBatch m_dbObjectAttributes;
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static inline constexpr float shadowTextureResMult = 0.25f;
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     za::RenderTexture m_rtSpriteBg{
         za::RenderTexture::create((logicalResolution.toVec2f() * shadowTextureResMult).toVec2u(),
                                   {.antiAliasingLevel = m_aaLevel, .smooth = true})
@@ -717,7 +717,7 @@ private:
     za::RenderTexture m_rtGame{
         za::RenderTexture::create(logicalResolution.toVec2u(), {.antiAliasingLevel = m_aaLevel, .smooth = true}).value()};
 
-    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     za::Texture m_txUndo        = za::Texture::create(logicalResolution.toVec2u(), {.smooth = true}).value();
     float       m_undoCountdown = 0.f;
 
@@ -993,21 +993,21 @@ private:
         m_world.addWall({8, 5});
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool makeProgress(auto& turnEvent, const float speed)
     {
         turnEvent->progress += speed;
         return turnEvent->progress >= 1.f;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void finishTurn()
     {
         m_prevWorlds.emplaceBack(m_world);
         ++m_moves;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void undoTurn()
     {
         if (m_prevWorlds.empty())
@@ -1027,7 +1027,7 @@ private:
         --m_moves;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool updateTurnEvent(TurnEvent& turnEvent, const float deltaTimeMs)
     {
         if (auto* moveBlock = turnEvent.getIf<TEMoveBlock>())

@@ -12,7 +12,7 @@
 
 namespace tsurv
 {
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 [[nodiscard]] inline za::String wrapText(const za::StringView text, const za::SizeT maxLineLength)
 {
     za::String result; // Use a single local variable for NRVO

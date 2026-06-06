@@ -28,7 +28,7 @@
 
 namespace tsurv
 {
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] BitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     za::Vector<za::Vertex>&    outVertices;
@@ -42,7 +42,7 @@ struct [[nodiscard]] BitmapTextToVerticesOptions // NOLINT(cppcoreguidelines-pro
 };
 
 
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <bool TBoundsOnly = false>
 inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 {
@@ -292,7 +292,7 @@ inline auto bitmapTextToVertices(const BitmapTextToVerticesOptions& options)
 }
 
 
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 inline za::Rect2f bitmapTextToVerticesPretransformed(const BitmapTextToVerticesOptions& options, const za::Transform& transform)
 {
     const auto prevVerticesSize = options.outVertices.size();

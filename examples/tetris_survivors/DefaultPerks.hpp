@@ -16,50 +16,50 @@
 
 namespace tsurv
 {
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkChainLightning : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int chanceIncrease = 10;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Chain Lightning";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::fmtToString("Each time lightning strikes, add a {}% chance to hit an additional block.",
                                world.perkChainLightning + chanceIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{}% -> {}%", world.perkChainLightning, world.perkChainLightning + chanceIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("({}% chance)", world.perkChainLightning);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkChainLightning > 0;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return (world.perkRndHitPerNTetraminos.hasValue() || world.perkRndHitOnClear > 0) && world.perkChainLightning < 60;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkChainLightning += 10;
@@ -67,50 +67,50 @@ struct [[nodiscard]] PerkChainLightning : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkPeekNextTetraminos : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int peekIncrease = 1;
     static constexpr int maxPeek      = 3;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Peek Next Tetraminos";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::fmtToString("See the next {} upcoming tetraminos.", world.perkNPeek + peekIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}", world.perkNPeek, world.perkNPeek + peekIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(see {} tetraminos)", world.perkNPeek);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkNPeek > 1;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkNPeek < maxPeek;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkNPeek += peekIncrease;
@@ -118,19 +118,19 @@ struct [[nodiscard]] PerkPeekNextTetraminos : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkOnClearLightningStrike : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int strikeIncrease = 1;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "On-Clear Lightning Strike";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::
@@ -138,31 +138,31 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
                         world.perkRndHitOnClear + strikeIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}", world.perkRndHitOnClear, world.perkRndHitOnClear + strikeIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("({} tetraminos per clear)", world.perkRndHitOnClear);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World&) const override
     {
         return true; // Always available to upgrade
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkRndHitOnClear > 0;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkRndHitOnClear += strikeIncrease;
@@ -170,28 +170,28 @@ struct [[nodiscard]] PerkOnClearLightningStrike : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Vertical Drill";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World&) const override
     {
         return "When hard dropping, automatically damage blocks directly connected below the tetramino's sharp edges.";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return ""; // One-time unlock
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(penetration: {}, coverage: {})",
@@ -199,19 +199,19 @@ struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
                                world.perkDrill[DrillDirection::Down]->coverage);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDrill[DrillDirection::Down].hasValue();
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return !isActive(world);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkDrill[DrillDirection::Down].emplace();
@@ -219,27 +219,27 @@ struct [[nodiscard]] PerkVerticalDrillUnlock : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int penetrationIncrease = 1;
     static constexpr int maxPenetration      = 10;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Hard-Drop Drill - Penetration";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::fmtToString("Increase the maximum number of blocks damaged to {}.",
                                world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}",
@@ -247,27 +247,27 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
                                world.perkDrill[DrillDirection::Down]->maxPenetration + penetrationIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDrill[DrillDirection::Down].hasValue() &&
                world.perkDrill[DrillDirection::Down]->maxPenetration > 1;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkDrill[DrillDirection::Down].hasValue() &&
                world.perkDrill[DrillDirection::Down]->maxPenetration < maxPenetration;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkDrill[DrillDirection::Down]->maxPenetration += penetrationIncrease;
@@ -275,46 +275,46 @@ struct [[nodiscard]] PerkVerticalDrillPenetration : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Hard-Drop Drill - Blunt Force";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World&) const override
     {
         return "The entire surface of the tetramino acts as a drill when hard-dropping.";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return ""; // One-time unlock
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDrill[DrillDirection::Down].hasValue() && world.perkDrill[DrillDirection::Down]->coverage == 2;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkDrill[DrillDirection::Down].hasValue() && world.perkDrill[DrillDirection::Down]->coverage == 1;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkDrill[DrillDirection::Down]->coverage = 2; // special case value meaning "full coverage"
@@ -322,10 +322,10 @@ struct [[nodiscard]] PerkVerticalDrillBluntForce : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkHoldSkipTetramino : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         // This perk is a multi-stage upgrade. We assume it is only shown when available.
@@ -334,7 +334,7 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
         return "Hold / Skip Tetramino";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         if (world.perkCanHoldTetramino == 0)
@@ -343,7 +343,7 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
         return "Upgrade 'Hold' to 'Skip', allowing you to discard your current tetramino once per turn.";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         if (world.perkCanHoldTetramino == 0)
@@ -355,25 +355,25 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
         return "";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("{}", (world.perkCanHoldTetramino == 0) ? "Hold" : "Skip");
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkCanHoldTetramino > 0;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkCanHoldTetramino < 2;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         ++world.perkCanHoldTetramino;
@@ -381,100 +381,100 @@ struct [[nodiscard]] PerkHoldSkipTetramino : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkXpPerTetraminoPlaced : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int xpIncrease = 3;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "XP per Tetramino Placed";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        /////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////
         return za::fmtToString("Gain {} XP for each tetramino you place.", world.perkXPPerTetraminoPlaced + xpIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}", world.perkXPPerTetraminoPlaced, world.perkXPPerTetraminoPlaced + xpIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("({} XP)", world.perkXPPerTetraminoPlaced);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkXPPerTetraminoPlaced > 0;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World&) const override
     {
         return true;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkXPPerTetraminoPlaced += xpIncrease;
     }
 };
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkXpPerBlockDamaged : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int xpIncrease = 10;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "XP per Block Damaged";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
-        /////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////
         return za::fmtToString("Gain {} XP for each block you damage.", world.perkXPPerBlockDamaged + xpIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}", world.perkXPPerBlockDamaged, world.perkXPPerBlockDamaged + xpIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("({} XP)", world.perkXPPerBlockDamaged);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkXPPerBlockDamaged > 0;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World&) const override
     {
         return true;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkXPPerBlockDamaged += xpIncrease;
@@ -482,20 +482,20 @@ struct [[nodiscard]] PerkXpPerBlockDamaged : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int initialThreshold = 25;
     static constexpr int minThreshold     = 10;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Janitor";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
@@ -504,7 +504,7 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
         return "Decrease the number of tetraminos needed to trigger the Janitor effect.";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
@@ -515,26 +515,26 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
                                world.perkDeleteFloorPerNTetraminos->nTetraminos - 1);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(every {} tetraminos)", world.perkDeleteFloorPerNTetraminos->nTetraminos);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDeleteFloorPerNTetraminos.hasValue();
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return !world.perkDeleteFloorPerNTetraminos.hasValue() ||
                world.perkDeleteFloorPerNTetraminos->nTetraminos > minThreshold;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         if (!world.perkDeleteFloorPerNTetraminos.hasValue())
@@ -545,20 +545,20 @@ struct [[nodiscard]] PerkDeleteFloorPerNTetraminos : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int initialThreshold = 15;
     static constexpr int minThreshold     = 8;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "On-Placement Strike";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
@@ -568,7 +568,7 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
         return "Decrease the number of tetraminos needed to trigger the On-Placement Strike.";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
@@ -579,25 +579,25 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
                                world.perkRndHitPerNTetraminos->nTetraminos - 1);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(every {} tetraminos)", world.perkRndHitPerNTetraminos->nTetraminos);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkRndHitPerNTetraminos.hasValue();
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return !world.perkRndHitPerNTetraminos.hasValue() || world.perkRndHitPerNTetraminos->nTetraminos > minThreshold;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         if (!world.perkRndHitPerNTetraminos.hasValue())
@@ -608,50 +608,50 @@ struct [[nodiscard]] PerkRndHitPerNTetraminos : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] PerkExtraLinePieces : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int pieceIncrease  = 1;
     static constexpr int maxExtraPieces = 3;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         return "Extra Line Pieces";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World&) const override
     {
         return za::fmtToString("Increase the number of line pieces in the tetramino bag by {}.", pieceIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}", world.perkExtraLinePiecesInPool, world.perkExtraLinePiecesInPool + pieceIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(+{})", world.perkExtraLinePiecesInPool);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkExtraLinePiecesInPool > 0;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkExtraLinePiecesInPool < maxExtraPieces;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkExtraLinePiecesInPool += pieceIncrease;
@@ -659,31 +659,31 @@ struct [[nodiscard]] PerkExtraLinePieces : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <DrillDirection::Enum TDirection>
 struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
         return za::fmtToString("{} Horizontal Drill", upperCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == DrillDirection::Left) ? "left" : "right";
         return za::fmtToString("Damage blocks directly adjacent to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(penetration: {}, coverage: {})",
@@ -691,19 +691,19 @@ struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
                                world.perkDrill[TDirection]->coverage);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDrill[TDirection].hasValue();
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return !world.perkDrill[TDirection].hasValue();
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkDrill[TDirection].emplace();
@@ -711,29 +711,29 @@ struct [[nodiscard]] PerkHorizontalDrillUnlock : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <DrillDirection::Enum TDirection>
 struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int penetrationIncrease = 1;
     static constexpr int maxPenetration      = 4;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
         return za::fmtToString("{} Drill - Penetration", upperCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::fmtToString("Increase the maximum number of blocks damaged to {}.",
                                world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}",
@@ -741,25 +741,25 @@ struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
                                world.perkDrill[TDirection]->maxPenetration + penetrationIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->maxPenetration > 1;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->maxPenetration < maxPenetration;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         ++world.perkDrill[TDirection]->maxPenetration;
@@ -767,29 +767,29 @@ struct [[nodiscard]] PerkHorizontalDrillPenetration : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <DrillDirection::Enum TDirection>
 struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int lengthIncrease = 1;
     static constexpr int maxLength      = 4;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == DrillDirection::Left) ? "Left" : "Right";
         return za::fmtToString("{} Drill - Coverage", upperCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::fmtToString("Increase the maximum length of the drill to {} blocks.",
                                world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}",
@@ -797,25 +797,25 @@ struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
                                world.perkDrill[TDirection]->coverage + lengthIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->coverage > 1;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkDrill[TDirection].hasValue() && world.perkDrill[TDirection]->coverage < maxLength;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         ++world.perkDrill[TDirection]->coverage;
@@ -823,46 +823,46 @@ struct [[nodiscard]] PerkHorizontalDrillCoverage : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 using PerkHorizontalDrillLeftUnlock  = PerkHorizontalDrillUnlock<DrillDirection::Left>;
 using PerkHorizontalDrillRightUnlock = PerkHorizontalDrillUnlock<DrillDirection::Right>;
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 using PerkHorizontalDrillLeftPenetration  = PerkHorizontalDrillPenetration<DrillDirection::Left>;
 using PerkHorizontalDrillRightPenetration = PerkHorizontalDrillPenetration<DrillDirection::Right>;
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 using PerkHorizontalDrillLeftCoverage  = PerkHorizontalDrillCoverage<DrillDirection::Left>;
 using PerkHorizontalDrillRightCoverage = PerkHorizontalDrillCoverage<DrillDirection::Right>;
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
         return za::fmtToString("{} Diagonal Laser", upperCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
         return za::fmtToString("Damage blocks placed diagonally to the {} of the placed tetramino.", lowerCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World& world) const override
     {
         return za::fmtToString("(penetration: {}, bounce: {})",
@@ -870,19 +870,19 @@ struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
                                world.perkLaser[TDirection]->bounce ? "yes" : "no");
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkLaser[TDirection].hasValue();
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return !isActive(world);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkLaser[TDirection].emplace();
@@ -890,29 +890,29 @@ struct [[nodiscard]] PerkDiagonalLaserUnlock : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     static constexpr int penetrationIncrease = 1;
     static constexpr int maxPenetration      = 4;
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
         return za::fmtToString("{} Diagonal - Penetration", upperCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World& world) const override
     {
         return za::fmtToString("Increase the maximum number of blocks damaged to {}.",
                                world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World& world) const override
     {
         return za::fmtToString("{} -> {}",
@@ -920,25 +920,25 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
                                world.perkLaser[TDirection]->maxPenetration + penetrationIncrease);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->maxPenetration > 1;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->maxPenetration < maxPenetration;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         ++world.perkLaser[TDirection]->maxPenetration;
@@ -946,18 +946,18 @@ struct [[nodiscard]] PerkDiagonalLaserPenetration : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <LaserDirection::Enum TDirection>
 struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
 {
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getName() const override
     {
         const auto* upperCaseDirectionStr = (TDirection == LaserDirection::Left) ? "SW" : "SE";
         return za::fmtToString("{} Diagonal - Bounce", upperCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getDescription(const World&) const override
     {
         const auto* lowerCaseDirectionStr = (TDirection == LaserDirection::Left) ? "southwest" : "southeast";
@@ -965,31 +965,31 @@ struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
         return za::fmtToString("Lasers fired {} will now bounce off the sides of the grid once.", lowerCaseDirectionStr);
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getProgressionStr(const World&) const override
     {
         return "";
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] za::String getInventoryStr(const World&) const override
     {
         return ""; // handled by main perk
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isActive(const World& world) const override
     {
         return world.perkLaser[TDirection].hasValue() && world.perkLaser[TDirection]->bounce;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool meetsPrerequisites(const World& world) const override
     {
         return world.perkLaser[TDirection].hasValue() && !world.perkLaser[TDirection]->bounce;
     }
 
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     void apply(World& world) const override
     {
         world.perkLaser[TDirection]->bounce = true;
@@ -997,17 +997,17 @@ struct [[nodiscard]] PerkDiagonalLaserBounce : Perk
 };
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 using PerkDiagonalLaserLeftUnlock  = PerkDiagonalLaserUnlock<LaserDirection::Left>;
 using PerkDiagonalLaserRightUnlock = PerkDiagonalLaserUnlock<LaserDirection::Right>;
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 using PerkDiagonalLaserLeftPenetration  = PerkDiagonalLaserPenetration<LaserDirection::Left>;
 using PerkDiagonalLaserRightPenetration = PerkDiagonalLaserPenetration<LaserDirection::Right>;
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 using PerkDiagonalLaserLeftBounce  = PerkDiagonalLaserBounce<LaserDirection::Left>;
 using PerkDiagonalLaserRightBounce = PerkDiagonalLaserBounce<LaserDirection::Right>;
 

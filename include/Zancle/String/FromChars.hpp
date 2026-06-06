@@ -16,14 +16,14 @@
 
 namespace za::priv
 {
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 [[nodiscard]] inline constexpr bool isDigit(const char c)
 {
     return c >= '0' && c <= '9';
 }
 
 
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard]] inline consteval T maxIntegral() noexcept
 {
@@ -46,14 +46,14 @@ template <typename T>
 
 namespace za
 {
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 /// \brief Parse an integer from `[first, last)` into `value`
 ///
 /// Stricter than `strtol`: only base-10 digits and an optional leading
 /// sign are accepted. Detects overflow before it happens and signals
 /// it via `FromCharsError::ResultOutOfRange`.
 ///
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard]] FromCharsResult fromChars(const char* first, const char* const last, T& value)
     requires isIntegral<T>
@@ -129,7 +129,7 @@ template <typename T>
 }
 
 
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 /// \brief Parse a floating-point number from `[first, last)` into `value`
 ///
 /// Accepts an optional sign, an integer part, and an optional fractional
@@ -137,7 +137,7 @@ template <typename T>
 /// `long double` internally to retain precision before narrowing the
 /// result back into `T`.
 ///
-//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 template <typename T>
 [[nodiscard]] FromCharsResult fromChars(const char* first, const char* const last, T& value)
     requires isFloatingPoint<T>

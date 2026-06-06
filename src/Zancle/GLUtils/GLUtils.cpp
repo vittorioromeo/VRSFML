@@ -62,7 +62,7 @@ ScissorDisableGuard::~ScissorDisableGuard()
 }
 
 
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
 void bindAndInitializeTexture(const unsigned int textureId, const bool sRgb, const Vec2u size, const unsigned int textureWrapParam)
 {
     glCheck(glBindTexture(GL_TEXTURE_2D, textureId));
