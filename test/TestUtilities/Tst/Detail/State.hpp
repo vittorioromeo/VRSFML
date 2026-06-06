@@ -77,6 +77,15 @@ struct TraversalState
 
 
 ////////////////////////////////////////////////////////////
+struct FailedTestCaseRecord
+{
+    const char* name;
+    const char* file;
+    int         line;
+};
+
+
+////////////////////////////////////////////////////////////
 struct ContextState
 {
     TraversalState traversal;
@@ -91,11 +100,21 @@ struct ContextState
     za::SizeT failedTestCases  = 0u;
     za::SizeT skippedTestCases = 0u;
 
+    // Test cases that failed, so the runner can list them at the end of the
+    // summary. One entry per failed test case (not per failed assertion).
+    za::Vector<FailedTestCaseRecord> failedTestCaseList;
+
     // Per-test-case state.
     bool        currentTestFailed = false;
     const char* currentTestName   = nullptr;
     const char* currentTestFile   = nullptr;
     int         currentTestLine   = 0;
+
+    // File / line of the FIRST failing assertion seen in the current test
+    // case, used by the end-of-run "failed test cases:" summary so it points
+    // at the actual failure site rather than the TEST_CASE declaration.
+    const char* firstFailureFile = nullptr;
+    int         firstFailureLine = 0;
 
     // Rendered operands of the most recent failed assertion (cold path).
     char      decompBuf[512];

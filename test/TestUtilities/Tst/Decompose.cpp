@@ -7,12 +7,15 @@
 #include "Tst/Detail/StringifyValue.hpp"
 #include "Tst/Tst.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
 #include "Zancle/Fmt/Fmt.hpp"
 #include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "Zancle/Base/SizeT.hpp"
+
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/StringView.hpp"
+
+#include "Zancle/Diagnostic/Assert.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -150,6 +153,13 @@ bool handleAssertion(Result res, AssertKind kind, const char* file, int line, co
         return true;
 
     ++ctx.failedAssertions;
+
+    if (!ctx.currentTestFailed)
+    {
+        ctx.firstFailureFile = file;
+        ctx.firstFailureLine = line;
+    }
+
     ctx.currentTestFailed = true;
 
     emitFailureBanner(kind, file, line, exprStr);

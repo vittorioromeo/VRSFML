@@ -8,14 +8,17 @@
 #include "Tst/Detail/State.hpp"
 #include "Tst/Tst.hpp"
 
+#include "Zancle/Fmt/Fmt.hpp"
+#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
+
+#include "Zancle/String/String.hpp"
+
+#include "Zancle/Container/Vector.hpp"
+
+#include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Strcmp.hpp"
 #include "Zancle/Base/Strlen.hpp"
 #include "Zancle/Base/Strstr.hpp"
-#include "Zancle/Fmt/Fmt.hpp"
-#include "Zancle/Fmt/FmtNumeric.hpp" // IWYU pragma: keep
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/String/String.hpp"
-#include "Zancle/Container/Vector.hpp"
 
 #include <csignal>
 #include <cstdio>
@@ -110,7 +113,7 @@ void writeStderr(const char* data, za::SizeT size) noexcept
 {
     // `stderr` is unbuffered by default, so this reaches the terminal
     // immediately -- important on the fatal-signal path below.
-    (void)std::fwrite(data, 1u, size, stderr);
+    std::fwrite(data, 1u, size, stderr);
 }
 
 
@@ -291,7 +294,7 @@ void listTestCases(const ContextState& ctx)
         if (!shouldRun(tc, ctx))
             continue;
 
-        (void)za::printLn("{}", runnerNonNull(tc.name));
+        za::printLn("{}", runnerNonNull(tc.name));
     }
 }
 
@@ -303,6 +306,8 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
     ctx.currentTestName   = tc.name;
     ctx.currentTestFile   = tc.file;
     ctx.currentTestLine   = tc.line;
+    ctx.firstFailureFile  = nullptr;
+    ctx.firstFailureLine  = 0;
 
     ctx.traversal.resetForTestCase();
 
@@ -319,30 +324,56 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
             // Expected control flow on REQUIRE failure -- already reported.
         } catch (...)
         {
+            if (!ctx.currentTestFailed)
+            {
+                ctx.firstFailureFile = tc.file;
+                ctx.firstFailureLine = tc.line;
+            }
             ctx.currentTestFailed = true;
             ++ctx.failedAssertions;
-            (void)za::printErrLn("{}:{}: FAILED: uncaught exception in {}", tc.file, tc.line, runnerNonNull(tc.name));
+            za::printErrLn("{}:{}: FAILED: uncaught exception in {}", tc.file, tc.line, runnerNonNull(tc.name));
         }
     } while (ctx.traversal.advance());
 
     if (ctx.currentTestFailed)
+    {
         ++ctx.failedTestCases;
+        // Prefer the first failed assertion's location; fall back to the
+        // TEST_CASE site if nothing was captured (defensive -- shouldn't happen).
+        const char* file = ctx.firstFailureFile != nullptr ? ctx.firstFailureFile : tc.file;
+        const int   line = ctx.firstFailureFile != nullptr ? ctx.firstFailureLine : tc.line;
+        ctx.failedTestCaseList.pushBack(FailedTestCaseRecord{tc.name, file, line});
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 void printSummary(const ContextState& ctx)
 {
-    (void)za::printLn("");
-    (void)za::printLn("[tst] test cases:  {} | passed: {} | failed: {} | skipped: {}",
-                      ctx.totalTestCases,
-                      ctx.totalTestCases - ctx.failedTestCases - ctx.skippedTestCases,
-                      ctx.failedTestCases,
-                      ctx.skippedTestCases);
-    (void)za::printLn("[tst] assertions:  {} | passed: {} | failed: {}",
-                      ctx.totalAssertions,
-                      ctx.totalAssertions - ctx.failedAssertions,
-                      ctx.failedAssertions);
+    za::printLn("");
+
+    za::printLn("[tst] test cases:  {} | passed: {} | failed: {} | skipped: {}",
+                ctx.totalTestCases,
+                ctx.totalTestCases - ctx.failedTestCases - ctx.skippedTestCases,
+                ctx.failedTestCases,
+                ctx.skippedTestCases);
+
+    za::printLn("[tst] assertions:  {} | passed: {} | failed: {}",
+                ctx.totalAssertions,
+                ctx.totalAssertions - ctx.failedAssertions,
+                ctx.failedAssertions);
+
+    if (!ctx.failedTestCaseList.empty())
+    {
+        za::printLn("");
+        za::printLn("[tst] failed test cases:");
+
+        for (za::SizeT i = 0u; i < ctx.failedTestCaseList.size(); ++i)
+        {
+            const auto& f = ctx.failedTestCaseList.data()[i];
+            za::printLn("  - {} ({}:{})", runnerNonNull(f.name), runnerNonNull(f.file), f.line);
+        }
+    }
 }
 
 } // namespace
@@ -388,7 +419,7 @@ int run(int argc, char** argv)
         ++ctx.totalTestCases;
 
         if (ctx.verbose)
-            (void)za::printErrLn("[tst] running: {} ({}:{})", detail::runnerNonNull(tc.name), tc.file, tc.line);
+            za::printErrLn("[tst] running: {} ({}:{})", detail::runnerNonNull(tc.name), tc.file, tc.line);
 
         detail::runSingleTestCase(tc, ctx);
     }
