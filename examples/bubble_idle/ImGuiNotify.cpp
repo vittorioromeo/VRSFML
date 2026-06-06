@@ -1,7 +1,7 @@
 #include "IconsFontAwesome6.h"
 #include "ImGuiNotify.hpp"
 
-#include "Zancle/ImGui/ImConfigSFML.hpp"
+#include "Zancle/ImGui/ImConfigZancle.hpp"
 #include "Zancle/ImGui/IncludeImGui.hpp"
 #include "Zancle/ImGui/IncludeImGuiInternal.hpp"
 

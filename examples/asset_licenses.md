@@ -1,9 +1,9 @@
-# Assets used by SFML's example projects.
+# Assets used by Zancle/SFML's example projects.
 
 All assets are under public domain (CC0):
 
 | Name                                 | Author                    | Link                       |
-| ------------------------------------ | ------------------------- | -------------------------- |
+|--------------------------------------|---------------------------|----------------------------|
 | Tuffy 1.1 and 1.28 fonts             | Thatcher Ulrich           | [Ulrich's fonts][1]        |
 | sounds/resources/doodle_pop.ogg      | Elijah Hopp               | [public-domain][2]         |
 | tennis/resources/ball.wav            | Elijah Hopp               | [public-domain][2]         |

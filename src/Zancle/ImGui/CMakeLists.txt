@@ -50,4 +50,4 @@ endif()
 install(TARGETS imgui EXPORT ZancleImGui${_imgui_config_name}Targets FILE_SET public_headers)
 
 target_link_libraries(zancle-imgui PRIVATE ImGui::ImGui)
-target_compile_definitions(zancle-imgui PUBLIC IMGUI_USER_CONFIG="${PROJECT_SOURCE_DIR}/include/Zancle/ImGui/ImConfigSFML.hpp")
+target_compile_definitions(zancle-imgui PUBLIC IMGUI_USER_CONFIG="${PROJECT_SOURCE_DIR}/include/Zancle/ImGui/ImConfigZancle.hpp")
