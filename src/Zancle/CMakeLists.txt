@@ -1,9 +1,6 @@
 # include the Zancle specific macros
 include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
-# define the path of our additional CMake modules
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
-
 # set the output directory for Zancle libraries
 set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/lib")
 

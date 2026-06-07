@@ -36,6 +36,9 @@ include(cmake/Config.cmake)
 # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
 include(GNUInstallDirs)
 
+# define the path of our additional CMake modules
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules/")
+
 # Find Threads once; consumers link `Threads::Threads` as needed.
 find_package(Threads REQUIRED)
 
