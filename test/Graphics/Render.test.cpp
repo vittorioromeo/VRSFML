@@ -8,7 +8,9 @@
 #include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/DrawInstancedIndexedVerticesSettings.hpp"
 #include "Zancle/Graphics/DrawableBatch.hpp"
+#include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/Glsl.hpp"
+#include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/InstanceAttributeBinder.hpp"
@@ -846,6 +848,70 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 
             const auto image = batchRenderTexture.getTexture().copyToImage();
             CHECK(image.getPixel({20, 20}) == za::Color::Green);
+        }
+
+        SECTION("GPU autobatch survives VBO/EBO id cycling across grows (keyboard example regression)")
+        {
+            // Regression for the crash that hit `examples/keyboard` and
+            // that the `Fix VBO growth bug` commit addresses.
+            //
+            // The GPU autobatch's persistent VBO/EBO ring buffers grow as
+            // vertices accumulate. Each growth allocates a fresh GL
+            // buffer via `glGenBuffers` (different from the currently
+            // live id, but the spec allows recycling RECENTLY-DELETED
+            // ids) and destroys the old buffer via `glDeleteBuffers`.
+            // A *sequence* of grows can therefore cycle the live
+            // vbo/ebo ids back to values that were live earlier in the
+            // frame. The cache check in `setupDraw` only compares ids;
+            // a flush whose current vbo/ebo ids happen to match a cached
+            // earlier snapshot skips the rebind, leaving the VAO's
+            // attribute pointers pointing at the destroyed-and-recreated
+            // buffer storage. The next `glDrawElementsBaseVertex` then
+            // dereferences invalid memory inside the driver.
+            //
+            // This test mirrors the keyboard's draw pattern:
+            //   1. A large raw-triangle vertex span (`m_triangles`,
+            //      `Keyboard::ScancodeCount * 6` verts) with no texture.
+            //   2. Many textured `Text` draws (`m_labels`). The first
+            //      label forces flush 1 (texture state changes from
+            //      no-texture to the font atlas, mismatching the cache).
+            //   3. More label draws grow the persistent buffer further.
+            //   4. `display()` performs flush 2.
+            // If the grows between flush 1 and flush 2 cycle the
+            // vbo/ebo ids back to flush 1's cached snapshot, the cache
+            // skips the rebind and the driver crashes inside flush 2.
+            //
+            // Triggering the id cycle depends on the driver's `glGenBuffers`
+            // allocation policy. Mesa/iris recycles aggressively and
+            // reliably crashes without the fix; other drivers may not.
+            // The test exercises the code path either way and the
+            // `examples/keyboard` example remains the canonical
+            // end-to-end reproducer.
+            const auto font = za::Font::openFromFile("tuffy.ttf").value();
+
+            auto rt = za::RenderTexture::create({100u, 100u}).value();
+            rt.setAutoBatchMode(za::RenderTarget::AutoBatchMode::GPUStorage);
+            rt.clear(za::Color::Black);
+
+            // 1746 = za::Keyboard::ScancodeCount * 6 (matches KeyboardView).
+            za::Vertex triangles[1746];
+            for (auto& v : triangles)
+                v = {.position = {-10.f, -10.f}, .color = za::Color::Red};
+
+            rt.draw(triangles, za::PrimitiveType::Triangles);
+
+            for (unsigned int i = 0u; i < 64u; ++i)
+            {
+                za::Text label(font, {.string = "label", .characterSize = 14u});
+                label.position = {static_cast<float>(i) * 1.5f, 0.f};
+                rt.draw(label);
+            }
+
+            rt.draw(za::RectangleShape{{.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}});
+            rt.display();
+
+            const auto image = rt.getTexture().copyToImage();
+            CHECK(image.getPixel({25u, 25u}) != za::Color::Black);
         }
 #endif
     }
