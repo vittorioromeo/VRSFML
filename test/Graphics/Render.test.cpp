@@ -913,6 +913,71 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             const auto image = rt.getTexture().copyToImage();
             CHECK(image.getPixel({25u, 25u}) != za::Color::Black);
         }
+
+        SECTION("VAO attribute pointers must be re-issued after a buffer is deleted (invariant the keyboard fix relies on)")
+        {
+            // This is a *contract* test, not a regression test on the
+            // cache code: it pins the GL-level semantics that motivate
+            // the unconditional cache invalidation in
+            // `immediateDrawPersistentMappedIndexedVertices`. Whoever
+            // later replaces that invalidation with a smarter mechanism
+            // (e.g. a generational counter) needs to preserve the
+            // behaviour these four steps assert, so the cache checknjk-.pòio
+            // cannot regress to "ids match -> skip rebind" when the
+            // underlying buffer object has been recreated.
+            //
+            //   1. Create a VAO + VBO. Bind, run `glVertexAttribPointer`,
+            //      query `GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING` -> must
+            //      match the VBO's id.
+            //   2. `glDeleteBuffers` on that VBO. Re-query -> binding is
+            //      now 0 (the spec mandates the VAO state demotes any
+            //      attribute that referenced the deleted buffer).
+            //   3. `glGenBuffers` a fresh buffer and bind it to
+            //      `GL_ARRAY_BUFFER`. Re-query -> binding is STILL 0
+            //      (binding to the target alone does not patch the VAO).
+            //   4. Re-issue `glVertexAttribPointer`. Re-query -> binding
+            //      now matches the new buffer's id.
+            unsigned int vao = 0u;
+            glCheck(glGenVertexArrays(1, &vao));
+            glCheck(glBindVertexArray(vao));
+
+            unsigned int vboA = 0u;
+            glCheck(glGenBuffers(1, &vboA));
+            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboA));
+            glCheck(glBufferData(GL_ARRAY_BUFFER, 64, nullptr, GL_STATIC_DRAW));
+
+            glCheck(glEnableVertexAttribArray(0u));
+            glCheck(glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, 8, nullptr));
+
+            int binding = -1;
+            glCheck(glGetVertexAttribiv(0u, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &binding));
+            CHECK(binding == static_cast<int>(vboA));
+
+            // Step 2: deleting the buffer demotes the VAO's attribute
+            // binding to 0.
+            glCheck(glDeleteBuffers(1, &vboA));
+            glCheck(glGetVertexAttribiv(0u, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &binding));
+            CHECK(binding == 0);
+
+            // Step 3: binding a fresh VBO to `GL_ARRAY_BUFFER` does NOT
+            // restore the VAO's attribute binding.
+            unsigned int vboB = 0u;
+            glCheck(glGenBuffers(1, &vboB));
+            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboB));
+            glCheck(glBufferData(GL_ARRAY_BUFFER, 64, nullptr, GL_STATIC_DRAW));
+            glCheck(glGetVertexAttribiv(0u, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &binding));
+            CHECK(binding == 0);
+
+            // Step 4: only `glVertexAttribPointer` restores the binding.
+            glCheck(glVertexAttribPointer(0u, 2, GL_FLOAT, GL_FALSE, 8, nullptr));
+            glCheck(glGetVertexAttribiv(0u, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &binding));
+            CHECK(binding == static_cast<int>(vboB));
+
+            // Cleanup.
+            glCheck(glBindVertexArray(0u));
+            glCheck(glDeleteBuffers(1, &vboB));
+            glCheck(glDeleteVertexArrays(1, &vao));
+        }
 #endif
     }
 
