@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Diagnostic/Assert.hpp"
+
 #include "Zancle/Trait/IsTriviallyCopyable.hpp"
 #include "Zancle/Trait/IsTriviallyDestructible.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
