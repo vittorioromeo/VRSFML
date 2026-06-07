@@ -4,6 +4,8 @@
 
 #include "Zancle/Graphics/ShaderUtils.hpp"
 
+#include "Zancle/Fmt/FmtToString.hpp"
+
 #include "Zancle/IO/IO.hpp"
 #include "Zancle/IO/Path.hpp"
 
@@ -265,26 +267,29 @@ TEST_CASE("[Graphics] za::ShaderUtils::preprocessGlslIncludes")
         // Create two files that include each other
         // We need to know filenames beforehand, so create them in two steps
 
-        // First, create file A that includes file B
-        const auto pathA = za::Path::getTempDirectory().value() / za::Path("zancle_circular_a.glsl");
-        const auto pathB = za::Path::getTempDirectory().value() / za::Path("zancle_circular_b.glsl");
+        // Disambiguate temp-file names across parallel test processes
+        const auto nameA = za::fmtToString("zancle_circular_a_{}.glsl", za::testing::getProcessUniqueId());
+        const auto nameB = za::fmtToString("zancle_circular_b_{}.glsl", za::testing::getProcessUniqueId());
+
+        const auto pathA = za::Path::getTempDirectory().value() / za::Path(nameA);
+        const auto pathB = za::Path::getTempDirectory().value() / za::Path(nameB);
 
         {
-            constexpr za::StringView    contentA = "#include \"zancle_circular_b.glsl\"\n";
+            const auto                  contentA = za::fmtToString("#include \"{}\"\n", nameB);
             auto                        optFile  = za::OutFile::open(pathA);
             [[maybe_unused]] const bool ok       = optFile->write(contentA.data(), contentA.size());
         }
 
         {
-            constexpr za::StringView    contentB = "#include \"zancle_circular_a.glsl\"\n";
+            const auto                  contentB = za::fmtToString("#include \"{}\"\n", nameA);
             auto                        optFile  = za::OutFile::open(pathB);
             [[maybe_unused]] const bool ok       = optFile->write(contentB.data(), contentB.size());
         }
 
-        const za::StringView source = "#include \"zancle_circular_b.glsl\"\n";
+        const auto source = za::fmtToString("#include \"{}\"\n", nameB);
 
         za::Vector<char> output;
-        CHECK_FALSE(za::ShaderUtils::preprocessGlslIncludes(source, pathA, output));
+        CHECK_FALSE(za::ShaderUtils::preprocessGlslIncludes(source.toStringView(), pathA, output));
 
         // Cleanup
         [[maybe_unused]] const bool removedA = pathA.removeFromDisk();

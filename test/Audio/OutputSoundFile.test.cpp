@@ -1,10 +1,13 @@
 #include "AudioUtil.hpp"
+#include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
 
 #include "Zancle/Audio/OutputSoundFile.hpp"
 
 #include "Zancle/Audio/ChannelMap.hpp"
 #include "Zancle/Audio/SoundChannel.hpp"
+
+#include "Zancle/Fmt/FmtToString.hpp"
 
 #include "Zancle/IO/Path.hpp"
 
@@ -26,7 +29,9 @@ TEST_CASE("[Audio] za::OutputSoundFile")
         STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::OutputSoundFile));
     }
 
-    const za::Path stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
+    // Disambiguate temp-file names across parallel test processes
+    const auto     pidSuffix = za::Path(za::fmtToString("-{}", za::testing::getProcessUniqueId()));
+    const za::Path stems[]{U"tmp" + pidSuffix, U"tmp-ń" + pidSuffix, U"tmp-🐌" + pidSuffix};
     const za::Path extensions[]{U".wav", U".ogg", U".flac"};
 
     for (const auto& stem : stems)

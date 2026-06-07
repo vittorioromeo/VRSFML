@@ -309,6 +309,8 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
     ctx.firstFailureFile  = nullptr;
     ctx.firstFailureLine  = 0;
 
+    bool firstFailureFromCatch = false;
+
     ctx.traversal.resetForTestCase();
 
     do
@@ -326,11 +328,14 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
         {
             if (!ctx.currentTestFailed)
             {
-                ctx.firstFailureFile = tc.file;
-                ctx.firstFailureLine = tc.line;
+                ctx.firstFailureFile  = tc.file;
+                ctx.firstFailureLine  = tc.line;
+                firstFailureFromCatch = true;
             }
+
             ctx.currentTestFailed = true;
             ++ctx.failedAssertions;
+
             za::printErrLn("{}:{}: FAILED: uncaught exception in {}", tc.file, tc.line, runnerNonNull(tc.name));
         }
     } while (ctx.traversal.advance());
@@ -342,7 +347,7 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
         // TEST_CASE site if nothing was captured (defensive -- shouldn't happen).
         const char* file = ctx.firstFailureFile != nullptr ? ctx.firstFailureFile : tc.file;
         const int   line = ctx.firstFailureFile != nullptr ? ctx.firstFailureLine : tc.line;
-        ctx.failedTestCaseList.pushBack(FailedTestCaseRecord{tc.name, file, line});
+        ctx.failedTestCaseList.pushBack(FailedTestCaseRecord{tc.name, file, line, firstFailureFromCatch});
     }
 }
 
@@ -371,7 +376,18 @@ void printSummary(const ContextState& ctx)
         for (za::SizeT i = 0u; i < ctx.failedTestCaseList.size(); ++i)
         {
             const auto& f = ctx.failedTestCaseList.data()[i];
-            za::printLn("  - {} ({}:{})", runnerNonNull(f.name), runnerNonNull(f.file), f.line);
+
+            if (f.uncaughtException)
+            {
+                za::printLn("  - {} ({}:{}) [uncaught exception; see stack trace above]",
+                            runnerNonNull(f.name),
+                            runnerNonNull(f.file),
+                            f.line);
+            }
+            else
+            {
+                za::printLn("  - {} ({}:{})", runnerNonNull(f.name), runnerNonNull(f.file), f.line);
+            }
         }
     }
 }

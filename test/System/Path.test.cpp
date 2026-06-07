@@ -430,7 +430,10 @@ TEST_CASE("[System] za::Path")
         const TemporaryFile src("payload");
         const auto          dstParent = za::Path::getTempDirectory();
         REQUIRE(dstParent.hasValue());
-        const za::Path dst = *dstParent / za::Path("sf_rename_target.tmp");
+
+        // Disambiguate temp-file names across parallel test processes
+        const za::Path dst = *dstParent /
+                             za::Path(za::fmtToString("sf_rename_target_{}.tmp", za::testing::getProcessUniqueId()));
 
         // Best-effort cleanup in case a previous run left it behind.
         (void)dst.removeFromDisk();
@@ -454,8 +457,10 @@ TEST_CASE("[System] za::Path")
         const auto tempDir = za::Path::getTempDirectory();
         REQUIRE(tempDir.hasValue());
 
-        // Create a unique sub-directory with two files inside.
-        const za::Path subdir = *tempDir / za::Path("sf_path_iter_test_dir");
+        // Disambiguate temp-file names across parallel test processes
+        const za::Path subdir = *tempDir /
+                                za::Path(za::fmtToString("sf_path_iter_test_dir_{}", za::testing::getProcessUniqueId()));
+
         (void)subdir.removeFromDisk(); // best-effort cleanup
         REQUIRE(subdir.createDirectoryTree());
 

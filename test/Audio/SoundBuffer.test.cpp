@@ -4,7 +4,10 @@
 #include "AudioUtil.hpp"
 #include "LoadIntoMemoryUtil.hpp"
 #include "SystemUtil.hpp" // IWYU pragma: keep
+#include "TemporaryFile.hpp"
 #include "Tst/Tst.hpp"
+
+#include "Zancle/Fmt/FmtToString.hpp"
 
 #include "Zancle/IO/FileInputStream.hpp"
 #include "Zancle/IO/Path.hpp"
@@ -145,7 +148,9 @@ TEST_CASE("[Audio] za::SoundBuffer" * tst::skip(skipAudioDeviceTests))
 
     SECTION("saveToFile()")
     {
-        const za::Path stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
+        // Disambiguate temp-file names across parallel test processes
+        const auto     pidSuffix = za::Path(za::fmtToString("-{}", za::testing::getProcessUniqueId()));
+        const za::Path stems[]{U"tmp" + pidSuffix, U"tmp-ń" + pidSuffix, U"tmp-🐌" + pidSuffix};
         const za::Path extensions[]{U".wav", U".ogg", U".flac"};
 
         for (const auto& stem : stems)

@@ -84,6 +84,8 @@ struct FailedTestCaseRecord
     const char* name;
     const char* file;
     int         line;
+
+    bool uncaughtException; // true when the failure path was the runner's catch-all
 };
 
 
