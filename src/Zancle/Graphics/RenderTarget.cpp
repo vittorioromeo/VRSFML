@@ -648,6 +648,18 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     if (settings.indexCount == 0u || !setActive(true))
         return;
 
+    // The persistent ring buffer can grow inside `batch.add(...)` between draws.
+    // Growth move-assigns a fresh `GLVertexBufferObject` / `GLElementBufferObject`
+    // into the `GLVAOGroup`. `glDeleteBuffers` + `glGenBuffers` is allowed to return
+    // the SAME id for the new buffer (the spec permits id reuse), in which case
+    // the cache check in `setupDraw` (which compares VBO/EBO ids) fails to
+    // detect that the VAO's attribute pointers now reference a destroyed-and-
+    // recreated GL buffer object. Invalidating the cache here forces the full
+    // rebind path, which re-runs `setupVertexAttribPointers` and re-captures
+    // the live VBO into the VAO's attribute state.
+    m_impl->cache.lastVaoGroupVboId = 0u;
+    m_impl->cache.lastVaoGroupEboId = 0u;
+
     const DrawGuard drawGuard{*this,
                               states,
                               *static_cast<const GLVAOGroup*>(settings.gpuDrawableBatch.m_storage.getVAOGroup())};
