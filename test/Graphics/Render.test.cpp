@@ -922,7 +922,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             // `immediateDrawPersistentMappedIndexedVertices`. Whoever
             // later replaces that invalidation with a smarter mechanism
             // (e.g. a generational counter) needs to preserve the
-            // behaviour these four steps assert, so the cache checknjk-.pòio
+            // behaviour these four steps assert, so the cache check
             // cannot regress to "ids match -> skip rebind" when the
             // underlying buffer object has been recreated.
             //
