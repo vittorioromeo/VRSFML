@@ -11,7 +11,6 @@
 #include "Zancle/Graphics/DrawableBatch.hpp"
 #include "Zancle/Graphics/Font.hpp"
 #include "Zancle/Graphics/Glsl.hpp"
-#include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/InstanceAttributeBinder.hpp"
@@ -22,6 +21,7 @@
 #include "Zancle/Graphics/RenderTexture.hpp"
 #include "Zancle/Graphics/Shader.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
+#include "Zancle/Graphics/Text.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/VAOHandle.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
@@ -887,8 +887,8 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             // `ShinyText` uses a uniform-bearing fragment shader, so the
             // first `ShinyText` draw mismatches the labels' shader state
             // and flushes.
-            auto customShader = za::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
-            const auto loc    = customShader.getUniformLocation("blink_alpha").value();
+            auto       customShader = za::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
+            const auto loc          = customShader.getUniformLocation("blink_alpha").value();
             customShader.setUniform(loc, 1.f);
 
             auto rt = za::RenderTexture::create({100u, 100u}).value();
@@ -916,8 +916,8 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             // This is the exact site where keyboard crashes.
             const za::Vertex tri[] = {
                 {.position = {-10.f, -10.f}, .color = za::Color::White},
-                {.position = {-9.f,  -10.f}, .color = za::Color::White},
-                {.position = {-10.f,  -9.f}, .color = za::Color::White},
+                {.position = {-9.f, -10.f}, .color = za::Color::White},
+                {.position = {-10.f, -9.f}, .color = za::Color::White},
             };
             rt.draw(tri, za::PrimitiveType::Triangles, za::RenderStates{.shader = &customShader});
 
@@ -928,7 +928,8 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             CHECK(image.getPixel({25u, 25u}) != za::Color::Black);
         }
 
-        SECTION("VAO attribute pointers must be re-issued after a buffer is deleted (invariant the keyboard fix relies on)")
+        SECTION(
+            "VAO attribute pointers must be re-issued after a buffer is deleted (invariant the keyboard fix relies on)")
         {
             // This is a *contract* test, not a regression test on the
             // cache code: it pins the GL-level semantics that motivate
@@ -1006,7 +1007,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 using za::PersistentGPUDrawableBatch::m_storage;
             };
             TestableBatch batch;
-            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+            const auto*   vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
 
             const unsigned int genStart = vg->attribStateGen;
 
@@ -1028,7 +1029,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 using za::PersistentGPUDrawableBatch::m_storage;
             };
             TestableBatch batch;
-            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+            const auto*   vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
 
             const unsigned int genStart = vg->attribStateGen;
 
@@ -1051,7 +1052,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 using za::PersistentGPUDrawableBatch::m_storage;
             };
             TestableBatch batch;
-            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+            const auto*   vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
 
             const unsigned int genStart = vg->attribStateGen;
 
@@ -1070,7 +1071,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 using za::PersistentGPUDrawableBatch::m_storage;
             };
             TestableBatch batch;
-            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+            const auto*   vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
 
             const unsigned int genStart = vg->attribStateGen;
 
@@ -1092,10 +1093,9 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 using za::PersistentGPUDrawableBatch::m_storage;
             };
             TestableBatch batch;
-            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+            const auto*   vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
 
-            const za::RectangleShape rect{
-                {.position = {0.f, 0.f}, .fillColor = za::Color::White, .size = {1.f, 1.f}}};
+            const za::RectangleShape rect{{.position = {0.f, 0.f}, .fillColor = za::Color::White, .size = {1.f, 1.f}}};
 
             // Prime the buffers.
             batch.add(rect);
@@ -1103,7 +1103,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             // Now pump many more shapes. With geometric growth (1.5x
             // per grow), 64 shapes should produce only a handful of
             // grows -- definitely not 64.
-            unsigned int genBefore = vg->attribStateGen;
+            unsigned int genBefore     = vg->attribStateGen;
             unsigned int bumpsObserved = 0u;
             for (unsigned int i = 0u; i < 64u; ++i)
             {
@@ -1142,8 +1142,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                 rt.draw(triangles, za::PrimitiveType::Triangles);
                 // Visible green marker -- proves the flush produced
                 // valid output for this frame.
-                rt.draw(za::RectangleShape{
-                    {.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}});
+                rt.draw(za::RectangleShape{{.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}});
                 rt.display();
 
                 const auto image = rt.getTexture().copyToImage();
@@ -1177,7 +1176,7 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
                               {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
                               .value();
 
-            auto rt = za::RenderTexture::create({100u, 100u}).value();
+            auto          rt = za::RenderTexture::create({100u, 100u}).value();
             za::VAOHandle vaoHandle;
             za::VBOHandle instanceVBO;
 

@@ -152,10 +152,10 @@ TEST_CASE("[Network] za::Http Connection")
 
         SECTION("Request Non-Existant Resource")
         {
-            const za::Http::Response         response = http.sendRequest(za::Http::Request("vittorioromeo/"
-                                                                                   "REPOSITORYTHATDOESNOTEXIST"),
-                                                                         za::milliseconds(250));
-            const za::Http::Response::Status status   = response.getStatus();
+            const za::Http::Response response       = http.sendRequest(za::Http::Request("vittorioromeo/"
+                                                                                         "REPOSITORYTHATDOESNOTEXIST"),
+                                                                       za::milliseconds(250));
+            const za::Http::Response::Status status = response.getStatus();
 
             CHECK(response.getMajorHttpVersion() != 0);
             CHECK(status == za::Http::Response::Status::NotFound);
