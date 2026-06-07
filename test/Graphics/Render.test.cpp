@@ -3,6 +3,7 @@
 #include "WindowUtil.hpp"
 
 #include "Zancle/GLUtils/GLCheck.hpp"
+#include "Zancle/GLUtils/GLVAOGroup.hpp"
 #include "Zancle/GLUtils/Glad.hpp"
 
 #include "Zancle/Graphics/Color.hpp"
@@ -852,60 +853,73 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 
         SECTION("GPU autobatch survives VBO/EBO id cycling across grows (keyboard example regression)")
         {
-            // Regression for the crash that hit `examples/keyboard` and
-            // that the `Fix VBO growth bug` commit addresses.
-            //
+            // Regression for the bug that crashed `examples/keyboard`.
             // The GPU autobatch's persistent VBO/EBO ring buffers grow as
-            // vertices accumulate. Each growth allocates a fresh GL
-            // buffer via `glGenBuffers` (different from the currently
-            // live id, but the spec allows recycling RECENTLY-DELETED
-            // ids) and destroys the old buffer via `glDeleteBuffers`.
-            // A *sequence* of grows can therefore cycle the live
-            // vbo/ebo ids back to values that were live earlier in the
-            // frame. The cache check in `setupDraw` only compares ids;
-            // a flush whose current vbo/ebo ids happen to match a cached
-            // earlier snapshot skips the rebind, leaving the VAO's
-            // attribute pointers pointing at the destroyed-and-recreated
-            // buffer storage. The next `glDrawElementsBaseVertex` then
-            // dereferences invalid memory inside the driver.
+            // vertices accumulate. Each grow allocates a fresh GL buffer
+            // via `glGenBuffers` and destroys the old one via
+            // `glDeleteBuffers`. The GL spec permits a sequence of these
+            // operations to *cycle* the live vbo/ebo ids back to values
+            // that were live earlier in the frame -- Mesa/iris does this
+            // aggressively. A cache that keys only on ids then sees a
+            // false match at flush 2 and skips the VAO rebind, leaving
+            // the VAO's attribute pointers referencing a destroyed-and-
+            // recreated buffer object. The next `glDrawElementsBaseVertex`
+            // SIGSEGVs inside the driver.
             //
-            // This test mirrors the keyboard's draw pattern:
-            //   1. A large raw-triangle vertex span (`m_triangles`,
-            //      `Keyboard::ScancodeCount * 6` verts) with no texture.
-            //   2. Many textured `Text` draws (`m_labels`). The first
-            //      label forces flush 1 (texture state changes from
-            //      no-texture to the font atlas, mismatching the cache).
-            //   3. More label draws grow the persistent buffer further.
-            //   4. `display()` performs flush 2.
-            // If the grows between flush 1 and flush 2 cycle the
-            // vbo/ebo ids back to flush 1's cached snapshot, the cache
-            // skips the rebind and the driver crashes inside flush 2.
+            // The fix is a per-`GLBufferObject` generation counter (see
+            // `nextGLBufferObjectGeneration`) that the cache snapshots
+            // alongside the ids. Distinct buffer instances always have
+            // distinct generations, so id recycling can never produce a
+            // false match.
             //
-            // Triggering the id cycle depends on the driver's `glGenBuffers`
-            // allocation policy. Mesa/iris recycles aggressively and
-            // reliably crashes without the fix; other drivers may not.
-            // The test exercises the code path either way and the
-            // `examples/keyboard` example remains the canonical
-            // end-to-end reproducer.
+            // The test mirrors the keyboard's exact draw pattern:
+            //   1. 1746 raw triangles (`Keyboard::ScancodeCount * 6`),
+            //      no texture.
+            //   2. 291 textured `Text` labels (`Keyboard::ScancodeCount`).
+            //      The first label is a state change from no-texture to
+            //      the font atlas; that triggers flush 1.
+            //   3. A textured draw with a *custom shader* triggers flush
+            //      2 -- exactly how `ShinyText` triggers it in keyboard.
+            // If the cache check misses the id cycle, flush 2 SIGSEGVs.
             const auto font = za::Font::openFromFile("tuffy.ttf").value();
+
+            // The custom shader path is what fires flush 2 in keyboard:
+            // `ShinyText` uses a uniform-bearing fragment shader, so the
+            // first `ShinyText` draw mismatches the labels' shader state
+            // and flushes.
+            auto customShader = za::Shader::loadFromMemory({.fragmentCode = blinkAlphaFragSource}).value();
+            const auto loc    = customShader.getUniformLocation("blink_alpha").value();
+            customShader.setUniform(loc, 1.f);
 
             auto rt = za::RenderTexture::create({100u, 100u}).value();
             rt.setAutoBatchMode(za::RenderTarget::AutoBatchMode::GPUStorage);
             rt.clear(za::Color::Black);
 
-            // 1746 = za::Keyboard::ScancodeCount * 6 (matches KeyboardView).
+            // 1746 = `za::Keyboard::ScancodeCount * 6` (mirrors KeyboardView).
             za::Vertex triangles[1746];
             for (auto& v : triangles)
                 v = {.position = {-10.f, -10.f}, .color = za::Color::Red};
-
             rt.draw(triangles, za::PrimitiveType::Triangles);
 
-            for (unsigned int i = 0u; i < 64u; ++i)
+            // 291 = `za::Keyboard::ScancodeCount`. Each label is a Text
+            // draw against the same font atlas, so subsequent labels
+            // hit the same `RenderStates` and do NOT re-flush; only the
+            // first label flushes (state change from no-texture).
+            for (unsigned int i = 0u; i < 291u; ++i)
             {
                 za::Text label(font, {.string = "label", .characterSize = 14u});
-                label.position = {static_cast<float>(i) * 1.5f, 0.f};
+                label.position = {static_cast<float>(i % 30u) * 3.f, static_cast<float>(i / 30u) * 4.f};
                 rt.draw(label);
             }
+
+            // Custom shader -> shader state mismatch -> flush 2 fires here.
+            // This is the exact site where keyboard crashes.
+            const za::Vertex tri[] = {
+                {.position = {-10.f, -10.f}, .color = za::Color::White},
+                {.position = {-9.f,  -10.f}, .color = za::Color::White},
+                {.position = {-10.f,  -9.f}, .color = za::Color::White},
+            };
+            rt.draw(tri, za::PrimitiveType::Triangles, za::RenderStates{.shader = &customShader});
 
             rt.draw(za::RectangleShape{{.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}});
             rt.display();
@@ -977,6 +991,247 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
             glCheck(glBindVertexArray(0u));
             glCheck(glDeleteBuffers(1, &vboB));
             glCheck(glDeleteVertexArrays(1, &vao));
+        }
+
+        SECTION("PersistentGPUDrawableBatch bumps attribStateGen when reserveVertexCapacity grows the VBO")
+        {
+            // Direct unit-level pin of the bump in
+            // `PersistentGPUStorage::reserveVertexCapacity`. Future
+            // refactors that move the grow logic without re-issuing
+            // the bump will trip the second `CHECK`. The third `CHECK`
+            // proves the bump is grow-conditional rather than
+            // unconditional, otherwise the cache fast path is defeated.
+            struct TestableBatch : za::PersistentGPUDrawableBatch
+            {
+                using za::PersistentGPUDrawableBatch::m_storage;
+            };
+            TestableBatch batch;
+            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+
+            const unsigned int genStart = vg->attribStateGen;
+
+            batch.m_storage.reserveVertexCapacity(4096u);
+            const unsigned int genAfterGrow = vg->attribStateGen;
+            CHECK(genAfterGrow > genStart);
+
+            // Second reservation that fits in existing capacity must not bump.
+            batch.m_storage.reserveVertexCapacity(1u);
+            CHECK(vg->attribStateGen == genAfterGrow);
+        }
+
+        SECTION("PersistentGPUDrawableBatch bumps attribStateGen when reserveIndexCapacity grows the EBO")
+        {
+            // Parallel check for the EBO grow path. Symmetrical to the
+            // VBO case above.
+            struct TestableBatch : za::PersistentGPUDrawableBatch
+            {
+                using za::PersistentGPUDrawableBatch::m_storage;
+            };
+            TestableBatch batch;
+            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+
+            const unsigned int genStart = vg->attribStateGen;
+
+            batch.m_storage.reserveIndexCapacity(6144u);
+            const unsigned int genAfterGrow = vg->attribStateGen;
+            CHECK(genAfterGrow > genStart);
+
+            batch.m_storage.reserveIndexCapacity(1u);
+            CHECK(vg->attribStateGen == genAfterGrow);
+        }
+
+        SECTION("PersistentGPUStorage::reserveMoreVertices bumps attribStateGen on growth")
+        {
+            // Most-traveled VBO grow path. Isolated from the EBO side
+            // by calling `reserveMoreVertices` directly rather than
+            // `add()` which would grow both buffers simultaneously
+            // and mask a missing VBO-side bump behind the EBO one.
+            struct TestableBatch : za::PersistentGPUDrawableBatch
+            {
+                using za::PersistentGPUDrawableBatch::m_storage;
+            };
+            TestableBatch batch;
+            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+
+            const unsigned int genStart = vg->attribStateGen;
+
+            // First call: VBO ring buffer has zero capacity, so this
+            // forces a grow.
+            [[maybe_unused]] auto* p = batch.m_storage.reserveMoreVertices(3u);
+            batch.m_storage.commitMoreVertices(3u);
+            CHECK(vg->attribStateGen > genStart);
+        }
+
+        SECTION("PersistentGPUStorage::reserveMoreIndices bumps attribStateGen on growth")
+        {
+            // Most-traveled EBO grow path. Isolated from the VBO side.
+            struct TestableBatch : za::PersistentGPUDrawableBatch
+            {
+                using za::PersistentGPUDrawableBatch::m_storage;
+            };
+            TestableBatch batch;
+            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+
+            const unsigned int genStart = vg->attribStateGen;
+
+            [[maybe_unused]] auto* p = batch.m_storage.reserveMoreIndices(3u);
+            batch.m_storage.commitMoreIndices(3u);
+            CHECK(vg->attribStateGen > genStart);
+        }
+
+        SECTION("PersistentGPUDrawableBatch::add does not bump attribStateGen on every call (steady state)")
+        {
+            // Companion to the two isolated grow tests above: this
+            // verifies the bump is grow-conditional, not unconditional.
+            // If a future refactor accidentally bumps on every reserve
+            // regardless of growth, the cache fast path is defeated
+            // -- the persistent flush always rebinds, even in steady
+            // state.
+            struct TestableBatch : za::PersistentGPUDrawableBatch
+            {
+                using za::PersistentGPUDrawableBatch::m_storage;
+            };
+            TestableBatch batch;
+            const auto* vg = static_cast<const za::GLVAOGroup*>(batch.m_storage.getVAOGroup());
+
+            const za::RectangleShape rect{
+                {.position = {0.f, 0.f}, .fillColor = za::Color::White, .size = {1.f, 1.f}}};
+
+            // Prime the buffers.
+            batch.add(rect);
+
+            // Now pump many more shapes. With geometric growth (1.5x
+            // per grow), 64 shapes should produce only a handful of
+            // grows -- definitely not 64.
+            unsigned int genBefore = vg->attribStateGen;
+            unsigned int bumpsObserved = 0u;
+            for (unsigned int i = 0u; i < 64u; ++i)
+            {
+                batch.add(rect);
+                if (vg->attribStateGen != genBefore)
+                {
+                    ++bumpsObserved;
+                    genBefore = vg->attribStateGen;
+                }
+            }
+            CHECK(bumpsObserved < 32u);
+        }
+
+        SECTION("GPU autobatch survives many clear/draw/display frame cycles after initial growth")
+        {
+            // Exercises the autobatch's per-frame-state rotation path
+            // including the pre-sizing in `PersistentGPUStorage::clear()`
+            // that may itself trigger a grow (and thus an attribStateGen
+            // bump). The first frame establishes the high-water mark via
+            // growth; subsequent frames should stay growth-free once the
+            // pre-sizing has caught up. Any breakage in the cache check
+            // or the bump on the clear-time pre-size path would crash
+            // here or render the wrong pixel inside the loop.
+            auto rt = za::RenderTexture::create({100u, 100u}).value();
+            rt.setAutoBatchMode(za::RenderTarget::AutoBatchMode::GPUStorage);
+
+            // Large initial batch on frame 0 -- forces growth.
+            // Vertex count must be a multiple of 3 (Triangles primitive).
+            za::Vertex triangles[1023];
+            for (auto& v : triangles)
+                v = {.position = {-10.f, -10.f}, .color = za::Color::Red};
+
+            for (unsigned int frame = 0u; frame < 8u; ++frame)
+            {
+                rt.clear(za::Color::Black);
+                rt.draw(triangles, za::PrimitiveType::Triangles);
+                // Visible green marker -- proves the flush produced
+                // valid output for this frame.
+                rt.draw(za::RectangleShape{
+                    {.position = {10.f, 10.f}, .fillColor = za::Color::Green, .size = {30.f, 30.f}}});
+                rt.display();
+
+                const auto image = rt.getTexture().copyToImage();
+                CHECK(image.getPixel({25u, 25u}) == za::Color::Green);
+            }
+        }
+
+        SECTION("Instanced draw survives VBOHandle growth across many draws")
+        {
+            // The instanced draw path relies on
+            // `InstanceAttributeBinder::applySetups` unconditionally
+            // re-issuing `glVertexAttribPointer` every draw. That
+            // protects against `VBOHandle` growth (which can replace
+            // the underlying VBO instance) leaving slot-3+ attribute
+            // pointers stale. We exercise the property by pumping
+            // many sequential instanced draws through a single
+            // `VBOHandle`: the persistent ring buffer behind the
+            // handle grows multiple times during the loop, and any
+            // staleness would corrupt the final draws.
+            //
+            // If a future optimization caches `applySetups` results
+            // across draws without invalidating on VBOHandle grow,
+            // the bookend draws would render wrong pixels.
+            struct InstanceData
+            {
+                za::Vec2f offset;
+                za::Color color;
+            };
+
+            auto shader = za::Shader::loadFromMemory(
+                              {.vertexCode = instancedVertexSource, .fragmentCode = instancedFragmentSource})
+                              .value();
+
+            auto rt = za::RenderTexture::create({100u, 100u}).value();
+            za::VAOHandle vaoHandle;
+            za::VBOHandle instanceVBO;
+
+            const auto drawInstance = [&](const InstanceData instance)
+            {
+                auto setupAttribs = [&](za::InstanceAttributeBinder& binder)
+                {
+                    binder.uploadContiguousData(instanceVBO, &instance);
+                    binder.setupField<&InstanceData::offset>(3);
+                    binder.setupField<&InstanceData::color>(4);
+                };
+
+                rt.drawInstancedIndexedVertices(
+                    {
+                        .vaoHandle     = vaoHandle,
+                        .vertexSpan    = za::instancedQuadVertices,
+                        .indexSpan     = za::instancedQuadIndices,
+                        .instanceCount = 1u,
+                        .primitiveType = za::PrimitiveType::Triangles,
+                    },
+                    setupAttribs,
+                    {.view = za::View::fromScreenSize({100.f, 100.f}), .shader = &shader});
+            };
+
+            rt.clear(za::Color::Black);
+
+            // First bookend: a green quad at (10, 10). This early
+            // draw must still be visible after the loop -- if the
+            // VBOHandle growth somehow corrupted earlier writes,
+            // this pixel would be wrong.
+            drawInstance({.offset = {10.f, 10.f}, .color = za::Color::Green});
+
+            // Pump enough instanced draws to grow the `VBOHandle`'s
+            // ring buffer multiple times. Each upload bumps the
+            // writeCursor by `sizeof(InstanceData)` (~12 bytes); the
+            // ring buffer starts at zero capacity and grows
+            // geometrically. ~2000 iterations crosses many growth
+            // boundaries.
+            for (unsigned int i = 0u; i < 2000u; ++i)
+            {
+                const float x = 30.f + static_cast<float>(i % 5u) * 0.001f;
+                drawInstance({.offset = {x, 50.f}, .color = za::Color::Blue});
+            }
+
+            // Second bookend after the growth churn. If the cached
+            // attribute pointers had ever gone stale, this draw's
+            // colour or position would be wrong.
+            drawInstance({.offset = {60.f, 10.f}, .color = za::Color::Red});
+
+            rt.display();
+
+            const auto image = rt.getTexture().copyToImage();
+            CHECK(image.getPixel({15u, 15u}) == za::Color::Green);
+            CHECK(image.getPixel({65u, 15u}) == za::Color::Red);
         }
 #endif
     }

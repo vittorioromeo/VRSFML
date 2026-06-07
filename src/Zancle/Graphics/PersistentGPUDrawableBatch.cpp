@@ -134,12 +134,29 @@ void PersistentGPUStorage::clear()
 
     // Pre-size if the new state's buffers are smaller than what
     // the previous frame needed. This turns ~20 incremental
-    // reallocations into a single up-front allocation.
+    // reallocations into a single up-front allocation. Each
+    // `reserveCapacity` may replace the underlying buffer object,
+    // so we bump `attribStateGen` to invalidate any cached
+    // VAO-attribute-pointer snapshots.
     if (prevVboCap > fs.vboRingBuffer.capacity())
+    {
+        const auto prevVboId = fs.persistentVaoGroup.vbo.getId();
+
         fs.vboRingBuffer.reserveCapacity(fs.persistentVaoGroup.vbo, prevVboCap);
 
+        if (fs.persistentVaoGroup.vbo.getId() != prevVboId)
+            ++fs.persistentVaoGroup.attribStateGen;
+    }
+
     if (prevEboCap > fs.eboRingBuffer.capacity())
+    {
+        const auto prevEboId = fs.persistentVaoGroup.ebo.getId();
+
         fs.eboRingBuffer.reserveCapacity(fs.persistentVaoGroup.ebo, prevEboCap);
+
+        if (fs.persistentVaoGroup.ebo.getId() != prevEboId)
+            ++fs.persistentVaoGroup.attribStateGen;
+    }
 
     nVertices = 0u;
     nIndices  = 0u;
@@ -151,8 +168,20 @@ Vertex* PersistentGPUStorage::reserveMoreVertices(const za::SizeT count)
 {
     auto& fs = impl->current();
 
+    // Capture the VBO id before `beginWrite` so we can detect a grow:
+    // `beginWrite` may move-assign a fresh `GLVertexBufferObject` into
+    // `vbo` (replacing both the id and the underlying GL buffer object).
+    // When that happens the VAO's recorded attribute-to-buffer mapping
+    // is stale, so we bump the VAO group's attribute-state generation
+    // counter -- consumers (RenderTarget's `StatesCache`) react by
+    // re-issuing `glVertexAttribPointer` on the next `setupDraw`.
+    const auto prevVboId = fs.persistentVaoGroup.vbo.getId();
+
     [[maybe_unused]] const auto offset = fs.vboRingBuffer.beginWrite(fs.persistentVaoGroup.vbo, sizeof(Vertex) * count);
     ZA_ASSERT(offset == sizeof(Vertex) * nVertices);
+
+    if (fs.persistentVaoGroup.vbo.getId() != prevVboId)
+        ++fs.persistentVaoGroup.attribStateGen;
 
     return static_cast<Vertex*>(fs.vboRingBuffer.data()) + nVertices;
 }
@@ -163,8 +192,13 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const za::SizeT count)
 {
     auto& fs = impl->current();
 
+    const auto prevEboId = fs.persistentVaoGroup.ebo.getId();
+
     [[maybe_unused]] const auto offset = fs.eboRingBuffer.beginWrite(fs.persistentVaoGroup.ebo, sizeof(IndexType) * count);
     ZA_ASSERT(offset == sizeof(IndexType) * nIndices);
+
+    if (fs.persistentVaoGroup.ebo.getId() != prevEboId)
+        ++fs.persistentVaoGroup.attribStateGen;
 
     return static_cast<IndexType*>(fs.eboRingBuffer.data()) + nIndices;
 }
@@ -174,7 +208,14 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const za::SizeT count)
 void PersistentGPUStorage::reserveVertexCapacity(const za::SizeT count)
 {
     for (auto& fs : impl->frameStates)
+    {
+        const auto prevVboId = fs.persistentVaoGroup.vbo.getId();
+
         fs.vboRingBuffer.reserveCapacity(fs.persistentVaoGroup.vbo, sizeof(Vertex) * count);
+
+        if (fs.persistentVaoGroup.vbo.getId() != prevVboId)
+            ++fs.persistentVaoGroup.attribStateGen;
+    }
 }
 
 
@@ -182,7 +223,14 @@ void PersistentGPUStorage::reserveVertexCapacity(const za::SizeT count)
 void PersistentGPUStorage::reserveIndexCapacity(const za::SizeT count)
 {
     for (auto& fs : impl->frameStates)
+    {
+        const auto prevEboId = fs.persistentVaoGroup.ebo.getId();
+
         fs.eboRingBuffer.reserveCapacity(fs.persistentVaoGroup.ebo, sizeof(IndexType) * count);
+
+        if (fs.persistentVaoGroup.ebo.getId() != prevEboId)
+            ++fs.persistentVaoGroup.attribStateGen;
+    }
 }
 
 

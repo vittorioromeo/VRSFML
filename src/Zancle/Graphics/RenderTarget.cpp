@@ -214,18 +214,16 @@ struct [[nodiscard]] StatesCache
     unsigned int lastVaoGroup{0u};          //!< Last bound vertex array object id
     unsigned int lastVaoGroupContextId{0u}; //!< Last bound vertex array object context id
 
-    unsigned int lastVaoGroupVboId{0u}; //!< GL id of `lastVaoGroup`'s shared VBO at the time `bindGLObjects` ran.
-                                        //!< If the underlying VBO is move-assigned (e.g. persistent ring-buffer
-                                        //!< growth), the new id won't match here and the next `setupDraw` must
-                                        //!< rebind + re-issue `glVertexAttribPointer` so the VAO's stored
-                                        //!< attribute-buffer mapping references the live handle.
-
-    unsigned int lastVaoGroupEboId{0u}; //!< GL id of `lastVaoGroup`'s shared EBO at the time `bindGLObjects` ran.
-                                        //!< Same rationale as `lastVaoGroupVboId`: the persistent index buffer
-                                        //!< may grow independently of the vertex buffer, move-assigning a fresh
-                                        //!< EBO. The VAO's recorded `GL_ELEMENT_ARRAY_BUFFER` would then point
-                                        //!< at a deleted handle; the mismatch here forces a full rebind so the
-                                        //!< VAO captures the live EBO via `ebo.bind()`.
+    unsigned int lastVaoGroupAttribStateGen{0u}; //!< Snapshot of `lastVaoGroup`'s `attribStateGen` at the time
+                                                 //!< `bindGLObjects` ran. The VAO group bumps that counter
+                                                 //!< whenever its `vbo` or `ebo` is replaced (e.g. on persistent
+                                                 //!< ring-buffer growth). A mismatch here proves the VAO's
+                                                 //!< recorded attribute-to-buffer mapping refers to a buffer
+                                                 //!< instance that no longer exists -- forcing `setupDraw` to
+                                                 //!< re-issue `glVertexAttribPointer` so the VAO captures the
+                                                 //!< live buffer. This is the load-bearing check: the GL spec
+                                                 //!< permits `glGenBuffers` to recycle a just-freed id, so an
+                                                 //!< id-only comparison would silently miss the swap.
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
@@ -263,10 +261,9 @@ struct [[nodiscard]] RenderTarget::Impl
     {
         theVAOGroup.bind();
 
-        cache.lastVaoGroup          = theVAOGroup.getId();
-        cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
-        cache.lastVaoGroupVboId     = theVAOGroup.vbo.getId();
-        cache.lastVaoGroupEboId     = theVAOGroup.ebo.getId();
+        cache.lastVaoGroup               = theVAOGroup.getId();
+        cache.lastVaoGroupContextId      = GraphicsContext::getActiveThreadLocalGlContextId();
+        cache.lastVaoGroupAttribStateGen = theVAOGroup.attribStateGen;
 
         RenderTargetImpl::setupVertexAttribPointers();
     }
@@ -647,18 +644,6 @@ void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     // Nothing to draw or inactive target
     if (settings.indexCount == 0u || !setActive(true))
         return;
-
-    // The persistent ring buffer can grow inside `batch.add(...)` between draws.
-    // Growth move-assigns a fresh `GLVertexBufferObject` / `GLElementBufferObject`
-    // into the `GLVAOGroup`. `glDeleteBuffers` + `glGenBuffers` is allowed to return
-    // the SAME id for the new buffer (the spec permits id reuse), in which case
-    // the cache check in `setupDraw` (which compares VBO/EBO ids) fails to
-    // detect that the VAO's attribute pointers now reference a destroyed-and-
-    // recreated GL buffer object. Invalidating the cache here forces the full
-    // rebind path, which re-runs `setupVertexAttribPointers` and re-captures
-    // the live VBO into the VAO's attribute state.
-    m_impl->cache.lastVaoGroupVboId = 0u;
-    m_impl->cache.lastVaoGroupEboId = 0u;
 
     const DrawGuard drawGuard{*this,
                               states,
@@ -1059,10 +1044,10 @@ void RenderTarget::resetGLStatesImpl()
     glCheck(glEnable(GL_BLEND));
     glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
-    m_impl->cache.scissorEnabled    = false;
-    m_impl->cache.stencilEnabled    = false;
-    m_impl->cache.lastVaoGroup      = 0u;
-    m_impl->cache.lastVaoGroupVboId = 0u;
+    m_impl->cache.scissorEnabled             = false;
+    m_impl->cache.stencilEnabled             = false;
+    m_impl->cache.lastVaoGroup               = 0u;
+    m_impl->cache.lastVaoGroupAttribStateGen = 0u;
 
     m_impl->cache.glStatesSet = true;
 
@@ -1375,14 +1360,14 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
                                    m_impl->cache.lastVaoGroupContextId == 0u ||
                                    m_impl->cache.lastVaoGroupContextId !=
                                        GraphicsContext::getActiveThreadLocalGlContextId() ||
-                                   m_impl->cache.lastVaoGroupVboId != vaoGroup.vbo.getId() ||
-                                   m_impl->cache.lastVaoGroupEboId != vaoGroup.ebo.getId();
+                                   m_impl->cache.lastVaoGroupAttribStateGen != vaoGroup.attribStateGen;
 
         if (!m_impl->cache.enable || mustRebindVAO)
         {
             // Full rebind path. Also runs after a persistent ring-buffer
-            // growth (which move-assigns a fresh VBO into the VAO group):
-            // the `lastVaoGroupVboId` mismatch above forces this branch so
+            // growth, which move-assigns a fresh `GLBufferObject` into the
+            // VAO group: the grow path bumps `attribStateGen`, the
+            // mismatch above forces this branch, and
             // `setupVertexAttribPointers` re-captures the live VBO handle
             // into the VAO's attribute state.
             m_impl->bindGLObjects(vaoGroup);

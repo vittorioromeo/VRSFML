@@ -51,6 +51,26 @@ struct GLVAOGroup
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Counter bumped whenever `vbo` or `ebo` is replaced
+    ///
+    /// `GLBufferObject` ids can be recycled by the driver (the GL spec
+    /// permits `glGenBuffers` to return a recently-freed id), so an
+    /// id-only check cannot detect "the underlying buffer instance
+    /// changed." This counter is bumped from the call site that
+    /// performs the swap (e.g. the persistent ring-buffer growth in
+    /// `PersistentGPUStorage::reserveMore{Vertices,Indices}`).
+    ///
+    /// Caches that key VAO attribute-pointer state on a specific buffer
+    /// instance (e.g. `RenderTarget`'s `StatesCache`) snapshot this
+    /// counter alongside the VAO id; a mismatch on either signals
+    /// "re-issue `glVertexAttribPointer`, the buffer instance behind
+    /// the VAO's attributes is no longer the one we set them up for."
+    ///
+    ////////////////////////////////////////////////////////////
+    unsigned int attribStateGen{0u};
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     /// Creates the underlying VBO and EBO on the shared GL context.
