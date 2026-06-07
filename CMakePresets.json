@@ -61,6 +61,16 @@
         "CMAKE_CXX_FLAGS": "$env{LINKER} $env{TIME_TRACE} $env{CXX_WARNINGS}"
       }
     },
+     {
+      "name": "vrdev_clang_sanitizer",
+      "inherits": "build_base_debug",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_C_FLAGS": "$env{LINKER} $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "$env{LINKER} $env{TIME_TRACE} $env{CXX_WARNINGS} -fsanitize=address -fsanitize=undefined"
+      }
+    },
     {
       "name": "vrdev_clang_libcpp",
       "inherits": "build_base_debug",
