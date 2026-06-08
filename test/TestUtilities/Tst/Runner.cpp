@@ -13,8 +13,14 @@
 
 #include "Zancle/String/String.hpp"
 
+#include "Zancle/Algorithm/Sort.hpp"
+
+#include "Zancle/Chrono/Clock.hpp"
+#include "Zancle/Chrono/Time.hpp"
+
 #include "Zancle/Container/Vector.hpp"
 
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Strcmp.hpp"
 #include "Zancle/Base/Strlen.hpp"
@@ -206,6 +212,7 @@ void printHelp()
     za::printErrLn("  --test-case-exclude=<substr> Skip tests matching <substr>");
     za::printErrLn("  --list-test-cases           List registered test cases and exit");
     za::printErrLn("  --verbose                   Report each test case before it runs");
+    za::printErrLn("  --profile                   Print per-test wall-clock timings, sorted slowest-first");
     za::printErrLn("  --reporters=<name>          Accepted for source compatibility (ignored)");
     za::printErrLn("  --help, -h                  Print this help");
 }
@@ -236,6 +243,12 @@ void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit)
         if (ZA_STRCMP(a, "--list-test-cases") == 0)
         {
             ctx.listOnly = true;
+            continue;
+        }
+
+        if (ZA_STRCMP(a, "--profile") == 0)
+        {
+            ctx.profile = true;
             continue;
         }
 
@@ -392,6 +405,42 @@ void printSummary(const ContextState& ctx)
     }
 }
 
+
+////////////////////////////////////////////////////////////
+void printProfile(ContextState& ctx)
+{
+    if (ctx.profileEntries.empty())
+        return;
+
+    // Slowest-first.
+    za::insertionSort(ctx.profileEntries.begin(),
+                      ctx.profileEntries.end(),
+                      [](const ContextState::ProfileEntry& a, const ContextState::ProfileEntry& b)
+    { return a.microseconds > b.microseconds; });
+
+    za::I64 totalUs = 0;
+    for (za::SizeT i = 0u; i < ctx.profileEntries.size(); ++i)
+        totalUs += ctx.profileEntries.data()[i].microseconds;
+
+    za::printLn("");
+    za::printLn("[tst] profile (sorted by duration, slowest first):");
+
+    for (za::SizeT i = 0u; i < ctx.profileEntries.size(); ++i)
+    {
+        const auto& e = ctx.profileEntries.data()[i];
+
+        // Format as ms with one decimal place. Right-align the whole-ms
+        // part to a width of 6 so the names line up across long runs.
+        const za::I64 wholeMs  = e.microseconds / 1000;
+        const za::I64 tenthsMs = (e.microseconds / 100) % 10;
+        za::printLn("  {:>6}.{} ms  {}", wholeMs, tenthsMs, runnerNonNull(e.name));
+    }
+
+    const za::I64 totalWholeMs  = totalUs / 1000;
+    const za::I64 totalTenthsMs = (totalUs / 100) % 10;
+    za::printLn("[tst] profile total: {}.{} ms across {} test case(s)", totalWholeMs, totalTenthsMs, ctx.profileEntries.size());
+}
+
 } // namespace
 } // namespace tst::detail
 
@@ -437,10 +486,24 @@ int run(int argc, char** argv)
         if (ctx.verbose)
             za::printErrLn("[tst] running: {} ({}:{})", detail::runnerNonNull(tc.name), tc.file, tc.line);
 
-        detail::runSingleTestCase(tc, ctx);
+        if (ctx.profile)
+        {
+            const za::Clock clk;
+            detail::runSingleTestCase(tc, ctx);
+
+            ctx.profileEntries.emplaceBack(
+                detail::ContextState::ProfileEntry{.name = tc.name, .microseconds = clk.getElapsedTime().asMicroseconds()});
+        }
+        else
+        {
+            detail::runSingleTestCase(tc, ctx);
+        }
     }
 
     detail::printSummary(ctx);
+
+    if (ctx.profile)
+        detail::printProfile(ctx);
 
     return ctx.failedTestCases == 0u ? 0 : 1;
 }

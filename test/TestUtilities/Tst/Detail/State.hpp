@@ -10,6 +10,7 @@
 
 #include "Zancle/Container/Vector.hpp"
 
+#include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 
@@ -132,10 +133,21 @@ struct ContextState
 
     bool verbose  = false;
     bool listOnly = false;
+    bool profile  = false;
 
     // Filter substrings. Tests with a name *containing* one of these run.
     za::Vector<za::String> filterInclude;
     za::Vector<za::String> filterExclude;
+
+    // Per-test wall-clock timings, populated when `profile` is set.
+    // Printed in descending order of duration at the end of the run.
+    struct ProfileEntry
+    {
+        const char* name;
+        za::I64     microseconds;
+    };
+
+    za::Vector<ProfileEntry> profileEntries;
 };
 
 
