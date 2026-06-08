@@ -69,3 +69,18 @@
 /// }
 /// \endcode
 ////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////
+// Module-level Doxygen groups. Individual headers tag themselves with
+// `\ingroup <module>`; the declarations below give each group a landing
+// page in the generated documentation and stop Doxygen from warning
+// about the references being undefined.
+////////////////////////////////////////////////////////////
+/// \defgroup audio    Audio module
+/// \defgroup glutils  GLUtils module
+/// \defgroup graphics Graphics module
+/// \defgroup imgui    ImGui module
+/// \defgroup network  Network module
+/// \defgroup system   System module
+/// \defgroup window   Window module

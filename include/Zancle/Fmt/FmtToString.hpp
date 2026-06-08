@@ -29,7 +29,9 @@ template <typename... Args>
 
 
 ////////////////////////////////////////////////////////////
-/// \file Opt-in extension: `fmtToString(fmt, args...) -> za::String`.
+/// \file
+///
+/// \brief Opt-in extension: `fmtToString(fmt, args...) -> za::String`.
 ///
 /// Lives in a separate header so the lightweight `<Zancle/Fmt/Fmt.hpp>`
 /// stays free of `<Zancle/String/String.hpp>`. Include this when you need the

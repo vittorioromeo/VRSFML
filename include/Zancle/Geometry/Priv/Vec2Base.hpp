@@ -428,7 +428,7 @@ struct [[nodiscard]] Vec2
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns a new vec2 where components have the absolute values of `*this
+    /// \brief Returns a new vec2 where components have the absolute values of `*this`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 abs() const
