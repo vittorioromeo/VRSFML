@@ -5,6 +5,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief `std::remove_cvref` replacement
 ///
 /// `RemoveCVRef<T>` strips both references and top-level cv-qualifiers

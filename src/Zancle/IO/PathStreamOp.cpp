@@ -40,4 +40,5 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
 /// poisoning `ErrIOUnity.cpp` (Err + IO + Path) -- previously one of the
 /// slowest parses in the whole build (~2.2 s) and a source of ~3 s of
 /// `std::vformat_to` / `std::formatter` template instantiations.
+///
 ////////////////////////////////////////////////////////////

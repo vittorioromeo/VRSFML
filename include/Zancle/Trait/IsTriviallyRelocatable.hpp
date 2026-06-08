@@ -72,6 +72,7 @@ inline constexpr bool isTriviallyRelocatable = ZA_IS_TRIVIALLY_RELOCATABLE(T);
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Detection of trivially relocatable types
 ///
 /// Trivial relocation is the property that a type's value can be

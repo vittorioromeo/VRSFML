@@ -4,18 +4,6 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \file
-/// \brief Conditional `<stdfloat>` aliases (`F16`, `F32`, `F64`, `F128`)
-///
-/// Detects compiler/standard library support for the C++23 extended
-/// floating-point types and exposes them under short names. Each
-/// `Fxx` alias is only defined when the matching `ZA_FLOATxx_DETECTED`
-/// macro is available.
-///
-////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////
 // Clang detection
 #ifdef __is_identifier
     #if !__is_identifier(_Float16)
@@ -85,3 +73,16 @@ using F128 = decltype(0.f128);
 #endif
 
 } // namespace za
+
+
+////////////////////////////////////////////////////////////
+/// \file
+///
+/// \brief Conditional extended floating-point aliases (`F16`, `F32`, `F64`, `F128`)
+///
+/// Detects compiler/standard library support for the C++23 extended
+/// floating-point types and exposes them under short names. Each
+/// `Fxx` alias is only defined when the matching `ZA_FLOATxx_DETECTED`
+/// macro is available.
+///
+////////////////////////////////////////////////////////////

@@ -23,6 +23,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Portable wrapper for the C99 `restrict` qualifier
 ///
 /// Tells the compiler that two pointer parameters do not alias each

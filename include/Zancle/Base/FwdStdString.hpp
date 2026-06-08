@@ -4,19 +4,6 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \file
-/// \brief Forward declarations from `<string>`
-///
-/// Pulls in the standard library's internal `string` forward header
-/// (`<bits/stringfwd.h>` on libstdc++, `<__fwd/string.h>` on libc++)
-/// when available, falling back to the full `<string>` header
-/// otherwise. Use this when a public Zancle header only needs to
-/// reference `std::string` by pointer/reference.
-///
-////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////
 #ifdef __CLANGD__
 
     #include <string> // IWYU pragma: export
@@ -38,3 +25,16 @@
     #endif
 
 #endif
+
+
+////////////////////////////////////////////////////////////
+/// \file
+///
+/// \brief Forward declarations from `<string>`
+///
+/// Pulls in the standard library's internal `string` forward header
+/// (`<bits/stringfwd.h>` on libstdc++, `<__fwd/string.h>` on libc++)
+/// when available, falling back to the full `<string>` header
+/// otherwise.
+///
+////////////////////////////////////////////////////////////

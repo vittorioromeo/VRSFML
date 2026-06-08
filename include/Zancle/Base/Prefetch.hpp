@@ -18,6 +18,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Portable wrapper for `__builtin_prefetch`
 ///
 /// Hints to the CPU that `ptr` will soon be accessed, so the cache

@@ -84,6 +84,7 @@ using TypePackElement = typename decltype(priv::typePackElementImpl<N, Ts...>())
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Compile-time access to the `N`-th type in a parameter pack
 ///
 /// `TypePackElement<N, Ts...>` evaluates to the `N`-th type in `Ts...`.

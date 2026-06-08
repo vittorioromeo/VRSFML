@@ -6,12 +6,8 @@
 namespace za
 {
 ////////////////////////////////////////////////////////////
-/// \brief `std::declval` replacement, for use in unevaluated contexts only
-///
-/// Returns an rvalue reference to a hypothetical `T` without requiring
-/// `T` to be constructible. Calling this function at runtime is
-/// undefined behavior -- it must only appear inside `decltype`,
-/// `requires`, `noexcept`, or other unevaluated operands.
+/// \brief Returns an rvalue reference to a hypothetical `T`
+///        without requiring `T` to be constructible
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

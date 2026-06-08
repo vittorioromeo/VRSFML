@@ -5,6 +5,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Forward declaration of `std::hash` to avoid `<functional>`
 ///
 /// Zancle containers and types only need to befriend or specialize

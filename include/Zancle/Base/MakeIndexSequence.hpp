@@ -4,19 +4,6 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \file
-/// \brief `std::make_index_sequence<N>` replacement
-///
-/// `MakeIndexSequence<N>` evaluates to `IndexSequence<0, 1, ..., N-1>`.
-/// The implementation prefers compiler builtins (`__integer_pack` on
-/// GCC, `__make_integer_seq` on Clang/MSVC) so that the alias does not
-/// drag in `<utility>`. Falls back to `std::make_index_sequence` only
-/// when no builtin is available.
-///
-////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "Zancle/Base/IndexSequence.hpp"
@@ -87,3 +74,17 @@ using MakeIndexSequence = std::make_index_sequence<N>;
 ///
 ////////////////////////////////////////////////////////////
 #define ZA_INDEX_SEQUENCE_FOR(...) ZA_MAKE_INDEX_SEQUENCE(sizeof...(__VA_ARGS__))
+
+
+////////////////////////////////////////////////////////////
+/// \file
+///
+/// \brief `std::make_index_sequence<N>` replacement
+///
+/// `MakeIndexSequence<N>` evaluates to `IndexSequence<0, 1, ..., N-1>`.
+/// The implementation prefers compiler builtins (`__integer_pack` on
+/// GCC, `__make_integer_seq` on Clang/MSVC) so that the alias does not
+/// drag in `<utility>`. Falls back to `std::make_index_sequence` only
+/// when no builtin is available.
+///
+////////////////////////////////////////////////////////////

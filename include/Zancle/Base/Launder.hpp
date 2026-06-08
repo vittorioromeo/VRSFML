@@ -24,6 +24,7 @@
 
 #endif
 
+
 ////////////////////////////////////////////////////////////
 /// \brief Combined `reinterpret_cast` + `launder` for typed buffer access
 ///

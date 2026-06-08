@@ -16,7 +16,7 @@
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTBEGIN
+// NOLINTBEGIN(readability-identifier-naming, bugprone-reserved-identifier)
 
 namespace std
 {
@@ -41,7 +41,7 @@ struct source_location
 
 } // namespace std
 
-// NOLINTEND
+// NOLINTEND(readability-identifier-naming, bugprone-reserved-identifier)
 ////////////////////////////////////////////////////////////
 
 

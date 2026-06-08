@@ -5,6 +5,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Internal helpers for `za::math::*` math wrappers
 ///
 /// Provides `ZA_PRIV_HAS_MATH_BUILTIN(name)`, which checks

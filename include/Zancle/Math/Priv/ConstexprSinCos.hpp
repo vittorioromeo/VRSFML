@@ -218,6 +218,7 @@ namespace za::priv
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief `constexpr` polynomial approximations of `sin` and `cos`
 ///
 /// Used by `sinLookup`/`cosLookup`/`sinCosLookup` when called in a

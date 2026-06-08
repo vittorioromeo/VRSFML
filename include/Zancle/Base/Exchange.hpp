@@ -14,6 +14,7 @@ template <typename T, typename U = T>
 {
     T oldVal = static_cast<T&&>(obj);    // (move)
     obj      = static_cast<U&&>(newVal); // (forward)
+
     return oldVal;
 }
 

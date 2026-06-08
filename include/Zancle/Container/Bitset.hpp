@@ -571,6 +571,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Fixed-size bitset, lightweight `std::bitset` substitute
 ///
 /// `Bitset<N>` packs `N` bits into an array of 64-bit words, with

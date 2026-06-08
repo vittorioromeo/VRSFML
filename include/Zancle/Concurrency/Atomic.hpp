@@ -688,6 +688,7 @@ template <MemoryOrder MO>
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Lightweight `std::atomic` substitute built on `__atomic_*` builtins
 ///
 /// `Atomic<T>` provides lock-free atomic operations for numerical

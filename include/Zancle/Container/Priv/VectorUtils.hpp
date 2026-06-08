@@ -405,6 +405,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Shared low-level helpers for `Vector`, `SmallVector`, `InPlaceVector`
 ///
 /// All non-trivial element-management primitives (allocate / deallocate,

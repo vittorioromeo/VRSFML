@@ -5,6 +5,7 @@
 
 ////////////////////////////////////////////////////////////
 /// \file
+///
 /// \brief Lightweight `<chrono>` include
 ///
 /// Pulls in just the duration/clock declarations from libstdc++'s
