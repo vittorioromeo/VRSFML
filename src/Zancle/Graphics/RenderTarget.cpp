@@ -1105,8 +1105,13 @@ RenderTarget::DrawStatistics RenderTarget::flush()
     }
 
     ZA_SCOPE_GUARD({
+        // Only refresh the cached generations if a batch was actually
+        // flushed. With an empty batch, `m_lastRenderStates` may still
+        // reference a shader or texture the user has since destroyed.
+        if (m_numAutoBatchVertices > 0u)
+            updateCachedGenerations(m_lastRenderStates);
+
         m_numAutoBatchVertices = 0u;
-        updateCachedGenerations(m_lastRenderStates);
     });
 
     if (m_autoBatchMode == AutoBatchMode::Disabled)

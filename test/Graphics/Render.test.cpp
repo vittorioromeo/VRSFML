@@ -1329,6 +1329,51 @@ void main()
             CHECK(img.getPixel({50, 10}) == za::Color::Blue);
         }
 
+        SECTION("flush() must not dereference m_lastRenderStates.shader after the shader is destroyed")
+        {
+            // Regression: `flush()` ran a scope guard at function exit
+            // that unconditionally called
+            // `updateCachedGenerations(m_lastRenderStates)`, which
+            // dereferences `m_lastRenderStates.shader->m_uniformGeneration`.
+            // If the user's flow was
+            //   1. draw something with a local shader,
+            //   2. `display()` (flushes the batch and leaves
+            //      `m_lastRenderStates.shader` pointing at the shader),
+            //   3. let the shader go out of scope,
+            //   4. call `clear()` (which internally calls `flush()`),
+            // the scope guard read the dangling pointer.
+            //
+            // The fix: gate the `updateCachedGenerations` call on
+            // `m_numAutoBatchVertices > 0u`. When the batch is empty
+            // there's nothing whose generation snapshot matters.
+            //
+            // The test crashes (or trips ASAN) under the old code; runs
+            // cleanly under the fix.
+            auto                     rt = za::RenderTexture::create({40u, 40u}).value();
+            const za::RectangleShape full{{.size = {40.f, 40.f}}};
+
+            {
+                auto shaderInner = za::Shader::loadFromMemory({.fragmentCode = solidColorFragSource}).value();
+                shaderInner.setUniform(shaderInner.getUniformLocation("u_color").value(),
+                                       za::Glsl::Vec4{1.f, 0.f, 0.f, 1.f});
+
+                rt.clear(za::Color::Black);
+                rt.draw(full, za::RenderStates{.shader = &shaderInner});
+                rt.display();
+                // `m_lastRenderStates.shader` is now `&shaderInner`.
+            }
+            // shaderInner destroyed -- pointer in `m_lastRenderStates`
+            // is now dangling.
+
+            // The next `clear()` triggers `flush()`. With nothing in the
+            // batch, the scope guard MUST NOT touch the dangling shader.
+            rt.clear(za::Color::Black);
+
+            // If we got here, the scope guard skipped the dereference
+            // correctly.
+            CHECK(true);
+        }
+
         SECTION("Destroying a shader does not poison the program cache")
         {
             // Regression: `destroyProgramIfNeeded` clears the cache if the
