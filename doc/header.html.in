@@ -1,9 +1,7 @@
-<!-- HTML header for Zancle -- based on Doxygen 1.16's canonical template,
-     with doxygen-awesome-css extensions wired in. Template tokens like
-     $treeview / $search / $extrastylesheet are expanded by Doxygen at
-     page-generation time so that the right `<script>` and `<link>` tags
-     are injected (especially the navtree/resize scripts that
-     GENERATE_TREEVIEW=YES depends on). -->
+<!-- HTML header for Zancle (based on Doxygen 1.16's canonical template,
+     with doxygen-awesome-css extensions wired in). Doxygen substitutes
+     its template tokens inside HTML comments too, so this file avoids
+     mentioning them in prose. -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="$langISO">
 <head>
@@ -32,20 +30,15 @@ $darkmode
 <link href="$relpath^$stylesheet" rel="stylesheet" type="text/css" />
 $extrastylesheet
 
-<!-- doxygen-awesome JS extensions: dark-mode toggle, copy buttons,
-     paragraph anchors, interactive TOC, code-block tabs. Loaded after
-     $treeview so they don't fight the sidebar initialization. -->
+<!-- doxygen-awesome JS extensions: dark-mode toggle, copy buttons on
+     code fragments, and anchor links on headings / member entries. -->
 <script type="text/javascript" src="$relpath^doxygen-awesome-darkmode-toggle.js"></script>
 <script type="text/javascript" src="$relpath^doxygen-awesome-fragment-copy-button.js"></script>
 <script type="text/javascript" src="$relpath^doxygen-awesome-paragraph-link.js"></script>
-<script type="text/javascript" src="$relpath^doxygen-awesome-interactive-toc.js"></script>
-<script type="text/javascript" src="$relpath^doxygen-awesome-tabs.js"></script>
 <script type="text/javascript">
   DoxygenAwesomeDarkModeToggle.init();
   DoxygenAwesomeFragmentCopyButton.init();
   DoxygenAwesomeParagraphLink.init();
-  DoxygenAwesomeInteractiveToc.init();
-  DoxygenAwesomeTabs.init();
 </script>
 </head>
 <body>
