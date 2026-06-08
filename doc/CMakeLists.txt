@@ -14,6 +14,18 @@ endif()
 
 find_package(Doxygen REQUIRED)
 
+# doxygen-awesome-css: a CSS+JS theme for Doxygen that gives the
+# generated HTML a modern look (dark mode toggle, sticky sidebar,
+# copy-to-clipboard buttons, paragraph anchors, interactive TOC).
+# The Doxygen comment syntax is untouched -- this is pure presentation.
+CPMAddPackage(
+    NAME doxygen-awesome-css
+    GITHUB_REPOSITORY jothepro/doxygen-awesome-css
+    GIT_TAG v2.3.4
+    DOWNLOAD_ONLY TRUE
+)
+set(DOXYGEN_AWESOME_DIR "${doxygen-awesome-css_SOURCE_DIR}")
+
 # see if we can generate the CHM documentation
 set(DOXYGEN_HHC_PROGRAM)
 set(DOXYGEN_GENERATE_HTMLHELP NO)
@@ -36,8 +48,10 @@ endif()
 configure_file(doxyfile.in doxyfile @ONLY)
 configure_file(header.html.in header.html @ONLY)
 
-# copy the files needed by the documentation
-configure_file(doxygen.css html/doxygen.css COPYONLY)
+# copy the files needed by the documentation. The legacy doxygen.css
+# (kept as doxygen.css.legacy-sfml-theme for reference) is no longer
+# referenced -- the doxygen-awesome theme layers on top of Doxygen's
+# own default stylesheet instead.
 configure_file(searchOverrides.css html/searchOverrides.css COPYONLY)
 
 # target setup

@@ -1362,7 +1362,11 @@ HTML_FOOTER            = "@PROJECT_SOURCE_DIR@/doc/footer.html"
 # obsolete.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_STYLESHEET        = "@PROJECT_SOURCE_DIR@/doc/doxygen.css"
+# HTML_STYLESHEET replaces Doxygen's default stylesheet entirely; we now
+# layer the doxygen-awesome theme on top of the default via
+# HTML_EXTRA_STYLESHEET (below) instead, which the Doxygen docs themselves
+# recommend over HTML_STYLESHEET.
+HTML_STYLESHEET        =
 
 # The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
 # cascading style sheets that are included after the standard style sheets
@@ -1380,7 +1384,10 @@ HTML_STYLESHEET        = "@PROJECT_SOURCE_DIR@/doc/doxygen.css"
 # documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  =
+HTML_EXTRA_STYLESHEET  = "@DOXYGEN_AWESOME_DIR@/doxygen-awesome.css" \
+                         "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-sidebar-only.css" \
+                         "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-sidebar-only-darkmode-toggle.css" \
+                         "@PROJECT_SOURCE_DIR@/doc/searchOverrides.css"
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1390,7 +1397,11 @@ HTML_EXTRA_STYLESHEET  =
 # files will be copied as-is; there are no commands or markers available.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_FILES       =
+HTML_EXTRA_FILES       = "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-darkmode-toggle.js" \
+                         "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-fragment-copy-button.js" \
+                         "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-paragraph-link.js" \
+                         "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-interactive-toc.js" \
+                         "@DOXYGEN_AWESOME_DIR@/doxygen-awesome-tabs.js"
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme.
@@ -1731,7 +1742,7 @@ DISABLE_INDEX          = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 
 # When both GENERATE_TREEVIEW and DISABLE_INDEX are set to YES, then the
 # FULL_SIDEBAR option determines if the side bar is limited to only the treeview
