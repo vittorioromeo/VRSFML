@@ -19,8 +19,8 @@
 TEST_CASE("[Graphics] za::GlyphMapping" * tst::skip(skipDisplayTests))
 {
     [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
-    auto fontFace        = za::FontFace::openFromFile("tuffy.ttf").value();
-    auto atlas           = za::TextureAtlas(za::Texture::create({1024u, 1024u}, {.smooth = true}).value());
+    auto                   fontFace        = za::FontFace::openFromFile("tuffy.ttf").value();
+    auto                   atlas = za::TextureAtlas(za::Texture::create({1024u, 1024u}, {.smooth = true}).value());
 
     static constexpr char32_t  testCodePoints[]    = U"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
     static constexpr za::SizeT testCodePointsCount = (sizeof(testCodePoints) / sizeof(testCodePoints[0])) - 1u;

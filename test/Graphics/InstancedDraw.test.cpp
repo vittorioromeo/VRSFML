@@ -29,7 +29,7 @@
 TEST_CASE("[Graphics] Shared-resource rendering" * tst::skip(skipDisplayTests))
 {
     [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
-    auto renderTexture   = za::RenderTexture::create({100, 100}).value();
+    auto                   renderTexture   = za::RenderTexture::create({100, 100}).value();
 
     SECTION("Custom shader uniforms are uploaded correctly")
     {
