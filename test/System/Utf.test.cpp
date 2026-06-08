@@ -6,7 +6,7 @@
 
 #include "Zancle/Container/BackInserter.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 #include <locale>
 #include <string_view>

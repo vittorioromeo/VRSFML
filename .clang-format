@@ -123,33 +123,33 @@ IncludeCategories:
     Regex: '^\"Zancle\/Lifetime\/'
   - Priority: 12
     Regex: '^\"Zancle\/Scn\/'
-  # Level 6: Fmt, IO
+  # Level 6: Fmt, IO, Reflection
   - Priority: 13
     Regex: '^\"Zancle\/Fmt\/'
   - Priority: 14
     Regex: '^\"Zancle\/IO\/'
-  # Level 5: Concurrency, Mixin, String
   - Priority: 15
-    Regex: '^\"Zancle\/Concurrency\/'
+    Regex: '^\"Zancle\/Reflection\/'
+  # Level 5: Concurrency, Mixin, String
   - Priority: 16
-    Regex: '^\"Zancle\/Mixin\/'
+    Regex: '^\"Zancle\/Concurrency\/'
   - Priority: 17
+    Regex: '^\"Zancle\/Mixin\/'
+  - Priority: 18
     Regex: '^\"Zancle\/String\/'
   # Level 4: Algorithm, Chrono, Container, Geometry
-  - Priority: 18
-    Regex: '^\"Zancle\/Algorithm\/'
   - Priority: 19
-    Regex: '^\"Zancle\/Chrono\/'
+    Regex: '^\"Zancle\/Algorithm\/'
   - Priority: 20
-    Regex: '^\"Zancle\/Container\/'
+    Regex: '^\"Zancle\/Chrono\/'
   - Priority: 21
+    Regex: '^\"Zancle\/Container\/'
+  - Priority: 22
     Regex: '^\"Zancle\/Geometry\/'
   # Level 3: Vocabulary
-  - Priority: 22
-    Regex: '^\"Zancle\/Vocabulary\/'
-  # Level 2: Diagnostic, Math
   - Priority: 23
-    Regex: '^\"Zancle\/Diagnostic\/'
+    Regex: '^\"Zancle\/Vocabulary\/'
+  # Level 2: Math
   - Priority: 24
     Regex: '^\"Zancle\/Math\/'
   # Level 1: Trait

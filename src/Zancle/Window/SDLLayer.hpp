@@ -17,10 +17,9 @@
 
 #include "Zancle/Vocabulary/UniquePtr.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Trait/IsSame.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"

@@ -14,12 +14,12 @@
 #include "Zancle/Geometry/Rect2.hpp"
 #include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Remainder.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
+
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za

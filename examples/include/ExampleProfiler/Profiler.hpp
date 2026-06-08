@@ -24,7 +24,7 @@
     #include "Zancle/Chrono/Clock.hpp"
     #include "Zancle/Chrono/Time.hpp"
 
-    #include "Zancle/Diagnostic/Abort.hpp"
+    #include "Zancle/Base/Abort.hpp"
 #endif
 
 

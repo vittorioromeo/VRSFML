@@ -9,8 +9,7 @@
 
 #include "Zancle/String/StringView.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/UIntPtrT.hpp"
 
 #if defined(ZA_SYSTEM_WINDOWS)

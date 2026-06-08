@@ -18,8 +18,7 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
 

@@ -19,13 +19,12 @@
 
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/Vocabulary/ScopeGuard.hpp"
-
-#include "Zancle/Diagnostic/Assert.hpp"
 
 #include "Zancle/Trait/IsSame.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/PtrDiffT.hpp"
+#include "Zancle/Base/ScopeGuard.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 #include <string>

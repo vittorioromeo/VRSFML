@@ -10,7 +10,7 @@
 
 #include "Zancle/GLUtils/Glad.hpp" // not expensive, included everwhere `GLCheck.hpp` is included
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za::priv

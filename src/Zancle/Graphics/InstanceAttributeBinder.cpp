@@ -14,15 +14,14 @@
 #include "Zancle/Graphics/Priv/EnumToGlEnumConversions.hpp"
 #include "Zancle/Graphics/VBOHandle.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Unreachable.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/Err/Err.hpp"
 
-    #include "Zancle/Diagnostic/Abort.hpp"
+    #include "Zancle/Base/Abort.hpp"
 #endif
 
 

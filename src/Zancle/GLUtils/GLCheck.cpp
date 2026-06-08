@@ -15,7 +15,7 @@
 
 #include "Zancle/IO/Path.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za::priv

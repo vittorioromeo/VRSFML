@@ -9,7 +9,7 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Base/Abort.hpp"
 
 #include <csignal>
 

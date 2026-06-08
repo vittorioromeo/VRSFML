@@ -6,7 +6,12 @@
 #
 # Usage:
 #   ./run_test.sh <Suite> [test-runner-args...]
-#   e.g.  ./run_test.sh Graphics -tc='*Sprite*'
+#   e.g.  ./run_test.sh Graphics -tc=Sprite
+#
+# Test-case filters are SUBSTRING matches against the test-case name
+# (NOT glob or regex). Use `-tc=Sprite` to match every test case whose
+# name contains "Sprite"; use `-tc='[Graphics] za::Sprite'` for an
+# exact-name match.
 #
 # Env:
 #   DEBUGGER   command to prefix the binary with on native builds.

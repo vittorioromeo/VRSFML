@@ -7,10 +7,9 @@
 
 #include "Zancle/ImGui/IncludeImGui.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Clamp.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 #include <cstdio>

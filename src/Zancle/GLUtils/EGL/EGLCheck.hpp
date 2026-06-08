@@ -10,7 +10,7 @@
 
 #include "Zancle/GLUtils/EGL/EGLGlad.hpp" // not expensive, included everwhere `EGLCheck.hpp` is included
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za::priv

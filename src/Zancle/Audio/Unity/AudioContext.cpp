@@ -20,8 +20,7 @@
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-
+#include "Zancle/Base/Abort.hpp"
 #include "Zancle/Base/Macros.hpp"
 
 #include <miniaudio.h>

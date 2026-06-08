@@ -15,8 +15,8 @@
 
 #else
 
-    #include "Zancle/Diagnostic/Abort.hpp"  // TODO P1: levelization violation
-    #include "Zancle/Diagnostic/Assert.hpp" // TODO P1: levelization violation
+    #include "Zancle/Base/Abort.hpp"
+    #include "Zancle/Base/Assert.hpp"
 
     ////////////////////////////////////////////////////////////
     #define ZA_UNREACHABLE()  \

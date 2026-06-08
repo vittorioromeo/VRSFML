@@ -11,10 +11,9 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-
 #include "Zancle/Math/MinMaxMacros.hpp"
 
+#include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

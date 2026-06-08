@@ -44,13 +44,12 @@
 
 #include "Zancle/Vocabulary/Optional.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/MinMax.hpp"
 #include "Zancle/Math/Round.hpp"
 
+#include "Zancle/Base/Abort.hpp"
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"

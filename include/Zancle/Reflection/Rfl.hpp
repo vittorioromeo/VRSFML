@@ -4,33 +4,9 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \file
-///
-/// \brief Compile-time reflection for aggregate types
-///
-/// `za::minipfr` is a small fork of Boost.PFR that does not
-/// depend on the C++ standard library. It supports aggregate types of
-/// up to 64 fields and provides:
-///
-/// - `numFields<T>` -- number of public data members
-///
-/// - `tieAsTuple(obj)` -- bind every field of `obj` into a tuple of refs
-///
-/// - `getField<I>(obj)` -- fetch the `I`-th field by index
-///
-/// - `forEachField(obj, fn)` -- invoke `fn` on each field in declaration order
-///
-/// - `getFieldName<T, I>()` / `tieAsFieldNamesTuple<T>()` -- extract
-///   field names by parsing the compiler's pretty-function string
-///
-/// Unions and C-style array types are explicitly rejected by the
-/// public reflection entry points.
-///
-////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////
 // Small fork of Boost.PFR that does not depend on the Standard Libary.
+// Also uses ideas from ZXShady's lahzam: https://github.com/ZXShady/lahzam
+//
 // Boost.PFR license:
 /*
    Copyright (c) 2016-2025 Antony Polukhin
@@ -38,14 +14,33 @@
    Distributed under the Boost Software License, Version 1.0. (See accompanying
    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 */
+//
+// Lazham license:
+/*
+MIT License
+
+Copyright (c) 2025 ZXShady
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 ////////////////////////////////////////////////////////////
 
-#include "Zancle/String/StringView.hpp"
-
-#include "Zancle/Container/Array.hpp"
-
-#include "Zancle/Trait/IsArray.hpp"
-#include "Zancle/Trait/IsUnion.hpp"
 #include "Zancle/Trait/RemoveCVRef.hpp"
 #include "Zancle/Trait/RemoveReference.hpp"
 
@@ -57,7 +52,7 @@
 #include "Zancle/Base/TypePackElement.hpp"
 
 
-namespace za::minipfr::priv
+namespace za::rfl::priv
 {
 ////////////////////////////////////////////////////////////
 template <SizeT N, typename T>
@@ -109,7 +104,7 @@ struct TupleBase<IndexSequence<Is...>, Ts...> : TupleMember<Is, Ts>...
 
     ////////////////////////////////////////////////////////////
     template <SizeT I>
-    [[gnu::always_inline]] constexpr const auto& get() const
+    [[nodiscard, gnu::always_inline]] constexpr const auto& get() const
     {
         return static_cast<const TupleMember<I, ZA_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this).value;
     }
@@ -314,10 +309,10 @@ template <typename... Ts>
     return Tuple<Ts&...>{args...};
 }
 
-} // namespace za::minipfr::priv
+} // namespace za::rfl::priv
 
 
-namespace za::minipfr
+namespace za::rfl
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -333,83 +328,83 @@ constexpr auto tieAsTuple(T&& obj)
         fieldCount = priv::countFields<ZA_REMOVE_CVREF(T)>()
     };
 
-#define MINIPFR_RETURN_TIE_AS_TUPLE(N, ...) \
+#define ZA_PRIV_RFL_RETURN_TIE_AS_TUPLE(N, ...) \
     auto& [__VA_ARGS__] = obj;              \
     return priv::makeRefTuple(__VA_ARGS__)
 
     // clang-format off
-#define MINIPFR_BRANCH(N, ...) \
-    constexpr (fieldCount == N) { MINIPFR_RETURN_TIE_AS_TUPLE(N, __VA_ARGS__); }
+#define ZA_PRIV_RFL_BRANCH(N, ...) \
+    constexpr (fieldCount == N) { ZA_PRIV_RFL_RETURN_TIE_AS_TUPLE(N, __VA_ARGS__); }
     // clang-format on
 
     // NOLINTBEGIN(readability-misleading-indentation)
 
     // clang-format off
          if constexpr (fieldCount == 0)  { return priv::Tuple<>{}; }
-    else if MINIPFR_BRANCH(1,  a)
-    else if MINIPFR_BRANCH(2,  a,b)
-    else if MINIPFR_BRANCH(3,  a,b,c)
-    else if MINIPFR_BRANCH(4,  a,b,c,d)
-    else if MINIPFR_BRANCH(5,  a,b,c,d,e)
-    else if MINIPFR_BRANCH(6,  a,b,c,d,e,f)
-    else if MINIPFR_BRANCH(7,  a,b,c,d,e,f,g)
-    else if MINIPFR_BRANCH(8,  a,b,c,d,e,f,g,h)
-    else if MINIPFR_BRANCH(9,  a,b,c,d,e,f,g,h,i)
-    else if MINIPFR_BRANCH(10, a,b,c,d,e,f,g,h,i,j)
-    else if MINIPFR_BRANCH(11, a,b,c,d,e,f,g,h,i,j,k)
-    else if MINIPFR_BRANCH(12, a,b,c,d,e,f,g,h,i,j,k,l)
-    else if MINIPFR_BRANCH(13, a,b,c,d,e,f,g,h,i,j,k,l,m)
-    else if MINIPFR_BRANCH(14, a,b,c,d,e,f,g,h,i,j,k,l,m,n)
-    else if MINIPFR_BRANCH(15, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o)
-    else if MINIPFR_BRANCH(16, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)
-    else if MINIPFR_BRANCH(17, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q)
-    else if MINIPFR_BRANCH(18, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
-    else if MINIPFR_BRANCH(19, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s)
-    else if MINIPFR_BRANCH(20, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)
-    else if MINIPFR_BRANCH(21, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u)
-    else if MINIPFR_BRANCH(22, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v)
-    else if MINIPFR_BRANCH(23, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w)
-    else if MINIPFR_BRANCH(24, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x)
-    else if MINIPFR_BRANCH(25, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y)
-    else if MINIPFR_BRANCH(26, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z)
-    else if MINIPFR_BRANCH(27, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A)
-    else if MINIPFR_BRANCH(28, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B)
-    else if MINIPFR_BRANCH(29, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C)
-    else if MINIPFR_BRANCH(30, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D)
-    else if MINIPFR_BRANCH(31, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E)
-    else if MINIPFR_BRANCH(32, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F)
-    else if MINIPFR_BRANCH(33, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G)
-    else if MINIPFR_BRANCH(34, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H)
-    else if MINIPFR_BRANCH(35, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J)
-    else if MINIPFR_BRANCH(36, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K)
-    else if MINIPFR_BRANCH(37, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L)
-    else if MINIPFR_BRANCH(38, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M)
-    else if MINIPFR_BRANCH(39, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N)
-    else if MINIPFR_BRANCH(40, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O)
-    else if MINIPFR_BRANCH(41, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P)
-    else if MINIPFR_BRANCH(42, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q)
-    else if MINIPFR_BRANCH(43, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R)
-    else if MINIPFR_BRANCH(44, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S)
-    else if MINIPFR_BRANCH(45, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U)
-    else if MINIPFR_BRANCH(46, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V)
-    else if MINIPFR_BRANCH(47, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W)
-    else if MINIPFR_BRANCH(48, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X)
-    else if MINIPFR_BRANCH(49, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y)
-    else if MINIPFR_BRANCH(50, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z)
-    else if MINIPFR_BRANCH(51, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa)
-    else if MINIPFR_BRANCH(52, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb)
-    else if MINIPFR_BRANCH(53, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc)
-    else if MINIPFR_BRANCH(54, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd)
-    else if MINIPFR_BRANCH(55, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee)
-    else if MINIPFR_BRANCH(56, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff)
-    else if MINIPFR_BRANCH(57, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg)
-    else if MINIPFR_BRANCH(58, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh)
-    else if MINIPFR_BRANCH(59, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii)
-    else if MINIPFR_BRANCH(60, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj)
-    else if MINIPFR_BRANCH(61, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk)
-    else if MINIPFR_BRANCH(62, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll)
-    else if MINIPFR_BRANCH(63, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm)
-    else if MINIPFR_BRANCH(64, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm,nn)
+    else if ZA_PRIV_RFL_BRANCH(1,  a)
+    else if ZA_PRIV_RFL_BRANCH(2,  a,b)
+    else if ZA_PRIV_RFL_BRANCH(3,  a,b,c)
+    else if ZA_PRIV_RFL_BRANCH(4,  a,b,c,d)
+    else if ZA_PRIV_RFL_BRANCH(5,  a,b,c,d,e)
+    else if ZA_PRIV_RFL_BRANCH(6,  a,b,c,d,e,f)
+    else if ZA_PRIV_RFL_BRANCH(7,  a,b,c,d,e,f,g)
+    else if ZA_PRIV_RFL_BRANCH(8,  a,b,c,d,e,f,g,h)
+    else if ZA_PRIV_RFL_BRANCH(9,  a,b,c,d,e,f,g,h,i)
+    else if ZA_PRIV_RFL_BRANCH(10, a,b,c,d,e,f,g,h,i,j)
+    else if ZA_PRIV_RFL_BRANCH(11, a,b,c,d,e,f,g,h,i,j,k)
+    else if ZA_PRIV_RFL_BRANCH(12, a,b,c,d,e,f,g,h,i,j,k,l)
+    else if ZA_PRIV_RFL_BRANCH(13, a,b,c,d,e,f,g,h,i,j,k,l,m)
+    else if ZA_PRIV_RFL_BRANCH(14, a,b,c,d,e,f,g,h,i,j,k,l,m,n)
+    else if ZA_PRIV_RFL_BRANCH(15, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o)
+    else if ZA_PRIV_RFL_BRANCH(16, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p)
+    else if ZA_PRIV_RFL_BRANCH(17, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q)
+    else if ZA_PRIV_RFL_BRANCH(18, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r)
+    else if ZA_PRIV_RFL_BRANCH(19, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s)
+    else if ZA_PRIV_RFL_BRANCH(20, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t)
+    else if ZA_PRIV_RFL_BRANCH(21, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u)
+    else if ZA_PRIV_RFL_BRANCH(22, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v)
+    else if ZA_PRIV_RFL_BRANCH(23, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w)
+    else if ZA_PRIV_RFL_BRANCH(24, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x)
+    else if ZA_PRIV_RFL_BRANCH(25, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y)
+    else if ZA_PRIV_RFL_BRANCH(26, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z)
+    else if ZA_PRIV_RFL_BRANCH(27, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A)
+    else if ZA_PRIV_RFL_BRANCH(28, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B)
+    else if ZA_PRIV_RFL_BRANCH(29, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C)
+    else if ZA_PRIV_RFL_BRANCH(30, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D)
+    else if ZA_PRIV_RFL_BRANCH(31, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E)
+    else if ZA_PRIV_RFL_BRANCH(32, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F)
+    else if ZA_PRIV_RFL_BRANCH(33, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G)
+    else if ZA_PRIV_RFL_BRANCH(34, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H)
+    else if ZA_PRIV_RFL_BRANCH(35, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J)
+    else if ZA_PRIV_RFL_BRANCH(36, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K)
+    else if ZA_PRIV_RFL_BRANCH(37, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L)
+    else if ZA_PRIV_RFL_BRANCH(38, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M)
+    else if ZA_PRIV_RFL_BRANCH(39, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N)
+    else if ZA_PRIV_RFL_BRANCH(40, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O)
+    else if ZA_PRIV_RFL_BRANCH(41, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P)
+    else if ZA_PRIV_RFL_BRANCH(42, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q)
+    else if ZA_PRIV_RFL_BRANCH(43, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R)
+    else if ZA_PRIV_RFL_BRANCH(44, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S)
+    else if ZA_PRIV_RFL_BRANCH(45, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U)
+    else if ZA_PRIV_RFL_BRANCH(46, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V)
+    else if ZA_PRIV_RFL_BRANCH(47, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W)
+    else if ZA_PRIV_RFL_BRANCH(48, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X)
+    else if ZA_PRIV_RFL_BRANCH(49, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y)
+    else if ZA_PRIV_RFL_BRANCH(50, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z)
+    else if ZA_PRIV_RFL_BRANCH(51, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa)
+    else if ZA_PRIV_RFL_BRANCH(52, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb)
+    else if ZA_PRIV_RFL_BRANCH(53, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc)
+    else if ZA_PRIV_RFL_BRANCH(54, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd)
+    else if ZA_PRIV_RFL_BRANCH(55, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee)
+    else if ZA_PRIV_RFL_BRANCH(56, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff)
+    else if ZA_PRIV_RFL_BRANCH(57, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg)
+    else if ZA_PRIV_RFL_BRANCH(58, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh)
+    else if ZA_PRIV_RFL_BRANCH(59, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii)
+    else if ZA_PRIV_RFL_BRANCH(60, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj)
+    else if ZA_PRIV_RFL_BRANCH(61, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk)
+    else if ZA_PRIV_RFL_BRANCH(62, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll)
+    else if ZA_PRIV_RFL_BRANCH(63, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm)
+    else if ZA_PRIV_RFL_BRANCH(64, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,O,P,Q,R,S,U,V,W,X,Y,Z,aa,bb,cc,dd,ee,ff,gg,hh,ii,jj,kk,ll,mm,nn)
             // clang-format on
             else
         {
@@ -418,8 +413,8 @@ constexpr auto tieAsTuple(T&& obj)
 
     // NOLINTEND(readability-misleading-indentation)
 
-#undef MINIPFR_BRANCH
-#undef MINIPFR_RETURN_TIE_AS_TUPLE
+#undef ZA_PRIV_RFL_BRANCH
+#undef ZA_PRIV_RFL_RETURN_TIE_AS_TUPLE
 }
 
 
@@ -442,308 +437,30 @@ using FieldType = ZA_REMOVE_REFERENCE(decltype(getField<I>(declVal<T&>())));
     tieAsTuple(ZA_FORWARD(obj)).forEach(ZA_FORWARD(f));
 }
 
-} // namespace za::minipfr
-
-
-namespace za::minipfr::priv
-{
-////////////////////////////////////////////////////////////
-// All field names of `T` are extracted from a single `__PRETTY_FUNCTION__`,
-// shaped like:
-//
-//   Clang: `... Refs = <wImpl.value.f0, wImpl.value.f1, ...>]`
-//   GCC:   `... Refs = {wImpl<T>.Wrap<T>::value.T::f0, wImpl<T>.Wrap<T>::value.T::f1, ...}]`
-//
-// On GCC the type T is rendered inline (e.g. `Members<0, int>`, or
-// `{anonymous}::Foo` for types in an unnamed namespace) so segments may
-// contain `,`, `<`, `>`, `{`, and `}` at depth > 0. The parser counts both
-// `<>` and `{}` as balanced bracket pairs and only treats those characters
-// as separators or close markers at depth 0.
-//
-// On Clang the type and the `<...>` template arguments are elided from the NTTP printout, so
-// segments are simple identifier chains -- the bracket tracking is harmless there.
-////////////////////////////////////////////////////////////
-#if defined(__clang__)
-
-inline constexpr char kOpenMarker[] = "Refs = <";
-
-enum : char
-{
-    kCloseChar    = '>',
-    kNameMarkerCh = '.'
-};
-
-enum : SizeT
-{
-    kNameMarkerLen = 1u
-};
-
-#elif defined(__GNUC__)
-
-inline constexpr char kOpenMarker[] = "Refs = {";
-
-enum : char
-{
-    kCloseChar    = '}',
-    kNameMarkerCh = ':'
-};
-
-enum : SizeT
-{
-    kNameMarkerLen = 2u
-};
-
-#else
-    #error "MiniPFR field-name extraction is only supported on Clang and GCC"
-#endif
+} // namespace za::rfl
 
 
 ////////////////////////////////////////////////////////////
-#ifdef __clang__
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wundefined-var-template"
-#endif
-
-
+/// \file
+///
+/// \brief Compile-time reflection for aggregate types (core)
+///
+/// `za::rfl` is a small fork of Boost.PFR that does not depend on the
+/// C++ standard library. It supports aggregate types of up to 64
+/// fields. This header carries the structural core:
+///
+/// - `numFields<T>` -- number of public data members
+/// - `tieAsTuple(obj)` -- bind every field of `obj` into a tuple of refs
+/// - `getField<I>(obj)` -- fetch the `I`-th field by index
+/// - `forEachField(obj, fn)` -- invoke `fn` on each field in declaration order
+///
+/// Unions and C-style array types are explicitly rejected by the
+/// public reflection entry points.
+///
+/// For compile-time **field-name** extraction, include
+/// `Zancle/Reflection/RflNames.hpp` instead. Field names live in a
+/// separate header because they pull in `String/StringView` and
+/// `Container/Array`, which most users of structural reflection do not
+/// need.
+///
 ////////////////////////////////////////////////////////////
-// The single NTTP-heavy template. Carrying all field references into one
-// `__PRETTY_FUNCTION__` is the whole point; downstream parsing happens in
-// non-NTTP code so we do not pay mangling cost for the same pack three times.
-////////////////////////////////////////////////////////////
-template <auto&... Refs>
-[[nodiscard]] consteval const char* getRawSignature() noexcept
-{
-    return __PRETTY_FUNCTION__;
-}
-
-
-////////////////////////////////////////////////////////////
-// Loose scratch buffer used during parsing. Tightened to exact size in
-// `computeStoredFieldNames` so end users only pay for the actual bytes.
-////////////////////////////////////////////////////////////
-template <SizeT N>
-struct RawFieldNames
-{
-    Array<char, 4096u>            chars{};
-    Array<unsigned short, N + 1u> offsets{};
-    SizeT                         total{};
-};
-
-
-////////////////////////////////////////////////////////////
-// Walks the signature once, char-by-char, tracking `<>` depth so that commas
-// inside template arguments are not mistaken for segment separators. Within
-// each segment, the rightmost depth-0 occurrence of `kNameMarkerCh` (".",
-// "::") marks the start of the field name.
-//
-// `parseRawNames` is keyed on `N` only -- it is shared across every type that
-// has the same field count, so the heavy compile-time work happens once per
-// distinct field count rather than once per distinct type.
-////////////////////////////////////////////////////////////
-template <SizeT N>
-[[nodiscard]] consteval RawFieldNames<N> parseRawNames(const char* sig) noexcept
-{
-    RawFieldNames<N> r{};
-
-    if constexpr (N == 0u)
-    {
-        return r;
-    }
-    else
-    {
-        const char* p = sig;
-
-        // Locate the open marker at the start of the pack body.
-        while (true)
-        {
-            bool match = true;
-
-            for (SizeT k = 0u; kOpenMarker[k] != '\0'; ++k)
-            {
-                if (p[k] != kOpenMarker[k])
-                {
-                    match = false;
-                    break;
-                }
-            }
-
-            if (match)
-            {
-                p += sizeof(kOpenMarker) - 1u;
-                break;
-            }
-
-            ++p;
-        }
-
-        SizeT writeIdx = 0u;
-        for (SizeT i = 0u; i < N; ++i)
-        {
-            r.offsets[i] = static_cast<unsigned short>(writeIdx);
-
-            const char* nameStart = p;
-
-            // Hot path at depth 0: find the next segment terminator while
-            // tracking the rightmost name marker.
-            while (true)
-            {
-                const char c = *p;
-
-                if (c == ',' || c == kCloseChar)
-                    break;
-
-                if (c == kNameMarkerCh)
-                {
-                    nameStart = p + kNameMarkerLen;
-                    p         = nameStart;
-                    continue;
-                }
-
-                if (c == '<' || c == '{')
-                {
-                    // Depth > 0: skip to matching close. Both `<>` and `{}`
-                    // are tracked as balanced pairs because GCC may emit
-                    // either inside a segment (e.g. `<TmplArgs>` or
-                    // `{anonymous}` for unnamed-namespace types).
-                    int depth = 1;
-                    ++p;
-
-                    while (depth > 0)
-                    {
-                        const char d = *p;
-
-                        if (d == '<' || d == '{')
-                            ++depth;
-                        else if (d == '>' || d == '}')
-                            --depth;
-
-                        ++p;
-                    }
-
-                    continue;
-                }
-
-                ++p;
-            }
-
-            for (const char* c = nameStart; c != p; ++c)
-                r.chars[writeIdx++] = *c;
-
-            if (*p == ',')
-                p += 2u; // skip ", "
-        }
-
-        r.offsets[N] = static_cast<unsigned short>(writeIdx);
-        r.total      = writeIdx;
-
-        return r;
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-template <SizeT N, SizeT TotalChars>
-struct PackedFieldNames
-{
-    // The branch that returns `PackedFieldNames<0, 0>` for empty aggregates is
-    // discarded by `if constexpr`, but the type is still instantiated. Clamp
-    // the chars array size so `Array<char, 0>` (unsupported) never appears.
-    Array<char, (TotalChars == 0u ? 1u : TotalChars)> chars{};
-    Array<unsigned short, N + 1u>                     offsets{};
-};
-
-
-////////////////////////////////////////////////////////////
-template <typename T, SizeT... Is>
-[[nodiscard]] consteval auto computeStoredFieldNames(IndexSequence<Is...>) noexcept
-{
-    constexpr SizeT n = sizeof...(Is);
-
-    if constexpr (n == 0u)
-    {
-        return PackedFieldNames<0u, 0u>{};
-    }
-    else
-    {
-        // A constexpr lvalue tuple is required so its `.get<I>()` lvalue refs
-        // are valid as `auto&` non-type template arguments.
-        constexpr auto        fakeTuple = tieAsTuple(getFakeObject<T>());
-        constexpr const char* sig       = getRawSignature<fakeTuple.template get<Is>()...>();
-        constexpr auto        raw       = parseRawNames<n>(sig);
-
-        PackedFieldNames<n, raw.total> packed{};
-
-        for (SizeT i = 0u; i < raw.total; ++i)
-            packed.chars[i] = raw.chars[i];
-
-        for (SizeT i = 0u; i <= n; ++i)
-            packed.offsets[i] = raw.offsets[i];
-
-        return packed;
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-inline constexpr auto storedFieldNames = computeStoredFieldNames<T>(MakeIndexSequence<numFields<T>>{});
-
-
-////////////////////////////////////////////////////////////
-#ifdef __clang__
-    #pragma clang diagnostic pop
-#endif
-
-
-////////////////////////////////////////////////////////////
-template <SizeT>
-using AlwaysStringView = StringView;
-
-} // namespace za::minipfr::priv
-
-
-namespace za::minipfr
-{
-////////////////////////////////////////////////////////////
-template <typename T, SizeT I>
-constexpr StringView getFieldName() noexcept
-{
-    static_assert(!ZA_IS_UNION(T), "union reflection is forbidden");
-    static_assert(!ZA_IS_ARRAY(T), "impossible to extract name from C-style array");
-
-    constexpr const auto& packed = priv::storedFieldNames<T>;
-
-    return StringView{packed.chars.data() + packed.offsets[I],
-                      static_cast<SizeT>(packed.offsets[I + 1u] - packed.offsets[I])};
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr auto tieAsFieldNamesTuple() noexcept
-{
-    static_assert(!ZA_IS_UNION(T), "union reflection is forbidden");
-    static_assert(!ZA_IS_ARRAY(T), "impossible to extract name from C-style array");
-
-    return []<SizeT... Is>(IndexSequence<Is...>)
-    { return priv::Tuple<priv::AlwaysStringView<Is>...>{getFieldName<T, Is>()...}; }(MakeIndexSequence<numFields<T>>{});
-}
-
-} // namespace za::minipfr
-
-
-////////////////////////////////////////////////////////////
-namespace za::minipfr::priv
-{
-////////////////////////////////////////////////////////////
-// Sanity-check on include.
-struct FieldNameSelfCheck
-{
-    int  alpha;
-    char beta;
-};
-
-static_assert(getFieldName<FieldNameSelfCheck, 0u>() == StringView{"alpha"});
-static_assert(getFieldName<FieldNameSelfCheck, 1u>() == StringView{"beta"});
-
-} // namespace za::minipfr::priv

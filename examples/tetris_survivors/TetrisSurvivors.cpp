@@ -104,8 +104,6 @@
 #include "Zancle/Vocabulary/UniquePtr.hpp"
 #include "Zancle/Vocabulary/Variant.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Floor.hpp"
@@ -116,6 +114,7 @@
 
 #include "Zancle/Trait/IsConst.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Unreachable.hpp"

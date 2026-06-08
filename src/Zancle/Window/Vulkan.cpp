@@ -9,7 +9,7 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 #define VK_NO_PROTOTYPES
 #include <vulkan.h>

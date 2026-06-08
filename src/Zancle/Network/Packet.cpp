@@ -10,8 +10,7 @@
 #include "Zancle/String/String.hpp"
 #include "Zancle/String/Utf8String.hpp"
 
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-
+#include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"

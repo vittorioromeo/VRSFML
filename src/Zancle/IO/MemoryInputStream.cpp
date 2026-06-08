@@ -9,10 +9,9 @@
 
 #include "Zancle/Vocabulary/Optional.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/MinMax.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

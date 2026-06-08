@@ -10,11 +10,10 @@
 
 #include "Zancle/Geometry/Angle.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Constants.hpp"
 
+#include "Zancle/Base/Abort.hpp"
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/GetArraySize.hpp"
 
 

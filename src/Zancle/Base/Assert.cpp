@@ -5,14 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 #include "Zancle/Config.hpp" // IWYU pragma: keep
 
 #ifdef ZA_DEBUG
 
-    #include "Zancle/Diagnostic/Abort.hpp"
-    #include "Zancle/Diagnostic/StackTrace.hpp"
+    #include "Zancle/Base/Abort.hpp"
+    #include "Zancle/Base/StackTrace.hpp"
 
     #include <cstdio>
 
@@ -22,9 +22,10 @@ namespace za::priv
 ////////////////////////////////////////////////////////////
 void assertFailure(const char* code, const char* file, const int line)
 {
+    // NOLINTNEXTLINE(modernize-use-std-print)
     std::printf("\n[[ZANCLE ASSERTION FAILURE]]\n- %s:%d\n- ZA_ASSERT(%s);\n", file, line, code);
-    printStackTrace();
 
+    printStackTrace();
     za::abort();
 }
 

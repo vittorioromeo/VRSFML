@@ -18,10 +18,9 @@
 #include "Zancle/Fmt/FmtSpec.hpp"    // IWYU pragma: export
 #include "Zancle/Fmt/FmtString.hpp"  // IWYU pragma: export
 
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-
 #include "Zancle/Trait/IsSame.hpp"
 
+#include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/Memmove.hpp"
 #include "Zancle/Base/Memset.hpp"

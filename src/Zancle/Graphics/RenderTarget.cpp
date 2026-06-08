@@ -57,23 +57,22 @@
 #include "Zancle/Geometry/Rect2.hpp"
 
 #include "Zancle/Vocabulary/FunctionRef.hpp"
-#include "Zancle/Vocabulary/ScopeGuard.hpp"
 #include "Zancle/Vocabulary/Span.hpp"
-
-#include "Zancle/Diagnostic/Assert.hpp"
 
 #include "Zancle/Math/MinMax.hpp"
 
 #include "Zancle/Trait/IsSame.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/OffsetOf.hpp"
+#include "Zancle/Base/ScopeGuard.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 #ifdef ZA_OPENGL_ES
-    #include "Zancle/Diagnostic/Abort.hpp"
+    #include "Zancle/Base/Abort.hpp"
 #endif
 
 

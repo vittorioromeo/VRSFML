@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Window/Android/Activity.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 #include <android/log.h>
 

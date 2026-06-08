@@ -16,15 +16,14 @@
 #ifdef ZA_OPENGL_ES
     #include "Zancle/Err/Err.hpp"
 
-    #include "Zancle/Diagnostic/Abort.hpp"
+    #include "Zancle/Base/Abort.hpp"
 #else
     #include "Zancle/GLUtils/GLCheck.hpp"
     #include "Zancle/GLUtils/Glad.hpp"
 
-    #include "Zancle/Diagnostic/Assert.hpp"
-
     #include "Zancle/Math/MinMaxMacros.hpp"
 
+    #include "Zancle/Base/Assert.hpp"
     #include "Zancle/Base/Macros.hpp"
     #include "Zancle/Base/Memcpy.hpp"
 #endif

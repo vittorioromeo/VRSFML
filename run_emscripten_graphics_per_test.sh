@@ -2,7 +2,7 @@
 #
 # Run each Graphics test case in its own browser tab so that cumulative
 # SDL/Emscripten state never builds up across cases. Mirrors run_test.sh
-# but loops over individual `-tc=` filters.
+# but loops over individual `--test-case=` filters (substring match).
 #
 # Usage:
 #   ./run_emscripten_graphics_per_test.sh                      # run every TEST_CASE
@@ -82,13 +82,14 @@ for name in "${test_names[@]}"; do
     profile_dir="$profile_root/$idx"
     mkdir -p "$profile_dir"
 
-    # Pass the test-case filter as a single `-tc=<name>` token (per shell.html
-    # `Module.arguments` plumbing). Quote the name so spaces survive.
+    # Pass the test-case filter as a single `--test-case=<name>` token (per
+    # shell.html `Module.arguments` plumbing). Substring match, so the full
+    # exact name will pick out one case. Quote it so spaces survive.
     if emrun \
         --browser=chrome \
         --browser-args="--user-data-dir=$profile_dir --no-first-run --no-default-browser-check" \
         $emrun_kill_flag \
-        "$found" -- "-tc=$name"
+        "$found" -- "--test-case=$name"
     then
         passed+=("$name")
     else

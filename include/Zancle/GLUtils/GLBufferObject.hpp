@@ -12,7 +12,7 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za::priv

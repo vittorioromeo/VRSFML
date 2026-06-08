@@ -237,15 +237,18 @@ void printHelp()
     za::printErrLn("  --list-test-cases           List registered test cases and exit");
     za::printErrLn("  --verbose                   Report each test case before it runs");
     za::printErrLn("  --profile                   Print per-test wall-clock timings, sorted slowest-first");
-    za::printErrLn("  --reporters=<name>          Accepted for source compatibility (ignored)");
     za::printErrLn("  --help, -h                  Print this help");
+    za::printErrLn("");
+    za::printErrLn("Test-case filters are SUBSTRING matches against the test-case name");
+    za::printErrLn("(NOT glob or regex). Use `Sprite`, not `*Sprite*`.");
 }
 
 
 ////////////////////////////////////////////////////////////
-void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit)
+void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit, int& outExitCode)
 {
     outShouldExit = false;
+    outExitCode   = 0;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -255,6 +258,7 @@ void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit)
         {
             printHelp();
             outShouldExit = true;
+            outExitCode   = 0;
             return;
         }
 
@@ -294,9 +298,13 @@ void parseOptions(int argc, char** argv, ContextState& ctx, bool& outShouldExit)
             continue;
         }
 
-        // Silently ignore unrecognized flags so legacy invocations still work
-        // (the runner is invoked with `--reporters=console,progress` by the
-        // existing test infrastructure).
+        // Unrecognized: fail loudly. Typos in CI/scripts should surface here
+        // rather than silently producing a no-op run.
+        za::printErrLn("[tst] unrecognized option: {}", a);
+        za::printErrLn("[tst] run with --help for the list of accepted options");
+        outShouldExit = true;
+        outExitCode   = 2;
+        return;
     }
 }
 
@@ -490,9 +498,10 @@ int run(int argc, char** argv)
     detail::installFatalSignalHandlers();
 
     bool shouldExit = false;
-    detail::parseOptions(argc, argv, ctx, shouldExit);
+    int  exitCode   = 0;
+    detail::parseOptions(argc, argv, ctx, shouldExit, exitCode);
     if (shouldExit)
-        return 0;
+        return exitCode;
 
     if (ctx.listOnly)
     {

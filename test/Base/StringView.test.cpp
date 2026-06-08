@@ -390,7 +390,7 @@ TEST_CASE("[Base] Base/StringView.hpp")
 
                 {
                     const za::StringView xsv{
-                        "auto za::minipfr::priv::nameOfFieldImpl() [MsvcWorkaround = (anonymous namespace)::S1, "
+                        "auto za::rfl::priv::nameOfFieldImpl() [MsvcWorkaround = (anonymous namespace)::S1, "
                         "ptr = ClangWrapper<const int *>{&fakeObjectImpl.value.i}]"};
 
                     const za::StringView untilRuntime{"."};

@@ -8,12 +8,11 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Config.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Sqrt.hpp"
 
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

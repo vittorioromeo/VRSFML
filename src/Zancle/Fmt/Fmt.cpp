@@ -11,8 +11,7 @@
 
 #include "Zancle/String/String.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 #include <cstdio>

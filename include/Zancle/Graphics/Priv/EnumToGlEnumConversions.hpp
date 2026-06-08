@@ -13,8 +13,7 @@
 #include "Zancle/Graphics/PrimitiveType.hpp"
 #include "Zancle/Graphics/StencilMode.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/GetArraySize.hpp"
 
 

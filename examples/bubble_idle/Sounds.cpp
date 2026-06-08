@@ -1,6 +1,6 @@
 #include "Sounds.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 ////////////////////////////////////////////////////////////

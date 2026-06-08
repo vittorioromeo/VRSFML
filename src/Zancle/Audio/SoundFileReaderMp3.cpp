@@ -36,10 +36,9 @@
 
 #include "Zancle/IO/InputStream.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/MinMax.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Memcmp.hpp"
 

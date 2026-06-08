@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/StackTrace.hpp"
+#include "Zancle/Base/StackTrace.hpp"
 
 #include "Zancle/Config.hpp" // IWYU pragma: keep
 
@@ -15,8 +15,7 @@
         #include <emscripten.h>
     #else
 
-        #include "Zancle/Vocabulary/ScopeGuard.hpp"
-
+        #include "Zancle/Base/ScopeGuard.hpp"
         #include "Zancle/Base/UIntPtrT.hpp"
 
         #include <backtrace.h>
@@ -104,12 +103,12 @@ bool detectColorSupport()
 ////////////////////////////////////////////////////////////
 void errorCallback(void* /* data */, const char* msg, int errnum)
 {
-    std::fprintf(stderr, "  <stack trace error: %s", msg);
+    std::fprintf(stderr, "  <stack trace error: %s", msg); // NOLINT(modernize-use-std-print)
 
     if (errnum > 0)
-        std::fprintf(stderr, " (errno %d)", errnum);
+        std::fprintf(stderr, " (errno %d)", errnum); // NOLINT(modernize-use-std-print)
 
-    std::fprintf(stderr, ">\n");
+    std::fprintf(stderr, ">\n"); // NOLINT(modernize-use-std-print)
 }
 
 
@@ -163,6 +162,7 @@ int frameCallback(void* data, za::UIntPtrT pc, const char* filename, int lineno,
 
     const Palette& palette = getPalette();
 
+    // NOLINTNEXTLINE(modernize-use-std-print)
     std::fprintf(stderr,
                  "#%-2d %s0x%016llx%s  %s%s%s\n      %sat %s:%d%s\n",
                  index++,

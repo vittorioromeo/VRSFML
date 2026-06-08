@@ -56,8 +56,6 @@
 
 #include "Zancle/Vocabulary/Optional.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-
 #include "Zancle/Math/Clamp.hpp"
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Fabs.hpp"
@@ -68,6 +66,7 @@
 #include "Zancle/Math/Sin.hpp"
 #include "Zancle/Math/Tan.hpp"
 
+#include "Zancle/Base/Abort.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"

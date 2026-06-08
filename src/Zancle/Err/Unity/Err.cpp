@@ -12,9 +12,8 @@
 
 #include "Zancle/String/String.hpp"
 
-#include "Zancle/Diagnostic/StackTrace.hpp"
-
 #include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/StackTrace.hpp"
 #include "Zancle/Base/Strlen.hpp"
 
 #include <cstdio>

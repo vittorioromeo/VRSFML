@@ -45,9 +45,8 @@
 #include "Zancle/Vocabulary/PassKey.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
 
-#include "Zancle/Diagnostic/Abort.hpp"
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Abort.hpp"
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Macros.hpp"
 
 #include <SDL3/SDL_hints.h> // TODO P0: move to SDLLayer

@@ -15,12 +15,11 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/ClampMacro.hpp"
 #include "Zancle/Math/Lround.hpp"
 #include "Zancle/Math/SinCosLookup.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/RequireDesignatedInitializers.hpp"
 
 

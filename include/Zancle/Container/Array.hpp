@@ -6,10 +6,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

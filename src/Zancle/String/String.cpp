@@ -10,8 +10,7 @@
 
 #include "Zancle/Container/Priv/VectorUtils.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/Memmove.hpp"

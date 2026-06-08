@@ -15,7 +15,7 @@
 
 #include "Zancle/Lifetime/LifetimeDependant.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za

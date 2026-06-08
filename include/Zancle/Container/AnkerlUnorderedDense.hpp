@@ -50,7 +50,7 @@
 #    define ANKERL_UNORDERED_DENSE_EXPORT
 #endif
 
-#include "Zancle/Diagnostic/Abort.hpp"
+#include "Zancle/Base/Abort.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/Memset.hpp"
 #include "Zancle/Base/DeclVal.hpp"

@@ -8,14 +8,13 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Graphics/Export.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-
 #include "Zancle/Math/ClampMacro.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/MinMaxMacros.hpp"
 #include "Zancle/Math/Remainder.hpp"
 
+#include "Zancle/Base/Assert.hpp"
+#include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Unreachable.hpp"
 

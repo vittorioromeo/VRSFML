@@ -14,12 +14,11 @@
 
     #include "Zancle/String/String.hpp"
 
-    #include "Zancle/Diagnostic/Abort.hpp"
-    #include "Zancle/Diagnostic/Assert.hpp"
-    #include "Zancle/Diagnostic/StackTrace.hpp"
-
+    #include "Zancle/Base/Abort.hpp"
+    #include "Zancle/Base/Assert.hpp"
     #include "Zancle/Base/Launder.hpp"
     #include "Zancle/Base/PlacementNew.hpp"
+    #include "Zancle/Base/StackTrace.hpp"
     #include "Zancle/Base/Strcmp.hpp"
 
     #include <cctype>

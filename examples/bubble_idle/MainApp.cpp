@@ -60,10 +60,9 @@
 
 #include "Zancle/Vocabulary/UniquePtr.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/MinMax.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

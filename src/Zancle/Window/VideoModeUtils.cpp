@@ -20,7 +20,7 @@
 
 #include "Zancle/Vocabulary/Span.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 
 namespace za

@@ -20,13 +20,12 @@
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 #include "Zancle/Geometry/Rect2.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Ceil.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Floor.hpp"
 #include "Zancle/Math/MinMaxMacros.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Restrict.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

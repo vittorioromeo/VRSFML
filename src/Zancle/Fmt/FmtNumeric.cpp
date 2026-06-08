@@ -15,10 +15,9 @@
 #include "Zancle/String/ToChars.hpp"
 #include "Zancle/String/ToCharsRadix.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Trait/IsSame.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

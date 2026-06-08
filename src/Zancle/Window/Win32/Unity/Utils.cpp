@@ -12,8 +12,7 @@
 
 #include "Zancle/Container/BackInserter.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/WindowsHeader.hpp"
 
 #include <cwchar>

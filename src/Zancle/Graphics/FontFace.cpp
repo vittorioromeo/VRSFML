@@ -27,15 +27,14 @@
 
 #include "Zancle/Vocabulary/Optional.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
-#include "Zancle/Vocabulary/ScopeGuard.hpp"
 #include "Zancle/Vocabulary/UniquePtr.hpp"
-
-#include "Zancle/Diagnostic/Assert.hpp"
 
 #include "Zancle/Math/Floor.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/ScopeGuard.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 //

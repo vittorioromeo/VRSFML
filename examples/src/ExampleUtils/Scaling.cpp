@@ -24,11 +24,11 @@
 
 #include "Zancle/Vocabulary/Optional.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/Floor.hpp"
 #include "Zancle/Math/MinMax.hpp"
+
+#include "Zancle/Base/Assert.hpp"
 
 
 ////////////////////////////////////////////////////////////

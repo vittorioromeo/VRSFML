@@ -6,12 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Trait/IsTriviallyCopyable.hpp"
 #include "Zancle/Trait/IsTriviallyDestructible.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/FwdStdAlignedNewDelete.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/Memmove.hpp"

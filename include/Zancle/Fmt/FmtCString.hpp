@@ -10,9 +10,8 @@
 #include "Zancle/Fmt/FmtSink.hpp"
 #include "Zancle/Fmt/FmtSpec.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-
+#include "Zancle/Base/Assert.hpp"
+#include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/Strlen.hpp"
 
 

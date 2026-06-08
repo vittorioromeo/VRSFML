@@ -10,8 +10,7 @@
 
 #include "Zancle/Container/InPlaceVector.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
 
 

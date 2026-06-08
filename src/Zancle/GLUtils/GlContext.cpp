@@ -19,8 +19,7 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Strstr.hpp"
 
 

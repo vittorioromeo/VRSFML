@@ -6,11 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Trait/IsBaseOf.hpp"
 #include "Zancle/Trait/IsSame.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/TrivialAbi.hpp"
 
 

@@ -14,7 +14,7 @@
 
 #include "Zancle/Err/Err.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
+#include "Zancle/Base/Assert.hpp"
 
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_video.h>

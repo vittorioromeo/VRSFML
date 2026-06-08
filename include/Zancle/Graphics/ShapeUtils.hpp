@@ -10,9 +10,6 @@
 
 #include "Zancle/Geometry/Vec2.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-#include "Zancle/Diagnostic/AssertAndAssume.hpp"
-
 #include "Zancle/Math/Constants.hpp"
 #include "Zancle/Math/Fabs.hpp"
 #include "Zancle/Math/MinMaxMacros.hpp"
@@ -20,6 +17,8 @@
 #include "Zancle/Math/SinCosLookup.hpp"
 #include "Zancle/Math/Sqrt.hpp"
 
+#include "Zancle/Base/Assert.hpp"
+#include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/Restrict.hpp"
 #include "Zancle/Base/SizeT.hpp"
 

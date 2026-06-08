@@ -9,7 +9,7 @@
 
 #include "Zancle/Config.hpp" // IWYU pragma: keep
 
-#include "Zancle/Diagnostic/StackTrace.hpp"
+#include "Zancle/Base/StackTrace.hpp"
 
 #include <cstdio>
 
@@ -18,8 +18,9 @@
 #endif
 
 #ifndef ZA_OPTIONAL_USE_EXCEPTIONS
-    #include "Zancle/Diagnostic/Abort.hpp"
+    #include "Zancle/Base/Abort.hpp"
 #endif
+
 
 namespace za::priv
 {

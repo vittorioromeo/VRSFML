@@ -2,11 +2,10 @@
 
 #include "Zancle/Container/Vector.hpp"
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
 #include "Zancle/Trait/IsMemberPointer.hpp"
-#include "Zancle/Trait/MiniPFR.hpp"
+#include "Zancle/Reflection/Rfl.hpp"
 
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IndexSequence.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/MakeIndexSequence.hpp"
@@ -44,13 +43,13 @@ private:
     template <auto PM>
     [[nodiscard]] static consteval za::SizeT fieldIndexFromPM()
     {
-        // const auto& obj = minipfr::priv::getFakeObject<T>();
+        // const auto& obj = za::rfl::priv::getFakeObject<T>();
         constexpr T obj{};
 
         auto result = static_cast<za::SizeT>(-1);
 
         (...,
-         ((static_cast<const void*>(&(za::minipfr::getField<Is>(obj))) == static_cast<const void*>(&(obj.*PM)))
+         ((static_cast<const void*>(&(za::rfl::getField<Is>(obj))) == static_cast<const void*>(&(obj.*PM)))
               ? (result = Is)
               : 0));
 
@@ -79,7 +78,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void pushBack(const T& aos)
     {
-        emplaceBack(za::minipfr::getField<Is>(aos)...);
+        emplaceBack(za::rfl::getField<Is>(aos)...);
     }
 
     ////////////////////////////////////////////////////////////
@@ -255,9 +254,9 @@ template <za::SizeT... Is, typename T>
 class SoAHelper<za::IndexSequence<Is...>, T>
 {
 public:
-    using Type = SoA<T, za::IndexSequence<Is...>, za::minipfr::FieldType<Is, T>...>;
+    using Type = SoA<T, za::IndexSequence<Is...>, za::rfl::FieldType<Is, T>...>;
 };
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-using SoAFor = typename SoAHelper<ZA_MAKE_INDEX_SEQUENCE(za::minipfr::numFields<T>), T>::Type;
+using SoAFor = typename SoAHelper<ZA_MAKE_INDEX_SEQUENCE(za::rfl::numFields<T>), T>::Type;

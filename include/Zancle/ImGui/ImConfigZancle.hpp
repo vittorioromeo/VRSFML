@@ -30,8 +30,7 @@
 
 #include "Zancle/Geometry/Priv/Vec2Base.hpp" // IWYU pragma: keep
 
-#include "Zancle/Diagnostic/Assert.hpp"
-
+#include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IntTypes.hpp" // IWYU pragma: keep
 
 
