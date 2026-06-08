@@ -329,7 +329,7 @@ constexpr auto tieAsTuple(T&& obj)
     };
 
 #define ZA_PRIV_RFL_RETURN_TIE_AS_TUPLE(N, ...) \
-    auto& [__VA_ARGS__] = obj;              \
+    auto& [__VA_ARGS__] = obj;                  \
     return priv::makeRefTuple(__VA_ARGS__)
 
     // clang-format off

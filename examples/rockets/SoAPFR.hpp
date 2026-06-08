@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Zancle/Reflection/Rfl.hpp"
+
 #include "Zancle/Container/Vector.hpp"
 
 #include "Zancle/Trait/IsMemberPointer.hpp"
-#include "Zancle/Reflection/Rfl.hpp"
 
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/IndexSequence.hpp"

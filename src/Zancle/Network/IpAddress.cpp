@@ -101,13 +101,12 @@ za::Optional<IpAddress> IpAddress::getPublicAddress(Time timeout)
 {
     // The trick here is more complicated, because the only way
     // to get our public IP address is to get it from a distant computer.
-    // Here we get the web page from http://www.sfml-dev.org/ip-provider.php
+    // Here we get the web page from http://vittorioromeo.com/ip.php
     // and parse the result to extract our IP address
     // (not very hard: the web page contains only our IP address).
+    Http server("vittorioromeo.com");
 
-    Http server("www.sfml-dev.org");
-
-    const Http::Request  request("/ip-provider.php", Http::Request::Method::Get);
+    const Http::Request  request("/ip.php", Http::Request::Method::Get);
     const Http::Response page = server.sendRequest(request, timeout);
 
     const Http::Response::Status status = page.getStatus();
