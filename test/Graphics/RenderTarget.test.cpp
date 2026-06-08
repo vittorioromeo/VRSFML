@@ -36,7 +36,7 @@ private:
 
 TEST_CASE("[Graphics] za::RenderTarget")
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Type traits")
     {

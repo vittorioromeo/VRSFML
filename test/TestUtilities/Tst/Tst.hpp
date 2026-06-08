@@ -191,6 +191,71 @@ void noteNothrowSuccess() noexcept;
 
 
 ////////////////////////////////////////////////////////////
+// TST_CASE_SHARED
+//
+// Construct an object once per TEST_CASE and share it across all SECTION
+// leaves. The expression is evaluated only on the first body invocation;
+// subsequent invocations (re-entries from sibling SECTIONs) return a
+// reference to the same instance. The runner destroys shared objects in
+// reverse construction order after the last SECTION finishes, before the
+// next TEST_CASE begins.
+//
+// Usage:
+//   TEST_CASE("foo")
+//   {
+//       auto& ctx  = TST_CASE_SHARED(za::GraphicsContext::create().value());
+//       auto& font = TST_CASE_SHARED(za::Font::openFromFile("tuffy.ttf").value());
+//       SECTION("a") { /* ctx, font live here */ }
+//       SECTION("b") { /* same instances */ }
+//   } // <- font, then ctx, destroyed by the runner
+//
+////////////////////////////////////////////////////////////
+
+
+namespace tst::detail
+{
+////////////////////////////////////////////////////////////
+/// \brief Free-function gateway into the runner's per-TEST_CASE shared-slot table
+///
+/// Implemented in `Runner.cpp` so this header doesn't have to expose
+/// `ContextState`. The template wrapper below packs a factory + a
+/// type-erased destructor and routes them through here.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool  isCurrentCaseSharedSlotPopulated() noexcept;
+void                registerCurrentCaseSharedSlot(void* obj, void (*destroyer)(void*) noexcept);
+[[nodiscard]] void* takeCurrentCaseSharedSlot() noexcept;
+
+
+////////////////////////////////////////////////////////////
+/// \brief Acquire (or construct on first use) a TEST_CASE-scoped shared object
+///
+/// Identified by source order within the body -- the runner advances an
+/// internal cursor on each call and resets it at the start of every body
+/// invocation. Two consecutive `TST_CASE_SHARED` calls therefore map to
+/// two consecutive slots, deterministic across re-entries.
+///
+////////////////////////////////////////////////////////////
+template <typename F>
+[[nodiscard]] auto& acquireCaseSharedSlot(F&& factory)
+{
+    using T = decltype(factory());
+
+    if (!isCurrentCaseSharedSlotPopulated())
+    {
+        auto* p = new T(factory());
+        registerCurrentCaseSharedSlot(p, [](void* x) noexcept { delete static_cast<T*>(x); });
+    }
+
+    return *static_cast<T*>(takeCurrentCaseSharedSlot());
+}
+
+} // namespace tst::detail
+
+#define TST_CASE_SHARED(...) (::tst::detail::acquireCaseSharedSlot([&] { return __VA_ARGS__; }))
+
+
+////////////////////////////////////////////////////////////
 // TEMPLATE_TEST_CASE
 ////////////////////////////////////////////////////////////
 namespace tst::detail

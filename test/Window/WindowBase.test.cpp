@@ -37,7 +37,7 @@ constexpr const T& asConst(T& t) noexcept
 
 TEST_CASE("[Window] za::WindowBase" * tst::skip(skipDisplayTests))
 {
-    auto windowContext = za::WindowContext::create().value();
+    [[maybe_unused]] auto& windowContext = TST_CASE_SHARED(za::WindowContext::create().value());
 
     SECTION("Type traits")
     {

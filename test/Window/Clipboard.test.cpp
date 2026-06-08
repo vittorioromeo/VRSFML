@@ -13,7 +13,7 @@
 #ifndef ZA_SYSTEM_EMSCRIPTEN // TODO P1: clipboard not implemented for emscripten
 TEST_CASE("[Window] za::Clipboard" * tst::skip(skipDisplayTests))
 {
-    auto windowContext = za::WindowContext::create().value();
+    [[maybe_unused]] auto& windowContext = TST_CASE_SHARED(za::WindowContext::create().value());
 
     // Capture current clipboard state
     const auto currentClipboard = za::Clipboard::getString();

@@ -27,7 +27,7 @@
 
 TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Type traits")
     {

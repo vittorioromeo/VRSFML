@@ -29,60 +29,16 @@
 #include "Zancle/Graphics/VertexBuffer.hpp"
 #include "Zancle/Graphics/View.hpp"
 
-#include "Zancle/Window/ContextSettings.hpp"
 #include "Zancle/Window/WindowContext.hpp"
-
-#include "Zancle/Err/Err.hpp"
 
 #include "Zancle/Concurrency/Thread.hpp"
 
 #include "Zancle/Geometry/Priv/Vec2Base.hpp"
 
 
-// Mirrors the trick in test/Window/Context.test.cpp: forces visibility of
-// `priv::GlContext`'s protected `getId()` so a test-only `TestContext`
-// helper can spin up additional GL contexts and switch between them.
-// `WindowContext` already declares `friend TestContext;` (a forward-decl in
-// the global namespace) for `createGlContext` access.
-#define protected public
-#include "../src/Zancle/GLUtils/GlContext.hpp"
-#undef protected
-
-
-////////////////////////////////////////////////////////////
-// Test-only helper that owns a fresh GL context distinct from the shared
-// graphics context. Used to build true multi-context regression coverage.
-struct TestContext
-{
-    decltype(za::WindowContext::createGlContext(za::ContextSettings{})) glContext;
-
-    TestContext() : glContext(za::WindowContext::createGlContext(za::ContextSettings{}))
-    {
-        if (!za::WindowContext::setActiveThreadLocalGlContext(*glContext, true))
-            za::priv::errMsg("Failed to activate TestContext on construction");
-    }
-
-    ~TestContext()
-    {
-        if (glContext != nullptr && !za::WindowContext::setActiveThreadLocalGlContext(*glContext, false))
-            za::priv::errMsg("Failed to deactivate TestContext on destruction");
-    }
-
-    TestContext(const TestContext&)                = delete;
-    TestContext& operator=(const TestContext&)     = delete;
-    TestContext(TestContext&&) noexcept            = default;
-    TestContext& operator=(TestContext&&) noexcept = default;
-
-    [[nodiscard]] bool setActive(bool active) const
-    {
-        return za::WindowContext::setActiveThreadLocalGlContext(*glContext, active);
-    }
-
-    [[nodiscard]] unsigned int getId() const
-    {
-        return glContext->getId();
-    }
-};
+// Shared multi-context test helper, used by both this file and
+// `test/Window/Context.test.cpp`.
+#include "TestContext.hpp"
 
 
 namespace
@@ -145,7 +101,7 @@ void main()
 
 TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Stencil Tests")
     {

@@ -17,7 +17,7 @@
 
 TEST_CASE("[Graphics] za::TextureAtlasUtils" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     const auto makeColoredTexture = [&](za::Color color)
     { return za::Texture::loadFromImage(za::Image::create({64u, 64u}, color).value()).value(); };

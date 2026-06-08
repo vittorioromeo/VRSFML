@@ -122,7 +122,7 @@ TEST_CASE("[Graphics] MultiContext" * tst::skip(skipDisplayTests))
     za::Vertex   vertices[]{{.position = {0.f, 0.f}}};
     unsigned int indices[] = {0};
 
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Test")
     {

@@ -37,7 +37,7 @@
 
 TEST_CASE("[Graphics] za::Text" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Type traits")
     {
@@ -49,7 +49,7 @@ TEST_CASE("[Graphics] za::Text" * tst::skip(skipDisplayTests))
         STATIC_CHECK(ZA_IS_NOTHROW_MOVE_ASSIGNABLE(za::Text));
     }
 
-    const auto font = za::Font::openFromFile("tuffy.ttf").value();
+    const auto& font = TST_CASE_SHARED(za::Font::openFromFile("tuffy.ttf").value());
 
     SECTION("Construction")
     {

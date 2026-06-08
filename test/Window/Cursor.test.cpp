@@ -18,7 +18,7 @@
 
 TEST_CASE("[Window] za::Cursor" * tst::skip(skipDisplayTests))
 {
-    auto windowContext = za::WindowContext::create().value();
+    [[maybe_unused]] auto& windowContext = TST_CASE_SHARED(za::WindowContext::create().value());
 
     SECTION("Type traits")
     {

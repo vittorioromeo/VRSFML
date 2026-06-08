@@ -18,7 +18,7 @@ TEST_CASE("[Window] za::Joystick")
     // no joysticks will be detected. This is how we can ensure these
     // tests are portable and reliable.
 
-    auto windowContext = za::WindowContext::create().value();
+    [[maybe_unused]] auto& windowContext = TST_CASE_SHARED(za::WindowContext::create().value());
 
     for (unsigned int joystickId = 0u; joystickId < za::Joystick::MaxCount; ++joystickId)
     {

@@ -18,7 +18,7 @@
 
 TEST_CASE("[Graphics] za::GlyphMapping" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
     auto fontFace        = za::FontFace::openFromFile("tuffy.ttf").value();
     auto atlas           = za::TextureAtlas(za::Texture::create({1024u, 1024u}, {.smooth = true}).value());
 

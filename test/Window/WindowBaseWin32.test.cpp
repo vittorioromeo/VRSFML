@@ -76,7 +76,7 @@ private:
 
 TEST_CASE("[Window] za::WindowBase (Win32)")
 {
-    auto windowContext = za::WindowContext::create().value();
+    [[maybe_unused]] auto& windowContext = TST_CASE_SHARED(za::WindowContext::create().value());
 
     za::Optional<NativeWindow>   nativeWindow(za::inPlace);
     za::Optional<za::WindowBase> windowBase;

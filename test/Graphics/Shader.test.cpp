@@ -151,7 +151,7 @@ constexpr bool skipShaderFullTest = true;
 
 TEST_CASE("[Graphics] za::Shader" * tst::skip(skipShaderFullTest))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Type traits")
     {

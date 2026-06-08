@@ -96,7 +96,7 @@ void fillPattern(unsigned char* const dst, const za::SizeT size, const unsigned 
 
 TEST_CASE("[GLUtils] za::GLPersistentRingBuffer" * tst::skip(skipDisplayTests))
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Type traits")
     {

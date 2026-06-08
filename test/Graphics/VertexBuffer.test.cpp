@@ -21,7 +21,7 @@
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
 TEST_CASE("[Graphics] za::VertexBuffer", "[.display]")
 {
-    auto graphicsContext = za::GraphicsContext::create().value();
+    [[maybe_unused]] auto& graphicsContext = TST_CASE_SHARED(za::GraphicsContext::create().value());
 
     SECTION("Type traits")
     {

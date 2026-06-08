@@ -56,6 +56,28 @@ ContextState& contextState() noexcept
 
 
 ////////////////////////////////////////////////////////////
+bool isCurrentCaseSharedSlotPopulated() noexcept
+{
+    auto& ctx = contextState();
+    return ctx.sharedSlotsCursor < ctx.sharedSlots.size();
+}
+
+
+////////////////////////////////////////////////////////////
+void registerCurrentCaseSharedSlot(void* obj, void (*destroyer)(void*) noexcept)
+{
+    contextState().sharedSlots.emplaceBack(obj, destroyer);
+}
+
+
+////////////////////////////////////////////////////////////
+void* takeCurrentCaseSharedSlot() noexcept
+{
+    auto& ctx = contextState();
+    return ctx.sharedSlots[ctx.sharedSlotsCursor++].obj;
+}
+
+
 namespace
 {
 ////////////////////////////////////////////////////////////
@@ -65,9 +87,11 @@ bool startsWith(const char* s, const char* prefix) noexcept
     {
         if (*s != *prefix)
             return false;
+
         ++s;
         ++prefix;
     }
+
     return true;
 }
 
@@ -325,11 +349,13 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
     bool firstFailureFromCatch = false;
 
     ctx.traversal.resetForTestCase();
+    ctx.sharedSlots.clear();
 
     do
     {
         ctx.traversal.resetForRun();
         ctx.infoStack.clear();
+        ctx.sharedSlotsCursor = 0u;
 
         try
         {
@@ -352,6 +378,15 @@ void runSingleTestCase(const TestCaseInfo& tc, ContextState& ctx)
             za::printErrLn("{}:{}: FAILED: uncaught exception in {}", tc.file, tc.line, runnerNonNull(tc.name));
         }
     } while (ctx.traversal.advance());
+
+    // Destroy TEST_CASE-scoped shared objects in reverse construction order.
+    while (!ctx.sharedSlots.empty())
+    {
+        const auto& slot = ctx.sharedSlots.back();
+        slot.destroyer(slot.obj);
+
+        ctx.sharedSlots.popBack();
+    }
 
     if (ctx.currentTestFailed)
     {

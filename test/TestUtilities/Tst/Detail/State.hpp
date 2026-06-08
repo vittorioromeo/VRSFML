@@ -148,6 +148,23 @@ struct ContextState
     };
 
     za::Vector<ProfileEntry> profileEntries;
+
+    // Per-TEST_CASE shared storage. Populated on the *first* body
+    // invocation via `TST_CASE_SHARED(...)`; subsequent invocations
+    // (re-entries from different SECTION leaves) reuse the existing
+    // entries. The runner clears the vector at the start of each
+    // TEST_CASE and destroys entries in reverse order at the end --
+    // giving each shared resource an explicit, deterministic lifetime
+    // that begins before the first SECTION runs and ends after the
+    // last one finishes.
+    struct SharedSlot
+    {
+        void* obj;
+        void (*destroyer)(void*) noexcept;
+    };
+
+    za::Vector<SharedSlot> sharedSlots;
+    za::SizeT              sharedSlotsCursor = 0u;
 };
 
 
