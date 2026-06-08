@@ -56,6 +56,18 @@
 
 
 ////////////////////////////////////////////////////////////
+// Monotonic save-format version, independent of the game's marketing
+// `Version`. Bump this by one whenever a backward-incompatible change is
+// made to the playthrough serialization (a renamed/removed field, changed
+// units or semantics, etc). On load, any save carrying a lower value --
+// or none at all, which reads back as `0` -- is rejected and a fresh
+// playthrough is started, rather than risking a crash or silent corruption
+// from misinterpreted data.
+////////////////////////////////////////////////////////////
+constexpr unsigned int currentSaveFormatVersion = 1u;
+
+
+////////////////////////////////////////////////////////////
 // Map `Serialize == true` (writing) to `cJSON*` and `Serialize == false`
 // (reading) to `const cJSON*`. Hand-rolled to avoid `<type_traits>`.
 ////////////////////////////////////////////////////////////
@@ -1062,11 +1074,13 @@ DEFINE_TWO_WAY_SERIALIZER(Playthrough)
     {
         auto version = currentVersion;
         writeField(j, "version", version);
+        writeField(j, "saveFormatVersion", currentSaveFormatVersion);
     }
     else
     {
         Version version{};
         readField(j, "version", version);
+        // `saveFormatVersion` is validated up front in `loadPlaythroughFromFile`.
     }
 
     FIELD(seed);
@@ -1427,6 +1441,26 @@ za::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* fil
         playthrough = Playthrough{};
         return "Your save is from an older version with an incompatible\n"
                "format and could not be loaded. A fresh playthrough has been started.";
+    }
+
+    // Reject saves from an older, incompatible serialization format. A missing
+    // field reads back as `0`, so every pre-versioning save is rejected too.
+    // This must happen before `fromJsonValue` so stale data is never trusted.
+    unsigned int saveFormatVersion = 0u;
+    readField(parsed, "saveFormatVersion", saveFormatVersion);
+
+    if (saveFormatVersion < currentSaveFormatVersion)
+    {
+        za::printLn("Playthrough '{}' has save-format version {} (current is {}) and cannot be loaded.",
+                    filename,
+                    saveFormatVersion,
+                    currentSaveFormatVersion);
+
+        playthrough = Playthrough{};
+
+        return "Your save could not be loaded because it is from an\n"
+               "unsupported version or is corrupted. A fresh playthrough\n"
+               "has been started.";
     }
 
     fromJsonValue(parsed, playthrough);
