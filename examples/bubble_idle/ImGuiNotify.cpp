@@ -330,11 +330,11 @@ void RenderNotifications(const float                paddingY,
         // Generate new unique name for this toast
         char windowName[50];
 #ifdef _WIN32
-        sprintf_s(windowName, "##TOAST%d", (int)i);
+        sprintf_s(windowName, "##TOAST%d", static_cast<int>(i));
 #elif defined(__linux__) || defined(__EMSCRIPTEN__)
         std::sprintf(windowName, "##TOAST%d", static_cast<int>(i));
 #elif defined(__APPLE__)
-        std::snprintf(windowName, 50, "##TOAST%d", (int)i);
+        std::snprintf(windowName, 50, "##TOAST%d", static_cast<int>(i));
 #else
         throw "Unsupported platform";
 #endif

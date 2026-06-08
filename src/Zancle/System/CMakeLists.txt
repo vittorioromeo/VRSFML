@@ -17,6 +17,7 @@ foreach(mod ${UTILITY_MODULES})
     # Files under any `Unity/` subdirectory are unity-build bundles included
     # by sibling `*Unity.cpp` host translation units, not compiled standalone.
     list(FILTER MOD_SRC EXCLUDE REGEX "/Unity/")
+    list(FILTER MOD_SRC EXCLUDE REGEX "/Android/")
 
     list(APPEND SRC ${MOD_SRC})
 endforeach()

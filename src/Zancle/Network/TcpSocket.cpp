@@ -129,7 +129,7 @@ constexpr int flags = 0;
 
         if (systemStore == nullptr)
         {
-            priv::errMsg("Failed to open Windows certificate store: {}", getErrorString(GetLastError()));
+            za::priv::errMsg("Failed to open Windows certificate store: {}", getErrorString(GetLastError()));
             return false;
         }
 
@@ -164,7 +164,7 @@ constexpr int flags = 0;
         }
 
         if (!CertCloseStore(systemStore, 0))
-            priv::errMsg("Failed to close Windows certificate store: {}", getErrorString(GetLastError()));
+            za::priv::errMsg("Failed to close Windows certificate store: {}", getErrorString(GetLastError()));
 
         return true;
     };

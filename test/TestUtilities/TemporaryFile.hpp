@@ -70,7 +70,7 @@ public:
     /// Create a temporary file containing \a contents.
     explicit TemporaryFile(za::StringView contents) : m_path(getTemporaryFilePath())
     {
-        auto optFile = OutFile::open(m_path);
+        auto optFile = OutFile::open(m_path, FileOpenMode::bin);
         ZA_ASSERT(optFile.hasValue() && "Failed to open temporary file for writing");
 
         [[maybe_unused]] const bool wrote = optFile->write(contents.data(), contents.size());
