@@ -9,6 +9,7 @@
 
 #include "Zancle/Config.hpp"
 
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsEnum.hpp"
 #include "Zancle/Trait/IsFloatingPoint.hpp"
 #include "Zancle/Trait/IsIntegral.hpp"
@@ -297,10 +298,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    enum : bool
-    {
-        enableTrivialRelocation = true
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION;
 
 
     ////////////////////////////////////////////////////////////

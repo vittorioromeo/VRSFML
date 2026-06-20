@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
 #include "Zancle/Base/Assert.hpp"
@@ -29,10 +30,7 @@ template <typename T, SizeT N>
 struct [[nodiscard]] Array
 {
     ////////////////////////////////////////////////////////////
-    enum : bool
-    {
-        enableTrivialRelocation = ZA_IS_TRIVIALLY_RELOCATABLE(T)
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION_IF(ZA_IS_TRIVIALLY_RELOCATABLE(T));
 
 
     ////////////////////////////////////////////////////////////

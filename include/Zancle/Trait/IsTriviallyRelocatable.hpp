@@ -89,8 +89,11 @@ inline constexpr bool isTriviallyRelocatable = ZA_IS_TRIVIALLY_RELOCATABLE(T);
 /// - it is trivially copyable
 /// - it opts in by declaring an `enum : bool { enableTrivialRelocation = true }`
 ///
-/// User code can opt in by adding the `enableTrivialRelocation` enum
-/// to a class, e.g. when the class manages a heap buffer in a way
-/// that survives a `memcpy` (`Vector` itself is the canonical example).
+/// User code can opt in via the `ZA_ENABLE_TRIVIAL_RELOCATION` /
+/// `ZA_ENABLE_TRIVIAL_RELOCATION_IF(...)` macros (in
+/// `Zancle/Trait/EnableTrivialRelocation.hpp`), e.g. when the class
+/// manages a heap buffer in a way that survives a `memcpy` (`Vector`
+/// itself is the canonical example), or to propagate relocatability
+/// from an element type.
 ///
 ////////////////////////////////////////////////////////////

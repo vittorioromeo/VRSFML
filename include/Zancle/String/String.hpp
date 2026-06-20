@@ -10,6 +10,7 @@
 
 #include "Zancle/String/StringView.hpp"
 
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsSame.hpp"
 
 #include "Zancle/Base/Assert.hpp"
@@ -36,10 +37,7 @@ class [[nodiscard]] String : public FmtAppendMixin
 {
 public:
     ////////////////////////////////////////////////////////////
-    enum : bool
-    {
-        enableTrivialRelocation = true
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION;
 
 
     ////////////////////////////////////////////////////////////

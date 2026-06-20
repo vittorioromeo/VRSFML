@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
+
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Ctzll.hpp"
 #include "Zancle/Base/IntTypes.hpp"
@@ -59,10 +61,7 @@ class [[nodiscard]] Bitset
 
 public:
     ////////////////////////////////////////////////////////////
-    enum : bool
-    {
-        enableTrivialRelocation = true
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION;
 
 
     ////////////////////////////////////////////////////////////

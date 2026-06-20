@@ -10,6 +10,7 @@
 
 #include "Zancle/Math/MinMaxMacros.hpp"
 
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 #include "Zancle/Base/Assert.hpp"
@@ -95,9 +96,12 @@ private:
     template <typename... Ts>
     [[gnu::cold, gnu::noinline, gnu::returns_nonnull]] TItem* growAndEmplace(const SizeT insertIndex, Ts&&... xs)
     {
-        const auto oldSize               = size();
-        const auto currentCapacity       = capacity();
-        const auto geometricGrowthTarget = currentCapacity + (currentCapacity / 2u);
+        const auto oldSize         = size();
+        const auto currentCapacity = capacity();
+
+        // Floor the first allocation at 4 so that growing from empty does not
+        // allocate once per element for the first few pushes (1, 2, 3, 4...).
+        const auto geometricGrowthTarget = currentCapacity == 0u ? SizeT{4u} : currentCapacity + (currentCapacity / 2u);
         const auto finalNewCapacity      = ZA_MAX(oldSize + 1, geometricGrowthTarget);
 
         auto* newData = priv::VectorUtils::allocate<TItem>(finalNewCapacity);
@@ -124,10 +128,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    enum : bool
-    {
-        enableTrivialRelocation = true
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION;
 
 
     ////////////////////////////////////////////////////////////
@@ -303,6 +304,12 @@ public:
     /// element). When shrinking, trailing elements are destroyed; capacity is
     /// unchanged.
     ///
+    /// \warning When growing, `args...` must not reference an element of
+    ///          `*this`: the growth reallocates and frees the current
+    ///          buffer before constructing the new elements, so such a
+    ///          reference would dangle (e.g. `v.resize(v.size() * 2, v[0])`
+    ///          is undefined). Debug-asserted.
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const SizeT newSize, auto&&... args)
     {
@@ -310,6 +317,9 @@ public:
 
         if (newSize > oldSize)
         {
+            // See \warning above: fill args must not alias existing elements.
+            ZA_ASSERT((priv::VectorUtils::isOutsideStorage(m_data, m_endSize, &args) && ...));
+
             reserve(newSize);
 
             for (auto* p = m_data + oldSize; p != m_data + newSize; ++p)
@@ -519,10 +529,12 @@ public:
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBackRange(const TItem* const ptr, const SizeT count) noexcept
     {
         ZA_ASSERT(size() + count <= capacity());
-        ZA_ASSERT(m_data != nullptr);
-        ZA_ASSERT(m_endSize != nullptr);
+        ZA_ASSERT(count == 0u || m_data != nullptr); // empty appends are valid on an unallocated vector
+        ZA_ASSERT(count == 0u || m_endSize != nullptr);
 
-        priv::VectorUtils::copyRange(m_endSize, ptr, ptr + count);
+        if (count != 0u) // avoid `memcpy(null, null, 0)` (UB) when appending nothing
+            priv::VectorUtils::copyRange(m_endSize, ptr, ptr + count);
+
         m_endSize += count;
     }
 

@@ -10,6 +10,7 @@
 
 #include "Zancle/Trait/Conditional.hpp"
 #include "Zancle/Trait/CopyCV.hpp"
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsReference.hpp"
 #include "Zancle/Trait/IsRvalueReference.hpp"
 #include "Zancle/Trait/IsSame.hpp"
@@ -149,10 +150,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    enum : bool
-    {
-        enableTrivialRelocation = (ZA_IS_TRIVIALLY_RELOCATABLE(Alternatives) && ...)
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION_IF(ZA_IS_TRIVIALLY_RELOCATABLE(Alternatives) && ...);
 
 
     ////////////////////////////////////////////////////////////

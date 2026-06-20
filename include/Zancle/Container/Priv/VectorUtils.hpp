@@ -268,6 +268,22 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief `true` iff `p` lies outside the storage range `[begin, end)`
+///
+/// Debug-only helper used by `resize` to assert that fill arguments do
+/// not alias an element of the container being resized (which would
+/// dangle once a reallocation frees the old buffer).
+///
+////////////////////////////////////////////////////////////
+template <typename T, typename U>
+[[nodiscard, gnu::always_inline]] inline bool isOutsideStorage(const T* const begin, const T* const end, const U* const p) noexcept
+{
+    const void* const pv = static_cast<const void*>(p);
+    return pv < static_cast<const void*>(begin) || pv >= static_cast<const void*>(end);
+}
+
+
+////////////////////////////////////////////////////////////
 #define ZA_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(vectorType)                                                                    \
                                                                                                                                \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr TItem& operator[](const SizeT i) noexcept             \
@@ -377,15 +393,16 @@ template <typename T>
                                                                                                                                \
     [[gnu::always_inline]] constexpr void assignRange(const TItem* const b, const TItem* const e)                              \
     {                                                                                                                          \
-        ZA_ASSERT(b != nullptr);                                                                                               \
-        ZA_ASSERT(e != nullptr);                                                                                               \
         ZA_ASSERT(b <= e);                                                                                                     \
+        ZA_ASSERT(b == e || (b != nullptr && e != nullptr)); /* only a non-empty range must be non-null */                     \
                                                                                                                                \
         const auto count = static_cast<SizeT>(e - b);                                                                          \
                                                                                                                                \
         clear();                                                                                                               \
         reserve(count);                                                                                                        \
-        priv::VectorUtils::copyRange(data(), b, e);                                                                            \
+                                                                                                                               \
+        if (count != 0u) /* avoid `memcpy(null, null, 0)` (UB) on the empty-range path */                                      \
+            priv::VectorUtils::copyRange(data(), b, e);                                                                        \
                                                                                                                                \
         unsafeSetSize(count);                                                                                                  \
     }                                                                                                                          \

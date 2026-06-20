@@ -129,7 +129,17 @@ TEST_CASE("[Base] Base/SmallVector.hpp")
         STATIC_CHECK(ZA_IS_MOVE_CONSTRUCTIBLE(T));
         STATIC_CHECK(ZA_IS_MOVE_ASSIGNABLE(T));
 
-        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(T));
+        // `Obj` is not trivially relocatable (user-defined move ctor and
+        // destructor, no opt-in), so neither is a `SmallVector` of it: in
+        // inline mode the elements live inside the object, and a `memcpy`
+        // would bypass their move constructors.
+        STATIC_CHECK(!ZA_IS_TRIVIALLY_RELOCATABLE(T));
+
+        // A `SmallVector` of a trivially relocatable element type, however,
+        // remains trivially relocatable (the inline elements relocate by
+        // `memcpy`, and the `nullptr`-means-inline bookkeeping is recomputed
+        // from the new `this`).
+        STATIC_CHECK(ZA_IS_TRIVIALLY_RELOCATABLE(za::SmallVector<int, inlineCapacity>));
     }
 
     SECTION("Inline Behavior (Size <= N)")

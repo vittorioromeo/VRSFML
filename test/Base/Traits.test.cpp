@@ -1,5 +1,6 @@
 #include "Zancle/Trait/CommonType.hpp"
 #include "Zancle/Trait/Decay.hpp"
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsBaseOf.hpp"
 #include "Zancle/Trait/IsEnum.hpp"
 #include "Zancle/Trait/IsFloatingPoint.hpp"
@@ -208,10 +209,7 @@ static_assert(ZA_IS_TRIVIALLY_RELOCATABLE(TraitsTest::Custom2));
 
 struct Custom3
 {
-    enum : bool
-    {
-        enableTrivialRelocation = true
-    };
+    ZA_ENABLE_TRIVIAL_RELOCATION;
 
     ~Custom3() // NOLINT(modernize-use-equals-default)
     {
