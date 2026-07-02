@@ -6,11 +6,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Trait/EnableTrivialRelocation.hpp"
-#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace za

@@ -10,10 +10,10 @@
 
 #include "Zancle/Math/Sqrt.hpp"
 
-#include "Zancle/Trait/IsFloatingPoint.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Trait/IsFloatingPoint.hpp"
 
 
 namespace za

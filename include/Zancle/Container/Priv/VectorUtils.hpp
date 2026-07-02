@@ -6,10 +6,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Trait/IsTriviallyCopyable.hpp"
-#include "Zancle/Trait/IsTriviallyDestructible.hpp"
-#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/FwdStdAlignedNewDelete.hpp"
 #include "Zancle/Base/Memcpy.hpp"
@@ -17,6 +13,10 @@
 #include "Zancle/Base/PlacementNew.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
+
+#include "Zancle/Trait/IsTriviallyCopyable.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
+#include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 
 
 namespace za::priv::VectorUtils

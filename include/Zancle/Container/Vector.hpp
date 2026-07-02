@@ -10,9 +10,6 @@
 
 #include "Zancle/Math/MinMaxMacros.hpp"
 
-#include "Zancle/Trait/EnableTrivialRelocation.hpp"
-#include "Zancle/Trait/IsTriviallyDestructible.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/AssertAndAssume.hpp"
 #include "Zancle/Base/InitializerList.hpp"
@@ -20,6 +17,9 @@
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
+
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
+#include "Zancle/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace za

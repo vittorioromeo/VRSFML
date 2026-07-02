@@ -12,15 +12,15 @@
 
 #include "Zancle/Window/WindowContext.hpp"
 
-#include "Zancle/Trait/IsCopyAssignable.hpp"
-#include "Zancle/Trait/IsCopyConstructible.hpp"
-#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
-#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
-
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/Memcmp.hpp"
 #include "Zancle/Base/Memcpy.hpp"
 #include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Trait/IsCopyAssignable.hpp"
+#include "Zancle/Trait/IsCopyConstructible.hpp"
+#include "Zancle/Trait/IsNothrowMoveAssignable.hpp"
+#include "Zancle/Trait/IsNothrowMoveConstructible.hpp"
 
 
 #ifndef ZA_OPENGL_ES

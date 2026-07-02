@@ -8,9 +8,6 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Container/Priv/VectorUtils.hpp"
 
-#include "Zancle/Trait/Conditional.hpp"
-#include "Zancle/Trait/EnableTrivialRelocation.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/InitializerList.hpp" // IWYU pragma: keep
 #include "Zancle/Base/PlacementNew.hpp"
@@ -18,6 +15,9 @@
 #include "Zancle/Base/PtrDiffT.hpp"
 #include "Zancle/Base/SizeT.hpp"
 #include "Zancle/Base/Swap.hpp"
+
+#include "Zancle/Trait/Conditional.hpp"
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 
 
 ////////////////////////////////////////////////////////////

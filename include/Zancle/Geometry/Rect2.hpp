@@ -10,9 +10,9 @@
 
 #include "Zancle/Math/MinMaxMacros.hpp"
 
-#include "Zancle/Trait/IsSame.hpp"
-
 #include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Trait/IsSame.hpp"
 
 
 namespace za

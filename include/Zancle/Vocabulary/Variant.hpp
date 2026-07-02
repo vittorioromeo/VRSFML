@@ -8,6 +8,16 @@
 ////////////////////////////////////////////////////////////
 #include "Zancle/Vocabulary/OverloadSet.hpp"
 
+#include "Zancle/Base/Assert.hpp"
+#include "Zancle/Base/IndexSequence.hpp"
+#include "Zancle/Base/Launder.hpp"
+#include "Zancle/Base/MakeIndexSequence.hpp"
+#include "Zancle/Base/PlacementNew.hpp"
+#include "Zancle/Base/ScopeGuard.hpp"
+#include "Zancle/Base/SizeT.hpp"
+#include "Zancle/Base/TypePackElement.hpp"
+#include "Zancle/Base/TypePackIndex.hpp"
+
 #include "Zancle/Trait/Conditional.hpp"
 #include "Zancle/Trait/CopyCV.hpp"
 #include "Zancle/Trait/DeclVal.hpp"
@@ -23,16 +33,6 @@
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 #include "Zancle/Trait/RemoveCVRef.hpp"
 #include "Zancle/Trait/RemoveReference.hpp"
-
-#include "Zancle/Base/Assert.hpp"
-#include "Zancle/Base/IndexSequence.hpp"
-#include "Zancle/Base/Launder.hpp"
-#include "Zancle/Base/MakeIndexSequence.hpp"
-#include "Zancle/Base/PlacementNew.hpp"
-#include "Zancle/Base/ScopeGuard.hpp"
-#include "Zancle/Base/SizeT.hpp"
-#include "Zancle/Base/TypePackElement.hpp"
-#include "Zancle/Base/TypePackIndex.hpp"
 
 
 ////////////////////////////////////////////////////////////

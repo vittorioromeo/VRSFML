@@ -61,8 +61,6 @@
 
 #include "Zancle/Math/MinMax.hpp"
 
-#include "Zancle/Trait/IsSame.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/GetArraySize.hpp"
 #include "Zancle/Base/IntTypes.hpp"
@@ -70,6 +68,8 @@
 #include "Zancle/Base/OffsetOf.hpp"
 #include "Zancle/Base/ScopeGuard.hpp"
 #include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Trait/IsSame.hpp"
 
 #ifdef ZA_OPENGL_ES
     #include "Zancle/Base/Abort.hpp"

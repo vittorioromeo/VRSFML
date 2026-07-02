@@ -6,6 +6,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "Zancle/Base/Assert.hpp"
+#include "Zancle/Base/Macros.hpp"
+#include "Zancle/Base/PlacementNew.hpp"
+
 #include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsCopyAssignable.hpp"
 #include "Zancle/Trait/IsCopyConstructible.hpp"
@@ -19,10 +23,6 @@
 #include "Zancle/Trait/IsTriviallyMoveConstructible.hpp"
 #include "Zancle/Trait/IsTriviallyRelocatable.hpp"
 #include "Zancle/Trait/RemoveCVRef.hpp"
-
-#include "Zancle/Base/Assert.hpp"
-#include "Zancle/Base/Macros.hpp"
-#include "Zancle/Base/PlacementNew.hpp"
 
 
 namespace za::priv

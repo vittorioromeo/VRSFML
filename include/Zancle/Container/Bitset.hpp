@@ -6,13 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Trait/EnableTrivialRelocation.hpp"
-
 #include "Zancle/Base/Assert.hpp"
 #include "Zancle/Base/Ctzll.hpp"
 #include "Zancle/Base/IntTypes.hpp"
 #include "Zancle/Base/Popcountll.hpp"
 #include "Zancle/Base/SizeT.hpp"
+
+#include "Zancle/Trait/EnableTrivialRelocation.hpp"
 
 
 namespace za
