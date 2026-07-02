@@ -10,6 +10,7 @@
 
 #include "Zancle/Trait/Conditional.hpp"
 #include "Zancle/Trait/CopyCV.hpp"
+#include "Zancle/Trait/DeclVal.hpp"
 #include "Zancle/Trait/EnableTrivialRelocation.hpp"
 #include "Zancle/Trait/IsReference.hpp"
 #include "Zancle/Trait/IsRvalueReference.hpp"
@@ -24,7 +25,6 @@
 #include "Zancle/Trait/RemoveReference.hpp"
 
 #include "Zancle/Base/Assert.hpp"
-#include "Zancle/Base/DeclVal.hpp"
 #include "Zancle/Base/IndexSequence.hpp"
 #include "Zancle/Base/Launder.hpp"
 #include "Zancle/Base/MakeIndexSequence.hpp"

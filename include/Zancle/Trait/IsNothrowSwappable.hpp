@@ -6,15 +6,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "Zancle/Base/DeclVal.hpp"
-#include "Zancle/Base/Swap.hpp" // IWYU pragma: keep
+#include "Zancle/Trait/SwapResolution.hpp"
 
 
 namespace za
 {
 ////////////////////////////////////////////////////////////
+/// \brief `true` iff swapping two `T` via `za::genericSwap` is `noexcept`
+///
+////////////////////////////////////////////////////////////
 template <typename T>
-inline constexpr bool isNoThrowSwappable = noexcept(swap(declVal<T&>(), declVal<T&>()));
+inline constexpr bool isNoThrowSwappable = priv::swap_adl::isNoThrowSwappableV<T>;
 
 } // namespace za
 

@@ -3,15 +3,14 @@
 // https://github.com/vittorioromeo/Zancle/blob/master/license.md
 
 
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "Zancle/Trait/SwapResolution.hpp"
+
+
 namespace za::priv::swap_adl
 {
-////////////////////////////////////////////////////////////
-// A deleted generic template. If ADL finds a generic `std::swap`, it will
-// collide with this and cause an ambiguity.
-template <typename T>
-void swap(T&, T&) = delete;
-
-
 ////////////////////////////////////////////////////////////
 // Niebloid (Customization Point Object)
 struct SwapFn
@@ -22,7 +21,7 @@ struct SwapFn
 
     ////////////////////////////////////////////////////////////
     template <typename T, SizeT N>
-    [[gnu::always_inline]] static constexpr void operator()(T (&a)[N], T (&b)[N]) noexcept
+    [[gnu::always_inline]] static constexpr void operator()(T (&a)[N], T (&b)[N]) noexcept(isNoThrowSwappableV<T>)
     {
         for (SizeT i = 0; i < N; ++i)
             operator()(a[i], b[i]);
@@ -31,21 +30,21 @@ struct SwapFn
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[gnu::always_inline]] static constexpr void operator()(T& a, T& b) noexcept
+    [[gnu::always_inline]] static constexpr void operator()(T& a, T& b) noexcept(isNoThrowSwappableV<T>)
     {
-        if constexpr (requires { a.swap(b); })
+        if constexpr (MemberSwappable<T>)
         {
             // Highest priority: explicit member function exists
             a.swap(b);
         }
-        else if constexpr (requires { swap(a, b); }) // Fails in case of ambiguity too
+        else if constexpr (AdlSwappable<T>)
         {
             // A specialized ADL swap exists and is unambiguous
             swap(a, b);
         }
         else
         {
-            // No valid specialized ADL swap was found, or an ambiguity occurred
+            // No valid specialized swap was found: fall back to move-swap
             T tempA = static_cast<T&&>(a);
             a       = static_cast<T&&>(b);
             b       = static_cast<T&&>(tempA);

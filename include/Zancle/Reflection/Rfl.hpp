@@ -41,10 +41,10 @@ SOFTWARE.
 */
 ////////////////////////////////////////////////////////////
 
+#include "Zancle/Trait/DeclVal.hpp"
 #include "Zancle/Trait/RemoveCVRef.hpp"
 #include "Zancle/Trait/RemoveReference.hpp"
 
-#include "Zancle/Base/DeclVal.hpp"
 #include "Zancle/Base/IndexSequence.hpp"
 #include "Zancle/Base/Macros.hpp"
 #include "Zancle/Base/MakeIndexSequence.hpp"
