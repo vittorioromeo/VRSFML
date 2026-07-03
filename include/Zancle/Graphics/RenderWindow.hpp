@@ -226,7 +226,7 @@ private:
 ///     window.clear();
 ///
 ///     // Draw some graphical entities.
-///     window.draw(sprite, texture); // texture passed at draw time in Zancle
+///     window.draw(sprite, {.texture = &texture}); // texture passed at draw time in Zancle
 ///     window.draw(circle);
 ///     window.draw(text);
 ///
@@ -265,7 +265,7 @@ private:
 ///
 ///     // Draw a background sprite.
 ///     window.resetGLStates();
-///     window.draw(sprite, texture);
+///     window.draw(sprite, {.texture = &texture});
 ///
 ///     // Draw raw OpenGL ES 3.1 geometry here.
 ///     // ...
