@@ -898,7 +898,7 @@ za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
     ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure we can use geometry shaders
-    if (geometryShaderCode.data() != nullptr && !isGeometryAvailable())
+    if (!geometryShaderCode.empty() && !isGeometryAvailable())
     {
         priv::errMsg(
             "Failed to create a shader: your system doesn't support geometry shaders (you should test "
