@@ -953,7 +953,7 @@ za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
         return true;
     };
 
-    if (vertexShaderCode.data() == nullptr)
+    if (vertexShaderCode.empty())
         vertexShaderCode = DefaultShader::srcVertex;
 
     if (!makeShader(GL_VERTEX_SHADER, "vertex", vertexShaderCode))
@@ -961,13 +961,13 @@ za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
 
 
     // Create the geometry shader if needed
-    if (geometryShaderCode.data())
+    if (!geometryShaderCode.empty())
     {
         if (!makeShader(GL_GEOMETRY_SHADER, "geometry", geometryShaderCode))
             return za::nullOpt;
     }
 
-    if (fragmentShaderCode.data() == nullptr)
+    if (fragmentShaderCode.empty())
         fragmentShaderCode = DefaultShader::srcFragment;
 
     // Create the fragment shader
