@@ -541,7 +541,7 @@ za::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settin
         optBufferSlice = appendStreamContentsToVector(*optStream, buffer);
         if (!optBufferSlice.hasValue())
         {
-            priv::errMsg("Failed to open {} shader from stream", typeStr);
+            priv::errMsg("Failed to read {} shader from stream (I/O error, empty stream, or unknown stream size)", typeStr);
             return false;
         }
 
