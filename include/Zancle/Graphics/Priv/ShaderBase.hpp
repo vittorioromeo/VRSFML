@@ -10,6 +10,8 @@
 
 #include "Zancle/Graphics/Priv/GlslFwd.hpp"
 
+#include "Zancle/Container/Array.hpp"
+
 #include "Zancle/Vocabulary/InPlacePImpl.hpp"
 #include "Zancle/Vocabulary/PassKey.hpp"
 
@@ -654,6 +656,18 @@ private:
     za::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
 
     mutable za::U32 m_uniformGeneration{0}; //!< Bumped on every uniform mutation (autobatch invalidation)
+
+    mutable za::U32 m_textureBindingsGeneration{0}; //!< Bumped on every texture uniform (re)assignment (draw-path rebind)
+
+    // Shadows of the last uploaded built-in uniform values, used by
+    // `RenderTarget` to skip redundant uploads. Uniform values are stored in
+    // the program object itself (shared across GL contexts and render
+    // targets), so this cache must live here: a per-render-target cache goes
+    // stale as soon as another render target draws with the same program.
+    // Zero-initialized to match the GL-mandated post-link uniform values.
+    mutable za::Array<float, 3> m_lastUploadedMVPRow0{};        //!< Last uploaded `za_u_mvpRow0` value
+    mutable za::Array<float, 3> m_lastUploadedMVPRow1{};        //!< Last uploaded `za_u_mvpRow1` value
+    mutable za::Array<float, 2> m_lastUploadedInvTextureSize{}; //!< Last uploaded `za_u_invTextureSize` value
 
     bool m_hasBuiltInUniformMVPRow0;        //!< Whether the shader has the built-in `za_u_mvpRow0` uniform
     bool m_hasBuiltInUniformMVPRow1;        //!< Whether the shader has the built-in `za_u_mvpRow1` uniform
