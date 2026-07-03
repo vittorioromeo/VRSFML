@@ -577,7 +577,11 @@ za::Optional<Shader::UniformLocation> Shader::getUniformLocation(za::StringView 
         maxUniformNameLength = 256
     };
 
-    ZA_ASSERT(uniformName.size() < maxUniformNameLength && "Uniform name too long");
+    if (uniformName.size() >= maxUniformNameLength) [[unlikely]]
+    {
+        priv::errMsg("Uniform name too long ({} characters, maximum is {})", uniformName.size(), maxUniformNameLength - 1);
+        return za::nullOpt;
+    }
 
     // To get a a null-terminated string
     char uniformNameBuffer[maxUniformNameLength];
