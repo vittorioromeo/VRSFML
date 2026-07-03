@@ -268,6 +268,9 @@ TEST_CASE("[Graphics] za::Color")
 
         // Hue > 360 should wrap
         CHECK(za::Color::fromHSLA({480.f, 1.f, 0.5f}) == za::Color::fromHSLA({120.f, 1.f, 0.5f}));
+
+        // Tiny negative hue: `positiveRemainder` rounds to exactly 360, which must fold to 0
+        CHECK(za::Color::fromHSLA({-1e-7f, 1.f, 0.5f}) == za::Color::fromHSLA({0.f, 1.f, 0.5f}));
     }
 
     SECTION("Saturation and lightness clamping")
