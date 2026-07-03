@@ -138,6 +138,7 @@ void Shape::setMiterLimit(float miterLimit)
 
     m_miterLimit = miterLimit;
     updateOutline();
+    updateOutlineTexCoords();
 }
 
 
