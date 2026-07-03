@@ -737,6 +737,10 @@ za::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Glyph
     {
         const char32_t codePoint = settings.codePoints[i];
 
+        // Skip duplicate code points: they are already rasterized and mapped
+        if (result.fillGlyphs.contains(codePoint))
+            continue;
+
         const auto optFillGlyph = rasterizeAndPackGlyph(atlas, codePoint, settings.characterSize, settings.bold, 0.f);
 
         if (!optFillGlyph.hasValue())
