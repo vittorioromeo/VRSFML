@@ -158,9 +158,10 @@ public:
     ///
     /// Flushes any pending auto-batched draw calls, swaps the
     /// front and back buffers of the underlying window, and
-    /// returns statistics describing the work that the GPU just
-    /// performed for this frame. Call this exactly once at the
-    /// end of every frame.
+    /// returns statistics describing the draw calls issued during
+    /// the current frame -- the counters are reset by `display`
+    /// itself, so each call reports exactly one frame's work.
+    /// Call this exactly once at the end of every frame.
     ///
     /// \return Per-frame draw call and vertex statistics
     ///

@@ -1245,6 +1245,12 @@ void RenderTarget::syncGPUStartFrame()
 ////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUEndFrame()
 {
+    // Statistics are per-frame, and `display` is the frame boundary: both
+    // `display` implementations capture `flush()`'s return value before
+    // calling this, so resetting here starts the next frame's counters.
+    // (Resetting in `prepare` instead would tie the counters to `clear`,
+    // dropping work flushed by `clear` itself and breaking no-`clear` loops.)
+    m_currentDrawStats = {};
 #ifndef ZA_OPENGL_ES
     m_impl->needsFrameSync = true;
 #endif

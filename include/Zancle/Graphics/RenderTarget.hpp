@@ -613,7 +613,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Draws the currently autobatched drawables (if any)
     ///
-    /// \return Statistics about the draw calls that were made
+    /// \return Statistics about the draw calls made since the last `display()` (the current frame so far)
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::cold]] RenderTarget::DrawStatistics flush();
@@ -806,7 +806,8 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Synchronize the GPU with the CPU (end of a frame)
     ///
-    /// Only useful when working with persistently mapped buffers.
+    /// Marks the frame boundary for persistently mapped buffers and
+    /// resets the per-frame draw statistics.
     ///
     ////////////////////////////////////////////////////////////
     void syncGPUEndFrame();
