@@ -44,7 +44,7 @@ jobs:
             libx11 libxrandr libxi libxcursor libxinerama libxext libxfixes \
             libxss libxtst libxkbcommon dbus \
             systemd-libs \
-            xorg-server-xvfb xorg-xdpyinfo
+            xorg-server-xvfb
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,30 +80,8 @@ jobs:
           mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
           # Skip the Wayland/KMSDRM probes entirely -- there's no GPU here.
           export SDL_VIDEODRIVER=x11
-          export DISPLAY=:99
-          # Start Xvfb explicitly on a fixed display rather than via
-          # `xvfb-run --auto-servernum`. In the container the latter
-          # intermittently handed back a server that accepted connections
-          # but whose x11 stack was not fully up, so SDL's backend init
-          # failed ~50% of runs with "`SDL_Init` failed: x11 not available",
-          # aborting the graphics test. Clear any stale lock/socket for the
-          # display, then wait until the server genuinely accepts
-          # connections (via `xdpyinfo`) before running the tests.
-          rm -f "/tmp/.X99-lock" "/tmp/.X11-unix/X99"
-          Xvfb "$DISPLAY" -screen 0 1920x1080x24 -nolisten tcp &
-          xvfb_pid=$!
-          for _ in $(seq 1 100); do
-            xdpyinfo -display "$DISPLAY" >/dev/null 2>&1 && break
-            sleep 0.2
-          done
-          xdpyinfo -display "$DISPLAY" >/dev/null 2>&1 \
-            || { echo "Xvfb failed to become ready on $DISPLAY"; kill "$xvfb_pid" 2>/dev/null || true; exit 1; }
-          set +e
-          ctest --test-dir build_${{ matrix.preset }} \
-                --output-on-failure \
-                --no-tests=error \
-                --parallel "$(nproc)"
-          status=$?
-          set -e
-          kill "$xvfb_pid" 2>/dev/null || true
-          exit "$status"
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+            ctest --test-dir build_${{ matrix.preset }} \
+                  --output-on-failure \
+                  --no-tests=error \
+                  --parallel "$(nproc)"
