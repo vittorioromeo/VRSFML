@@ -912,18 +912,25 @@ void RenderTarget::drawQuads(const DrawQuadsSettings& settings, const RenderStat
     static_assert(drawQuadsMaxQuadsPerCall * 6u == za::getArraySize(RenderTargetImpl::precomputedQuadIndices));
     static_assert(drawQuadsMaxVerticesPerCall == drawQuadsMaxQuadsPerCall * 4u);
 
-    const auto vertexCount = settings.vertexSpan.size();
+    const auto totalVertexCount = settings.vertexSpan.size();
 
-    ZA_ASSERT(vertexCount % 4u == 0u);
-    ZA_ASSERT(vertexCount <= drawQuadsMaxVerticesPerCall);
+    ZA_ASSERT(totalVertexCount % 4u == 0u);
 
-    drawIndexedVertices(
-        {
-            .vertexSpan    = settings.vertexSpan,
-            .indexSpan     = {RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u},
-            .primitiveType = settings.primitiveType,
-        },
-        states);
+    // Split draws exceeding the precomputed index table into multiple calls
+    // (e.g. `Text` with 65'536+ quads); an unsplit call would build an index
+    // span past the end of the table.
+    for (za::SizeT offset = 0u; offset < totalVertexCount; offset += drawQuadsMaxVerticesPerCall)
+    {
+        const za::SizeT vertexCount = za::min(totalVertexCount - offset, za::SizeT{drawQuadsMaxVerticesPerCall});
+
+        drawIndexedVertices(
+            {
+                .vertexSpan    = {settings.vertexSpan.data() + offset, vertexCount},
+                .indexSpan     = {RenderTargetImpl::getPrecomputedQuadIndices(), vertexCount / 4u * 6u},
+                .primitiveType = settings.primitiveType,
+            },
+            states);
+    }
 }
 
 

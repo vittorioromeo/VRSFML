@@ -476,12 +476,10 @@ public:
     /// between the 2nd and 3rd vertex.
     ///
     /// \param settings Draw settings. `settings.vertexSpan.size()` must
-    ///                 be a multiple of 4 and at most
-    ///                 `drawQuadsMaxVerticesPerCall` (i.e. at most
-    ///                 `drawQuadsMaxQuadsPerCall` quads). Larger draws
-    ///                 must be split by the caller, or use
-    ///                 `drawIndexedVertices` with a caller-supplied
-    ///                 index buffer.
+    ///                 be a multiple of 4. Draws larger than
+    ///                 `drawQuadsMaxVerticesPerCall` (i.e. more than
+    ///                 `drawQuadsMaxQuadsPerCall` quads) are internally
+    ///                 split into multiple draw calls.
     ///
     /// \see `drawQuadsMaxQuadsPerCall`, `drawQuadsMaxVerticesPerCall`,
     ///      `drawIndexedVertices`
