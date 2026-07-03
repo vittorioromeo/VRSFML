@@ -26,9 +26,6 @@ struct RenderTextureCreateSettings
     bool            smooth{false};                    //!< Whether linear filtering should be enabled on the texture
     TextureWrapMode wrapMode{TextureWrapMode::Clamp}; //!< Wrap mode used when sampling the attached texture
 
-    bool zeroInitialized{
-        false}; //!< Whether the texture contents are cleared to transparent black on creation (otherwise undefined until the first `clear`)
-
     unsigned int       sampleCount{0u}; //!< Multisampling (MSAA) sample count (0 or 1 = disabled)
     DepthStencilFormat depthStencilFormat{DepthStencilFormat::None}; //!< Depth/stencil attachment format
 };
