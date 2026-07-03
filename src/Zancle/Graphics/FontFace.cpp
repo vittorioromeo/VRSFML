@@ -359,6 +359,15 @@ struct FontFace::Impl
         if (!setCurrentSize(characterSize))
             return result;
 
+        // An unmapped code point resolves to glyph index 0 (`.notdef`, the
+        // font's missing-glyph placeholder), which loads and renders like any
+        // other glyph. Warn so missing font coverage is diagnosable; callers
+        // cache the result, so this fires at most once per glyph variant.
+        if (codePoint != 0u && getCharIndex(codePoint) == 0u)
+            priv::errMsg("Code point U+{:x} is not present in font '{}', rendering missing-glyph placeholder",
+                         static_cast<unsigned int>(codePoint),
+                         m_info.family.cStr());
+
         const FT_Int32 flags = outlineThickness == 0.f
                                    ? FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT
                                    : FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_NO_BITMAP;
@@ -765,6 +774,13 @@ za::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Glyph
 
         result.outlineGlyphs[codePoint] = *optOutlineGlyph;
     }
+
+    // Text layout unconditionally queries U+0020 (space) to compute whitespace
+    // width (and U+0078 'x' when strike-through is enabled) -- warn at creation
+    // time instead of aborting at first draw (see `GlyphMapping::getGlyph`)
+    if (!result.fillGlyphs.contains(U' '))
+        priv::errMsg(
+            "GlyphMapping created without U+0020 (space): drawing any text with this mapping will fail at draw time");
 
     return za::makeOptional(ZA_MOVE(result));
 }
