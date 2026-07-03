@@ -161,6 +161,11 @@ static_assert(sizeof(za::Glsl::Mat4) == 16 * sizeof(float));
 // not preamble-relative ones. The preamble is constant per build, so callers
 // pass it as a separate source string to `glShaderSource(count=2)` and avoid
 // the per-compile concatenation.
+//
+// Note: `#line 1` assumes the common C-style driver behavior ("the NEXT line
+// is line 1"). A spec-literal GLSL compiler ("behaves as if compiling at line
+// `line`+1") would report user line N as N+1 -- accepted as a cosmetic
+// off-by-one in diagnostics on such drivers.
 [[nodiscard]] constexpr za::StringView getShaderPreamble()
 {
     return
