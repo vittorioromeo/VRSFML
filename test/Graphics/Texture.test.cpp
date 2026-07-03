@@ -184,12 +184,14 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
 
         auto texture = za::Texture::create({1, 2}).value();
         texture.update(red);
+        texture.setWrapMode(za::TextureWrapMode::Repeat);
 
         SECTION("Construction")
         {
             const za::Texture textureCopy(texture); // NOLINT(performance-unnecessary-copy-initialization)
             REQUIRE(textureCopy.getSize() == za::Vec2u{1, 2});
             CHECK(textureCopy.copyToImage().getPixel(za::Vec2u{0, 1}) == za::Color::Red);
+            CHECK(textureCopy.getWrapMode() == za::TextureWrapMode::Repeat);
         }
 
         SECTION("Assignment")
@@ -198,6 +200,7 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
             textureCopy             = texture;
             REQUIRE(textureCopy.getSize() == za::Vec2u{1, 2});
             CHECK(textureCopy.copyToImage().getPixel(za::Vec2u{0, 1}) == za::Color::Red);
+            CHECK(textureCopy.getWrapMode() == za::TextureWrapMode::Repeat);
         }
     }
 
