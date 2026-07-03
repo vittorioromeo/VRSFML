@@ -41,7 +41,9 @@ namespace za
 /// per source texture.
 ///
 /// `za::TextureAtlas` owns its texture by value. The atlas
-/// texture is created by the caller and moved into the atlas;
+/// texture is created by the caller and moved into the atlas,
+/// which clears it to transparent black on construction so that
+/// entry padding and uncovered regions hold defined contents;
 /// from then on, the atlas takes care of inserting new
 /// sub-images via `add` and tracking their positions through
 /// the packer.
