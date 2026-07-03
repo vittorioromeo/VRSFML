@@ -75,18 +75,17 @@ struct [[nodiscard]] BufferSlice
 ////////////////////////////////////////////////////////////
 // Read the contents of a file and append them (followed by a null terminator)
 // to `buffer`, returning the slice of `buffer` that holds the new contents.
+// The returned slice EXCLUDES the trailing null terminator: its length flows
+// into `glShaderSource`, and NUL is outside the GLSL source character set.
 [[nodiscard]] za::Optional<BufferSlice> appendFileContentsToVector(const za::Path& filename, za::Vector<char>& buffer)
 {
     const za::SizeT bufferSizeBeforeRead = buffer.size();
 
     if (!za::appendFromFile(filename, buffer))
-    {
-        za::priv::errMsg("Failed to open shader file");
         return za::nullOpt;
-    }
 
     buffer.pushBack('\0');
-    return za::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
+    return za::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead - 1u);
 }
 
 
@@ -97,33 +96,35 @@ struct [[nodiscard]] BufferSlice
     const za::Optional<za::SizeT> size = stream.getSize();
 
     if (!size.hasValue() || size.value() == 0)
-    {
-        za::priv::errMsg("Failed to read shader stream (empty or unsized)");
         return za::nullOpt;
-    }
 
     if (!stream.seek(0).hasValue())
-    {
-        za::priv::errMsg("Failed to seek shader stream");
         return za::nullOpt;
-    }
 
     const za::SizeT bufferSizeBeforeRead = buffer.size();
     buffer.reserve(bufferSizeBeforeRead + *size + 1u);
     buffer.unsafeSetSize(bufferSizeBeforeRead + *size);
 
-    const za::Optional<za::SizeT> read = stream.read(buffer.data() + bufferSizeBeforeRead, *size);
-
-    if (!read.hasValue() || *read != *size)
+    // `InputStream::read` may legally return fewer bytes than requested
+    // ("up to `size`" contract) -- keep reading until all `*size` bytes are
+    // accumulated. `nullOpt` (I/O error) or `0` (premature end) is a failure.
+    za::SizeT totalRead = 0u;
+    while (totalRead < *size)
     {
-        // Roll back the size grow so `buffer` is left as the caller saw it.
-        buffer.unsafeSetSize(bufferSizeBeforeRead);
-        za::priv::errMsg("Failed to read stream contents into buffer");
-        return za::nullOpt;
+        const za::Optional<za::SizeT> read = stream.read(buffer.data() + bufferSizeBeforeRead + totalRead, *size - totalRead);
+
+        if (!read.hasValue() || *read == 0u)
+        {
+            // Roll back the size grow so `buffer` is left as the caller saw it.
+            buffer.unsafeSetSize(bufferSizeBeforeRead);
+            return za::nullOpt;
+        }
+
+        totalRead += *read;
     }
 
     buffer.pushBack('\0');
-    return za::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead);
+    return za::makeOptional<BufferSlice>(bufferSizeBeforeRead, buffer.size() - bufferSizeBeforeRead - 1u);
 }
 
 
