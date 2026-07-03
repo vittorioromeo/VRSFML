@@ -1299,7 +1299,7 @@ private:
 ///     // Process events, update game state, ...
 ///
 ///     window.clear(za::Color::Black);
-///     window.draw(sprite, texture);
+///     window.draw(sprite, {.texture = &texture});
 ///     window.draw(shape);
 ///     window.draw(text);
 ///     window.display();
