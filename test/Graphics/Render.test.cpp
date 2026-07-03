@@ -105,7 +105,8 @@ TEST_CASE("[Graphics] Render Tests" * tst::skip(skipDisplayTests))
 
     SECTION("Stencil Tests")
     {
-        auto renderTexture = za::RenderTexture::create({100, 100}, {.depthBits = 0, .stencilBits = 8}).value();
+        auto renderTexture = za::RenderTexture::create({100, 100}, {.depthStencilFormat = za::DepthStencilFormat::Stencil8})
+                                 .value();
 
         renderTexture.clear(za::Color::Red, za::StencilValue{127u});
 
