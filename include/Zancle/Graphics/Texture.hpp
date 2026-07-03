@@ -63,10 +63,11 @@ struct [[nodiscard]] TextureCreateSettings
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextureLoadSettings
 {
-    bool            sRgb     = false; //!< Whether the texture should be created in sRGB color space
-    Rect2i          area     = {};    //!< Sub-rectangle of the source image to load (`{}` = full image)
-    bool            smooth   = false; //!< Whether linear filtering should be enabled
+    bool            sRgb     = false;                  //!< Whether the texture should be created in sRGB color space
+    bool            smooth   = false;                  //!< Whether linear filtering should be enabled
     TextureWrapMode wrapMode = TextureWrapMode::Clamp; //!< Wrap mode used when sampling the texture
+
+    Rect2i area = {}; //!< Sub-rectangle of the source image to load (`{}` = full image)
 };
 
 ////////////////////////////////////////////////////////////
