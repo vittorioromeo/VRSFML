@@ -334,6 +334,31 @@ void destroyProgramIfNeeded(const unsigned int program)
         currentProgramCacheValue = 0u;
 }
 
+
+////////////////////////////////////////////////////////////
+// `RenderTarget` uploads the built-in uniforms to hardcoded layout locations
+// rather than by the queried location. A user shader declaring one of the
+// built-in names at a different location would get an unrelated uniform silently
+// corrupted by those uploads -- detect that here and warn.
+//
+// On Emscripten these queries also double as the lazy uniform-location-table
+// warm-up workaround for `-sGL_EXPLICIT_UNIFORM_LOCATION=1` (see CLEAN-2 note
+// on the constructor).
+[[nodiscard]] bool checkBuiltInUniform(const unsigned int shaderProgram, const char* name, const GLint expectedLocation)
+{
+    const GLint location = glCheck(glGetUniformLocation(shaderProgram, name));
+
+    if (location != -1 && location != expectedLocation) [[unlikely]]
+        za::priv::errMsg(
+            "Shader declares built-in uniform '{}' at location {} (expected layout location {}) -- built-in "
+            "uniform uploads from the render target will write to the wrong location",
+            name,
+            location,
+            expectedLocation);
+
+    return location != -1;
+}
+
 } // namespace
 
 
@@ -719,6 +744,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix) cons
 bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
     ++m_uniformGeneration;
+    ++m_textureBindingsGeneration;
 
     ZA_ASSERT(m_impl->shaderProgram);
     ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
@@ -750,6 +776,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     ++m_uniformGeneration;
+    ++m_textureBindingsGeneration;
 
     ZA_ASSERT(m_impl->shaderProgram);
     ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
@@ -836,12 +863,8 @@ void Shader::bind() const
     ZA_ASSERT(glCheck(glIsProgram(m_impl->shaderProgram)));
     useProgram(m_impl->shaderProgram);
 
-    // Bind the textures
+    // Bind the textures (including the special `CurrentTexture` sampler)
     bindTextures();
-
-    // Bind the current texture
-    if (m_impl->currentTexture != -1)
-        glCheck(glUniform1i(m_impl->currentTexture, 0));
 }
 
 
@@ -868,6 +891,12 @@ bool Shader::isGeometryAvailable()
 
 
 ////////////////////////////////////////////////////////////
+// Note: the `glGetUniformLocation` calls below also serve as the workaround
+// for an Emscripten bug with `-sGL_EXPLICIT_UNIFORM_LOCATION=1`: Emscripten
+// lazily populates its internal uniform location table (`uniformLocsById`)
+// only on `glGetUniformLocation`, NOT on `glUniform*` -- without at least one
+// query here, `glUniform*` on a newly linked program would silently no-op.
+// See: https://github.com/emscripten-core/emscripten/issues/26672
 Shader::Shader(za::PassKey<Shader>&&, unsigned int shaderProgram) :
     m_impl(
         [&]
@@ -875,9 +904,9 @@ Shader::Shader(za::PassKey<Shader>&&, unsigned int shaderProgram) :
     ZA_ASSERT(shaderProgram != 0);
     return shaderProgram;
 }()),
-    m_hasBuiltInUniformMVPRow0(glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow0")) != -1),
-    m_hasBuiltInUniformMVPRow1(glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow1")) != -1),
-    m_hasBuiltInUniformInvTextureSize(glCheck(glGetUniformLocation(shaderProgram, "za_u_invTextureSize")) != -1)
+    m_hasBuiltInUniformMVPRow0(checkBuiltInUniform(shaderProgram, "za_u_mvpRow0", 0)),
+    m_hasBuiltInUniformMVPRow1(checkBuiltInUniform(shaderProgram, "za_u_mvpRow1", 1)),
+    m_hasBuiltInUniformInvTextureSize(checkBuiltInUniform(shaderProgram, "za_u_invTextureSize", 3))
 {
 }
 
@@ -996,20 +1025,6 @@ za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-#ifdef ZA_SYSTEM_EMSCRIPTEN
-    // Workaround for Emscripten bug with `-sGL_EXPLICIT_UNIFORM_LOCATION=1`:
-    // Emscripten lazily populates its internal uniform location table
-    // (`uniformLocsById`) only when `glGetUniformLocation` is called, NOT
-    // when `glUniform*` is called. So `glUniform*(loc, ...)` on a newly
-    // linked program silently does nothing -- the location resolves to
-    // `undefined` in JavaScript, and WebGL ignores the call.
-    // Calling `glGetUniformLocation` once forces the table to be built.
-    // See: src/lib/libwebgl.js `webglPrepareUniformLocationsBeforeFirstUse`
-    // See: https://github.com/emscripten-core/emscripten/issues/26672
-    glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow0"));
-    glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow1"));
-#endif
-
     return za::makeOptional<Shader>(za::PassKey<Shader>{}, shaderProgram);
 }
 
@@ -1033,6 +1048,10 @@ void Shader::bindTextures() const
 
     // Make sure that the texture unit which is left active is the number 0
     glCheck(glActiveTexture(GL_TEXTURE0));
+
+    // Bind the special `CurrentTexture` sampler to texture unit 0, if set
+    if (m_impl->currentTexture != -1)
+        glCheck(glUniform1i(m_impl->currentTexture, 0));
 }
 
 } // namespace za
