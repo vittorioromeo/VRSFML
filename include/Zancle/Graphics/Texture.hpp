@@ -223,14 +223,14 @@ public:
     /// \brief Update the whole texture from an array of pixels
     ///
     /// The pixel array is assumed to have the same size as
-    /// the `area` rectangle, and to contain 32-bits RGBA pixels.
+    /// the texture, and to contain 32-bits RGBA pixels.
     ///
     /// No additional check is performed on the size of the pixel
     /// array. Passing invalid arguments will lead to an undefined
     /// behavior.
     ///
-    /// This function does nothing if `pixels` is `nullptr`
-    /// or if the texture was not previously created.
+    /// `pixels` must not be `nullptr` (asserted in debug builds;
+    /// undefined behavior in release builds).
     ///
     /// \param pixels Array of pixels to copy to the texture
     ///
@@ -247,8 +247,8 @@ public:
     /// array or the bounds of the area to update. Passing invalid
     /// arguments will lead to an undefined behavior.
     ///
-    /// This function does nothing if `pixels` is null or if the
-    /// texture was not previously created.
+    /// `pixels` must not be `nullptr` (asserted in debug builds;
+    /// undefined behavior in release builds).
     ///
     /// \param pixels Array of pixels to copy to the texture
     /// \param size   Width and height of the pixel region contained in `pixels`
