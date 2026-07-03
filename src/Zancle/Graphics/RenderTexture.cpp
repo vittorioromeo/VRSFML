@@ -309,19 +309,19 @@ public:
         sRgb = rtCreateSettings.sRgbCapable;
 
         // Check if the requested anti-aliasing level is supported
-        if (const auto samples = getMaximumAntiAliasingLevel(); rtCreateSettings.antiAliasingLevel > samples)
+        if (const auto samples = getMaximumSampleCount(); rtCreateSettings.sampleCount > samples)
             return fail("unsupported anti-aliasing level ",
-                        rtCreateSettings.antiAliasingLevel,
+                        rtCreateSettings.sampleCount,
                         ", maximum supported is ",
                         samples);
 
         const auto bindRenderbufferAndSetFormat =
-            [&size](GLRenderBufferObject& rbo, const unsigned int antiAliasingLevel, const GLenum internalFormat)
+            [&size](GLRenderBufferObject& rbo, const unsigned int sampleCount, const GLenum internalFormat)
         {
             rbo.bind();
 
             glCheck(glRenderbufferStorageMultisample(GL_RENDERBUFFER,
-                                                     static_cast<GLsizei>(antiAliasingLevel),
+                                                     static_cast<GLsizei>(sampleCount),
                                                      internalFormat,
                                                      static_cast<GLsizei>(size.x),
                                                      static_cast<GLsizei>(size.y)));
@@ -329,7 +329,7 @@ public:
 
         depth       = rtCreateSettings.depthBits != 0u;
         stencil     = rtCreateSettings.stencilBits != 0u;
-        multisample = rtCreateSettings.antiAliasingLevel != 0u;
+        multisample = rtCreateSettings.sampleCount != 0u;
 
         // Create the (possibly multisample) depth/stencil buffer if requested
         if (stencil || depth)
@@ -339,7 +339,7 @@ public:
                 return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
 
             bindRenderbufferAndSetFormat(*stencilDepthBuffer,
-                                         rtCreateSettings.antiAliasingLevel,
+                                         rtCreateSettings.sampleCount,
                                          getGLInternalFormat(stencil, depth));
         }
 
@@ -350,7 +350,7 @@ public:
             if (!colorBuffer.hasValue())
                 return fail("failed to create the attached multisample color buffer");
 
-            bindRenderbufferAndSetFormat(*colorBuffer, rtCreateSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
+            bindRenderbufferAndSetFormat(*colorBuffer, rtCreateSettings.sampleCount, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
 
         // Save the current bindings so we can restore them after we are done
@@ -502,7 +502,7 @@ za::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const Render
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTexture::getMaximumAntiAliasingLevel()
+unsigned int RenderTexture::getMaximumSampleCount()
 {
     ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     return static_cast<unsigned int>(priv::getGLInteger(GL_MAX_SAMPLES));

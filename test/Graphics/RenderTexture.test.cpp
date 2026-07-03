@@ -60,9 +60,9 @@ TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
         CHECK(texture.getNativeHandle() != 0);
     }
 
-    SECTION("getMaximumAntiAliasingLevel()")
+    SECTION("getMaximumSampleCount()")
     {
-        CHECK(za::RenderTexture::getMaximumAntiAliasingLevel() <= 64);
+        CHECK(za::RenderTexture::getMaximumSampleCount() <= 64);
     }
 
     SECTION("Set/get smooth")
@@ -112,7 +112,7 @@ TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
         // clang-format on
 
         auto renderTexture = za::RenderTexture::create({64, 64},
-                                                       {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+                                                       {.sampleCount = testAALevel, .sRgbCapable = testSRGBCapable})
                                  .value();
 
         renderTexture.clear(za::Color::Green);
@@ -143,12 +143,12 @@ TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
         auto image   = za::Image::create(size, za::Color::White).value();
         auto texture = za::Texture::loadFromImage(image).value();
 
-        auto baseRenderTexture = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto baseRenderTexture = za::RenderTexture::create(size, {.sampleCount = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto leftInnerRT = za::RenderTexture::create(size, {.sampleCount = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
-        auto rightInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto rightInnerRT = za::RenderTexture::create(size, {.sampleCount = testAALevel, .sRgbCapable = testSRGBCapable})
                                 .value();
 
         const za::Vertex leftVertexArray[6]{{{0.f, 0.f}, za::Color::White, {0.f, 0.f}},
@@ -210,10 +210,10 @@ TEST_CASE("[Graphics] za::RenderTexture" * tst::skip(skipDisplayTests))
         auto image   = za::Image::create(size, za::Color::White).value();
         auto texture = za::Texture::loadFromImage(image).value();
 
-        auto baseRenderTexture = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto baseRenderTexture = za::RenderTexture::create(size, {.sampleCount = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = za::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto leftInnerRT = za::RenderTexture::create(size, {.sampleCount = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
 
         const za::Vertex leftVertexArray[6]{{{0.f, 0.f}, za::Color::Red, {0.f, 0.f}},
