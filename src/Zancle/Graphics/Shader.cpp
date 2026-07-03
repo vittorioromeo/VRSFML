@@ -42,20 +42,6 @@
 
 using GLhandle = GLuint;
 
-#if defined(ZA_SYSTEM_MACOS) || defined(ZA_SYSTEM_IOS)
-
-    #include "Zancle/Base/PtrDiffT.hpp"
-
-    #define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(::za::PtrDiffT{x})
-    #define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::za::PtrDiffT>(x))
-
-#else
-
-    #define castToGlHandle(x)   (x)
-    #define castFromGlHandle(x) (x)
-
-#endif
-
 
 namespace
 {
@@ -294,7 +280,7 @@ thread_local unsigned int currentProgramCacheContextId = 0u;
 ////////////////////////////////////////////////////////////
 void useProgram(const unsigned int program)
 {
-    glCheck(glUseProgram(castToGlHandle(program)));
+    glCheck(glUseProgram(program));
 
     currentProgramCacheValue     = program;
     currentProgramCacheContextId = za::GraphicsContext::getActiveThreadLocalGlContextId();
@@ -331,8 +317,8 @@ void destroyProgramIfNeeded(const unsigned int program)
     za::priv::GLSharedContextGuard guard;
 
     ZA_ASSERT(za::GraphicsContext::hasActiveThreadLocalGlContext());
-    ZA_ASSERT(glCheck(glIsProgram(castToGlHandle(program))));
-    glCheck(glDeleteProgram(castToGlHandle(program)));
+    ZA_ASSERT(glCheck(glIsProgram(program)));
+    glCheck(glDeleteProgram(program));
 
     // GL handles can be reused after deletion. If the cache still names this
     // handle, a future `useProgram(reusedId)` would skip the bind on a hit
@@ -589,7 +575,7 @@ za::Optional<Shader::UniformLocation> Shader::getUniformLocation(za::StringView 
     uniformNameBuffer[uniformName.size()] = '\0';
 
     // Request the location from OpenGL
-    const int location = glCheck(glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer));
+    const int location = glCheck(glGetUniformLocation(m_impl->shaderProgram, uniformNameBuffer));
     return location == -1 ? za::nullOpt : za::makeOptional(UniformLocation{location});
 }
 
@@ -841,7 +827,7 @@ void Shader::bind() const
     ZA_ASSERT(m_impl->shaderProgram != 0u);
 
     // Enable the program
-    ZA_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
+    ZA_ASSERT(glCheck(glIsProgram(m_impl->shaderProgram)));
     useProgram(m_impl->shaderProgram);
 
     // Bind the textures
@@ -1014,11 +1000,11 @@ za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
     // Calling `glGetUniformLocation` once forces the table to be built.
     // See: src/lib/libwebgl.js `webglPrepareUniformLocationsBeforeFirstUse`
     // See: https://github.com/emscripten-core/emscripten/issues/26672
-    glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "za_u_mvpRow0"));
-    glCheck(glGetUniformLocation(castToGlHandle(shaderProgram), "za_u_mvpRow1"));
+    glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow0"));
+    glCheck(glGetUniformLocation(shaderProgram, "za_u_mvpRow1"));
 #endif
 
-    return za::makeOptional<Shader>(za::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
+    return za::makeOptional<Shader>(za::PassKey<Shader>{}, shaderProgram);
 }
 
 
