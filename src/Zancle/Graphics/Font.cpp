@@ -175,26 +175,13 @@ za::Optional<Font> Font::openFromMemory(const void* data, za::SizeT sizeInBytes,
 
 
 ////////////////////////////////////////////////////////////
-za::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* /* type */)
+za::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
 {
-    auto optFontFace = FontFace::openFromStream(stream);
+    auto optFontFace = FontFace::openFromStream(stream); // Seeks to `0` and logs errors on failure
     if (!optFontFace.hasValue())
         return za::nullOpt;
 
     return za::makeOptional<Font>(za::PassKey<Font>{}, ZA_MOVE(*optFontFace), textureAtlas);
-}
-
-
-////////////////////////////////////////////////////////////
-za::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
-{
-    if (!stream.seek(0).hasValue())
-    {
-        priv::errMsg("Failed to seek font stream");
-        return za::nullOpt;
-    }
-
-    return openFromStreamImpl(stream, textureAtlas, "stream");
 }
 
 
