@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////
 namespace za
 {
+struct Color;
 class GlyphMappedText;
 class Image;
 class InputStream;
@@ -111,7 +112,8 @@ public:
     /// \brief Create an empty texture of the given size
     ///
     /// The contents of a freshly created texture are undefined.
-    /// Use `update` to upload pixel data afterwards.
+    /// Use `update` to upload pixel data, or `clear` to fill the
+    /// texture with a uniform color.
     ///
     /// \param size     Width and height of the texture
     /// \param settings Texture create settings (sRGB, smoothing, wrap mode)
@@ -221,6 +223,30 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Image copyToImage() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Fill the whole texture with `Color::Transparent`
+    ///
+    /// Equivalent to `clear(Color::Transparent)`.
+    ///
+    /// \return `true` on success, `false` on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool clear();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Fill the whole texture with `color` on the GPU
+    ///
+    /// Every texel is overwritten: like a full-texture `update`,
+    /// this invalidates any generated mipmap and breaks in-flight
+    /// batched draws referencing this texture.
+    ///
+    /// \param color Fill color
+    ///
+    /// \return `true` on success, `false` on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool clear(Color color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the whole texture from an array of pixels

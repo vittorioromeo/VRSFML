@@ -15,6 +15,7 @@
 #include "Zancle/GLUtils/Glad.hpp"
 #include "Zancle/GLUtils/TextureSaver.hpp"
 
+#include "Zancle/Graphics/Color.hpp"
 #include "Zancle/Graphics/GraphicsContext.hpp"
 #include "Zancle/Graphics/Image.hpp"
 #include "Zancle/Graphics/TextureWrapMode.hpp"
@@ -353,6 +354,63 @@ za::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLo
 Vec2u Texture::getSize() const
 {
     return m_size;
+}
+
+
+////////////////////////////////////////////////////////////
+bool Texture::clear()
+{
+    return clear(Color::Transparent);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Texture::clear(const Color color)
+{
+    ZA_ASSERT(m_texture);
+    ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+
+    // Clear on the GPU by attaching the texture to the scratch framebuffer
+    // (cheaper than uploading a same-size pixel buffer)
+    const auto frameBuffer = static_cast<GLuint>(WindowContext::getTransferScratchDrawFramebuffer());
+
+    if (frameBuffer == 0u)
+    {
+        priv::errMsg("Failed to clear texture, could not get scratch framebuffer");
+        return false;
+    }
+
+    {
+        const priv::FramebufferSaver    framebufferSaver;
+        const priv::ScissorDisableGuard scissorDisableGuard; // `glClearBufferfv` honors the scissor test
+
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer));
+        glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0));
+
+        const float clearColor[4]{color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f};
+        glCheck(glClearBufferfv(GL_COLOR, 0, clearColor));
+
+        // Detach so the scratch framebuffer doesn't keep referencing the texture
+        glCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0u, 0));
+    }
+
+    // Make sure that the current texture binding will be preserved
+    const priv::TextureSaver save;
+
+    glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
+    m_hasMipmap = false;
+    m_cacheId   = TextureImpl::getUniqueId();
+
+    // Force an OpenGL flush, so that the texture data will appear updated
+    // in all contexts immediately (solves problems in multi-threaded apps)
+    glCheck(glFlush());
+
+    // Full-texture overwrite: every UV samples new content, so invalidate
+    // in-flight batched draws (see `update`)
+    ++m_destructiveGeneration;
+
+    return true;
 }
 
 

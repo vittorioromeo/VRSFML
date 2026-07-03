@@ -117,6 +117,24 @@ TEST_CASE("[Graphics] za::Texture" * tst::skip(skipDisplayTests))
         }
     }
 
+    SECTION("clear()")
+    {
+        auto texture = za::Texture::create({7, 5}).value();
+
+        REQUIRE(texture.clear());
+        const auto transparentImage = texture.copyToImage();
+
+        REQUIRE(texture.clear(za::Color::Red));
+        const auto redImage = texture.copyToImage();
+
+        for (unsigned int y = 0u; y < 5u; ++y)
+            for (unsigned int x = 0u; x < 7u; ++x)
+            {
+                CHECK(transparentImage.getPixel({x, y}) == za::Color::Transparent);
+                CHECK(redImage.getPixel({x, y}) == za::Color::Red);
+            }
+    }
+
     SECTION("loadFromFile()")
     {
         const auto texture = za::Texture::loadFromFile("zancle-logo-big.png").value();
