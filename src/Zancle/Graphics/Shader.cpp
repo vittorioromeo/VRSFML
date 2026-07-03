@@ -923,8 +923,8 @@ za::Optional<Shader> Shader::compile(za::StringView vertexShaderCode,
 
         const GLhandle shader = glCheck(glCreateShader(type));
 
-        const GLcharARB* sources[2]{preamble.data(), shaderCode.data()};
-        const GLint      lengths[2]{static_cast<GLint>(preamble.size()), static_cast<GLint>(shaderCode.size())};
+        const GLchar* sources[2]{preamble.data(), shaderCode.data()};
+        const GLint   lengths[2]{static_cast<GLint>(preamble.size()), static_cast<GLint>(shaderCode.size())};
 
         glCheck(glShaderSource(shader, 2, sources, lengths));
         glCheck(glCompileShader(shader));
