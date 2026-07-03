@@ -10,6 +10,7 @@
 #include "Zancle/Graphics/FontInfo.hpp"
 #include "Zancle/Graphics/Glyph.hpp"
 #include "Zancle/Graphics/GlyphMapping.hpp"
+#include "Zancle/Graphics/Priv/QuantizeOutlineThickness.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
 #include "Zancle/Err/Err.hpp"
@@ -69,13 +70,6 @@ namespace
                             : static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count).value());
 
     return count == 0ul ? 1ul : 0ul;
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline za::I32 fontFaceQuantizeOutlineThickness(const float outlineThickness)
-{
-    return static_cast<za::I32>(outlineThickness * float{1 << 6});
 }
 
 
@@ -391,7 +385,7 @@ struct FontFace::Impl
             if (outlineThickness != 0.f)
             {
                 FT_Stroker_Set(m_ftStroker,
-                               static_cast<FT_Fixed>(fontFaceQuantizeOutlineThickness(outlineThickness)),
+                               static_cast<FT_Fixed>(priv::quantizeOutlineThickness(outlineThickness)),
                                FT_STROKER_LINECAP_ROUND,
                                FT_STROKER_LINEJOIN_ROUND,
                                0);
@@ -424,9 +418,6 @@ struct FontFace::Impl
 
         result.glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16) +
                                (bold ? static_cast<float>(weight) / float{1 << 6} : 0.f);
-
-        result.glyph.lsbDelta = static_cast<za::I16>(m_ftFace->glyph->lsb_delta);
-        result.glyph.rsbDelta = static_cast<za::I16>(m_ftFace->glyph->rsb_delta);
 
         if (bitmap.width == 0u || bitmap.rows == 0u)
             return result;

@@ -36,9 +36,17 @@ namespace za
 /// `codePoints` / `codePointCount` pair specifies the explicit
 /// list of Unicode code points to load.
 ///
+/// The code point list must always include U+0020 (space): text
+/// layout unconditionally queries the space glyph to compute
+/// whitespace width. If strike-through text will be drawn,
+/// U+0078 ('x') is also required, as its bounds anchor the
+/// strike-through line. Querying a glyph missing from the
+/// mapping at draw time is a programming error and aborts
+/// (see `GlyphMapping::getGlyph`).
+///
 /// The `ascii` and `latin1` static factories build common
 /// presets for the printable ASCII and Latin-1 Supplement
-/// ranges respectively.
+/// ranges respectively (both include U+0020 and U+0078).
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] GlyphLoadSettings

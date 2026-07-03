@@ -10,6 +10,7 @@
 #include "Zancle/Graphics/FontFace.hpp"
 #include "Zancle/Graphics/FontInfo.hpp"
 #include "Zancle/Graphics/Glyph.hpp"
+#include "Zancle/Graphics/Priv/QuantizeOutlineThickness.hpp"
 #include "Zancle/Graphics/Texture.hpp"
 #include "Zancle/Graphics/TextureAtlas.hpp"
 
@@ -35,13 +36,6 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline za::I32 quantizeOutlineThickness(const float outlineThickness)
-{
-    return static_cast<za::I32>(outlineThickness * float{1 << 6});
-}
-
-
-////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline za::U32 bitCastU32(const za::I32 value)
 {
     za::U32 result; // NOLINT(cppcoreguidelines-init-variables)
@@ -56,7 +50,7 @@ namespace
     const bool     bold,
     const char32_t index)
 {
-    return (za::U64{bitCastU32(quantizeOutlineThickness(outlineThickness))} << 32) | (za::U64{bold} << 31) | index;
+    return (za::U64{bitCastU32(za::priv::quantizeOutlineThickness(outlineThickness))} << 32) | (za::U64{bold} << 31) | index;
 }
 
 } // namespace
