@@ -124,9 +124,11 @@ public:
     /// \brief Load a texture from an image file on disk
     ///
     /// `settings.area` can be used to load only a sub-rectangle of
-    /// the source image. The default (empty) value loads the whole
-    /// image. If the `area` rectangle crosses the image bounds, it
-    /// is clipped to fit.
+    /// the source image. An `area` with a zero-sized dimension (the
+    /// default), or one that already covers the whole image, loads
+    /// the entire image. Otherwise the rectangle is clipped to the
+    /// image bounds (negative `position` components are treated as
+    /// `0`; `size` components must be positive, debug-asserted).
     ///
     /// The maximum size for a texture depends on the graphics
     /// driver and can be retrieved with `getMaximumSize`.
@@ -297,6 +299,9 @@ public:
     /// will lead to an undefined behavior.
     ///
     /// Must be called before `window.display()`.
+    ///
+    /// As a side effect, `window`'s OpenGL context is made current
+    /// and remains current after this function returns.
     ///
     /// This function does nothing if either the texture or the window
     /// was not previously created.
@@ -490,6 +495,16 @@ private:
     void invalidateMipmap();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Destroy the underlying OpenGL texture, if any
+    ///
+    /// Deletes the GL texture on the shared context and unbinds
+    /// it from the current texture unit if it was bound. Used by
+    /// both the destructor and move assignment.
+    ///
+    ////////////////////////////////////////////////////////////
+    void destroyGlTexture();
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     Vec2u           m_size;            //!< Public texture size
@@ -586,7 +601,7 @@ ZA_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 /// // texture is passed to `draw` rather than stored on the sprite,
 /// // so the sprite cannot accidentally outlive the texture.
 /// const za::Sprite sprite{.textureRect = texture.getRect()};
-/// window.draw(sprite, texture);
+/// window.draw(sprite, {.texture = &texture});
 /// \endcode
 ///
 /// \code

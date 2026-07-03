@@ -88,29 +88,40 @@ Texture::Texture(za::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool 
 
 
 ////////////////////////////////////////////////////////////
-Texture::Texture(const Texture& rhs) :
-    m_isSmooth(rhs.m_isSmooth),
-    m_sRgb(rhs.m_sRgb),
-    m_wrapMode(rhs.m_wrapMode),
-    m_cacheId(TextureImpl::getUniqueId())
+Texture::Texture(const Texture& rhs) : m_cacheId(0u) // every member is overwritten by the move-assignment below
 {
-    za::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
+    za::Optional texture = create(rhs.getSize(),
+                                  {
+                                      .sRgb     = rhs.isSrgb(),
+                                      .smooth   = rhs.isSmooth(),
+                                      .wrapMode = rhs.getWrapMode(),
+                                  });
 
     if (!texture.hasValue())
     {
         priv::errMsg("Failed to copy texture, failed to create new texture");
-        return;
+        za::abort();
     }
 
     *this = ZA_MOVE(*texture);
 
     if (!update(rhs))
+    {
         priv::errMsg("Failed to copy texture, failed to update from new texture");
+        za::abort();
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 Texture::~Texture()
+{
+    destroyGlTexture();
+}
+
+
+////////////////////////////////////////////////////////////
+void Texture::destroyGlTexture()
 {
     // Destroy the OpenGL texture
     if (!m_texture)
@@ -155,13 +166,7 @@ Texture& Texture::operator=(Texture&& rhs) noexcept
         return *this;
 
     // Destroy the OpenGL texture
-    if (m_texture)
-    {
-        ZA_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-
-        const GLuint texture = m_texture;
-        glCheck(glDeleteTextures(1, &texture));
-    }
+    destroyGlTexture();
 
     // Move old to new.
     m_size          = za::exchange(rhs.m_size, {});
@@ -172,6 +177,12 @@ Texture& Texture::operator=(Texture&& rhs) noexcept
     m_fboAttachment = za::exchange(rhs.m_fboAttachment, false);
     m_hasMipmap     = za::exchange(rhs.m_hasMipmap, false);
     m_cacheId       = za::exchange(rhs.m_cacheId, 0u);
+
+    // Both textures' state was just replaced wholesale (`rhs` is now empty);
+    // bump on each so that any in-flight batched draw referencing either one
+    // is detected and flushed with an actionable error (mirrors `swap`).
+    ++m_destructiveGeneration;
+    ++rhs.m_destructiveGeneration;
 
     return *this;
 }
@@ -314,7 +325,10 @@ za::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLo
         const priv::TextureSaver save;
 
         // Copy the pixels to the texture
-        const za::U8* pixels = image.getPixelsPtr() + 4 * (rectangle.position.x + (size.x * rectangle.position.y));
+        const za::U8* pixels = image.getPixelsPtr() +
+                               4u * (static_cast<za::SizeT>(rectangle.position.x) +
+                                     static_cast<za::SizeT>(size.x) * static_cast<za::SizeT>(rectangle.position.y));
+
         glCheck(glBindTexture(GL_TEXTURE_2D, result->m_texture));
 
         glCheck(glPixelStorei(GL_UNPACK_ROW_LENGTH, size.x)); // restore after
@@ -354,7 +368,7 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    za::Vector<za::U8> pixels(m_size.x * m_size.y * 4);
+    za::Vector<za::U8> pixels(za::SizeT{m_size.x} * za::SizeT{m_size.y} * 4);
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
@@ -388,12 +402,9 @@ Image Texture::copyToImage() const
 ////////////////////////////////////////////////////////////
 void Texture::update(const za::U8* pixels)
 {
-    // Update the whole texture
+    // Update the whole texture (the sub-rect overload detects the full-size
+    // update and bumps `m_destructiveGeneration`)
     update(pixels, m_size, {0, 0});
-
-    // Full-texture overwrite: every UV samples new content. (Sub-rect overloads are
-    // intentionally NOT bumped -- they support additive use cases like font atlases.)
-    ++m_destructiveGeneration;
 }
 
 
@@ -441,6 +452,8 @@ bool Texture::update(const Texture& texture, Vec2u dest)
 {
     ZA_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
     ZA_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
+
+    ZA_ASSERT(&texture != this && "Cannot update a texture from itself (GL framebuffer feedback loop)");
 
     ZA_ASSERT(m_texture);
     ZA_ASSERT(glCheck(glIsTexture(m_texture)));
