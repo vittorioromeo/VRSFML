@@ -175,6 +175,9 @@ void setupVertexAttribPointers()
 
 
 ////////////////////////////////////////////////////////////
+// Emits the winding-corrected `(0,1,2)(2,1,3)` pattern per quad -- the same
+// convention as `DrawableBatchUtils::appendQuadIndices`, so the immediate
+// (`drawQuads`) and batched paths produce identically-wound triangles.
 constexpr unsigned int precomputedQuadIndices[]{
 #include "Zancle/Graphics/PrecomputedQuadIndices.inl"
 };
@@ -926,7 +929,7 @@ void RenderTarget::drawQuads(const DrawQuadsSettings& settings, const RenderStat
         drawIndexedVertices(
             {
                 .vertexSpan    = {settings.vertexSpan.data() + offset, vertexCount},
-                .indexSpan     = {RenderTargetImpl::getPrecomputedQuadIndices(), vertexCount / 4u * 6u},
+                .indexSpan     = {RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u},
                 .primitiveType = settings.primitiveType,
             },
             states);
