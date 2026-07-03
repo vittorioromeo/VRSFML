@@ -230,7 +230,10 @@ void Shape::updateOutline()
         return;
     }
 
-    const za::SizeT count = m_vertices.size() - 2u;
+    // Derive the perimeter count from the fill range, not from `m_vertices.size()`:
+    // when an outline already exists (e.g. `setMiterLimit` after `setOutlineThickness`),
+    // `m_vertices` also contains the old outline vertices.
+    const za::SizeT count = m_verticesEndIndex - 2u;
     m_vertices.resize(m_verticesEndIndex + (count + 1u) * 2u);
 
     ShapeUtils::updateOutlineFromTriangleFanFill(m_outlineThickness,
