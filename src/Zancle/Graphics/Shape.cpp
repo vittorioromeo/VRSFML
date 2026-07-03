@@ -116,6 +116,9 @@ void Shape::setOutlineThickness(float thickness)
 
     m_outlineThickness = thickness;
 
+    // Never updated with any geometry: nothing to rebuild.
+    if (m_verticesEndIndex == 0u)
+        return;
     const za::SizeT pointCount = m_verticesEndIndex - 2u;
 
     m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
