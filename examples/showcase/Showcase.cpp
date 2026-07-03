@@ -57,7 +57,7 @@ private:
                                     .value();
 
     ////////////////////////////////////////////////////////////
-    za::RenderTexture m_rtGame = makeAARenderTexture(resolution.toVec2u(), {.sampleCount = 8u, .smooth = true}).value();
+    za::RenderTexture m_rtGame = makeAARenderTexture(resolution.toVec2u(), {.smooth = true, .sampleCount = 8u}).value();
 
     ////////////////////////////////////////////////////////////
     za::ImGuiContext m_imGuiContext;
