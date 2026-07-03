@@ -277,7 +277,7 @@ struct PersistentGPUStorage
     [[nodiscard]] Vertex* reserveMoreVertices(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Ensure the vertex buffer can accommodate `count` more vertices without changing the active count
+    /// \brief Ensure the vertex buffer can accommodate `count` vertices in total without changing the active count
     ///
     ////////////////////////////////////////////////////////////
     void reserveVertexCapacity(za::SizeT count);
@@ -296,7 +296,7 @@ struct PersistentGPUStorage
     [[nodiscard]] IndexType* reserveMoreIndices(za::SizeT count);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Ensure the index buffer can accommodate `count` more indices without changing the active count
+    /// \brief Ensure the index buffer can accommodate `count` indices in total without changing the active count
     ///
     ////////////////////////////////////////////////////////////
     void reserveIndexCapacity(za::SizeT count);
