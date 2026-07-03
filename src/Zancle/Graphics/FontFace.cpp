@@ -61,13 +61,17 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
+// FreeType convention: for `count > 0` return the number of bytes read (`0`
+// signals an error); for `count == 0` (seek-only) return `0` on success and
+// nonzero on error.
 [[nodiscard]] unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* buffer, unsigned long count)
 {
     auto* stream = static_cast<za::InputStream*>(rec->descriptor.pointer);
 
     if (za::Optional seekResult = stream->seek(offset); seekResult.hasValue() && *seekResult == offset)
-        return count == 0ul ? 0ul
-                            : static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count).value());
+        return count == 0ul
+                   ? 0ul
+                   : static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count).valueOr(0u));
 
     return count == 0ul ? 1ul : 0ul;
 }
@@ -564,15 +568,14 @@ za::Optional<FontFace> FontFace::openFromFile(const Path& filename)
     auto                  stream = za::makeUnique<FileInputStream>(ZA_MOVE(*optStream));
     constexpr const char* type   = "file";
 #else
-    auto optStream = ResourceStream::open(filename);
-    if (!optStream.hasValue())
+    auto stream = za::makeUnique<priv::ResourceStream>();
+    if (!stream->open(filename))
     {
         priv::errMsg("Failed to load font face ({}): failed to open file", priv::PathDebugFormatter{filename});
         return result;
     }
 
-    auto                  stream = za::makeUnique<priv::ResourceStream>(ZA_MOVE(*optStream));
-    constexpr const char* type   = "Android resource stream";
+    constexpr const char* type = "Android resource stream";
 #endif
 
     result = openFromStreamImpl(*stream, type);
