@@ -46,17 +46,6 @@ class ZA_GRAPHICS_API Shader
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Types of shaders
-    ///
-    ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Type : unsigned char
-    {
-        Vertex,   //!< %Vertex shader
-        Geometry, //!< Geometry shader
-        Fragment  //!< Fragment (pixel) shader
-    };
-
-    ////////////////////////////////////////////////////////////
     /// \brief Special type that can be passed to setUniform(),
     ///        and that represents the texture of the object being drawn
     ///
@@ -132,6 +121,11 @@ public:
     /// shader stage. The default vertex and/or fragment shader will
     /// be used in place of any stage that is not provided.
     ///
+    /// \note Zancle automatically prepends a `#version` and default
+    ///       `precision` preamble to every source; the provided sources
+    ///       must not contain their own `#version` or global `precision`
+    ///       directives, or compilation will fail.
+    ///
     /// \see `loadFromFile`
     ///
     ////////////////////////////////////////////////////////////
@@ -174,6 +168,11 @@ public:
     /// Each source view is optional: leave any field empty to skip
     /// that shader stage. The default vertex and/or fragment shader
     /// will be used in place of any stage that is not provided.
+    ///
+    /// \note Zancle automatically prepends a `#version` and default
+    ///       `precision` preamble to every source; the provided sources
+    ///       must not contain their own `#version` or global `precision`
+    ///       directives, or compilation will fail.
     ///
     /// \see `loadFromMemory`
     ///
@@ -235,6 +234,9 @@ public:
     /// you'll probably need to read a good documentation for
     /// it before writing your own shaders.
     ///
+    /// \note The streams must report a known, non-zero size via
+    ///       `getSize()`; unsized streams are not supported.
+    ///
     /// \param settings Streams of the shader stages to load
     ///
     /// \return Shader if loading succeeded, `za::nullOpt` if it failed
@@ -288,8 +290,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec4 uniform
     ///
-    /// This overload can also be called with `za::Color` objects
-    /// that are converted to `za::Glsl::Vec4`.
+    /// To pass a `za::Color`, convert it explicitly, as in
+    /// `setUniform(location, za::Glsl::Vec4(color))`. A plain
+    /// `setUniform(location, color)` call is ambiguous between the
+    /// `Glsl::Vec4` and `Glsl::Ivec4` overloads and does not compile.
     ///
     /// It is important to note that the components of the color are
     /// normalized before being passed to the shader. Therefore,
@@ -333,8 +337,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec4 uniform
     ///
-    /// This overload can also be called with `za::Color` objects
-    /// that are converted to `za::Glsl::Ivec4`.
+    /// To pass a `za::Color`, convert it explicitly, as in
+    /// `setUniform(location, za::Glsl::Ivec4(color))` -- a plain
+    /// `setUniform(location, color)` call is ambiguous and does not compile.
     ///
     /// If color conversions are used, the ivec4 uniform in GLSL
     /// will hold the same values as the original `za::Color`
@@ -609,8 +614,9 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Compile the shader(s) and create the program
     ///
-    /// If one of the arguments is a null pointer, the corresponding shader
-    /// is not created.
+    /// If one of the arguments is empty, the corresponding stage is skipped:
+    /// the built-in default shader is used for vertex/fragment, and the
+    /// geometry stage is simply omitted.
     ///
     /// \param vertexShaderCode   Source code of the vertex shader
     /// \param geometryShaderCode Source code of the geometry shader
