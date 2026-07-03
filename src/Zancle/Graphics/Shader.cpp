@@ -322,9 +322,9 @@ void destroyProgramIfNeeded(const unsigned int program)
     glCheck(glDeleteProgram(program));
 
     // GL handles can be reused after deletion. If the cache still names this
-    // handle, a future `useProgram(reusedId)` would skip the bind on a hit
-    // and leave the wrong program current. Clear the cache to force a real
-    // bind on the next operation.
+    // handle, a future `UniformBinder{reusedId}` would compare against it,
+    // conclude the (new, unrelated) program is already bound, and skip the
+    // bind. Clear the cache to force a real bind on the next operation.
     if (currentProgramCacheValue == program)
         currentProgramCacheValue = 0u;
 }
