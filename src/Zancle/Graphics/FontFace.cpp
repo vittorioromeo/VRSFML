@@ -780,7 +780,22 @@ za::Optional<GlyphMapping> FontFace::loadGlyphs(TextureAtlas& atlas, const Glyph
     // time instead of aborting at first draw (see `GlyphMapping::getGlyph`)
     if (!result.fillGlyphs.contains(U' '))
         priv::errMsg(
-            "GlyphMapping created without U+0020 (space): drawing any text with this mapping will fail at draw time");
+            "GlyphMapping created without U+0020 (space): drawing any text with this mapping will render placeholders");
+
+    // Rasterize the font's missing-glyph placeholder (`.notdef`, glyph index 0,
+    // reached via code point 0) so unmapped code points render a visible
+    // placeholder at draw time instead of failing. Best-effort: on atlas
+    // exhaustion the fallbacks stay zero-sized (rendering nothing).
+    if (const auto optFallbackFill = rasterizeAndPackGlyph(atlas, char32_t{0}, settings.characterSize, settings.bold, 0.f))
+        result.fallbackFillGlyph = *optFallbackFill;
+
+    if (settings.outlineThickness != 0.f)
+        if (const auto optFallbackOutline = rasterizeAndPackGlyph(atlas,
+                                                                  char32_t{0},
+                                                                  settings.characterSize,
+                                                                  settings.bold,
+                                                                  settings.outlineThickness))
+            result.fallbackOutlineGlyph = *optFallbackOutline;
 
     return za::makeOptional(ZA_MOVE(result));
 }
